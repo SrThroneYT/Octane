@@ -30,7 +30,13 @@ const CAMERA_POINT_CURRENCY_TYPE = 0;
 const CAMERA_POINT_ICON_TYPE = 5;
 
 export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (props) => {
-    const { base64Url = null, onCloseClick = null, onCancelClick = null, price = null } = props;
+    const { base64Url = null, onCloseClick = null, onCancelClick = null, price: offeredPrice = null } = props;
+    // Official (setPrices runs once): the prices are fixed when the dialog opens.
+    const [price, setPrice] = useState(offeredPrice);
+    // A second click before React re-renders must not send the request again (the server would
+    // create and charge twice); set in the same task as the send.
+    const pendingRef = useRef(false);
+    const pendingTimerRef = useRef<number>(null);
     const [pictureUrl, setPictureUrl] = useState<string>(null);
     const [publishId, setPublishId] = useState<string>(null);
     const [picturesBought, setPicturesBought] = useState(0);
@@ -63,6 +69,34 @@ export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (prop
         return `/profile/${encodeURIComponent(userName)}/photo/${encodeURIComponent(publishId)}`;
     }, [publishId]);
 
+    useEffect(() => {
+        if (!price && offeredPrice) setPrice(offeredPrice);
+    }, [offeredPrice, price]);
+
+    const finishPending = useCallback(() => {
+        pendingRef.current = false;
+        if (pendingTimerRef.current !== null) window.clearTimeout(pendingTimerRef.current);
+        pendingTimerRef.current = null;
+    }, []);
+
+    const startPending = () => {
+        pendingRef.current = true;
+        setIsWaiting(true);
+        setStatusLocalization('camera.purchase.pleasewait');
+        if (pendingTimerRef.current !== null) window.clearTimeout(pendingTimerRef.current);
+        // No answer within 30 s: let the user try again.
+        pendingTimerRef.current = window.setTimeout(() => {
+            pendingRef.current = false;
+            pendingTimerRef.current = null;
+            setIsWaiting(false);
+            setStatusLocalization('generic.failed');
+        }, 30000);
+    };
+
+    useEffect(() => () => {
+        if (pendingTimerRef.current !== null) window.clearTimeout(pendingTimerRef.current);
+    }, []);
+
     const reportRenderingFailure = useCallback(() => {
         setPictureUrl(null);
         setIsImageLoaded(false);
@@ -71,13 +105,41 @@ export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (prop
         simpleAlert(LocalizeText('camera.render.count.info'), null, null, null, LocalizeText('generic.alert.title'));
     }, [simpleAlert]);
 
+    // Official: not enough credits offers the shop; not enough duckets offers the duckets page.
     const showNotEnoughCreditsAlert = useCallback(() => {
-        simpleAlert(LocalizeText('catalog.alert.notenough.credits.description'), null, null, null, LocalizeText('catalog.alert.notenough.title'));
-    }, [simpleAlert]);
+        const shopUrl = GetConfigurationValue<string>('web.shop.relativeUrl', '');
+
+        if (!shopUrl || !showConfirm) {
+            simpleAlert(LocalizeText('catalog.alert.notenough.credits.description'), null, null, null, LocalizeText('catalog.alert.notenough.title'));
+            return;
+        }
+
+        showConfirm(
+            LocalizeText('catalog.alert.notenough.credits.description'),
+            () => OpenUrl(shopUrl),
+            () => undefined,
+            null,
+            null,
+            LocalizeText('catalog.alert.notenough.title')
+        );
+    }, [showConfirm, simpleAlert]);
 
     const showNotEnoughDucketsAlert = useCallback(() => {
         const currencyLocalization = GetConfigurationValue<string>(`activitypoint.name.${CAMERA_POINT_CURRENCY_TYPE}`, 'duckets');
         const currencyName = LocalizeText(currencyLocalization);
+        const ducketsUrl = GetConfigurationValue<string>('link.format.duckets', '');
+
+        if (ducketsUrl && showConfirm) {
+            showConfirm(
+                LocalizeText('catalog.alert.notenough.activitypoints.description', ['currencyname'], [currencyName]),
+                () => OpenUrl(ducketsUrl),
+                () => undefined,
+                null,
+                null,
+                LocalizeText('catalog.alert.notenough.activitypoints.title', ['currencyname'], [currencyName])
+            );
+            return;
+        }
 
         simpleAlert(
             LocalizeText('catalog.alert.notenough.activitypoints.description', ['currencyname'], [currencyName]),
@@ -86,7 +148,7 @@ export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (prop
             null,
             LocalizeText('catalog.alert.notenough.activitypoints.title', ['currencyname'], [currencyName])
         );
-    }, [simpleAlert]);
+    }, [showConfirm, simpleAlert]);
 
     const animatePictureToInventory = useCallback(() => {
         const sourceImage = productImageRef.current;
@@ -109,6 +171,7 @@ export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (prop
         setPicturesBought((value) => value + 1);
         setStatusLocalization('camera.purchase.successful');
         setIsWaiting(false);
+        finishPending();
     });
 
     useMessageEvent<CameraPublishStatusMessageEvent>(CameraPublishStatusMessageEvent, (event) => {
@@ -118,6 +181,7 @@ export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (prop
         setWasPicturePublished(parser.ok);
         setStatusLocalization(parser.ok ? 'camera.publish.successful' : '');
         setIsWaiting(false);
+        finishPending();
 
         if (parser.ok) {
             setPublishId(parser.extraDataId);
@@ -171,6 +235,7 @@ export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (prop
         }
 
         setIsWaiting(false);
+        finishPending();
     });
 
     useMessageEvent<CameraStorageUrlMessageEvent>(CameraStorageUrlMessageEvent, (event) => {
@@ -195,7 +260,7 @@ export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (prop
                 onCloseClick();
                 return;
             case 'buy':
-                if (isWaiting || !isImageLoaded || !disclaimerAccepted) return;
+                if (pendingRef.current || isWaiting || !isImageLoaded || !disclaimerAccepted) return;
 
                 if (price.credits > getCurrencyAmount(-1)) {
                     showNotEnoughCreditsAlert();
@@ -207,30 +272,27 @@ export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (prop
                     return;
                 }
 
-                setIsWaiting(true);
-                setStatusLocalization('camera.purchase.pleasewait');
+                startPending();
 
                 if (spendingDisclaimerEnabled) setDisclaimerAccepted(false);
 
                 SendMessageComposer(new PurchasePhotoMessageComposer(''));
                 return;
             case 'publish':
-                if (isWaiting || !isImageLoaded || publishCooldown > 0) return;
+                if (pendingRef.current || isWaiting || !isImageLoaded || publishCooldown > 0) return;
 
                 if (price.publishDucketPrice > getCurrencyAmount(CAMERA_POINT_CURRENCY_TYPE)) {
                     showNotEnoughDucketsAlert();
                     return;
                 }
 
-                setIsWaiting(true);
-                setStatusLocalization('camera.purchase.pleasewait');
+                startPending();
                 SendMessageComposer(new PublishPhotoMessageComposer());
                 return;
             case 'competition':
-                if (isWaiting || !isImageLoaded || ['submitted', 'limit', 'error'].includes(competitionState)) return;
+                if (pendingRef.current || isWaiting || !isImageLoaded || ['submitted', 'limit', 'error'].includes(competitionState)) return;
 
-                setIsWaiting(true);
-                setStatusLocalization('camera.purchase.pleasewait');
+                startPending();
                 SendMessageComposer(new PhotoCompetitionMessageComposer());
                 return;
             case 'cancel':
@@ -386,7 +448,7 @@ export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (prop
 
                 <div className="octane-camera-checkout__buttons">
                     <Button variant="secondary" onClick={() => processAction('cancel')}>
-                        {LocalizeText(isWaiting ? 'generic.close' : 'catalog.purchase_confirmation.cancel')}
+                        {LocalizeText(isWaiting || picturesBought > 0 || wasPicturePublished ? 'generic.close' : 'catalog.purchase_confirmation.cancel')}
                     </Button>
                 </div>
             </OctaneCardContentView>

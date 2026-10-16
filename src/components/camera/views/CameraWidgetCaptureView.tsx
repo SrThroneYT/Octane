@@ -1,7 +1,7 @@
 import { GetRenderer, GetRoomEngine, OctaneTexture, TextureUtils } from '@octane/renderer';
 import { FC, useEffect, useRef } from 'react';
 import { blitRoomCanvasToViewfinder, CameraPicture, GetRoomSession, getViewfinderRoomFrame, LocalizeText, PlaySound, SoundNames } from '../../../api';
-import { Button, Column, DraggableWindow } from '../../../common';
+import { Column, DraggableWindow } from '../../../common';
 import { useCamera, useNotification } from '../../../hooks';
 import { getNextEmptyCameraSlot, willFillLastCameraSlot } from '../CameraAirUtilities';
 
@@ -227,14 +227,15 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
                     <div ref={flashRef} className="octane-camera-capture__flash" aria-hidden="true" />
                     {selectedPicture && (
                         <div className="octane-camera-capture__preview-actions">
-                            <Button
-                                className="octane-camera-capture__editor-button"
+                            {/* A real <button>: the drag handle lets only native controls take the mouse. */}
+                            <button
+                                className="pointer-events-auto inline-flex items-center justify-center font-bold leading-tight text-center no-underline cursor-pointer select-none px-[.75rem] py-[.375rem] text-[.9rem] rounded-none habbo-btn-primary octane-camera-capture__editor-button"
                                 title={LocalizeText('camera.editor.button.tooltip')}
-                                variant="success"
+                                type="button"
                                 onClick={onEdit}
                             >
                                 {LocalizeText('camera.editor.button.text')}
-                            </Button>
+                            </button>
                         </div>
                     )}
                     <button
