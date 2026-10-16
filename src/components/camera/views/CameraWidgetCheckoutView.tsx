@@ -24,6 +24,7 @@ import { useMessageEvent, useNotification, usePurse } from '../../../hooks';
 import { joinCameraPhotoUrl } from '../CameraAirUtilities';
 import { CAMERA_BOX_COLOR, CAMERA_COMPETITION_COLOR, CameraCenteredText, CameraNativeText } from './CameraNativeText';
 import { CameraSkinButton } from './CameraSkinButton';
+import { Checkbox } from '../../../common/Checkbox';
 
 export interface CameraWidgetCheckoutViewProps {
     base64Url: string;
@@ -496,7 +497,7 @@ export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (prop
 
                 {spendingDisclaimerEnabled && (
                     <label className="octane-camera-checkout__spending">
-                        <input checked={disclaimerAccepted} type="checkbox" onChange={(event) => setDisclaimerAccepted(event.target.checked)} />
+                        <Checkbox checked={disclaimerAccepted} onCheckedChange={(nextChecked) => setDisclaimerAccepted(nextChecked)} />
                         <span className="octane-camera-checkout__spending-text">
                             <CameraNativeText maxWidth={278} text={LocalizeText('disclaimer.credit_spending')} />
                         </span>
