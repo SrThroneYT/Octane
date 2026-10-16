@@ -4,7 +4,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { IMentionEntry } from '../../api/mentions';
 
 const requestMentions = vi.fn();
-const requestMoreMentions = vi.fn();
 const goto = vi.fn();
 const open = vi.fn();
 const remove = vi.fn();
@@ -34,8 +33,7 @@ vi.mock('../../hooks', async () => {
     return {
         useMentionsSnapshot: snapshot.useMentionsSnapshot,
         useMentionActions: () => ({ open, goto, remove, markAll }),
-        requestMentions,
-        requestMoreMentions
+        requestMentions
     };
 });
 
@@ -161,40 +159,5 @@ describe('MentionsView', () => {
         act(() => store.addMention(make(2, { message: 'second @Bob' })));
 
         expect(screen.getByRole('list').textContent).toContain('second');
-    });
-});
-
-describe('MentionsView paging', () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-        requestMentions.mockReset();
-        requestMoreMentions.mockReset();
-        store.resetMentions();
-    });
-
-    afterEach(() => cleanup());
-
-    it('offers older mentions only when the server has more', () => {
-        store.setMentions([make(1)], false);
-
-        render(<MentionsView onClose={() => undefined} />);
-
-        expect(screen.queryByText('Load older mentions')).toBeNull();
-
-        cleanup();
-        store.setMentions([make(1)], true);
-        render(<MentionsView onClose={() => undefined} />);
-        fireEvent.click(screen.getByText('Load older mentions'));
-
-        expect(requestMoreMentions).toHaveBeenCalledTimes(1);
-    });
-
-    it('disables the button while the page loads', () => {
-        store.setMentions([make(1)], true);
-        store.setLoadingMoreMentions(true);
-
-        render(<MentionsView onClose={() => undefined} />);
-
-        expect((screen.getByText('Loading...') as HTMLButtonElement).disabled).toBe(true);
     });
 });

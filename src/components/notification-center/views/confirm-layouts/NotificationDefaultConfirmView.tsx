@@ -6,8 +6,6 @@ export interface NotificationDefaultConfirmViewProps extends LayoutNotificationA
     item: NotificationConfirmItem;
 }
 
-/* Official habbo_window_confirm: the text, then "cancel" as an underlined link on the left and the
-   one confirm button on the right. */
 export const NotificationDefaultConfirmView: FC<NotificationDefaultConfirmViewProps> = (props) => {
     const { item = null, onClose = null, ...rest } = props;
     const { message = null, onConfirm = null, onCancel = null, confirmText = null, cancelText = null, title = null } = item;
@@ -29,11 +27,13 @@ export const NotificationDefaultConfirmView: FC<NotificationDefaultConfirmViewPr
             <Flex center grow>
                 <Text className="whitespace-pre-line">{message}</Text>
             </Flex>
-            <div className="octane-confirm-actions">
-                <button className="octane-confirm-actions__cancel" type="button" onClick={cancel}>
+            <div className="flex gap-1">
+                <Button fullWidth variant="danger" onClick={cancel}>
                     {cancelText}
-                </button>
-                <Button onClick={confirm}>{confirmText}</Button>
+                </Button>
+                <Button fullWidth onClick={confirm}>
+                    {confirmText}
+                </Button>
             </div>
         </LayoutNotificationAlertView>
     );

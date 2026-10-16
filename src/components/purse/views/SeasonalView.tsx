@@ -23,7 +23,7 @@ export const SeasonalView: FC<SeasonalViewProps> = (props) => {
                     {formattedAmount}
                 </Text>
                 <Flex className="octane-seasonal-box seasonal-image-padding">
-                    {iconUrl && <img src={iconUrl} alt="" className="seasonal-image" />}
+                    <img src={iconUrl} alt="" className="seasonal-image" />
                 </Flex>
             </Flex>
         </Flex>

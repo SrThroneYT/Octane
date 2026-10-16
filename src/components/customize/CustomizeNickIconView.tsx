@@ -377,7 +377,7 @@ export const CustomizeNickIconView: FC<{}> = () => {
                                                 Active
                                             </span>
                                         )}
-                                        {iconUrl && <img className="h-auto max-h-[28px] w-auto object-contain" src={iconUrl} alt={item.iconKey} />}
+                                        <img className="h-auto max-h-[28px] w-auto object-contain" src={iconUrl} alt={item.iconKey} />
                                         <div className="flex flex-col items-center gap-1 text-center text-[11px]">
                                             <span>{item.owned ? (item.active ? 'Owned - Active' : 'Owned') : 'Locked'}</span>
                                             <span className="max-w-[140px] truncate">{item.displayName || `Icon #${item.iconKey}`}</span>

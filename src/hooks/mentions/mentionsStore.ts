@@ -4,8 +4,8 @@ import { createOctaneStore } from '../../state/createOctaneStore';
 /** idle: nothing asked yet, loading: waiting for the server, ready: the list arrived, error: it never did. */
 export type MentionsStatus = 'idle' | 'loading' | 'ready' | 'error';
 
-/** What the client keeps at most, however many pages were loaded. */
-export const MAX_MENTIONS = 1000;
+/** The server keeps more; the panel and the badge only ever need the latest ones. */
+export const MAX_MENTIONS = 200;
 
 interface MentionsState {
     mentions: ReadonlyArray<IMentionEntry>;
@@ -13,13 +13,9 @@ interface MentionsState {
     status: MentionsStatus;
     /** The panel is on screen, so a mention that lands is already visible and needs no toast. */
     panelOpen: boolean;
-    /** Older mentions remain on the server than the ones held. */
-    hasMore: boolean;
-    /** The next page was asked for and has not arrived. */
-    loadingMore: boolean;
 }
 
-export const useMentionsStore = createOctaneStore<MentionsState>(() => ({ mentions: [], unreadCount: 0, status: 'idle', panelOpen: false, hasMore: false, loadingMore: false }));
+export const useMentionsStore = createOctaneStore<MentionsState>(() => ({ mentions: [], unreadCount: 0, status: 'idle', panelOpen: false }));
 
 const countUnread = (list: ReadonlyArray<IMentionEntry>): number => list.reduce((count, mention) => count + (mention.read ? 0 : 1), 0);
 
@@ -48,20 +44,10 @@ export const isMentionsPanelOpen = (): boolean => useMentionsStore.getState().pa
 
 export const setMentionsPanelOpen = (panelOpen: boolean): void => useMentionsStore.setState({ panelOpen });
 
-export const getHasMoreMentions = (): boolean => useMentionsStore.getState().hasMore;
-
-export const isLoadingMoreMentions = (): boolean => useMentionsStore.getState().loadingMore;
-
-export const setLoadingMoreMentions = (loadingMore: boolean): void => useMentionsStore.setState({ loadingMore });
-
-/** The id to ask the next page from: the oldest mention held that the server knows by id. */
-export const getOldestMentionId = (): number =>
-    current().reduce((oldest, mention) => (mention.mentionId > 0 && (oldest === 0 || mention.mentionId < oldest) ? mention.mentionId : oldest), 0);
-
 export const setMentionsStatus = (status: MentionsStatus): void => useMentionsStore.setState({ status });
 
 /** The list the server sent replaces what is kept, and ends the waiting. */
-export const setMentions = (list: IMentionEntry[], hasMore = false): void => {
+export const setMentions = (list: IMentionEntry[]): void => {
     const seen = new Set<string>();
     const unique = list.filter((mention) => {
         const key = keyOf(mention);
@@ -74,16 +60,6 @@ export const setMentions = (list: IMentionEntry[], hasMore = false): void => {
     });
 
     commit(unique.sort(byNewest), 'ready');
-    useMentionsStore.setState({ hasMore, loadingMore: false });
-};
-
-/** A page of older mentions joins the list; the ones already held are not added again. */
-export const appendMentions = (page: IMentionEntry[], hasMore: boolean): void => {
-    const known = new Set(current().map(keyOf));
-    const fresh = page.filter((mention) => !known.has(keyOf(mention)));
-
-    commit([...current(), ...fresh].sort(byNewest));
-    useMentionsStore.setState({ hasMore, loadingMore: false });
 };
 
 export const addMention = (entry: IMentionEntry): void => {
@@ -114,4 +90,4 @@ export const removeMention = (mentionId: number): void => {
     commit(next);
 };
 
-export const resetMentions = (): void => useMentionsStore.setState({ mentions: [], unreadCount: 0, status: 'idle', panelOpen: false, hasMore: false, loadingMore: false });
+export const resetMentions = (): void => useMentionsStore.setState({ mentions: [], unreadCount: 0, status: 'idle', panelOpen: false });

@@ -13,7 +13,5 @@ export const CatalogIconView: FC<CatalogIconViewProps> = (props) => {
         return GetConfigurationValue<string>('catalog.asset.icon.url').replace('%name%', icon.toString());
     }, [icon]);
 
-    if (!iconUrl) return null;
-
     return <img src={iconUrl} alt="" className={`w-5 h-5 object-contain image-rendering-pixelated ${className}`} draggable={false} />;
 };
