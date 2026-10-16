@@ -47,20 +47,6 @@ const syncViewportCssVars = () => {
     document.documentElement.style.setProperty('--octane-app-height', `${height}px`);
 };
 
-const preloadUrl = async (url: string): Promise<void> => {
-    if (!url) return;
-
-    // Split gamedata URLs are directories (end with '/'); fetching them as a
-    // file just 404s and wastes a connection at startup. The real split loader
-    // handles those — only warm up actual file URLs here.
-    if (url.split('?')[0].split('#')[0].endsWith('/')) return;
-
-    try {
-        const response = await fetch(url, { cache: 'force-cache' });
-        await response.arrayBuffer();
-    } catch {}
-};
-
 const preloadImage = (url: string): void => {
     if (!url) return;
 
@@ -361,12 +347,6 @@ export const App: FC<{}> = (props) => {
 
                 const interpolate = (value: string) => GetConfiguration().interpolate(value);
                 const assetUrls = asStringArray(GetConfiguration().getValue<unknown>('preload.assets.urls')).map(interpolate);
-                const gamedataUrls = [
-                    ...asStringArray(GetConfiguration().getValue<unknown>('external.texts.url')).map(interpolate),
-                    ...['furnidata.url', 'productdata.url', 'avatar.actions.url', 'avatar.figuredata.url', 'avatar.figuremap.url', 'avatar.effectmap.url']
-                        .map((key) => interpolate(GetConfiguration().getValue<string>(key, '')))
-                        .filter(Boolean)
-                ];
                 const loginImages = (GetConfiguration().getValue<Record<string, unknown>>('loginview', {})?.images as Record<string, string>) ?? {};
                 const loginImageUrls = [
                     loginImages.background,
@@ -380,7 +360,6 @@ export const App: FC<{}> = (props) => {
                     .map(interpolate);
 
                 loginImageUrls.forEach(preloadImage);
-                gamedataUrls.forEach((url) => preloadUrl(url));
 
                 const warmupTasks: { promise: Promise<any>; label: string }[] = [
                     { promise: GetAssetManager().downloadAssets(assetUrls), label: taskLabel('loading.task.assets', 'Loading game assets...') },

@@ -162,6 +162,13 @@ export const CameraWidgetEditorView: FC<CameraWidgetEditorViewProps> = (props) =
         ]
     );
 
+    // useCamera loads the effects once the hotel is idle; opening the editor first loads them now.
+    useEffect(() => {
+        const manager = GetRoomCameraWidgetManager();
+
+        if (!manager.isLoaded) void manager.init();
+    }, []);
+
     useEffect(() => {
         if (!stableTexture) return;
 
