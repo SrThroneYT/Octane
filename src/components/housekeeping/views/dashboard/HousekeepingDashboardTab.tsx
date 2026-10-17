@@ -296,8 +296,7 @@ export const HousekeepingDashboardTab: FC = () => {
                     </h4>
                     <div className="flex flex-wrap gap-1">
                         {recentLookups.map((entry, index) => (
-                            <Hint content={`${entry.kind} #${entry.id}`}><BaseButton aria-label={`${entry.kind} #${entry.id}`}
-                                key={`${entry.kind}-${entry.id}-${index}`}
+                            <Hint key={`${entry.kind}-${entry.id}-${index}`} content={`${entry.kind} #${entry.id}`}><BaseButton
                                 type="button"
                                 onClick={() => onRecentClick(entry)}
                                 className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] border transition-colors ${entry.kind === 'user' ? 'bg-sky-50 border-sky-200 text-sky-700 hover:bg-sky-100' : 'bg-violet-50 border-violet-200 text-violet-700 hover:bg-violet-100'}`}

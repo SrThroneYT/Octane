@@ -329,8 +329,7 @@ export const CatalogLayoutPetView: FC<CatalogLayoutProps> = ({ page = null }) =>
                                 const locked = isBreedLocked(choice.palette);
 
                                 return (
-                                    <Hint content={locked ? hcOnlyLabel : undefined}><ToggleButton
-                                        key={choice.palette.paletteId}
+                                    <Hint key={choice.palette.paletteId} content={locked ? hcOnlyLabel : undefined}><ToggleButton
                                         aria-label={locked ? `${colorLabel} ${index + 1} — ${hcOnlyLabel}` : `${colorLabel} ${index + 1}`} pressed={selectedPaletteIndex === index}
                                         className={`octane-catalog-pet-color-swatch${locked ? ' octane-catalog-pet-color-swatch--locked' : ''}`}
                                         disabled={controlsDisabled || locked}

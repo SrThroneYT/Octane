@@ -47,7 +47,7 @@ const SortArrow: FC<{ field: SortField; active: SortField; dir: SortDir }> = ({ 
 };
 
 const PagBtn: FC<{ disabled?: boolean; onClick: () => void; children: ReactNode; title?: string }> = ({ disabled, onClick, children, title }) => (
-    <Hint content={title}><BaseButton aria-label={title}
+    <Hint content={title}><BaseButton
         type="button"
         disabled={disabled}
         onClick={onClick}
@@ -197,7 +197,7 @@ export const FurniEditorSearchView: FC<FurniEditorSearchViewProps> = (props) => 
                 </Text>
                 {loading && <span className="w-3 h-3 rounded-full border-2 border-slate-300 border-t-primary animate-spin" />}
                 {flaggedCount > 0 && (
-                    <Hint content="Rows whose interaction type has no class or does not match the classname"><ToggleButton aria-label="Rows whose interaction type has no class or does not match the classname"
+                    <Hint content="Rows whose interaction type has no class or does not match the classname"><ToggleButton
                         type="button"
                         onClick={() => setOnlyFlagged((prev) => !prev)} pressed={onlyFlagged}
                         className={`ml-auto inline-flex items-center gap-1.5 text-[10px] font-medium rounded-full border px-2 py-0.5 transition ${onlyFlagged ? 'bg-amber-100 border-amber-300 text-amber-800' : 'bg-[#ffffff] border-slate-200 text-slate-500 hover:border-slate-300'}`}

@@ -546,7 +546,7 @@ export const CatalogAdminPageEditView: FC<{}> = () => {
                                     <label className="octane-catalog-admin-label is-field">
                                         {localizeWithFallback('catalog.admin.page.text.1', 'Page text')}
                                     </label>
-                                    <Hint content={localizeWithFallback('catalog.admin.translate.title', 'Translate via Google Translate')}><BaseButton aria-label={localizeWithFallback('catalog.admin.translate.title', 'Translate via Google Translate')}
+                                    <Hint content={localizeWithFallback('catalog.admin.translate.title', 'Translate via Google Translate')}><BaseButton
                                         className="octane-catalog-admin-button is-ghost is-compact"
                                         disabled={isTranslating || !pageText1.trim().length}
                                         type="button"

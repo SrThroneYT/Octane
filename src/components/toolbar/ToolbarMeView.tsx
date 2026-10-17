@@ -68,13 +68,13 @@ export const ToolbarMeView: FC<
                 className="navigation-item relative icon-me-quests cursor-pointer"
                 onClick={(event) => CreateLinkEvent('quests/toggle')}
             /></Hint>
-            <Hint content={localizeWithFallback('toolbar.me.dailytasks', 'Daily rewards')}><BaseButton aria-label={localizeWithFallback('toolbar.me.dailytasks', 'Daily rewards')} type="button"
+            <Hint content={localizeWithFallback('toolbar.me.dailytasks', 'Daily rewards')}><BaseButton type="button"
                 className="navigation-item relative icon-me-dailytasks cursor-pointer"
                 onClick={(event) => CreateLinkEvent('dailytasks/toggle')}
             >
                 {unseenDailyTaskCount > 0 && <LayoutItemCountView count={unseenDailyTaskCount} />}
             </BaseButton></Hint>
-            <Hint content={localizeWithFallback('toolbar.me.rewardtrack', 'Reward track')}><BaseButton aria-label={localizeWithFallback('toolbar.me.rewardtrack', 'Reward track')} type="button"
+            <Hint content={localizeWithFallback('toolbar.me.rewardtrack', 'Reward track')}><BaseButton type="button"
                 className="navigation-item relative icon-me-rewardtrack cursor-pointer"
                 onClick={(event) => CreateLinkEvent('reward_track/toggle')}
             >
@@ -94,7 +94,7 @@ export const ToolbarMeView: FC<
                 onClick={(event) => CreateLinkEvent('badge-creator/toggle')}
             /></Hint>
             <BaseButton type="button" className="navigation-item relative octane-icon icon-me-settings cursor-pointer" onClick={(event) => CreateLinkEvent('user-settings/toggle')} />
-            <Hint content={LocalizeText('toolbar.icon.label.forums')}><BaseButton aria-label={LocalizeText('toolbar.icon.label.forums')} type="button"
+            <Hint content={LocalizeText('toolbar.icon.label.forums')}><BaseButton type="button"
                 className="navigation-item relative octane-icon icon-me-forums cursor-pointer"
                 onClick={(event) => CreateLinkEvent('groupforum/toggle')}
             >

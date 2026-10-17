@@ -143,7 +143,7 @@ export const HousekeepingButton: FC<
         onClick?: () => void;
     }>
 > = ({ variant = 'primary', size = 'md', disabled = false, title, classNames = [], type = 'button', onClick, children }) => (
-    <Hint content={title}><BaseButton aria-label={title}
+    <Hint content={title}><BaseButton
         className={['hk-btn', BUTTON_TONES[variant], size === 'sm' ? 'hk-btn--sm' : '', ...classNames].filter(Boolean).join(' ')}
         disabled={disabled}
         type={type}

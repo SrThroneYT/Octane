@@ -85,7 +85,7 @@ const RewardTrackPrizeView: FC<{
     };
 
     return (
-        <Hint content={getRewardTrackPrizeTooltip(state)}><BaseButton aria-label={getRewardTrackPrizeTooltip(state)}
+        <Hint content={getRewardTrackPrizeTooltip(state)}><BaseButton
             className={`octane-reward-track-prize octane-reward-track-prize-${state}`}
             style={column ? { gridColumn: column } : undefined}
             data-premium={prize.premium}

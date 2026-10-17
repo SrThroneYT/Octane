@@ -208,7 +208,7 @@ export const InterfaceColorTabView: FC<{}> = () => {
 
             {/* Action buttons */}
             <Flex gap={1} className="w-full mt-2">
-                <Hint content={LocalizeText('interface.settings.color.reset')}><BaseButton aria-label={LocalizeText('interface.settings.color.reset')}
+                <Hint content={LocalizeText('interface.settings.color.reset')}><BaseButton
                     className="flex-1 flex items-center justify-center gap-1 py-2 rounded cursor-pointer text-white text-xs"
                     style={{ backgroundColor: '#5f9ea0' }}
                     onClick={onReset}
@@ -216,7 +216,7 @@ export const InterfaceColorTabView: FC<{}> = () => {
                     <FaUndo size={12} />
                     {LocalizeText('interface.settings.color.reset')}
                 </BaseButton></Hint>
-                <Hint content={LocalizeText('interface.settings.color.remove')}><BaseButton aria-label={LocalizeText('interface.settings.color.remove')}
+                <Hint content={LocalizeText('interface.settings.color.remove')}><BaseButton
                     className="flex-1 flex items-center justify-center gap-1 py-2 rounded cursor-pointer text-white text-xs"
                     style={{ backgroundColor: '#c0392b' }}
                     onClick={onDelete}
@@ -224,7 +224,7 @@ export const InterfaceColorTabView: FC<{}> = () => {
                     <FaTrash size={12} />
                     {LocalizeText('interface.settings.color.remove')}
                 </BaseButton></Hint>
-                <Hint content={LocalizeText('interface.settings.color.export')}><BaseButton aria-label={LocalizeText('interface.settings.color.export')}
+                <Hint content={LocalizeText('interface.settings.color.export')}><BaseButton
                     className="flex-1 flex items-center justify-center gap-1 py-2 rounded cursor-pointer text-white text-xs"
                     style={{ backgroundColor: '#2980b9' }}
                     onClick={onExport}
@@ -232,7 +232,7 @@ export const InterfaceColorTabView: FC<{}> = () => {
                     <FaDownload size={12} />
                     {copyFeedback ? LocalizeText('interface.settings.color.copied') : LocalizeText('interface.settings.color.export')}
                 </BaseButton></Hint>
-                <Hint content={LocalizeText('interface.settings.color.import')}><BaseButton aria-label={LocalizeText('interface.settings.color.import')}
+                <Hint content={LocalizeText('interface.settings.color.import')}><BaseButton
                     className="flex-1 flex items-center justify-center gap-1 py-2 rounded cursor-pointer text-white text-xs"
                     style={{ backgroundColor: '#27ae60' }}
                     onClick={() => setShowImport(!showImport)}

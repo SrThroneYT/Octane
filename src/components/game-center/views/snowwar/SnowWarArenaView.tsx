@@ -1859,8 +1859,7 @@ export const SnowWarArenaView: FC = () =>
                     {furniMatches.length > 0 && (
                         <div className="snowwar-editor__palette snowwar-editor__palette--furni">
                             {furniMatches.map(furni => (
-                                <Hint content={furni.className}><BaseButton aria-label={furni.className}
-                                    key={furni.id}
+                                <Hint key={furni.id} content={furni.className}><BaseButton
                                     type="button"
                                     className={'snowwar-editor__chip' + (paletteSel === furni.className ? ' snowwar-editor__chip--active' : '')}
                                     onClick={() => { setPaletteSel(prev => prev === furni.className ? null : furni.className); setSelectedIndex(-1); setHoverTile(null); }}

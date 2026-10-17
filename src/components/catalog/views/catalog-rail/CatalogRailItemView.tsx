@@ -14,7 +14,7 @@ export const CatalogRailItemView: FC<CatalogRailItemViewProps> = (props) => {
     const { node, isActive, onClick } = props;
 
     return (
-        <Hint content={node.localization}><BaseButton aria-label={node.localization}
+        <Hint content={node.localization}><BaseButton
             aria-pressed={isActive}
             type="button"
             className={`flex w-full items-center gap-2 px-1.5 py-1.5 rounded-lg cursor-pointer transition-all duration-150 shrink-0 ${isActive ? 'bg-white shadow-catalog-card ring-1 ring-catalog-accent/30' : 'hover:bg-white/60'}`}

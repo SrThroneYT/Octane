@@ -1597,11 +1597,7 @@ const RegisterDialog: FC<RegisterDialogProps> = (props) => {
                                 hotLooks.length
                                     ? t('nitro.login.register.hotlooks.count', '%count% looks available', ['count'], [String(hotLooks.length)])
                                     : t('nitro.login.register.hotlooks.none', 'No hot looks loaded')
-                            }><BaseButton aria-label={
-                                hotLooks.length
-                                    ? t('nitro.login.register.hotlooks.count', '%count% looks available', ['count'], [String(hotLooks.length)])
-                                    : t('nitro.login.register.hotlooks.none', 'No hot looks loaded')
-                            }
+                            }><BaseButton
                             type="button"
                             className="ok-button hot-looks-button"
                             onClick={cycleHotLook}
@@ -1610,7 +1606,7 @@ const RegisterDialog: FC<RegisterDialogProps> = (props) => {
                             {t('nitro.login.register.hotlooks', 'Hot Looks')}
                             {hotLookIndex >= 0 && hotLooks.length ? ` (${hotLookIndex + 1}/${hotLooks.length})` : ''}
                         </BaseButton></Hint>
-                        <Hint content={t('nitro.login.register.randomlook.title', 'Generate a random look')}><BaseButton aria-label={t('nitro.login.register.randomlook.title', 'Generate a random look')}
+                        <Hint content={t('nitro.login.register.randomlook.title', 'Generate a random look')}><BaseButton
                             type="button"
                             className="ok-button back-button hot-looks-button random-look-button"
                             onClick={randomizeLook}

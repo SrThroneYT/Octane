@@ -77,8 +77,7 @@ export const AvatarEditorEffectsView: FC<{
                                 const iconUrl = getAvatarEffectIconUrl(effect.type);
 
                                 return (
-                                    <Hint content={localizeWithFallback(`fx_${effect.type}`, `fx_${effect.type}`)}><BaseButton aria-label={localizeWithFallback(`fx_${effect.type}`, `fx_${effect.type}`)}
-                                        key={effect.type}
+                                    <Hint key={effect.type} content={localizeWithFallback(`fx_${effect.type}`, `fx_${effect.type}`)}><BaseButton
                                         type="button"
                                         className={`avatar-parts octane-avatar-editor-effect-item${effect.type === selectedType ? ' part-selected' : ''}`}
                                         onClick={() => onSelect(effect.type)}

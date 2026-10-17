@@ -295,8 +295,7 @@ export const RoomToolsWidgetView: FC<{}> = (props) => {
                         </BaseButton></Hint>
                     </div>
                     {tools.map((tool) => (
-                        <Hint content={tool.label}><BaseButton aria-label={tool.label} type="button"
-                            key={tool.action}
+                        <Hint key={tool.action} content={tool.label}><BaseButton aria-label={tool.label} type="button"
                             className={classNames('room-tool-row', tool.disabled && 'is-disabled')}
                             aria-disabled={tool.disabled || undefined}
                             onClick={() => !tool.disabled && handleToolClick(tool.action)}
@@ -306,8 +305,7 @@ export const RoomToolsWidgetView: FC<{}> = (props) => {
                         </BaseButton></Hint>
                     ))}
                     {plugins.map((plugin) => (
-                        <Hint content={plugin.label}><BaseButton aria-label={plugin.label} type="button"
-                            key={plugin.name}
+                        <Hint key={plugin.name} content={plugin.label}><BaseButton aria-label={plugin.label} type="button"
                             className="room-tool-row"
                             onClick={() => plugin.onOpen()}
                         >

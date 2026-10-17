@@ -493,7 +493,7 @@ const CopyValue: FC<{ value: string | number; compact?: boolean }> = ({ value, c
     }, [copied]);
 
     return (
-        <Hint content="Click to copy"><BaseButton aria-label="Click to copy"
+        <Hint content="Click to copy"><BaseButton
             type="button"
             onClick={copy}
             className={`group relative cursor-pointer w-full text-left font-mono rounded-lg border transition ${compact ? 'px-1.5 py-0.5 text-[10px]' : 'px-3 py-1.5 text-sm'} ${copied ? 'border-primary/50 bg-primary/5 text-primary' : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300 hover:bg-slate-100'}`}
@@ -869,8 +869,7 @@ export const FurniEditorEditView: FC<FurniEditorEditViewProps> = (props) => {
 
     const chipClass = 'mt-1 inline-flex items-center gap-1 text-[10px] font-medium rounded-md px-2 py-0.5 transition';
     const suggestionChip = (s: Suggestion) => (
-        <Hint content={s.reason}><BaseButton
-            key={`${s.field}:${String(s.value)}`}
+        <Hint key={`${s.field}:${String(s.value)}`} content={s.reason}><BaseButton
             type="button"
             onClick={() => applySuggestion(s)}
             aria-label={`Apply ${FIELD_LABELS[s.field]} ${formatValue(s.value)}`}
@@ -895,8 +894,7 @@ export const FurniEditorEditView: FC<FurniEditorEditViewProps> = (props) => {
     const permissionChips = permissionSuggestions.length > 0 && (
         <div className="flex flex-wrap items-center gap-0.5">
             {permissionSuggestions.map((s) => (
-                <Hint content={s.reason}><BaseButton
-                    key={s.field}
+                <Hint key={s.field} content={s.reason}><BaseButton
                     type="button"
                     onClick={() => applySuggestion(s)}
                     aria-label={`Apply ${FIELD_LABELS[s.field]} ${formatValue(s.value)}`}
@@ -1173,7 +1171,7 @@ export const FurniEditorEditView: FC<FurniEditorEditViewProps> = (props) => {
                                                 <Button variant="secondary" disabled={loading} onClick={() => onRevertFurnidata(item.id)}>
                                                     Revert
                                                 </Button>
-                                                <Hint content="Fetch the official name &amp; description from Habbo"><BaseButton aria-label="Fetch the official name &amp; description from Habbo"
+                                                <Hint content="Fetch the official name &amp; description from Habbo"><BaseButton
                                                     type="button"
                                                     disabled={loading}
                                                     onClick={() => onImportText(item.id)}
@@ -1448,8 +1446,7 @@ export const FurniEditorEditView: FC<FurniEditorEditViewProps> = (props) => {
                                             {group.keys.map((key) => {
                                                 const on = form[key] === true;
                                                 return (
-                                                    <Hint content={on ? 'Enabled — click to disable' : 'Disabled — click to enable'}><ToggleButton aria-label={on ? 'Enabled — click to disable' : 'Disabled — click to enable'}
-                                                        key={key}
+                                                    <Hint key={key} content={on ? 'Enabled — click to disable' : 'Disabled — click to enable'}><ToggleButton
                                                         type="button"
                                                         pressed={on}
                                                         onClick={() => setField(key, !on)}
@@ -1486,7 +1483,7 @@ export const FurniEditorEditView: FC<FurniEditorEditViewProps> = (props) => {
                                         onChange={(value) => setField('interactionType', value)}
                                     />
                                     {suggestedType && (
-                                        <Hint content={suggestedType.reason}><BaseButton aria-label={suggestedType.reason}
+                                        <Hint content={suggestedType.reason}><BaseButton
                                             type="button"
                                             onClick={() => setField('interactionType', suggestedType.type)}
                                             className="mt-1 inline-flex items-center gap-1 text-[10px] font-medium text-primary bg-primary/10 border border-primary/20 rounded-md px-2 py-0.5 hover:bg-primary/15 transition"

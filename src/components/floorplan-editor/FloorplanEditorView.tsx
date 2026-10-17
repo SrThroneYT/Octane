@@ -332,7 +332,7 @@ export const FloorplanEditorView: FC<Props> = ({ externalSession }) => {
                                         </Hint>
                                         <span className="fp-panel-title">{LocalizeText('floor.editor.wall.height')}</span>
                                         <div className="fp-view-switch" data-testid="floorplan-view-switch" role="group" aria-label={localizeOr('floor.plan.editor.preview.mode', 'Preview')}>
-                                            <Hint content={localizeOr('floor.plan.editor.preview.2d.title', 'Flat preview (light, works on every device)')}><BaseButton aria-label={localizeOr('floor.plan.editor.preview.2d.title', 'Flat preview (light, works on every device)')}
+                                            <Hint content={localizeOr('floor.plan.editor.preview.2d.title', 'Flat preview (light, works on every device)')}><BaseButton
                                                 type="button"
                                                 data-testid="floorplan-view-2d"
                                                 data-active={preview3d ? 'false' : 'true'}
@@ -341,7 +341,7 @@ export const FloorplanEditorView: FC<Props> = ({ externalSession }) => {
                                             >
                                                 2D
                                             </BaseButton></Hint>
-                                            <Hint content={localizeOr('floor.plan.editor.preview.3d.title', '3D preview (WebGL, editable, heavier)')}><BaseButton aria-label={localizeOr('floor.plan.editor.preview.3d.title', '3D preview (WebGL, editable, heavier)')}
+                                            <Hint content={localizeOr('floor.plan.editor.preview.3d.title', '3D preview (WebGL, editable, heavier)')}><BaseButton
                                                 type="button"
                                                 data-testid="floorplan-view-3d"
                                                 data-active={preview3d ? 'true' : 'false'}

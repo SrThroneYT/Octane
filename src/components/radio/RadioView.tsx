@@ -87,7 +87,7 @@ export const RadioView: FC<{}> = () => {
                 <Collapsible.Panel>
                     <Collapsible.Root open={open} onOpenChange={setOpen} className="contents">
                         <div className="flex items-center gap-2.5 px-3 py-2.5">
-                            <Hint content={selectedPlaying ? LocalizeText('radio.stop') : LocalizeText('radio.title')}><BaseButton aria-label={selectedPlaying ? LocalizeText('radio.stop') : LocalizeText('radio.title')}
+                            <Hint content={selectedPlaying ? LocalizeText('radio.stop') : LocalizeText('radio.title')}><BaseButton
                                 type="button"
                                 onClick={onPlayToggle}
                                 disabled={!selected}

@@ -22,7 +22,7 @@ export const FurniChestGridItem: FC<{
     const isRarity = group.specialType === 19;
 
     return (
-        <Hint content={title}><BaseButton aria-label={title} type="button"
+        <Hint content={title}><BaseButton type="button"
             className="octane-chest__grid-cell"
             onClick={onSelect}
             onMouseEnter={() => setHovered(true)}

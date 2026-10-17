@@ -131,8 +131,7 @@ export const FriendsMessengerHabbiconPickerView: FC<{
                             <div className="messenger-habbicon-grid">
                                 {padHabbiconRow(section.entries).map((entry, index) =>
                                     entry ? (
-                                        <Hint content={localizeHabbiconName(entry)}><BaseButton aria-label={localizeHabbiconName(entry)}
-                                            key={entry.id}
+                                        <Hint key={entry.id} content={localizeHabbiconName(entry)}><BaseButton
                                             type="button"
                                             onClick={(event) => choose(entry.id, event.shiftKey)}
                                         >

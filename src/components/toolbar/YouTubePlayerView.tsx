@@ -356,7 +356,7 @@ export const YouTubePlayerView: FC<{}> = () => {
                                 placeholder="YouTube URL / video ID"
                             />
                             {isMyRoom && youtubeEnabled && videoId && (
-                                <Hint content="Speel deze video voor iedereen in de kamer"><BaseButton aria-label="Speel deze video voor iedereen in de kamer"
+                                <Hint content="Speel deze video voor iedereen in de kamer"><BaseButton
                                     onClick={() => {
                                         try {
                                             SendMessageComposer(new YouTubeRoomPlayComposer(videoId, playlist));

@@ -327,7 +327,7 @@ export const InfoStandWidgetUserView: FC<InfoStandWidgetUserViewProps> = (props)
                     <>
                         <div className="octane-infostand__rule" />
                         {isOwnUser ? (
-                            <Hint content={localizeWithFallback('achievements.title', 'Achievements')}><BaseButton aria-label={localizeWithFallback('achievements.title', 'Achievements')}
+                            <Hint content={localizeWithFallback('achievements.title', 'Achievements')}><BaseButton
                                 type="button"
                                 className="octane-infostand__score octane-infostand__score-link"
                                 onClick={() => CreateLinkEvent('achievements/show')}

@@ -65,7 +65,7 @@ export const HousekeepingRoomCard: FC<{ room: IHousekeepingRoom; onClear: () => 
                     </div>
                     <div className="mt-0.5 line-clamp-2 text-xs text-zinc-600">{room.description || LocalizeText('housekeeping.room.no_description')}</div>
                 </div>
-                <Hint content={LocalizeText('housekeeping.room.go.title')}><BaseButton aria-label={LocalizeText('housekeeping.room.go.title')}
+                <Hint content={LocalizeText('housekeeping.room.go.title')}><BaseButton
                     className="shrink-0 rounded border border-sky-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-sky-700 hover:bg-sky-50"
                     onClick={() => CreateLinkEvent(`navigator/goto/${room.id}`)}
                 >

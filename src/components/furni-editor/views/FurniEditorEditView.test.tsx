@@ -457,7 +457,7 @@ describe('FurniEditorEditView', () => {
         expect(screen.getByRole('button', { name: 'Save (1)' })).toBeEnabled();
     });
 
-    it('lists duplicates and line siblings from the probe, and offers the line majority under the field', () => {
+    it('lists duplicates and line siblings from the probe, and offers the line majority under the field', async () => {
         const row = (id: number, itemName: string, spriteId: number, width = 1): FurniItem => ({
             id,
             spriteId,
@@ -488,7 +488,8 @@ describe('FurniEditorEditView', () => {
         expect(screen.getByText('2 duplicates')).toBeInTheDocument();
         expect(within(screen.getByTestId('furni-editor-duplicates')).getAllByRole('button')).toHaveLength(2);
         expect(within(screen.getByTestId('furni-editor-siblings')).getAllByRole('button')).toHaveLength(2);
-        expect(screen.getByRole('button', { name: 'Apply Width 2' })).toHaveAttribute('title', '2 of 2 in the line');
+        fireEvent.mouseEnter(screen.getByRole('button', { name: 'Apply Width 2' }));
+        expect(await screen.findByRole('tooltip')).toHaveTextContent('2 of 2 in the line');
     });
 
     it('writes the DB structural values into the furnidata entry after confirmation', () => {

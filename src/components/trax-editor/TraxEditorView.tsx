@@ -36,7 +36,7 @@ interface MachineButtonProps {
 }
 
 const MachineButton: FC<MachineButtonProps> = ({ title = undefined, disabled = false, accent = undefined, onClick, children = null }) => (
-    <Hint content={title}><BaseButton aria-label={title}
+    <Hint content={title}><BaseButton
         disabled={disabled}
         onClick={onClick}
         className="flex h-9 w-10 shrink-0 items-center justify-center rounded-[5px] border font-bold"
@@ -567,8 +567,7 @@ export const TraxEditorView: FC<{}> = () =>
                                     </MachineButton>
                                     <div className="grid min-w-0 flex-1 grid-cols-4 gap-1">
                                         {rackCartridges.map((set) => (
-                                            <Hint content={`${set.title} — ${set.artist}`}><BaseButton aria-label={`${set.title} — ${set.artist}`}
-                                                key={set.cd}
+                                            <Hint key={set.cd} content={`${set.title} — ${set.artist}`}><BaseButton
                                                 onClick={() => loadCartridge(set.cd)}
                                                 className={`flex h-8 cursor-pointer items-center gap-1 rounded-[3px] border px-1 ${slotSets[activeSlot] === set.cd ? 'border-white' : 'border-black/50'}`}
                                                 style={{
@@ -626,8 +625,7 @@ export const TraxEditorView: FC<{}> = () =>
                                                 </Flex>
                                                 <div className="grid grid-cols-9 gap-0.5">
                                                     {(set?.sampleLengths ?? []).map((length, index) => (
-                                                        <Hint content={`#${index + 1} — ${length * 2}s`}><BaseButton aria-label={`#${index + 1} — ${length * 2}s`}
-                                                            key={index}
+                                                        <Hint key={index} content={`#${index + 1} — ${length * 2}s`}><BaseButton
                                                             onClick={(event) =>
                                                             {
                                                                 event.stopPropagation();

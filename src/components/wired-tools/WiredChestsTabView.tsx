@@ -408,10 +408,7 @@ const WiredChestTransactionsWindow: FC<WiredChestTransactionsWindowProps> = (pro
                                                 <Hint content={localizeWithFallback(
                                                         'wiredmenu.chests.room_logs.only_this_chest',
                                                         'Only this chest',
-                                                    )}><BaseButton aria-label={localizeWithFallback(
-                                                        'wiredmenu.chests.room_logs.only_this_chest',
-                                                        'Only this chest',
-                                                    )}
+                                                    )}><BaseButton
                                                     type="button"
                                                     className="underline decoration-dotted"
                                                     onClick={() => onFilterChest(row.chestId)}

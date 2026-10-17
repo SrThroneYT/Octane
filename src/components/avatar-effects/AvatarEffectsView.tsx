@@ -236,7 +236,7 @@ export const AvatarEffectsView: FC<{}> = () => {
                             </label>
                         )}
                         {selectedId > 0 && (
-                            <Hint content="Jump to selected effect"><BaseButton aria-label="Jump to selected effect"
+                            <Hint content="Jump to selected effect"><BaseButton
                                 type="button"
                                 onClick={jumpToSelected}
                                 className="text-[#3a78c4] hover:text-[#2a5d9e] hover:underline normal-case font-semibold cursor-pointer"
@@ -262,7 +262,7 @@ export const AvatarEffectsView: FC<{}> = () => {
                                     const isActive = id === activeEffectType;
                                     return (
                                         <li key={effect.id}>
-                                            <Hint content={effect.lib}><BaseButton aria-label={effect.lib}
+                                            <Hint content={effect.lib}><BaseButton
                                                 ref={isSelected ? selectedRowRef : undefined}
                                                 type="button"
                                                 onClick={() => setSelectedId(id)}

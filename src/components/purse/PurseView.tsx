@@ -144,7 +144,7 @@ export const PurseView: FC<{}> = (props) => {
                     </div>
                     <div className="octane-purse__col octane-purse__col--primary subscription-container">
                         {!hcDisabled && (
-                            <Hint content={clubLabel}><BaseButton aria-label={clubLabel}
+                            <Hint content={clubLabel}><BaseButton
                                 type="button"
                                 className="octane-purse__btn octane-purse__btn--join octane-purse-subscription club-text"
                                 onClick={openClub}
@@ -153,7 +153,7 @@ export const PurseView: FC<{}> = (props) => {
                                 <span>{clubLabel}</span>
                             </BaseButton></Hint>
                         )}
-                        <Hint content={earningsLabel}><BaseButton aria-label={earningsLabel}
+                        <Hint content={earningsLabel}><BaseButton
                             type="button"
                             className="octane-purse__btn octane-purse__btn--earnings octane-purse-subscription club-text"
                             onClick={openEarnings}
@@ -164,7 +164,7 @@ export const PurseView: FC<{}> = (props) => {
                     </div>
                     <div className="octane-purse__divider" aria-hidden="true" />
                     <div className="octane-purse__col octane-purse__col--actions">
-                        <Hint content={helpLabel}><BaseButton aria-label={helpLabel}
+                        <Hint content={helpLabel}><BaseButton
                             type="button"
                             className="octane-purse__btn octane-purse__btn--help octane-purse-right-button help"
                             onClick={(event) => {
