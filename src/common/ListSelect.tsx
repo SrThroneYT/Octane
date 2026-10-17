@@ -17,6 +17,10 @@ export interface ListSelectProps {
     triggerClassName?: string;
     /** Class for the popup surface (the skinned list). */
     popupClassName?: string;
+    /** Inline style for the popup surface (merged with the zoom scale). */
+    popupStyle?: CSSProperties;
+    /** Rendered inside the popup before the options (a drawn frame behind the list). */
+    popupDecoration?: ReactNode;
     /** Class added to every option. */
     itemClassName?: string;
     /** Class for the positioner wrapper. */
@@ -48,6 +52,8 @@ export const ListSelect: FC<ListSelectProps> = (props) => {
         disabled,
         triggerClassName,
         popupClassName,
+        popupStyle: popupStyleProp,
+        popupDecoration,
         itemClassName,
         positionerClassName,
         renderTrigger,
@@ -70,10 +76,11 @@ export const ListSelect: FC<ListSelectProps> = (props) => {
         onOpenChange?.(open);
     };
 
-    const popupStyle: CSSProperties | undefined =
+    const scaledStyle: CSSProperties | undefined =
         scaleWithTrigger && scale !== 1
             ? { transform: `scale(${scale})`, transformOrigin: 'top left', maxHeight: (window.innerHeight - 30) / scale }
             : undefined;
+    const popupStyle: CSSProperties | undefined = popupStyleProp || scaledStyle ? { ...popupStyleProp, ...scaledStyle } : undefined;
 
     return (
         <BaseSelect.Root
@@ -90,6 +97,7 @@ export const ListSelect: FC<ListSelectProps> = (props) => {
             <BaseSelect.Portal container={container}>
                 <BaseSelect.Positioner align={align} alignItemWithTrigger={false} className={positionerClassName} side={side} sideOffset={sideOffset}>
                     <BaseSelect.Popup className={popupClassName} style={popupStyle}>
+                        {popupDecoration}
                         <BaseSelect.List>
                             {options.map((option) => (
                                 <BaseSelect.Item

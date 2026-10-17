@@ -91,7 +91,6 @@ export const IssueHandlerView: FC<IssueHandlerProps> = ({
     // the last list height (>= 1) a resize left the messages list with: its first row stays where that height put it
     const [messagesLatch, setMessagesLatch] = useState<number>(null);
     const [chosenTopic, setChosenTopic] = useState(-1);
-    const [menuOpen, setMenuOpen] = useState(false);
     const [messageOffset, setMessageOffset] = useState(0);
     const issues = bundle ? [...bundle.issues.values()] : [];
     const primary = bundle?.primary ?? null;
@@ -339,7 +338,7 @@ export const IssueHandlerView: FC<IssueHandlerProps> = ({
                     caption={topicIndex >= 0 ? topicNames[topicIndex] : nativeCaption(findNativeNode(root, 'cfh_topics'))}
                     height={menu.height}
                     items={topicNames}
-                    open={menuOpen && categoryId !== CATEGORY_NO_TOPIC}
+                    disabled={categoryId === CATEGORY_NO_TOPIC}
                     selectedIndex={topicIndex}
                     width={menu.width}
                     x={menu.x}
@@ -347,9 +346,7 @@ export const IssueHandlerView: FC<IssueHandlerProps> = ({
                     onSelect={(index) => {
                         // the classic client asks for the default sanction of the topic here (My(issueId, -1, topic)); that lookup is held, so only the choice is kept
                         setChosenTopic(index);
-                        setMenuOpen(false);
                     }}
-                    onToggle={() => categoryId !== CATEGORY_NO_TOPIC && setMenuOpen((value) => !value)}
                 />
             </Native0Frame>
         </NativeWindowShell>
