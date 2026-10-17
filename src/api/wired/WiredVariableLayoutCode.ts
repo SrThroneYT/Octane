@@ -12,4 +12,5 @@ export class WiredVariableLayoutCode
     public static QUEST_CHAIN_VARIABLE: number = 6;
     public static ECHO_VARIABLE: number = 7;
     public static DAILY_TASK_VARIABLE: number = 8;
+    public static POINTER_VARIABLE: number = 9;
 }

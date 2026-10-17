@@ -278,12 +278,16 @@ export const WiredSourcesSelector: FC<WiredSourcesSelectorProps> = (props) => {
         [trigger, userSlot, viewUserSources, userSource]
     );
     const availableUserSources = useAvailableUserSources(trigger, userSources, usersTitle, allowClickedUserSource);
-    const orderedFurniSources = useMemo(() => sortWiredSourceOptions(furniSources, 'furni'), [furniSources]);
+    // A slot the server lists keeps the server's order (the official arrows walk InputSourcesConf as received); only the
+    // views' own fallback lists are sorted.
+    const hasServerFurni = !!trigger?.inputSourcesConf?.furniAllowed?.[furniSlot]?.length;
+    const hasServerUsers = !!trigger?.inputSourcesConf?.userAllowed?.[userSlot]?.length;
+    const orderedFurniSources = useMemo(() => (hasServerFurni ? furniSources : sortWiredSourceOptions(furniSources, 'furni')), [furniSources, hasServerFurni]);
     const orderedUserSources = useMemo(() => {
-        if (usersTitle === BOT_SOURCE_TITLE) return [...availableUserSources];
+        if (hasServerUsers || usersTitle === BOT_SOURCE_TITLE) return [...availableUserSources];
 
         return sortWiredSourceOptions(availableUserSources, 'users');
-    }, [availableUserSources, usersTitle]);
+    }, [availableUserSources, hasServerUsers, usersTitle]);
 
     useEffect(() => {
         if (!showUsers || !onChangeUsers) return;

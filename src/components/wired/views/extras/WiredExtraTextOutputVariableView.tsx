@@ -320,6 +320,7 @@ export const WiredExtraTextOutputVariableView: FC<{}> = () => {
             save={save}
             validate={validate}
             cardStyle={{ width: 400 }}
+            footerCollapsible={false}
             footer={footer}
         >
             <div className="flex flex-col gap-2">

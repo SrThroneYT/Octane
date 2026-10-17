@@ -11,12 +11,12 @@ describe('SnowWar official arena artwork', () => {
     const css = readSource('src/css/game-center/GameCenterView.css');
     const projectiles = readSource('src/api/snowwar/SnowWarProjectileAssets.ts');
 
-    it('resolves the AIR Arctic Island backdrop and special machine layers from the configured image library', () => {
+    it('resolves the AIR arena backdrops and special machine layers from the configured image library', () => {
         expect(arena).toContain("GetConfigurationValue<string>('image.library.url'");
-        expect(arena).toContain("getOfficialSnowWarAssetUrl('snst_bg_1_a_big.png')");
+        expect(arena).toContain('getOfficialSnowWarAssetUrl(officialBackdrop.file)');
         expect(arena).toContain('s_snowball_machine_32_a_0_${snowballCount}.png');
         expect(arena).toContain('s_snowball_machine_32_b_0_${indicatorFrame}.png');
-        expect(css).toContain('.snowwar-official-arctic-backdrop');
+        expect(css).toContain('.snowwar-official-backdrop');
         expect(css).toContain('.snowwar-machine__official-body');
         expect(css).toContain('.snowwar-machine__official-indicator');
     });

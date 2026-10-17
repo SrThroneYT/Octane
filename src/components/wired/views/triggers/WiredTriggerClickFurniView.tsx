@@ -1,22 +1,15 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { WiredFurniType } from '../../../../api';
 import { useWired } from '../../../../hooks';
-import { WiredSourceOption, WiredSourcesSelector } from '../WiredSourcesSelector';
+import { WiredSourcesSelector } from '../WiredSourcesSelector';
 import { WiredTriggerBaseView } from './WiredTriggerBaseView';
-
-// Server WiredTriggerHabboClicksFurni.normalizeFurniSource keeps SELECTED(100)/SELECTOR(200) and maps
-// everything else to SOURCE_TRIGGER(0); resolveCandidateItems(0) returns the furni that fired the trigger.
-const FURNI_SOURCE_OPTIONS: WiredSourceOption[] = [
-    { value: 0, label: 'wiredfurni.params.sources.furni.0' },
-    { value: 100, label: 'wiredfurni.params.sources.furni.100' },
-    { value: 200, label: 'wiredfurni.params.sources.furni.200' }
-];
-
-const normalizeFurniSource = (value: number) => (FURNI_SOURCE_OPTIONS.some((option) => option.value === value) ? value : 100);
+import { clickTriggerFurniSources, normalizeClickTriggerFurniSource } from './clickTriggerSources';
 
 export const WiredTriggerClickFurniView: FC<{}> = () => {
     const { trigger = null, setIntParams = null, setSourceTypes = null } = useWired();
     const [furniSource, setFurniSource] = useState(100);
+    const [storedSource, setStoredSource] = useState(100);
+    const furniSources = useMemo(() => clickTriggerFurniSources(storedSource), [storedSource]);
 
     // Official: no int params; the furni source goes in the official source slot.
     const save = () => {
@@ -25,7 +18,10 @@ export const WiredTriggerClickFurniView: FC<{}> = () => {
     };
 
     useEffect(() => {
-        setFurniSource(normalizeFurniSource(trigger?.furniSourceTypes?.[0] ?? 100));
+        const stored = normalizeClickTriggerFurniSource(trigger?.furniSourceTypes?.[0] ?? trigger?.inputSourcesConf?.furniDefaults?.[0] ?? 100);
+
+        setStoredSource(stored);
+        setFurniSource(stored);
     }, [trigger]);
 
     return (
@@ -33,7 +29,7 @@ export const WiredTriggerClickFurniView: FC<{}> = () => {
             hasSpecialInput={false}
             requiresFurni={WiredFurniType.STUFF_SELECTION_OPTION_BY_ID_BY_TYPE_OR_FROM_CONTEXT}
             save={save}
-            footer={<WiredSourcesSelector showFurni={true} furniSource={furniSource} furniSources={FURNI_SOURCE_OPTIONS} onChangeFurni={setFurniSource} />}
+            footer={<WiredSourcesSelector showFurni={true} furniSource={furniSource} furniSources={furniSources} onChangeFurni={setFurniSource} />}
         />
     );
 };

@@ -2,13 +2,15 @@ import { RoomObjectType } from '@octane/renderer';
 import { FC, useMemo, useState } from 'react';
 import { ChatEntryType, IChatEntry, localizeWithFallback, LocalizeText, ReportState, ReportType } from '../../../api';
 import { AutoGrid, Button, Column, Flex, LayoutAvatarImageView, LayoutGridItem, Text } from '../../../common';
-import { useChatHistory, useHelp } from '../../../hooks';
+import { useChatHistory, useFriendsState, useHelp, useMessenger } from '../../../hooks';
 import { BaseButton } from '../../../common/BaseButton';
 
 export const SelectReportedChatsView: FC<{}> = (props) => {
     const [selectedChats, setSelectedChats] = useState<IChatEntry[]>([]);
     const { activeReport = null, setActiveReport = null } = useHelp();
     const { chatHistory = [], messengerHistory = [] } = useChatHistory();
+    const { friends = [] } = useFriendsState();
+    const { messageThreads = [] } = useMessenger();
 
     const userChats = useMemo(() => {
         switch (activeReport.reportType) {
@@ -44,8 +46,18 @@ export const SelectReportedChatsView: FC<{}> = (props) => {
         });
     };
 
-    // The user picked in the step before, shown over the list with a way to pick another.
-    const reportedUser = userChats[0] ?? null;
+    // The user picked in the step before, shown over the list with a way to pick another. An IM report names the
+    // friend or messenger participant (its chat lines carry no look).
+    const reportedUser = useMemo(() => {
+        if (activeReport.reportType !== ReportType.IM) return userChats[0] ?? null;
+
+        const reportedUserId = activeReport.reportedUserId;
+        const friend = friends.find((entry) => entry.id === reportedUserId);
+        const participant = messageThreads.find((thread) => thread.participant?.id === reportedUserId)?.participant;
+        const name = friend?.name || participant?.name || userChats[0]?.name;
+
+        return name ? { name, look: friend?.figure || participant?.figure || userChats[0]?.look || '' } : null;
+    }, [activeReport, friends, messageThreads, userChats]);
 
     const changeUser = () => {
         setActiveReport((prevValue) => {
@@ -65,7 +77,7 @@ export const SelectReportedChatsView: FC<{}> = (props) => {
                 <Text fontSize={4}>{LocalizeText('help.emergency.chat_report.subtitle')}</Text>
                 <Text>{LocalizeText('help.emergency.chat_report.description')}</Text>
             </div>
-            {reportedUser && activeReport.reportType !== ReportType.IM && (
+            {reportedUser && (
                 <div className="octane-help-selected-user">
                     <span className="octane-help-user__avatar">
                         <LayoutAvatarImageView headOnly compactHead compactHeadSize={30} compactHeadPadding={0} direction={2} figure={reportedUser.look ?? ''} />
@@ -74,9 +86,11 @@ export const SelectReportedChatsView: FC<{}> = (props) => {
                         <span>{localizeWithFallback('help.cfh.selected_user.title', 'Selected user')}</span>
                         <b>{reportedUser.name}</b>
                     </span>
-                    <BaseButton className="help-link" type="button" onClick={changeUser}>
-                        {localizeWithFallback('help.cfh.selected_user.change', 'Select another user')}
-                    </BaseButton>
+                    {activeReport.reportType !== ReportType.IM && (
+                        <BaseButton className="help-link" type="button" onClick={changeUser}>
+                            {localizeWithFallback('help.cfh.selected_user.change', 'Select another user')}
+                        </BaseButton>
+                    )}
                 </div>
             )}
             <Column gap={1} overflow="hidden">

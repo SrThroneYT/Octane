@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { PropsWithChildren } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { normalizeTimeUtilMask, normalizeTimeUtilMode, setTimeUtilSubVariableSelected } from './timeUtilitiesParams';
+import { normalizeTimeUtilMask, normalizeTimeUtilMode, setTimeUtilSubVariableSelected, timeUtilPartName, timeUtilTimestampName } from './timeUtilitiesParams';
 
 const setIntParams = vi.fn();
 const setStringParam = vi.fn();
@@ -47,6 +47,18 @@ describe('timeUtilitiesParams', () => {
         expect(normalizeTimeUtilMode(3)).toBe(0);
         expect(normalizeTimeUtilMode(-1)).toBe(0);
     });
+
+    it('names a part after the mode, as the server does', () => {
+        expect(timeUtilPartName(0, 'hour_of_day')).toBe('value.hour_of_day');
+        expect(timeUtilPartName(1, 'year')).toBe('creation_time.year');
+        expect(timeUtilPartName(2, 'milliseconds_of_seconds')).toBe('last_update_time.milliseconds_of_seconds');
+    });
+
+    it('lists the timestamp itself only in the timestamp modes', () => {
+        expect(timeUtilTimestampName(0)).toBeNull();
+        expect(timeUtilTimestampName(1)).toBe('creation_time');
+        expect(timeUtilTimestampName(2)).toBe('last_update_time');
+    });
 });
 
 describe('WiredExtraTimeUtilitiesView', () => {
@@ -64,7 +76,7 @@ describe('WiredExtraTimeUtilitiesView', () => {
         expect(screen.getByRole('radio', { name: 'Creation time' })).toBeChecked();
         expect(screen.getByRole('checkbox', { name: 'Hour of the day' })).toBeChecked();
         expect(screen.getByRole('checkbox', { name: 'Year' })).not.toBeChecked();
-        expect(screen.getByDisplayValue('hour_of_day')).toBeTruthy();
+        expect(screen.getByDisplayValue('creation_time.hour_of_day')).toBeTruthy();
         expect(screen.queryByRole('checkbox', { name: 'Days' })).toBeNull();
     });
 
@@ -80,6 +92,19 @@ describe('WiredExtraTimeUtilitiesView', () => {
 
         expect(setIntParams).toHaveBeenCalledWith([(1 << 4) | (1 << 10) | (1 << 26), 2]);
         expect(setStringParam).toHaveBeenCalledWith('');
+    });
+
+    it('shows the timestamp entry in a timestamp mode and the writable note in the value mode', () => {
+        render(<WiredExtraTimeUtilitiesView />);
+
+        expect(screen.getByDisplayValue('creation_time')).toBeTruthy();
+        expect(screen.getByText('The parts of a timestamp are read-only.')).toBeTruthy();
+
+        fireEvent.click(screen.getByRole('radio', { name: 'Variable value' }));
+
+        expect(screen.queryByDisplayValue('creation_time')).toBeNull();
+        expect(screen.getByDisplayValue('value.hour_of_day')).toBeTruthy();
+        expect(screen.getByText('Writing a part moves the variable by that part.')).toBeTruthy();
     });
 
     it('starts a new box with nothing selected', () => {

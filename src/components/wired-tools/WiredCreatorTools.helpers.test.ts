@@ -5,6 +5,7 @@ import {
     formatMonitorLatestOccurrence,
     formatMonitorSource,
     formatVariableTimestamp,
+    isStackOnlyVariable,
     normalizeMonitorReason
 } from './WiredCreatorTools.helpers';
 
@@ -119,6 +120,15 @@ describe('WiredCreatorTools helpers', () => {
             expect(normalizeMonitorReason('')).toContain('No detailed reason');
             expect(normalizeMonitorReason('   ')).toContain('No detailed reason');
             expect(normalizeMonitorReason(null)).toContain('No detailed reason');
+        });
+    });
+
+    describe('isStackOnlyVariable', () => {
+        it('is true only for a pointer, which AIR cannot highlight or manage', () => {
+            expect(isStackOnlyVariable({ requiresExecutionContext: true })).toBe(true);
+            expect(isStackOnlyVariable({ requiresExecutionContext: false })).toBe(false);
+            expect(isStackOnlyVariable({})).toBe(false);
+            expect(isStackOnlyVariable(null)).toBe(false);
         });
     });
 });

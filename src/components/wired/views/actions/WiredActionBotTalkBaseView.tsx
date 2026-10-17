@@ -84,7 +84,7 @@ export const WiredActionBotTalkBaseView: FC<WiredActionBotTalkBaseViewProps> = (
                     {toAvatar && (
                         <>
                             <hr className="m-0 bg-dark" />
-                            <WiredSourcesSelector showUsers={true} userSource={userSource} onChangeUsers={setUserSource} />
+                            <WiredSourcesSelector showUsers={true} userSlot={1} userSource={userSource} onChangeUsers={setUserSource} />
                         </>
                     )}
                 </div>

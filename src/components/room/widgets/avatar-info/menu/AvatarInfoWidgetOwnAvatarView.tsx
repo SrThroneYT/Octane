@@ -25,7 +25,7 @@ import {
     SendMessageComposer
 } from '../../../../../api';
 import { HelpNameChangeEvent } from '../../../../../events';
-import { useRoom, useWiredTools } from '../../../../../hooks';
+import { useAvatarEffects, useRoom, useWiredTools } from '../../../../../hooks';
 import { ContextMenuHeaderView } from '../../context-menu/ContextMenuHeaderView';
 import { ContextMenuListItemView } from '../../context-menu/ContextMenuListItemView';
 import { ContextMenuView } from '../../context-menu/ContextMenuView';
@@ -47,6 +47,9 @@ const MODE_NORMAL = 0;
 const MODE_CLUB_DANCES = 1;
 const MODE_EXPRESSIONS = 3;
 const MODE_SIGNS = 4;
+
+/** Official AvatarInfoWidget.isSwimming: the swim effects, not a posture. */
+const SWIM_EFFECTS = [29, 30, 185];
 
 const AIR_SIGNS: AirSign[] = [
     { id: 1, label: '1' },
@@ -77,9 +80,11 @@ export const AvatarInfoWidgetOwnAvatarView: FC<AvatarInfoWidgetOwnAvatarViewProp
     const ownPosture = GetOwnPosture();
     const ownRoomObject = GetOwnRoomObject();
     const activeEffectId = ownRoomObject?.model.getValue<number>(RoomObjectVariable.FIGURE_EFFECT) ?? 0;
-    const hasActiveEffect = activeEffectId > 0;
+    const { effects: inventoryEffects = [], activeEffectType = 0 } = useAvatarEffects();
+    // Official hasEffectOn: only an effect from the effects inventory in use counts, so riding or swimming does not.
+    const hasActiveEffect = activeEffectType > 0 && inventoryEffects.some((effect) => effect.type === activeEffectType);
     const isRidingHorse = IsRidingHorse();
-    const isSwimming = ownPosture === AvatarAction.POSTURE_SWIM;
+    const isSwimming = SWIM_EFFECTS.includes(activeEffectId);
     const [mode, setMode] = useState(isDancing && hasClub && !hasActiveEffect ? MODE_CLUB_DANCES : MODE_NORMAL);
     const { roomSession = null } = useRoom();
     const { openInspectionForUser, showInspectButton } = useWiredTools();
@@ -147,12 +152,12 @@ export const AvatarInfoWidgetOwnAvatarView: FC<AvatarInfoWidgetOwnAvatarViewProp
                         roomSession.sendExpressionMessage(AvatarExpressionEnum.BLOW.ordinal);
                         break;
                     case 'expression_67':
-                        roomSession.sendExpressionMessage(67);
+                        roomSession.sendExpressionMessage(AvatarExpressionEnum.EXPRESSION_67.ordinal);
                         break;
                     case 'dance_sixseven':
                         // A running dance would override the six-seven animation.
                         if (isDancing) roomSession.sendDanceMessage(0);
-                        roomSession.sendExpressionMessage(67);
+                        roomSession.sendExpressionMessage(AvatarExpressionEnum.EXPRESSION_67.ordinal);
                         break;
                     case 'laugh':
                         roomSession.sendExpressionMessage(AvatarExpressionEnum.LAUGH.ordinal);

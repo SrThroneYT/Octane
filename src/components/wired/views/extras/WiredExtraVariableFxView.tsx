@@ -33,7 +33,7 @@ import { Text } from '../../../../common';
 import { useWired, useWiredTools } from '../../../../hooks';
 import { OctaneInput } from '../../../../layout';
 import { WiredVariablePicker } from '../WiredVariablePicker';
-import { buildWiredVariablePickerEntries, IWiredVariablePickerEntry, WiredVariablePickerTarget } from '../WiredVariablePickerData';
+import { buildWiredVariablePickerEntries, IWiredVariablePickerEntry, WiredVariablePickerTarget, withoutExecutionContextVariables } from '../WiredVariablePickerData';
 import { WiredExtraBaseView } from './WiredExtraBaseView';
 import { Checkbox } from '../../../../common/Checkbox';
 import { Select } from '../../../../common/Select';
@@ -101,7 +101,11 @@ const toInt = (raw: string, fallback: number) => {
 export const WiredExtraVariableFxView: FC<WiredExtraVariableFxViewProps> = (props) => {
     const { category } = props;
     const { trigger = null, setIntParams = null, setStringParam = null } = useWired();
-    const { userVariableDefinitions = [], furniVariableDefinitions = [], roomVariableDefinitions = [] } = useWiredTools();
+    const tools = useWiredTools();
+    // AIR's override and audience pickers leave pointers out: an fx is drawn without a running stack.
+    const userVariableDefinitions = useMemo(() => withoutExecutionContextVariables(tools.userVariableDefinitions), [tools.userVariableDefinitions]);
+    const furniVariableDefinitions = useMemo(() => withoutExecutionContextVariables(tools.furniVariableDefinitions), [tools.furniVariableDefinitions]);
+    const roomVariableDefinitions = useMemo(() => withoutExecutionContextVariables(tools.roomVariableDefinitions), [tools.roomVariableDefinitions]);
     const [params, setParams] = useState<IWiredVariableFxParams>(() => readWiredVariableFxParams([], category));
     const [tokens, setTokens] = useState<IWiredVariableFxTokens>(() => readWiredVariableFxTokens(''));
     const [rangeError, setRangeError] = useState(false);

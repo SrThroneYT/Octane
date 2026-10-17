@@ -18,6 +18,8 @@ export class AvatarInfoFurni implements IAvatarInfo {
     public purchaseOfferId: number = -1;
     public extraParam: string = '';
     public isOwner: boolean = false;
+    /** A temporary (Wired) copy, recognised by its id band. */
+    public isTemporary: boolean = false;
     public stuffData: IObjectData = null;
     public groupId: number = 0;
     public ownerId: number = 0;

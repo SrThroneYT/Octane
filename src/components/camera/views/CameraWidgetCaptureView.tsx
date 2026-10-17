@@ -1,6 +1,6 @@
 import { CreateLinkEvent, GetRenderer, GetRoomEngine, OctaneTexture, TextureUtils } from '@octane/renderer';
 import { FC, useEffect, useRef } from 'react';
-import { blitRoomCanvasToViewfinder, CameraPicture, CaptureCameraRenderMessage, GetCameraRenderMode, GetRoomSession, getViewfinderRoomFrame, LocalizeText, PlaySound, SoundNames } from '../../../api';
+import { blitRoomCanvasToViewfinder, CameraPicture, CaptureCameraRenderMessage, GetCameraRenderMode, GetRoomSession, getViewfinderRoomFrame, LocalizeText, NotificationAlertType, PlaySound, SoundNames } from '../../../api';
 import { Column, DraggableWindow } from '../../../common';
 import { useCamera, useNotification, useRoom } from '../../../hooks';
 import { getNextEmptyCameraSlot, willFillLastCameraSlot } from '../CameraAirUtilities';
@@ -142,7 +142,7 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
 
         if (pendingShouldShowFullAlertRef.current && !hasShownFullRollAlert) {
             hasShownFullRollAlert = true;
-            simpleAlert(LocalizeText('camera.full.body'), null, null, null, LocalizeText('camera.full.header'));
+            simpleAlert(LocalizeText('camera.full.body'), NotificationAlertType.WINDOW, null, null, LocalizeText('camera.full.header'));
         }
 
         pendingShouldShowFullAlertRef.current = false;
@@ -159,7 +159,7 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
         const frame = getViewfinderRoomFrame(elementRef.current, 320, 320);
 
         if (!frame) {
-            simpleAlert(LocalizeText('camera.error.creation'), null, null, null, LocalizeText('generic.alert.title'));
+            simpleAlert(LocalizeText('camera.error.creation'), NotificationAlertType.WINDOW, null, null, LocalizeText('generic.alert.title'));
             return;
         }
 
@@ -183,7 +183,7 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
                 if (!renderRoomMessage) {
                     texture.destroy?.(true);
                     texture = null;
-                    simpleAlert(LocalizeText('camera.alert.too_much_stuff'), null, null, null, LocalizeText('generic.alert.title'));
+                    simpleAlert(LocalizeText('camera.alert.too_much_stuff'), NotificationAlertType.WINDOW, null, null, LocalizeText('generic.alert.title'));
                     return;
                 }
             }
@@ -201,7 +201,7 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
                 texture = null;
 
                 if (isMountedRef.current) {
-                    simpleAlert(LocalizeText('camera.alert.too_much_stuff'), null, null, null, LocalizeText('generic.alert.title'));
+                    simpleAlert(LocalizeText('camera.alert.too_much_stuff'), NotificationAlertType.WINDOW, null, null, LocalizeText('generic.alert.title'));
                 }
 
                 return;
@@ -220,7 +220,7 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
             texture?.destroy?.(true);
 
             if (isMountedRef.current) {
-                simpleAlert(LocalizeText('camera.alert.too_much_stuff'), null, null, null, LocalizeText('generic.alert.title'));
+                simpleAlert(LocalizeText('camera.alert.too_much_stuff'), NotificationAlertType.WINDOW, null, null, LocalizeText('generic.alert.title'));
             }
         } finally {
             isTakingPictureRef.current = false;

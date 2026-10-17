@@ -88,6 +88,7 @@ export const WiredActionMoveAsGroupView: FC<{}> = () =>
             hasSpecialInput={ true }
             requiresFurni={ groupSource === SOURCE_PICKED ? WiredFurniType.STUFF_SELECTION_OPTION_BY_ID : WiredFurniType.STUFF_SELECTION_OPTION_NONE }
             save={ save }
+            footerCollapsible={false}
             footer={ <WiredSourcesSelector showFurni={ true } furniSource={ groupSource } onChangeFurni={ setGroupSource } /> }>
             <div className="flex flex-col gap-2">
                 <Text small>{ localizeWithFallback('wiredfurni.params.move_as_group.usage_info', 'The distance between the moving furniture will stay consistent.') }</Text>

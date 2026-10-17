@@ -122,6 +122,8 @@ export interface MonitorLogDetails {
 export interface InspectionVariable {
     key: string;
     value: string;
+    /** A text connector label shown after the value as "value (label)"; editing keeps the bare value. */
+    label?: string;
     editable?: boolean;
     valueClassName?: string;
 }
@@ -143,6 +145,8 @@ export interface VariableDefinition {
     isAlwaysAvailable?: boolean;
     /** The value-to-text table of a text connected custom variable, as the server sent it. */
     textConnector?: VariableTextValue[];
+    /** AIR requiresExecutionContext: a pointer, which only exists while a stack runs, so it has no holders to show. */
+    requiresExecutionContext?: boolean;
 }
 
 export interface VariableTextValue {

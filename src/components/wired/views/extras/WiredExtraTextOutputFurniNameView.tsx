@@ -85,6 +85,7 @@ export const WiredExtraTextOutputFurniNameView: FC<{}> = () => {
             requiresFurni={WiredFurniType.STUFF_SELECTION_OPTION_BY_ID_BY_TYPE_OR_FROM_CONTEXT}
             save={save}
             cardStyle={{ width: 400 }}
+            footerCollapsible={false}
             footer={<WiredSourcesSelector showFurni={true} furniSource={furniSource} onChangeFurni={(value) => setFurniSource(normalizeFurniSource(value))} />}
         >
             <div className="flex flex-col gap-2">

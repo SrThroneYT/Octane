@@ -8,8 +8,7 @@ const BODY_COLOR = 0xe9e9e1;
 
 // habbo_window_alert (frame style 3, 278 wide, content at the margins (6, 25)): the summary text field is 210 wide at (27, 14) and at least 57 high, the button row
 // (215 wide at x 26, only Ok shown, so centred) sits 10px under it, and the window is centred on the desktop.
-const AlertWindow: FC<{ id: number; title: string; message: string }> = ({ id, title, message }) => {
-    const close = useModAlertStore((state) => state.close);
+export const NativeWindowAlert: FC<{ title: string; message: string; onClose: () => void }> = ({ title, message, onClose }) => {
     const summaryRef = useRef<HTMLDivElement>(null);
     const [summaryHeight, setSummaryHeight] = useState(57);
 
@@ -34,11 +33,11 @@ const AlertWindow: FC<{ id: number; title: string; message: string }> = ({ id, t
 
     return (
         <DraggableWindow handleSelector=".native3-title" initialPosition={{ x: Math.round((window.innerWidth - width) / 2), y: Math.round((window.innerHeight - height) / 2) }}>
-            <Native3Frame height={height} title={title} width={width} onClose={() => close(id)}>
+            <Native3Frame height={height} title={title} width={width} onClose={onClose}>
                 <div ref={summaryRef} style={{ position: 'absolute', left: 27, top: 14, width: 210 }}>
                     <NativeText background={BODY_COLOR} maxWidth={210} text={message} textStyle="u_regular" />
                 </div>
-                <Native3ThickButton height={24} label="Ok" width={50} x={26 + Math.floor((215 - 50) / 2)} y={81 + (summaryHeight - 57)} onClick={() => close(id)} />
+                <Native3ThickButton height={24} label="Ok" width={50} x={26 + Math.floor((215 - 50) / 2)} y={81 + (summaryHeight - 57)} onClick={onClose} />
             </Native3Frame>
         </DraggableWindow>
     );
@@ -46,11 +45,12 @@ const AlertWindow: FC<{ id: number; title: string; message: string }> = ({ id, t
 
 export const NativeAlertView: FC<{}> = () => {
     const alerts = useModAlertStore((state) => state.alerts);
+    const close = useModAlertStore((state) => state.close);
 
     return (
         <>
             {alerts.map((alert) => (
-                <AlertWindow key={alert.id} id={alert.id} message={alert.message} title={alert.title} />
+                <NativeWindowAlert key={alert.id} message={alert.message} title={alert.title} onClose={() => close(alert.id)} />
             ))}
         </>
     );

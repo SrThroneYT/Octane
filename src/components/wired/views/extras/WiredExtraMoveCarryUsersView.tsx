@@ -43,6 +43,7 @@ export const WiredExtraMoveCarryUsersView: FC<{}> = () => {
             requiresFurni={WiredFurniType.STUFF_SELECTION_OPTION_NONE}
             save={save}
             cardStyle={{ width: 420 }}
+            footerCollapsible={false}
             footer={
                 <WiredSourcesSelector
                     showUsers={true}

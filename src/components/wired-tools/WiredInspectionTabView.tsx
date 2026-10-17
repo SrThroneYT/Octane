@@ -198,7 +198,7 @@ export const WiredInspectionTabView = (props: WiredInspectionTabViewProps) => {
                                                         />
                                                     )}
                                                     {editingVariable !== variable.key && !variable.editable && (
-                                                        <span className={variable.valueClassName}>{variable.value}</span>
+                                                        <span className={variable.valueClassName}>{variable.label ? `${variable.value} (${variable.label})` : variable.value}</span>
                                                     )}
                                                     {editingVariable !== variable.key && variable.editable && (
                                                         <BaseButton
@@ -209,7 +209,7 @@ export const WiredInspectionTabView = (props: WiredInspectionTabViewProps) => {
                                                                 onBeginVariableEdit(variable);
                                                             }}
                                                         >
-                                                            {variable.value}
+                                                            {variable.label ? `${variable.value} (${variable.label})` : variable.value}
                                                         </BaseButton>
                                                     )}
                                                 </td>

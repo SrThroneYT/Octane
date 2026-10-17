@@ -8,7 +8,6 @@ import {
     IWiredChestTransactionRow,
     RoomControllerLevel,
     WiredChestLockComposer,
-    WiredChestLockStateEvent,
     WiredChestRoomLogsComposer,
     WiredChestRoomLogsEvent,
     WiredChestTransactionDetailsComposer,
@@ -59,7 +58,6 @@ export const WiredChestsTabView: FC<{}> = () => {
     const [details, setDetails] = useState<Record<number, TransactionDetail>>({});
 
     const [lockBusy, setLockBusy] = useState(false);
-    const [lockResult, setLockResult] = useState('');
     /** Zero means the whole room. A room with a dozen chests makes a log nobody can read. */
     const [onlyChestId, setOnlyChestId] = useState(0);
 
@@ -104,30 +102,6 @@ export const WiredChestsTabView: FC<{}> = () => {
         setLoaded(true);
     });
 
-    useMessageEvent<WiredChestLockStateEvent>(WiredChestLockStateEvent, (event) => {
-        const parser = event.getParser();
-        if (!parser) return;
-
-        if (!parser.affected) {
-            setLockResult(
-                localizeWithFallback(
-                    'wiredmenu.chests.chest_control.result.none',
-                    'Nothing changed - the chests were already in that state.',
-                ),
-            );
-            return;
-        }
-
-        setLockResult(
-            localizeWithFallback(
-                parser.locked ? 'wiredmenu.chests.chest_control.result.locked' : 'wiredmenu.chests.chest_control.result.unlocked',
-                parser.locked ? '%count% chests locked.' : '%count% chests unlocked.',
-                ['count'],
-                [String(parser.affected)],
-            ),
-        );
-    });
-
     useMessageEvent<WiredChestTransactionDetailsEvent>(WiredChestTransactionDetailsEvent, (event) => {
         const parser = event.getParser();
         if (!parser) return;
@@ -139,8 +113,9 @@ export const WiredChestsTabView: FC<{}> = () => {
         (lock: boolean, all: boolean) => {
             if (lockBusy) return;
 
+            // AIR WiredMenuChestsTab.startLockTimeout: the lock gets no answer, so the buttons grey for a short
+            // time-out and every chest shows its new state through its furni data.
             setLockBusy(true);
-            setLockResult('');
             SendMessageComposer(new WiredChestLockComposer(lock, all));
             window.setTimeout(() => setLockBusy(false), LOCK_COOLDOWN_MS);
         },
@@ -334,7 +309,6 @@ export const WiredChestsTabView: FC<{}> = () => {
                             {localizeWithFallback('wiredmenu.chests.chest_control.owner_only', 'Only the room owner can lock every chest.')}
                         </div>
                     )}
-                    {!!lockResult && <div className="text-[11px] text-[#2f6b2f]">{lockResult}</div>}
                 </div>
             </div>
 

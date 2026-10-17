@@ -90,6 +90,7 @@ export const WiredActionChangeOpacityView: FC<{}> = () => {
             hasSpecialInput={true}
             requiresFurni={state.targetUsers ? WiredFurniType.STUFF_SELECTION_OPTION_NONE : WiredFurniType.STUFF_SELECTION_OPTION_BY_ID_BY_TYPE_OR_FROM_CONTEXT}
             save={save}
+            footerCollapsible={false}
             footer={
                 <div className="flex flex-col gap-2">
                     <Text bold>{localizeWithFallback('wiredfurni.params.sources.merged.title.target', 'Select target:')}</Text>

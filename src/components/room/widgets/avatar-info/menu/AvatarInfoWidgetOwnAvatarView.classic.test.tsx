@@ -32,6 +32,7 @@ vi.mock('@octane/renderer', () => ({
     AvatarAction: { POSTURE_STAND: 'std', POSTURE_SWIM: 'swim' },
     AvatarExpressionEnum: {
         BLOW: { ordinal: 2 },
+        EXPRESSION_67: { ordinal: 67 },
         IDLE: { ordinal: 3 },
         LAUGH: { ordinal: 4 },
         WAVE: { ordinal: 1 }
@@ -70,6 +71,7 @@ vi.mock('../../../../../hooks', () => ({
             sendSignMessage: mocks.sendSignMessage
         }
     }),
+    useAvatarEffects: () => ({ effects: [], activeEffectType: 0 }),
     useWiredTools: () => ({ openInspectionForUser: vi.fn(), showInspectButton: mocks.showInspectButton })
 }));
 
