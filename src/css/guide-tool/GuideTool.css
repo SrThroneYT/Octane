@@ -1,0 +1,26 @@
+/* The on / off switch of the guide tool: one 38x43 sprite, the on frame on top, the off frame 22 px below. */
+.octane-guide-tool .octane-guide-duty-switch {
+    flex: none;
+    box-sizing: border-box;
+    width: 38px;
+    height: 21px;
+    min-height: 0 !important;
+    margin: 0;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    appearance: none;
+    background: url('../../assets/images/guide-tool/duty-switch.png') no-repeat 0 0 !important;
+    box-shadow: none !important;
+    filter: none !important;
+    cursor: pointer;
+}
+
+.octane-guide-tool .octane-guide-duty-switch[aria-checked='false'] {
+    background-position: 0 -22px !important;
+}
+
+.octane-guide-tool .octane-guide-duty-switch:focus-visible {
+    outline: 1px dotted #000000;
+    outline-offset: 1px;
+}

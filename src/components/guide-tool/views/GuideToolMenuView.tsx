@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import { LocalizeText } from '../../../api';
 import { Button, Column, Flex, Text } from '../../../common';
+import { BaseButton } from '../../../common/BaseButton';
 import { Checkbox } from '../../../common/Checkbox';
 
 interface GuideToolMenuViewProps {
@@ -35,7 +36,13 @@ export const GuideToolMenuView: FC<GuideToolMenuViewProps> = (props) => {
     return (
         <div className="flex flex-col">
             <Flex alignItems="center" className="octane-card-panel p-2" gap={2}>
-                <div className={'duty-switch' + (isOnDuty ? '' : ' off')} onClick={(event) => processAction('toggle_duty')} />
+                <BaseButton
+                    aria-checked={isOnDuty}
+                    aria-label={LocalizeText('guide.help.guide.tool.yourstatus')}
+                    className="octane-guide-duty-switch"
+                    role="switch"
+                    onClick={() => processAction('toggle_duty')}
+                />
                 <Column gap={0}>
                     <Text bold>{LocalizeText('guide.help.guide.tool.yourstatus')}</Text>
                     <Text>{LocalizeText(`guide.help.guide.tool.duty.${isOnDuty ? 'on' : 'off'}`)}</Text>

@@ -57,6 +57,7 @@ import './css/game-center/GameCenterView.css';
 import './css/help/MyReports.css';
 import './css/help/HelpView.css';
 import './css/help/HelpIndex.css';
+import './css/guide-tool/GuideTool.css';
 import './css/housekeeping/HousekeepingView.css';
 
 import './css/hotelview/HotelView.css';
