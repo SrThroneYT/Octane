@@ -115,7 +115,12 @@ login/WebGL, so they're not usable for in-game verification.
   `<input type="radio" checked onChange>`), `Select` (drop-in for `<select>` + `<option>`,
   change event keeps `target.value`), `NumberInput` (drop-in for `type="number"`, event keeps
   `target.value` / `target.valueAsNumber`, role spinbutton, hover/focus up-down overlay), `Slider`, `FloatingPopover`,
-  `TabBar`, `InlineDialog` (dialog mounted inline; `modal="trap-focus"` for the catalog confirms), `CollapsibleSection`, `Tooltip`.
+  `TabBar`, `InlineDialog` (dialog mounted inline; `modal="trap-focus"` for the catalog confirms), `CollapsibleSection`, `Tooltip`,
+  `ToggleButton` (every `aria-pressed` two-state button, incl. `InfiniteGrid.Item`), `ListSelect` (Base UI Select with the
+  caller's own trigger/classes, for custom drop menus), `SuggestInput` (text input + Autocomplete list, replaces `<datalist>`),
+  `Slider` with `orientation="vertical"`. `Hint` (in `common/Tooltip.tsx`) gives an icon-only control a tooltip without a
+  wrapper element: use it instead of a `title` attribute and keep an `aria-label`. A `div role="button"` is never right:
+  use `BaseButton` / `ToggleButton` (unless the region contains its own button).
   Radios that share a `name` keep native group behaviour (arrow keys, one tab stop).
   `<button>` is `BaseButton` (Base UI Button, still a native `<button>`; it sets `type="button"` unless a
   `type` is passed, so form submit buttons need an explicit `type="submit"`). Deliberately native: text
