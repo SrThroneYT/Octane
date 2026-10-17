@@ -12,6 +12,7 @@ import './FriendsMessengerView.css';
 import { FriendsMessengerHabbiconPickerView } from './FriendsMessengerHabbiconPickerView';
 import { FriendsMessengerThreadView } from './messenger-thread/FriendsMessengerThreadView';
 import { BaseButton } from '../../../../common/BaseButton';
+import { TabBar, TabBarTab } from '../../../../common/TabBar';
 
 const MESSENGER_VISIBLE_AVATARS = 7;
 
@@ -224,7 +225,7 @@ export const FriendsMessengerView: FC<{}> = (props) => {
                         disabled={avatarStartIndex === 0}
                         onClick={() => scrollAvatars(-1)}
                     />
-                    <div className="messenger-avatar-bar">
+                    <TabBar className="messenger-avatar-bar" value={activeThread?.threadId ?? null}>
                         {displayedThreads.map((thread) => {
                             const isStaff = isStaffChatIdentity(thread.participant);
                             const liveFriend = thread.participant.id > 0 ? getFriend(thread.participant.id) : null;
@@ -234,13 +235,12 @@ export const FriendsMessengerView: FC<{}> = (props) => {
                             );
 
                             return (
-                                <BaseButton
+                                <TabBarTab
                                     key={thread.threadId}
-                                    type="button"
+                                    value={thread.threadId}
                                     data-participant-id={thread.participant.id}
                                     className={'messenger-avatar-tab' + (activeThread === thread ? ' active' : '') + (thread.unread ? ' unread' : '')}
                                     aria-label={thread.participant.name}
-                                    aria-selected={activeThread === thread}
                                     onClick={() => setActiveThreadId(thread.threadId)}
                                 >
                                     {isStaff ? (
@@ -255,10 +255,10 @@ export const FriendsMessengerView: FC<{}> = (props) => {
                                             direction={thread.participant.id < 0 ? 3 : 2}
                                         />
                                     )}
-                                </BaseButton>
+                                </TabBarTab>
                             );
                         })}
-                    </div>
+                    </TabBar>
                     <BaseButton
                         type="button"
                         className="messenger-avatar-scroll right"

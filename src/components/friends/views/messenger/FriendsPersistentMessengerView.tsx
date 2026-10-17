@@ -10,6 +10,7 @@ import { MessengerMessageStatusView } from './MessengerMessageStatusView';
 import { FriendsMessengerThreadView } from './messenger-thread/FriendsMessengerThreadView';
 import { canFollowMessengerConversation, filterMessengerConversations, resolveConversationAfterClose, restoreConversationsWithNewMessages } from './persistentMessenger.helpers';
 import { BaseButton } from '../../../../common/BaseButton';
+import { TabBar, TabBarTab } from '../../../../common/TabBar';
 
 interface PersistentMessengerApi
 {
@@ -111,16 +112,16 @@ export const FriendsPersistentMessengerView: FC<FriendsPersistentMessengerViewPr
             <OctaneCardHeaderView headerText={LocalizeText('messenger.window.title', [ 'OPEN_CHAT_COUNT' ], [ (conversations.length + (legacyStaffThread ? 1 : 0)).toString() ])} onCloseClick={onClose} />
             <OctaneCardContentView className="p-0" gap={0} overflow="hidden">
                 <div className="messenger-card-body">
-                    <div className="messenger-avatar-bar">
-                        {legacyStaffThread && <BaseButton className={`messenger-avatar-tab ${ staffActive ? 'active' : '' } ${ legacyStaffThread.unread ? 'unread' : '' }`} onClick={() => { setStaffActive(true); setMode('conversation'); }} aria-label={legacyStaffThread.participant.name} aria-selected={staffActive}><LayoutAvatarImageView figure={STAFF_CHAT_FIGURE} headOnly compactHead compactHeadSize={36} compactHeadPadding={0} direction={3} /></BaseButton>}
+                    <TabBar className="messenger-avatar-bar" value={staffActive ? 'staff' : active ? `conversation-${ active.id }` : null}>
+                        {legacyStaffThread && <TabBarTab value="staff" className={`messenger-avatar-tab ${ staffActive ? 'active' : '' } ${ legacyStaffThread.unread ? 'unread' : '' }`} onClick={() => { setStaffActive(true); setMode('conversation'); }} aria-label={legacyStaffThread.participant.name}><LayoutAvatarImageView figure={STAFF_CHAT_FIGURE} headOnly compactHead compactHeadSize={36} compactHeadPadding={0} direction={3} /></TabBarTab>}
                         {visibleConversations.slice(0, 7).map(conversation => (
-                            <BaseButton key={conversation.id} className={`messenger-avatar-tab ${ active?.id === conversation.id ? 'active' : '' } ${ conversation.unreadCount ? 'unread' : '' }`} onClick={() => selectConversation(conversation)} aria-label={conversation.name} aria-selected={active?.id === conversation.id}>
+                            <TabBarTab key={conversation.id} value={`conversation-${ conversation.id }`} className={`messenger-avatar-tab ${ active?.id === conversation.id ? 'active' : '' } ${ conversation.unreadCount ? 'unread' : '' }`} onClick={() => selectConversation(conversation)} aria-label={conversation.name}>
                                 {avatar(conversation, 36, 0)}
                                 {conversation.unreadCount > 0 && <span className="messenger-unread-badge">{conversation.unreadCount}</span>}
-                            </BaseButton>
+                            </TabBarTab>
                         ))}
                         <BaseButton className="messenger-all-button" onClick={() => { setStaffActive(false); setMode('inbox'); }}>{LocalizeText('generic.all')} {conversations.length + (legacyStaffThread ? 1 : 0)}</BaseButton>
-                    </div>
+                    </TabBar>
 
                     {mode === 'inbox' && (
                         <div className="messenger-inbox" data-testid="messenger-inbox">
