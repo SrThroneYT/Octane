@@ -217,7 +217,13 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
             <Column center className="octane-camera-capture" gap={0}>
                 <div className="octane-camera-capture__body drag-handler">
                     <div className="octane-camera-capture__title">
-                        <CameraCenteredText color={0xffffff} text={LocalizeText('camera.interface.title')} textStyle="u_frame_title" width={340} />
+                        <CameraCenteredText
+                            background={0x000000}
+                            color={0xffffff}
+                            text={LocalizeText('camera.interface.title')}
+                            textStyle="u_frame_title"
+                            width={340}
+                        />
                     </div>
                     <button type="button" className="octane-camera-capture__help" aria-label={LocalizeText('generic.help')} onClick={() => CreateLinkEvent('habbopages/camera')} />
                     <button type="button" className="octane-camera-capture__close" aria-label={LocalizeText('generic.close')} onClick={onClose} />
@@ -241,7 +247,14 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
                                 type="button"
                                 onClick={onEdit}
                             >
-                                <CameraCenteredText color={0xffffff} text={LocalizeText('camera.editor.button.text')} textStyle="button_shiny_bold" width={36} />
+                                <CameraCenteredText
+                                    background={0x000000}
+                                    color={0xffffff}
+                                    style={{ mixBlendMode: 'screen' }}
+                                    text={LocalizeText('camera.editor.button.text')}
+                                    textStyle="button_shiny_bold"
+                                    width={38}
+                                />
                             </button>
                         </div>
                     )}

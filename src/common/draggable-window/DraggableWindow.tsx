@@ -30,6 +30,12 @@ export interface DraggableWindowProps {
     dragStyle?: CSSProperties;
     offsetLeft?: number;
     offsetTop?: number;
+    /** An explicit start position (a window tracker places the window); the remembered position of `uniqueKey` is then not used. */
+    initialPosition?: { x: number; y: number };
+    /** The position is taken as given, without keeping the window inside the viewport. */
+    unconstrainedPosition?: boolean;
+    /** Told where the window was dropped after a drag (or where an explicit start position was moved to). */
+    onPositionChange?: (position: { x: number; y: number }) => void;
     children?: ReactNode;
 }
 
@@ -42,7 +48,10 @@ export const DraggableWindow: FC<DraggableWindowProps> = (props) => {
         dragStyle = {},
         children = null,
         offsetLeft = 0,
-        offsetTop = 0
+        offsetTop = 0,
+        initialPosition,
+        unconstrainedPosition = false,
+        onPositionChange
     } = props;
     const [delta, setDelta] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
     const [offset, setOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -88,6 +97,7 @@ export const DraggableWindow: FC<DraggableWindowProps> = (props) => {
     );
 
     const clampPosition = useCallback((newX: number, newY: number) => {
+        if (unconstrainedPosition) return { x: newX, y: newY };
         if (!elementRef.current) return { x: newX, y: newY };
 
         const windowWidth = elementRef.current.offsetWidth;
@@ -100,7 +110,11 @@ export const DraggableWindow: FC<DraggableWindowProps> = (props) => {
         const clampedY = Math.max(BOUNDS_THRESHOLD_TOP, Math.min(newY, viewportHeight - windowHeight + maxOutY));
 
         return { x: clampedX, y: clampedY };
-    }, []);
+    }, [unconstrainedPosition]);
+
+    const initialX = initialPosition?.x;
+    const initialY = initialPosition?.y;
+    const hasInitialPosition = initialPosition !== undefined;
 
     useLayoutEffect(() => {
         const element = elementRef.current as HTMLElement;
@@ -108,6 +122,16 @@ export const DraggableWindow: FC<DraggableWindowProps> = (props) => {
 
         CURRENT_WINDOWS.push(element);
         bringToTop();
+
+        return () => {
+            const index = CURRENT_WINDOWS.indexOf(element);
+            if (index >= 0) CURRENT_WINDOWS.splice(index, 1);
+        };
+    }, [handleSelector, windowPosition, uniqueKey, disableDrag, offsetLeft, offsetTop, bringToTop]);
+
+    useLayoutEffect(() => {
+        const element = elementRef.current as HTMLElement;
+        if (!element) return;
 
         if (!disableDrag) {
             const handle = element.querySelector(handleSelector);
@@ -134,18 +158,14 @@ export const DraggableWindow: FC<DraggableWindowProps> = (props) => {
                 break;
         }
 
-        const clampedPos = clampPosition(offsetX, offsetY);
+        const clampedPos = clampPosition(initialX ?? offsetX, initialY ?? offsetY);
         offsetRef.current = { x: clampedPos.x, y: clampedPos.y };
         deltaRef.current = { x: 0, y: 0 };
         setOffset({ x: clampedPos.x, y: clampedPos.y });
         setDelta({ x: 0, y: 0 });
         setIsPositioned(true);
-
-        return () => {
-            const index = CURRENT_WINDOWS.indexOf(element);
-            if (index >= 0) CURRENT_WINDOWS.splice(index, 1);
-        };
-    }, [handleSelector, windowPosition, uniqueKey, disableDrag, offsetLeft, offsetTop, bringToTop]);
+        if (hasInitialPosition && (clampedPos.x !== initialX || clampedPos.y !== initialY)) onPositionChange?.(clampedPos);
+    }, [handleSelector, windowPosition, uniqueKey, disableDrag, offsetLeft, offsetTop, clampPosition, initialX, initialY, hasInitialPosition, onPositionChange]);
 
 
     useEffect(() => {
@@ -201,8 +221,9 @@ export const DraggableWindow: FC<DraggableWindowProps> = (props) => {
             setDelta({ x: 0, y: 0 });
             setOffset(clampedPos);
             setIsDragging(false);
+            onPositionChange?.(clampedPos);
 
-            if (uniqueKey !== null) {
+            if (uniqueKey !== null && !hasInitialPosition) {
                 const newStorage = { ...GetLocalStorage<WindowSaveOptions>(`nitro.windows.${uniqueKey}`) };
                 newStorage.offset = { x: clampedPos.x, y: clampedPos.y };
                 SetLocalStorage<WindowSaveOptions>(`nitro.windows.${uniqueKey}`, newStorage);
@@ -220,10 +241,10 @@ export const DraggableWindow: FC<DraggableWindowProps> = (props) => {
             dragHandler.removeEventListener('pointerup', onPointerEnd);
             dragHandler.removeEventListener('pointercancel', onPointerEnd);
         };
-    }, [dragHandler, uniqueKey, clampPosition]);
+    }, [dragHandler, uniqueKey, clampPosition, hasInitialPosition, onPositionChange]);
 
     useEffect(() => {
-        if (!uniqueKey) return;
+        if (!uniqueKey || hasInitialPosition) return;
 
         const localStorage = GetLocalStorage<WindowSaveOptions>(`nitro.windows.${uniqueKey}`);
         if (!localStorage || !localStorage.offset) return;
@@ -234,7 +255,7 @@ export const DraggableWindow: FC<DraggableWindowProps> = (props) => {
         setDelta({ x: 0, y: 0 });
         setOffset({ x: clampedPos.x, y: clampedPos.y });
         setIsPositioned(true);
-    }, [uniqueKey, clampPosition]);
+    }, [uniqueKey, clampPosition, hasInitialPosition]);
 
     return createPortal(
         <div

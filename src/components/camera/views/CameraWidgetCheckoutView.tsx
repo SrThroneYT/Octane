@@ -20,7 +20,7 @@ import ducketIcon from '../../../assets/images/camera/checkout/ducket.png';
 import { OctaneCardView } from '../../../common';
 import { useMessageEvent, useNotification, usePurse } from '../../../hooks';
 import { joinCameraPhotoUrl } from '../CameraAirUtilities';
-import { CameraCenteredText, CameraNativeText } from './CameraNativeText';
+import { CAMERA_BOX_COLOR, CAMERA_COMPETITION_COLOR, CameraCenteredText, CameraNativeText } from './CameraNativeText';
 import { CameraSkinButton } from './CameraSkinButton';
 
 export interface CameraWidgetCheckoutViewProps {
@@ -332,7 +332,7 @@ export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (prop
         <OctaneCardView className="octane-camera-checkout" frameStyle={3} isResizable={false} theme="primary-slim">
             <div className="octane-card-header-shell">
                 <span className="octane-card-title">
-                    <CameraCenteredText color={0xffffff} text={LocalizeText('camera.confirm_phase.title')} textStyle="u_frame_title" width={340} />
+                    <CameraCenteredText background={0x484949} color={0xffffff} text={LocalizeText('camera.confirm_phase.title')} textStyle="u_frame_title" width={340} />
                 </span>
                 <button aria-label={LocalizeText('generic.close')} className="octane-card-close-button" type="button" onClick={() => processAction('close')} />
             </div>
@@ -340,7 +340,7 @@ export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (prop
                 <div ref={productImageContainerRef} className={`octane-camera-checkout__image${hasRenderingFailed ? ' is-failed' : ''}`}>
                     {!isImageLoaded && !hasRenderingFailed && (
                         <div className="octane-camera-checkout__loading">
-                            <CameraNativeText color={0xffffff} size={36} text={LocalizeText('camera.loading')} />
+                            <CameraNativeText background={0xcccccc} color={0xffffff} size={36} text={LocalizeText('camera.loading')} />
                         </div>
                     )}
                     {pictureUrl && !hasRenderingFailed && (
@@ -367,7 +367,7 @@ export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (prop
                     <section className="octane-camera-checkout__box is-competition">
                         <div className="octane-camera-checkout__box-name">
                             <CameraNativeText
-                               
+                                background={CAMERA_COMPETITION_COLOR}
                                 color={0xffffff}
                                 size={14}
                                 text={LocalizeText(
@@ -381,7 +381,7 @@ export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (prop
                             />
                         </div>
                         <div className="octane-camera-checkout__competition-info">
-                            <CameraNativeText color={0xffffff} maxWidth={190} text={LocalizeText('camera.competition.info')} />
+                            <CameraNativeText background={CAMERA_COMPETITION_COLOR} color={0xffffff} maxWidth={190} text={LocalizeText('camera.competition.info')} />
                         </div>
                         {renderButton('competition', 'is-competition-button', LocalizeText('generic.submit'), competitionDisabled, 'green', () => processAction('competition'))}
                     </section>
@@ -389,25 +389,25 @@ export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (prop
 
                 <section className={`octane-camera-checkout__box is-purchase${picturesBought > 0 ? ' has-inventory-link' : ''}`}>
                     <div className="octane-camera-checkout__box-name">
-                        <CameraNativeText size={14} text={LocalizeText('camera.purchase.header')} textStyle="u_bold" />
+                        <CameraNativeText background={CAMERA_BOX_COLOR} size={14} text={LocalizeText('camera.purchase.header')} textStyle="u_bold" />
                     </div>
                     <div className="octane-camera-checkout__price-row">
-                        <CameraNativeText size={14} text={costLabel} />
-                        <CameraNativeText size={14} text={String(price.credits)} textStyle="u_bold" />
+                        <CameraNativeText background={CAMERA_BOX_COLOR} size={14} text={costLabel} />
+                        <CameraNativeText background={CAMERA_BOX_COLOR} size={14} text={String(price.credits)} textStyle="u_bold" />
                         <img alt="" className="octane-camera-checkout__icon" src={creditIcon} />
                         {price.duckets > 0 && (
                             <>
-                                <CameraNativeText size={14} text={String(price.duckets)} textStyle="u_bold" />
+                                <CameraNativeText background={CAMERA_BOX_COLOR} size={14} text={String(price.duckets)} textStyle="u_bold" />
                                 <img alt="" className="octane-camera-checkout__icon" src={ducketIcon} />
                             </>
                         )}
                     </div>
                     {picturesBought > 0 && (
                         <div className="octane-camera-checkout__inventory-row">
-                            <CameraNativeText size={14} text={LocalizeText('camera.purchase.count.info')} textStyle="u_bold" />
-                            <CameraNativeText size={14} text={String(picturesBought)} />
+                            <CameraNativeText background={CAMERA_BOX_COLOR} size={14} text={LocalizeText('camera.purchase.count.info')} textStyle="u_bold" />
+                            <CameraNativeText background={CAMERA_BOX_COLOR} size={14} text={String(picturesBought)} />
                             <button className="octane-camera-checkout__link" type="button" onClick={() => CreateLinkEvent('inventory/show/furni')}>
-                                <CameraNativeText text={LocalizeText('camera.open.inventory')} underline />
+                                <CameraNativeText background={CAMERA_BOX_COLOR} text={LocalizeText('camera.open.inventory')} underline />
                             </button>
                         </div>
                     )}
@@ -425,7 +425,7 @@ export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (prop
                     <section className={`octane-camera-checkout__box is-publish${wasPicturePublished ? ' is-published' : ''}`}>
                         <div className="octane-camera-checkout__box-name">
                             <CameraNativeText
-                               
+                                background={CAMERA_BOX_COLOR}
                                 maxWidth={300}
                                 size={14}
                                 text={LocalizeText(wasPicturePublished ? 'camera.publish.successful' : 'camera.publish.explanation')}
@@ -434,21 +434,21 @@ export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (prop
                         </div>
                         <div className="octane-camera-checkout__publish-info">
                             <CameraNativeText
-                               
+                                background={CAMERA_BOX_COLOR}
                                 maxWidth={191}
                                 text={LocalizeText(wasPicturePublished ? 'camera.publish.success.short.info' : 'camera.publish.detailed.explanation')}
                             />
                         </div>
                         {!wasPicturePublished && (
                             <div className="octane-camera-checkout__price-row is-publish-price">
-                                <CameraNativeText size={14} text={costLabel} />
-                                <CameraNativeText size={14} text={String(price.publishDucketPrice)} textStyle="u_bold" />
+                                <CameraNativeText background={CAMERA_BOX_COLOR} size={14} text={costLabel} />
+                                <CameraNativeText background={CAMERA_BOX_COLOR} size={14} text={String(price.publishDucketPrice)} textStyle="u_bold" />
                                 <img alt="" className="octane-camera-checkout__icon" src={ducketIcon} />
                             </div>
                         )}
                         {wasPicturePublished && !!publishedPhotoUrl && (
                             <a className="octane-camera-checkout__link is-publish-link" href={publishedPhotoUrl} rel="noreferrer" target="_blank">
-                                <CameraNativeText text={LocalizeText('camera.link.to.published')} underline />
+                                <CameraNativeText background={CAMERA_BOX_COLOR} text={LocalizeText('camera.link.to.published')} underline />
                             </a>
                         )}
                         {!wasPicturePublished &&

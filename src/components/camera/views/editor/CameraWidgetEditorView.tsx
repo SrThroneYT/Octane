@@ -9,7 +9,7 @@ import {
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CameraEditorTabs, CameraPicture, CameraPictureThumbnail, LocalizeText } from '../../../../api';
 import { OctaneCardView, Slider } from '../../../../common';
-import { CameraCenteredText, CameraNativeText } from '../CameraNativeText';
+import { CAMERA_BOX_COLOR, CameraCenteredText, CameraNativeText } from '../CameraNativeText';
 import { CameraSkinButton } from '../CameraSkinButton';
 import { CameraWidgetEffectListView } from './effect-list';
 
@@ -242,7 +242,7 @@ export const CameraWidgetEditorView: FC<CameraWidgetEditorViewProps> = (props) =
             <div className="octane-card-header-shell">
                 <span className="octane-card-title">
                     <CameraCenteredText
-                       
+                        background={0x484949}
                         color={0xffffff}
                         text={LocalizeText('camera.editor.button.text')}
                         textStyle="u_frame_title"
@@ -288,9 +288,9 @@ export const CameraWidgetEditorView: FC<CameraWidgetEditorViewProps> = (props) =
                     <div className="octane-camera-editor__slider-panel">
                         <div className="octane-camera-editor__slider-label">
                             <CameraCenteredText
-                               
+                                background={0x000000}
                                 color={0xeeeeee}
-                               
+                                style={{ mixBlendMode: 'screen' }}
                                 text={`${LocalizeText(`camera.effect.name.${currentEffect.effect.name}`)} ${Math.round(currentEffect.strength * 100)}%`}
                                 textStyle="u_bold"
                                 width={320}
@@ -313,7 +313,7 @@ export const CameraWidgetEditorView: FC<CameraWidgetEditorViewProps> = (props) =
 
                 <button type="button" className="octane-camera-editor__tool octane-camera-editor__tool--save" onClick={() => processAction('download')}>
                     <span className="octane-camera-editor__tool-icon" aria-hidden="true" />
-                    <CameraNativeText color={0x000000} size={11} text={LocalizeText('floor.plan.editor.save')} textStyle="u_button_tab" underline />
+                    <CameraNativeText background={CAMERA_BOX_COLOR} color={0x000000} size={11} text={LocalizeText('floor.plan.editor.save')} textStyle="u_button_tab" underline />
                 </button>
                 <button
                     type="button"
@@ -322,7 +322,7 @@ export const CameraWidgetEditorView: FC<CameraWidgetEditorViewProps> = (props) =
                     onClick={() => processAction('zoom')}
                 >
                     <span className="octane-camera-editor__tool-icon" aria-hidden="true" />
-                    <CameraNativeText color={0x000000} size={11} text={LocalizeText('room.zoom.button.text')} textStyle="u_button_tab" underline />
+                    <CameraNativeText background={CAMERA_BOX_COLOR} color={0x000000} size={11} text={LocalizeText('room.zoom.button.text')} textStyle="u_button_tab" underline />
                 </button>
 
                 <div className="octane-camera-editor__button-separator" />
