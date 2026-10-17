@@ -11,6 +11,7 @@ import { FriendsMessengerThreadView } from './messenger-thread/FriendsMessengerT
 import { canFollowMessengerConversation, filterMessengerConversations, resolveConversationAfterClose, restoreConversationsWithNewMessages } from './persistentMessenger.helpers';
 import { BaseButton } from '../../../../common/BaseButton';
 import { TabBar, TabBarTab } from '../../../../common/TabBar';
+import { Hint } from '../../../../common/Tooltip';
 
 interface PersistentMessengerApi
 {
@@ -134,7 +135,7 @@ export const FriendsPersistentMessengerView: FC<FriendsPersistentMessengerViewPr
 
                     {mode === 'conversation' && staffActive && legacyStaffThread && (
                         <div className="messenger-conversation" data-testid="messenger-staff-conversation">
-                            <div className="messenger-thread-header"><span className="messenger-thread-name">{legacyStaffThread.participant.name}</span><div className="messenger-actions"><BaseButton className="messenger-btn close-conversation" onClick={onCloseStaff} title={LocalizeText('generic.close')} aria-label={LocalizeText('generic.close')}><FaTimes /></BaseButton></div></div>
+                            <div className="messenger-thread-header"><span className="messenger-thread-name">{legacyStaffThread.participant.name}</span><div className="messenger-actions"><Hint content={LocalizeText('generic.close')}><BaseButton className="messenger-btn close-conversation" onClick={onCloseStaff} aria-label={LocalizeText('generic.close')}><FaTimes /></BaseButton></Hint></div></div>
                             <div className="chat-messages"><FriendsMessengerThreadView thread={legacyStaffThread} /></div>
                             <div className="messenger-input-row"><input maxLength={255} value={text} onChange={event => setText(event.target.value)} onKeyDown={keyDown} placeholder={LocalizeText('messenger.window.input.default', [ 'FRIEND_NAME' ], [ legacyStaffThread.participant.name ])} /><BaseButton className="messenger-btn send" onClick={send}>{LocalizeText('widgets.chatinput.say')}</BaseButton></div>
                         </div>
@@ -149,14 +150,14 @@ export const FriendsPersistentMessengerView: FC<FriendsPersistentMessengerViewPr
                                     {canFollowMessengerConversation(active) && <BaseButton className="messenger-btn" onClick={() => SendMessageComposer(new FollowFriendMessageComposer(active.participantId))}>{LocalizeText('friendlist.follow')}</BaseButton>}
                                     {active.participantId > 0 && <BaseButton className="messenger-btn" onClick={() => GetUserProfile(active.participantId)}>{LocalizeText('extendedprofile.caption')}</BaseButton>}
                                     {active.participantId > 0 && <BaseButton className="messenger-btn danger" onClick={() => report(ReportType.IM, { reportedUserId: active.participantId })}><FaExclamationTriangle /></BaseButton>}
-                                    <BaseButton className="messenger-btn close-conversation" onClick={closeConversation} title={LocalizeText('generic.close')} aria-label={LocalizeText('generic.close')}><FaTimes /></BaseButton>
+                                    <Hint content={LocalizeText('generic.close')}><BaseButton className="messenger-btn close-conversation" onClick={closeConversation} aria-label={LocalizeText('generic.close')}><FaTimes /></BaseButton></Hint>
                                 </div>
                             </div>
                             <div className="chat-messages persistent-message-list" onScroll={scroll}>
                                 {messenger.state.historyByConversation[active.id]?.loading && <div className="messenger-history-state">{LocalizeText('generic.loading')}</div>}
                                 {messages.map((message: MessengerMessage) => {
                                     const own = message.senderId === GetSessionDataManager().userId;
-                                    return <div key={message.id || message.clientId} className={`persistent-message ${ own ? 'own' : 'incoming' }`}><div className="persistent-message-bubble"><span>{message.message}</span><BaseButton title="Copy" onClick={() => void CopyToClipboard(message.message)}><FaCopy /></BaseButton></div><small className="persistent-message-meta"><span>{new Date(message.createdAt * 1000).toLocaleTimeString()}</span>{own && message.status !== 'failed' && message.status !== 'sending' && <MessengerMessageStatusView isRead={message.status === 'read'} />}{own && message.status === 'failed' && <span className="messenger-message-failed">!</span>}{own && message.status === 'sending' && <span className="messenger-message-sending">…</span>}</small>{message.status === 'failed' && message.clientId && <BaseButton className="messenger-retry" onClick={() => messenger.actions.retryMessage(message.clientId)}>Retry</BaseButton>}</div>;
+                                    return <div key={message.id || message.clientId} className={`persistent-message ${ own ? 'own' : 'incoming' }`}><div className="persistent-message-bubble"><span>{message.message}</span><Hint content="Copy"><BaseButton aria-label="Copy" onClick={() => void CopyToClipboard(message.message)}><FaCopy /></BaseButton></Hint></div><small className="persistent-message-meta"><span>{new Date(message.createdAt * 1000).toLocaleTimeString()}</span>{own && message.status !== 'failed' && message.status !== 'sending' && <MessengerMessageStatusView isRead={message.status === 'read'} />}{own && message.status === 'failed' && <span className="messenger-message-failed">!</span>}{own && message.status === 'sending' && <span className="messenger-message-sending">…</span>}</small>{message.status === 'failed' && message.clientId && <BaseButton className="messenger-retry" onClick={() => messenger.actions.retryMessage(message.clientId)}>Retry</BaseButton>}</div>;
                                 })}
                             </div>
                             <div className="messenger-input-row"><input maxLength={255} value={text} onChange={event => setText(event.target.value)} onKeyDown={keyDown} placeholder={LocalizeText('messenger.window.input.default', [ 'FRIEND_NAME' ], [ active.name ])} /><BaseButton className="messenger-btn send" onClick={send}>{LocalizeText('widgets.chatinput.say')}</BaseButton></div>

@@ -17,6 +17,8 @@ import offerImage from '../../../../assets/images/poll/poll-prompt-offer.png';
 import questionImage from '../../../../assets/images/poll/poll-prompt-question.png';
 import { OctaneCardContentView, OctaneCardHeaderView, OctaneCardView } from '../../../../common';
 import { BaseButton } from '../../../../common/BaseButton';
+import { Checkbox } from '../../../../common/Checkbox';
+import { Radio } from '../../../../common/Radio';
 import { useNotification, usePollActions, useUiEvent } from '../../../../hooks';
 
 interface PollOffer {
@@ -220,12 +222,11 @@ export const PollWidgetView: FC = () => {
                         {isChoice &&
                             (question.questionChoices ?? []).map((choice, index) => (
                                 <label key={index} className="octane-poll-answer">
-                                    <input
-                                        checked={selected.includes(index)}
-                                        name={`poll-${content.id}-${question.questionId}`}
-                                        type={question.questionType === POLL_QUESTION_CHECKBOX ? 'checkbox' : 'radio'}
-                                        onChange={() => toggleChoice(index)}
-                                    />
+                                    {question.questionType === POLL_QUESTION_CHECKBOX ? (
+                                        <Checkbox checked={selected.includes(index)} onCheckedChange={() => toggleChoice(index)} />
+                                    ) : (
+                                        <Radio checked={selected.includes(index)} name={`poll-${content.id}-${question.questionId}`} onCheckedChange={() => toggleChoice(index)} />
+                                    )}
                                     <span>{choice.choiceText}</span>
                                 </label>
                             ))}

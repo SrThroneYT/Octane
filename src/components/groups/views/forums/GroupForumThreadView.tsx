@@ -22,6 +22,7 @@ import { flatText, GroupText } from '../GroupNativeLayout';
 import { FORUM_PAGE_SIZE, FORUM_SURFACE, stripTags, ForumButton, forumAge, forumQuote, ForumPager } from './GroupForumLayout';
 import { forumPermissionText } from './GroupForumThreadListView';
 import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 // Message states: 0 and 1 are visible, 10 is hidden by a group administrator, 20 deleted by Hotel staff.
 const MESSAGE_VISIBLE = 1;
@@ -218,9 +219,9 @@ export const GroupForumThreadView: FC<GroupForumThreadViewProps> = ({ forumData,
                                             x={2}
                                             y={23}
                                         />
-                                        <BaseButton className="octane-forum__message-avatar" type="button" title={message.authorName} onClick={() => GetUserProfile(message.authorId)}>
+                                        <Hint content={message.authorName}><BaseButton aria-label={message.authorName} className="octane-forum__message-avatar" type="button" onClick={() => GetUserProfile(message.authorId)}>
                                             <LayoutAvatarImageView direction={2} figure={message.authorFigure} />
-                                        </BaseButton>
+                                        </BaseButton></Hint>
                                     </div>
                                     <div className="octane-forum__message-text" style={{ background: '#' + textColor.toString(16).padStart(6, '0') }}>
                                         {showText && (

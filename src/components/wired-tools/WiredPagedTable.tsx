@@ -3,6 +3,7 @@ import { localizeWithFallback } from '../../api';
 import { WiredPageRequests } from '../../hooks/wired-tools/useWiredPageRequests';
 import { clampInputPage, NO_PAGE, parseInputPage, restrictPageInput } from './WiredPaging.helpers';
 import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 export interface WiredTableColumn {
     id: string;
@@ -112,12 +113,12 @@ export const WiredPagedTable = <T,>(props: WiredPagedTableProps<T>) => {
             </div>
             <div className="flex items-center justify-between gap-3">
                 <div className="flex gap-2">
-                    <BaseButton className={PAGE_BUTTON_CLASS} disabled={isFirst} type="button" title="First page" onClick={() => requests.requestFirstPage()}>
+                    <Hint content="First page"><BaseButton aria-label="First page" className={PAGE_BUTTON_CLASS} disabled={isFirst} type="button" onClick={() => requests.requestFirstPage()}>
                         &laquo;
-                    </BaseButton>
-                    <BaseButton className={PAGE_BUTTON_CLASS} disabled={isFirst} type="button" title="Previous page" onClick={() => requests.requestPreviousPage()}>
+                    </BaseButton></Hint>
+                    <Hint content="Previous page"><BaseButton aria-label="Previous page" className={PAGE_BUTTON_CLASS} disabled={isFirst} type="button" onClick={() => requests.requestPreviousPage()}>
                         &lsaquo;
-                    </BaseButton>
+                    </BaseButton></Hint>
                 </div>
                 <div className="flex items-center gap-2 text-[12px] text-[#555]">
                     {currentPage !== NO_PAGE && (
@@ -150,12 +151,12 @@ export const WiredPagedTable = <T,>(props: WiredPagedTableProps<T>) => {
                     )}
                 </div>
                 <div className="flex gap-2">
-                    <BaseButton className={PAGE_BUTTON_CLASS} disabled={isLast} type="button" title="Next page" onClick={() => requests.requestNextPage()}>
+                    <Hint content="Next page"><BaseButton aria-label="Next page" className={PAGE_BUTTON_CLASS} disabled={isLast} type="button" onClick={() => requests.requestNextPage()}>
                         &rsaquo;
-                    </BaseButton>
-                    <BaseButton className={PAGE_BUTTON_CLASS} disabled={isLast} type="button" title="Last page" onClick={() => requests.requestLastPage()}>
+                    </BaseButton></Hint>
+                    <Hint content="Last page"><BaseButton aria-label="Last page" className={PAGE_BUTTON_CLASS} disabled={isLast} type="button" onClick={() => requests.requestLastPage()}>
                         &raquo;
-                    </BaseButton>
+                    </BaseButton></Hint>
                 </div>
             </div>
         </div>

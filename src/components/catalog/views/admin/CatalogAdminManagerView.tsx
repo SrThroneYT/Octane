@@ -515,12 +515,12 @@ export const CatalogAdminManagerView: FC<{}> = () => {
                                         <FaArrowsAlt />
                                     </span>
                                     <div className="octane-catalog-admin-manager-reorder">
-                                        <BaseButton disabled={index === 0} title="Move up" onClick={() => moveOffer(index, -1)}>
+                                        <Hint content="Move up"><BaseButton aria-label="Move up" disabled={index === 0} onClick={() => moveOffer(index, -1)}>
                                             <FaArrowUp />
-                                        </BaseButton>
-                                        <BaseButton disabled={index === offers.length - 1} title="Move down" onClick={() => moveOffer(index, 1)}>
+                                        </BaseButton></Hint>
+                                        <Hint content="Move down"><BaseButton aria-label="Move down" disabled={index === offers.length - 1} onClick={() => moveOffer(index, 1)}>
                                             <FaArrowDown />
-                                        </BaseButton>
+                                        </BaseButton></Hint>
                                     </div>
                                     <span className="octane-catalog-admin-offer-icon">
                                         {iconUrl ? (
@@ -626,14 +626,13 @@ export const CatalogAdminManagerView: FC<{}> = () => {
                         <FaSearch />
                         <input aria-label="Search catalog pages" placeholder="Search pages..." value={search} onChange={(event) => setSearch(event.target.value)} />
                     </span>
-                    <BaseButton
+                    <Hint content="New root category"><BaseButton aria-label="New root category"
                         className="octane-catalog-admin-add"
                         disabled={!managerRootNode}
-                        title="New root category"
                         onClick={() => managerRootNode && createCategory(managerRootNode)}
                     >
                         <FaPlus />
-                    </BaseButton>
+                    </BaseButton></Hint>
                 </div>
                 <div className="octane-catalog-admin-tree" role="tree" aria-label="Catalog pages">
                     <div

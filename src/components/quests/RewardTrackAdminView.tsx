@@ -9,6 +9,7 @@ import { Checkbox } from '../../common/Checkbox';
 import { Select } from '../../common/Select';
 import { NumberInput } from '../../common/NumberInput';
 import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 const text = (key: string, fallback: string) => localizeWithFallback(`reward_track.admin.${key}`, fallback);
 
@@ -631,19 +632,18 @@ export const RewardTrackAdminView: FC<{ onClose: () => void; onPreview?: (trackI
                                             {selectedTrack.tasks.map((task, index) => (
                                                 <tr key={task.id} data-testid="rt-admin-task-row">
                                                     <td className="octane-reward-track-admin-order">
-                                                        <BaseButton type="button" className="octane-reward-track-admin-arrow" disabled={pending || index === 0} title={text('move.up', 'Move up')} data-testid="rt-admin-task-up" onClick={() => moveTask(index, -1)}>
+                                                        <Hint content={text('move.up', 'Move up')}><BaseButton aria-label={text('move.up', 'Move up')} type="button" className="octane-reward-track-admin-arrow" disabled={pending || index === 0} data-testid="rt-admin-task-up" onClick={() => moveTask(index, -1)}>
                                                             ▲
-                                                        </BaseButton>
-                                                        <BaseButton
+                                                        </BaseButton></Hint>
+                                                        <Hint content={text('move.down', 'Move down')}><BaseButton aria-label={text('move.down', 'Move down')}
                                                             type="button"
                                                             className="octane-reward-track-admin-arrow"
                                                             disabled={pending || index === selectedTrack.tasks.length - 1}
-                                                            title={text('move.down', 'Move down')}
                                                             data-testid="rt-admin-task-down"
                                                             onClick={() => moveTask(index, 1)}
                                                         >
                                                             ▼
-                                                        </BaseButton>
+                                                        </BaseButton></Hint>
                                                     </td>
                                                     <td>
                                                         <b>{task.id}</b>

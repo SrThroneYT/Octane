@@ -9,6 +9,7 @@ import { classNames } from '../../../../layout';
 import { getRegisteredPlugins, IOctanePlugin, subscribePlugins } from '../../../plugins/OctanePluginApi';
 import { applyRoomZoom } from './roomZoom.helpers';
 import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 interface RoomHistoryEntry {
     roomId: number;
@@ -286,55 +287,50 @@ export const RoomToolsWidgetView: FC<{}> = (props) => {
                 <div className="octane-room-tools">
                     <div className="room-tools-zoom-row">
                         <span>{LocalizeText('room.zoom.text', ['zoom_level'], [getZoomText(zoomScale)])}</span>
-                        <BaseButton className="room-tools-zoom-button" type="button" title={LocalizeText('room.zoom.zoom_in.tooltip')} disabled={!canZoomIn} onClick={() => handleToolClick('zoom_in')}>
+                        <Hint content={LocalizeText('room.zoom.zoom_in.tooltip')}><BaseButton aria-label={LocalizeText('room.zoom.zoom_in.tooltip')} className="room-tools-zoom-button" type="button" disabled={!canZoomIn} onClick={() => handleToolClick('zoom_in')}>
                             +
-                        </BaseButton>
-                        <BaseButton className="room-tools-zoom-button" type="button" title={LocalizeText('room.zoom.zoom_out.tooltip')} disabled={!canZoomOut} onClick={() => handleToolClick('zoom_out')}>
+                        </BaseButton></Hint>
+                        <Hint content={LocalizeText('room.zoom.zoom_out.tooltip')}><BaseButton aria-label={LocalizeText('room.zoom.zoom_out.tooltip')} className="room-tools-zoom-button" type="button" disabled={!canZoomOut} onClick={() => handleToolClick('zoom_out')}>
                             -
-                        </BaseButton>
+                        </BaseButton></Hint>
                     </div>
                     {tools.map((tool) => (
-                        <BaseButton type="button"
+                        <Hint content={tool.label}><BaseButton aria-label={tool.label} type="button"
                             key={tool.action}
                             className={classNames('room-tool-row', tool.disabled && 'is-disabled')}
-                            title={tool.label}
                             aria-disabled={tool.disabled || undefined}
                             onClick={() => !tool.disabled && handleToolClick(tool.action)}
                         >
                             <div className={classNames('octane-icon', tool.icon)} />
                             <span className="room-tool-label">{tool.label}</span>
-                        </BaseButton>
+                        </BaseButton></Hint>
                     ))}
                     {plugins.map((plugin) => (
-                        <BaseButton type="button"
+                        <Hint content={plugin.label}><BaseButton aria-label={plugin.label} type="button"
                             key={plugin.name}
                             className="room-tool-row"
-                            title={plugin.label}
                             onClick={() => plugin.onOpen()}
                         >
                             <div className={classNames('octane-icon', plugin.icon || 'icon-cog')} />
                             <span className="room-tool-label">{plugin.label}</span>
-                        </BaseButton>
+                        </BaseButton></Hint>
                     ))}
                     <div className="room-history-controls">
-                        <BaseButton type="button"
+                        <Hint content={LocalizeText('room.history.button.back.tooltip')}><BaseButton aria-label={LocalizeText('room.history.button.back.tooltip')} type="button"
                             className={classNames('octane-icon', canGoBack ? 'cursor-pointer icon-room-history-back-enabled' : 'icon-room-history-back-disabled')}
-                            title={LocalizeText('room.history.button.back.tooltip')}
                             aria-disabled={!canGoBack}
                             onClick={() => canGoBack && handleToolClick('room_history_back')}
-                        />
-                        <BaseButton type="button"
+                        /></Hint>
+                        <Hint content={LocalizeText('room.history.button.tooltip')}><BaseButton aria-label={LocalizeText('room.history.button.tooltip')} type="button"
                             className={classNames('octane-icon', hasHistory ? 'cursor-pointer icon-room-history-enabled' : 'icon-room-history-disabled')}
-                            title={LocalizeText('room.history.button.tooltip')}
                             aria-disabled={!hasHistory}
                             onClick={() => hasHistory && handleToolClick('room_history')}
-                        />
-                        <BaseButton type="button"
+                        /></Hint>
+                        <Hint content={LocalizeText('room.history.button.forward.tooltip')}><BaseButton aria-label={LocalizeText('room.history.button.forward.tooltip')} type="button"
                             className={classNames('octane-icon', canGoNext ? 'cursor-pointer icon-room-history-next-enabled' : 'icon-room-history-next-disabled')}
-                            title={LocalizeText('room.history.button.forward.tooltip')}
                             aria-disabled={!canGoNext}
                             onClick={() => canGoNext && handleToolClick('room_history_next')}
-                        />
+                        /></Hint>
                     </div>
                 </div>
             )}

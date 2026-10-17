@@ -137,14 +137,14 @@ describe('WiredRoomLogsView', () => {
         mocks.send.mockClear();
         vi.advanceTimersByTime(400);
 
-        fireEvent.click(screen.getByTitle('Next page'));
-        fireEvent.click(screen.getByTitle('Last page'));
+        fireEvent.click(screen.getByLabelText('Next page'));
+        fireEvent.click(screen.getByLabelText('Last page'));
 
         expect(mocks.send).toHaveBeenCalledTimes(1);
         expect(mocks.send.mock.calls[0][0].getMessageArray()[0]).toBe(2);
 
         vi.advanceTimersByTime(400);
-        fireEvent.click(screen.getByTitle('Last page'));
+        fireEvent.click(screen.getByLabelText('Last page'));
         expect(mocks.send).toHaveBeenCalledTimes(2);
         expect(mocks.send.mock.calls[1][0].getMessageArray()[0]).toBe(3);
     });

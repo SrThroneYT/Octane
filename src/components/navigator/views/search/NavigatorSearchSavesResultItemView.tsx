@@ -36,9 +36,9 @@ export const NavigatorSearchSavesResultItemView: FC<NavigatorSearchSavesResultIt
 
     return (
         <div className="saved-search-row">
-            <BaseButton type="button" className="saved-search-row__open" title={LocalizeText('navigator.tooltip.open.saved.search')} onClick={openSearch}>
+            <Hint content={LocalizeText('navigator.tooltip.open.saved.search')}><BaseButton aria-label={LocalizeText('navigator.tooltip.open.saved.search')} type="button" className="saved-search-row__open" onClick={openSearch}>
                 <span className="saved-search-row__label">{title}</span>
-            </BaseButton>
+            </BaseButton></Hint>
             <Hint content={LocalizeText('navigator.tooltip.remove.saved.search')}>
                 <BaseButton
                     type="button"
