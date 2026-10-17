@@ -9,7 +9,7 @@ import {
 } from '@octane/renderer';
 import { FC, Fragment, useMemo, useState } from 'react';
 import { GroupItem, localizeWithFallback, ProductImageUtility } from '../../../../api';
-import { AutoGrid, Button, Column, Flex, Grid, LayoutGridItem, Text } from '../../../../common';
+import { AutoGrid, BaseButton, Button, Column, Flex, Grid, LayoutGridItem, Text } from '../../../../common';
 import { useInventoryFurni, useWiredTrading } from '../../../../hooks';
 
 /** The window has room for nine, the same as the trade it is modelled on. */
@@ -198,6 +198,8 @@ export const InventoryWiredTradeView: FC<{}> = () => {
                         {groupItems.map((group, index) => (
                             <LayoutGridItem
                                 key={index}
+                                aria-pressed={selected === group}
+                                component={BaseButton}
                                 itemActive={selected === group}
                                 itemCount={group.getUnlockedCount()}
                                 itemImage={group.iconUrl}

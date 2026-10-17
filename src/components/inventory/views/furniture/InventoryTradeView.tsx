@@ -12,7 +12,7 @@ import {
     SendMessageComposer,
     TradeState
 } from '../../../../api';
-import { AutoGrid, Button, Column, Flex, Grid, LayoutGridItem, Text } from '../../../../common';
+import { AutoGrid, BaseButton, Button, Column, Flex, Grid, LayoutGridItem, Text } from '../../../../common';
 import { useInventoryTrade, useNotification } from '../../../../hooks';
 import { InventoryFurnitureSearchView } from './InventoryFurnitureSearchView';
 import { NumberInput } from '../../../../common/NumberInput';
@@ -284,6 +284,8 @@ export const InventoryTradeView: FC<InventoryTradeViewProps> = (props) => {
                                     return (
                                         <LayoutGridItem
                                             key={i}
+                                            aria-pressed={otherGroupItem === item}
+                                            component={BaseButton}
                                             itemActive={otherGroupItem === item}
                                             itemCount={item.getTotalCount()}
                                             itemImage={item.iconUrl}

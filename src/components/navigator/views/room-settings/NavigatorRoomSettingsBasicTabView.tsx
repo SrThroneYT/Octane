@@ -3,6 +3,7 @@ import { FC, useEffect, useState } from 'react';
 import { FaTimes } from 'react-icons/fa';
 import { CreateLinkEvent, GetMaxVisitorsList, getYoutubeRoomEnabled, IRoomData, LocalizeText, localizeWithFallback, SendMessageComposer, setYoutubeRoomEnabled } from '../../../../api';
 import { Column, Flex, Text } from '../../../../common';
+import { BaseButton } from '../../../../common/BaseButton';
 import { useMessageEvent, useNavigatorData, useNotification, useSoundboard } from '../../../../hooks';
 import { Checkbox } from '../../../../common/Checkbox';
 import { Select } from '../../../../common/Select';
@@ -259,7 +260,7 @@ export const NavigatorRoomSettingsBasicTabView: FC<NavigatorRoomSettingsTabViewP
                     <option value="2">{LocalizeText('soundboard.room.mode.rights')}</option>
                 </Select>
             </Column>
-            <Flex pointer alignItems="center" justifyContent="center" gap={1} onClick={deleteRoom}>
+            <Flex pointer alignItems="center" className="w-full border-0 bg-transparent p-0" component={BaseButton} justifyContent="center" gap={1} onClick={deleteRoom}>
                 <FaTimes className="fa-icon shrink-0 text-[#a81a12]" />
                 <Text variant="danger" underline bold className="whitespace-nowrap">
                     {LocalizeText('navigator.roomsettings.delete')}

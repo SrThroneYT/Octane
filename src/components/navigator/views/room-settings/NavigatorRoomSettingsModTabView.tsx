@@ -1,7 +1,7 @@
 import { BannedUserData, BannedUsersFromRoomEvent, RoomBannedUsersComposer, RoomModerationSettings, RoomUnbanUserComposer } from '@octane/renderer';
 import { FC, useEffect, useState } from 'react';
 import { IRoomData, LocalizeText, SendMessageComposer } from '../../../../api';
-import { Button, Column, Flex, Grid, Text, UserProfileIconView } from '../../../../common';
+import { BaseButton, Button, Column, Flex, Grid, Text, UserProfileIconView } from '../../../../common';
 import { useMessageEvent } from '../../../../hooks';
 import { NavigatorRoomSettingsSectionView } from './NavigatorRoomSettingsSectionView';
 import { Select } from '../../../../common/Select';
@@ -60,7 +60,7 @@ export const NavigatorRoomSettingsModTabView: FC<NavigatorRoomSettingsTabViewPro
                                     return (
                                         <Flex key={index} shrink alignItems="center" gap={1} overflow="hidden">
                                             <UserProfileIconView userId={user.userId} />
-                                            <Text pointer grow onClick={(event) => setSelectedUserId(user.userId)}>
+                                            <Text pointer grow className="border-0 bg-transparent p-0 text-left" component={BaseButton} onClick={(event) => setSelectedUserId(user.userId)}>
                                                 {' '}
                                                 {user.userName}
                                             </Text>

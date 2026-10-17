@@ -190,11 +190,15 @@ export const NavigatorRoomInfoView: FC<NavigatorRoomInfoViewProps> = (props) => 
                 </LayoutRoomThumbnailView>
                 <Flex className="octane-room-info__quick-actions" gap={1} justifyContent="center">
                     {GetSessionDataManager().userId !== navigatorData.enteredGuestRoom.ownerId && (
-                        <i
-                            className={classNames('octane-icon cursor-pointer', isRoomInFavouritesList ? 'icon-group-favorite' : 'icon-group-not-favorite')}
-                            title={LocalizeText('navigator.room.popup.room.info.favorite')}
-                            onClick={() => processAction('room_favourite')}
-                        />
+                        <Hint content={LocalizeText('navigator.room.popup.room.info.favorite')}>
+                            <BaseButton
+                                aria-label={LocalizeText('navigator.room.popup.room.info.favorite')}
+                                aria-pressed={isRoomInFavouritesList}
+                                className={classNames('octane-icon cursor-pointer border-0 bg-transparent p-0', isRoomInFavouritesList ? 'icon-group-favorite' : 'icon-group-not-favorite')}
+                                type="button"
+                                onClick={() => processAction('room_favourite')}
+                            />
+                        </Hint>
                     )}
                     {hasPermission('guest') && (
                         <Hint content={LocalizeText('navigator.roominfo.removerights.tooltip')}>
@@ -208,12 +212,12 @@ export const NavigatorRoomInfoView: FC<NavigatorRoomInfoViewProps> = (props) => 
                         </Hint>
                     )}
                 </Flex>
-                <Flex pointer alignItems="center" gap={1} className="octane-room-info__room-link" onClick={() => processAction('toggle_room_link')}>
+                <Flex pointer alignItems="center" component={BaseButton} gap={1} className="octane-room-info__room-link border-0 bg-transparent p-0 text-left" onClick={() => processAction('toggle_room_link')}>
                     <img src={weblinkIcon} alt="" />
                     <Text small underline>{LocalizeText('navigator.embed.caption')}</Text>
                 </Flex>
                 {navigatorData.enteredGuestRoom.habboGroupId > 0 && (
-                    <Flex pointer alignItems="center" gap={1} className="octane-room-info__group" onClick={() => processAction('open_group_info')}>
+                    <Flex pointer alignItems="center" component={BaseButton} gap={1} className="octane-room-info__group border-0 bg-transparent p-0 text-left" onClick={() => processAction('open_group_info')}>
                         <LayoutBadgeImageView badgeCode={navigatorData.enteredGuestRoom.groupBadgeCode} className="flex-none" isGroup={true} />
                         <Text small underline>{LocalizeText('navigator.guildbase', ['groupName'], [navigatorData.enteredGuestRoom.groupName])}</Text>
                     </Flex>
