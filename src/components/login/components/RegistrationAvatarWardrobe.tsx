@@ -1,5 +1,5 @@
 import { AvatarDirectionAngle, GetAvatarRenderManager, IPartColor } from '@octane/renderer';
-import { FC, KeyboardEvent, useEffect, useMemo, useState } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { AvatarEditorThumbnailsHelper } from '../../../api';
 import faceTabIcon from '../../../assets/images/wardrobe/hd.png';
 import headTabIcon from '../../../assets/images/wardrobe/head.png';
@@ -109,23 +109,13 @@ const WardrobePartItem: FC<WardrobePartItemProps> = ({ setType, partId, colorIds
         };
     }, [setType, partId, colorKey]);
 
-    const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-        if (event.key !== 'Enter' && event.key !== ' ') return;
-        event.preventDefault();
-        onSelect();
-    };
-
     return (
         <InfiniteGrid.Item
             itemActive={selected}
             itemImage={partId >= 0 ? assetUrl || undefined : undefined}
             className={`registration-wardrobe-part wardrobe-part-${setType} avatar-parts${selected ? ' part-selected' : ''}${partId >= 0 && !assetUrl ? ' wardrobe-part-loading' : ''}`}
-            role="button"
-            tabIndex={0}
             aria-label={partId < 0 ? t('nitro.login.register.wardrobe.none', 'None') : `${label} ${partId}`}
-            aria-pressed={selected}
             onClick={onSelect}
-            onKeyDown={handleKeyDown}
         >
             {partId < 0 && <AvatarEditorIcon icon="clear" />}
         </InfiniteGrid.Item>
