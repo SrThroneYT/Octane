@@ -168,27 +168,27 @@ export const GroupInformationView: FC<GroupInformationViewProps> = (props) => {
                     {groupInformation.description}
                 </Text>
                 <div className="octane-extended-profile-group-info__links">
-                    <Text pointer small underline onClick={() => handleAction('homeroom')}>
+                    <Text component={BaseButton} type="button" pointer small underline onClick={() => handleAction('homeroom')}>
                         {LocalizeText('group.linktobase')}
                     </Text>
-                    <Text pointer small underline onClick={() => handleAction('furniture')}>
+                    <Text component={BaseButton} type="button" pointer small underline onClick={() => handleAction('furniture')}>
                         {LocalizeText('group.buyfurni')}
                     </Text>
-                    <Text pointer small underline onClick={() => handleAction('popular_groups')}>
+                    <Text component={BaseButton} type="button" pointer small underline onClick={() => handleAction('popular_groups')}>
                         {LocalizeText('group.showgroups')}
                     </Text>
                     {groupInformation.hasForum && (
-                        <Text pointer small underline onClick={() => handleAction('forum')}>
+                        <Text component={BaseButton} type="button" pointer small underline onClick={() => handleAction('forum')}>
                             {LocalizeText('group.showforum')}
                         </Text>
                     )}
                     {groupInformation.isOwner && (
-                        <Text pointer small underline onClick={() => handleAction('manage')}>
+                        <Text component={BaseButton} type="button" pointer small underline onClick={() => handleAction('manage')}>
                             {LocalizeText('group.manage')}
                         </Text>
                     )}
                     {canDelete && (
-                        <Text pointer small underline onClick={deleteGroup}>
+                        <Text component={BaseButton} type="button" pointer small underline onClick={deleteGroup}>
                             {LocalizeText('group.delete')}
                         </Text>
                     )}

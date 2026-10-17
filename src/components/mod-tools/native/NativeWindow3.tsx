@@ -100,7 +100,7 @@ export const Native3ThickButton: FC<Native3ThickButtonProps> = ({ x, y, width, h
     }, [label, width, height]);
 
     return (
-        <div
+        <BaseButton type="button"
             className="native3-box native3-button"
             style={rect(x, y, width, height)}
             onClick={onClick}
@@ -123,6 +123,6 @@ export const Native3ThickButton: FC<Native3ThickButtonProps> = ({ x, y, width, h
                     </div>
                 </div>
             ))}
-        </div>
+        </BaseButton>
     );
 };

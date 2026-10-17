@@ -363,12 +363,12 @@ export const FloorplanEditorView: FC<Props> = ({ externalSession }) => {
                                 </div>
                             </div>
                             <div className="fp-footer">
-                                <Base pointer className="fp-btn is-red" data-testid="floorplan-revert" onClick={revertChanges}>
+                                <Base component={BaseButton} type="button" pointer className="fp-btn is-red" data-testid="floorplan-revert" onClick={revertChanges}>
                                     {LocalizeText('floor.plan.editor.reload')}
                                 </Base>
                                 {!isExternal && (
                                     <div className="fp-footer-middle">
-                                        <Base
+                                        <Base component={BaseButton} type="button"
                                             pointer
                                             data-testid="floorplan-live-sync"
                                             data-active={liveSync ? 'true' : 'false'}
@@ -379,7 +379,7 @@ export const FloorplanEditorView: FC<Props> = ({ externalSession }) => {
                                             <span className="fp-toggle-dot" />
                                             {liveSync ? 'Live preview ON' : 'Live preview OFF'}
                                         </Base>
-                                        <Base
+                                        <Base component={BaseButton} type="button"
                                             pointer
                                             data-testid="floorplan-auto-pickup"
                                             data-active={autoPickup ? 'true' : 'false'}
@@ -393,10 +393,10 @@ export const FloorplanEditorView: FC<Props> = ({ externalSession }) => {
                                     </div>
                                 )}
                                 <div className={`fp-footer-right ${isExternal ? 'ml-auto' : ''}`}>
-                                    <Base pointer className="fp-btn is-grey" data-testid="floorplan-import-export" onClick={() => setImportExportVisible(true)}>
+                                    <Base component={BaseButton} type="button" pointer className="fp-btn is-grey" data-testid="floorplan-import-export" onClick={() => setImportExportVisible(true)}>
                                         {LocalizeText('floor.plan.editor.import.export')}
                                     </Base>
-                                    <Base pointer className="fp-btn is-blue" data-testid="floorplan-save" onClick={saveFloorChanges}>
+                                    <Base component={BaseButton} type="button" pointer className="fp-btn is-blue" data-testid="floorplan-save" onClick={saveFloorChanges}>
                                         {LocalizeText('floor.plan.editor.save')}
                                     </Base>
                                 </div>

@@ -1,4 +1,4 @@
-import { CSSProperties, FC, ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { CSSProperties, FC, ReactNode, useEffect, useLayoutEffect, useRef, useState, ElementType } from 'react';
 import guildColorBottom from '../../../assets/images/groups/native/group_guild_color_btm.png';
 import dropmenuArrow from '../../../assets/images/habbo-skin/slices/dropmenu-default-arrow.png';
 import { NativeText } from '../../../common/native-text/NativeText';
@@ -54,6 +54,7 @@ export const GroupText: FC<GroupTextProps> = ({
 }) =>
 {
     const textRef = useRef<HTMLDivElement>(null);
+    const Tag: ElementType = onClick ? BaseButton : 'div';
     const [centerOffset, setCenterOffset] = useState(0);
     const isCentered = align === 'center' && width !== undefined;
 
@@ -83,7 +84,7 @@ export const GroupText: FC<GroupTextProps> = ({
     };
 
     return (
-        <div ref={textRef} className={`octane-group-native__text${height === undefined ? '' : ' is-clipped'} ${className}`} style={style} onClick={onClick}>
+        <Tag ref={textRef} {...(onClick ? { type: 'button' } : {})} className={`octane-group-native__text${height === undefined ? '' : ' is-clipped'} ${className}`} style={style} onClick={onClick}>
             <NativeText
                 background={blend === 'multiply' ? 0xffffff : blend === 'screen' ? 0x000000 : background}
                 leading={leading}
@@ -92,7 +93,7 @@ export const GroupText: FC<GroupTextProps> = ({
                 text={toNativeText(text)}
                 textStyle={textStyle}
             />
-        </div>
+        </Tag>
     );
 };
 
@@ -111,11 +112,15 @@ interface GroupBoxProps {
 }
 
 /** border style 0 (white, or tinted 0xffc300 / 0xcc0000 / 0xaaaaaa), 5 (outline), or style 3 (slot) white or tinted 0xe9e9e1 / 0xbebba5. */
-export const GroupBox: FC<GroupBoxProps> = ({ kind, x, y, width, height, className = '', onClick, children }) => (
-    <div className={`octane-group-native__box is-${kind} ${className}`} style={{ left: x, top: y, width, height }} onClick={onClick}>
+export const GroupBox: FC<GroupBoxProps> = ({ kind, x, y, width, height, className = '', onClick, children }) => {
+    const Tag: ElementType = onClick ? BaseButton : 'div';
+
+    return (
+    <Tag {...(onClick ? { type: 'button' } : {})} className={`octane-group-native__box is-${kind} ${className}`} style={{ left: x, top: y, width, height }} onClick={onClick}>
         {children}
-    </div>
+    </Tag>
 );
+};
 
 interface GroupButtonProps {
     label: string;

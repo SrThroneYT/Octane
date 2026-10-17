@@ -8,6 +8,7 @@ import { OctaneCard, OctaneInput } from '../../layout';
 import { CreateEmptyChannels, ITraxPlacement, ParseTraxSong, SerializeTraxSong, TRAX_CHANNEL_COUNT, TRAX_DEFAULT_UNITS, TRAX_MAX_UNITS, TRAX_MIN_UNITS, TraxChannels } from './TraxSongData';
 import { GetTraxSampleId, GetTraxSoundSetForSample, TraxSoundSets } from './TraxSoundSets';
 import { BaseButton } from '../../common/BaseButton';
+import { ToggleButton } from '../../common/ToggleButton';
 
 const CELL_WIDTH = 22;
 const CARTRIDGES_PER_PAGE = 8;
@@ -483,10 +484,10 @@ export const TraxEditorView: FC<{}> = () =>
                                 const diskColor = GetDiskColor(song.data);
 
                                 return (
-                                    <div
+                                    <ToggleButton type="button" pressed={isOpen}
                                         key={song.id}
                                         onClick={() => openSong(song)}
-                                        className="flex cursor-pointer items-center gap-2 rounded-lg border p-2"
+                                        className="flex w-full cursor-pointer items-center gap-2 rounded-lg border p-2 text-left"
                                         style={{
                                             borderColor: isOpen ? '#2e6f8a' : 'rgba(0, 0, 0, 0.2)',
                                             background: isOpen ? 'linear-gradient(#eaf7fe, #d2ecf9)' : 'linear-gradient(#ffffff, #ececec)',
@@ -506,7 +507,7 @@ export const TraxEditorView: FC<{}> = () =>
                                             <span className="block text-[10px]" style={{ color: 'rgba(0, 0, 0, 0.5)' }}>♪ {formatStamp(song.length)}</span>
                                         </div>
                                         {isOpen && <span className="shrink-0 text-[12px]" style={{ color: '#2e6f8a' }}>▶</span>}
-                                    </div>
+                                    </ToggleButton>
                                 );
                             })}
                         {loaded &&

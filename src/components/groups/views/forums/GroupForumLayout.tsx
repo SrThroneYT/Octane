@@ -102,7 +102,7 @@ interface ForumHeaderProps {
 /** top_part: 550x80 band, a 80x80 black icon cell, the headline, the description and the optional Settings pill. */
 export const ForumHeader: FC<ForumHeaderProps> = ({ title, description, badge, icon, descriptionWidth = 456, canChangeSettings = false, onSettings, onClick }) => (
     <div className="octane-forum__header">
-        <div className="octane-forum__header-click" onClick={onClick} />
+        <BaseButton type="button" aria-label={title} className="octane-forum__header-click" onClick={onClick} />
         <div className="octane-forum__header-icon">
             {badge !== undefined && (
                 <div className="octane-forum__header-badge">

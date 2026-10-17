@@ -296,7 +296,7 @@ export const GroupMembersView: FC<{}> = (props) => {
                     {membersData.result.map((member, index) => {
                         return (
                             <Flex key={index} alignItems="center" className="octane-group-member-row" gap={0} overflow="hidden">
-                                <div className="octane-group-member-row__avatar cursor-pointer" onClick={() => GetUserProfile(member.id)}>
+                                <BaseButton type="button" className="octane-group-member-row__avatar cursor-pointer" onClick={() => GetUserProfile(member.id)}>
                                     <LayoutAvatarImageView
                                         className="octane-group-member-row__head"
                                         direction={2}
@@ -306,9 +306,9 @@ export const GroupMembersView: FC<{}> = (props) => {
                                         compactHeadSize={40}
                                         compactHeadPadding={0}
                                     />
-                                </div>
+                                </BaseButton>
                                 <Column className="octane-group-member-row__copy" grow gap={0}>
-                                    <Text bold pointer small className="octane-group-member-row__name" onClick={(event) => GetUserProfile(member.id)}>
+                                    <Text component={BaseButton} type="button" bold pointer small className="octane-group-member-row__name" onClick={(event) => GetUserProfile(member.id)}>
                                         {member.name}
                                     </Text>
                                     {member.rank !== GroupRank.REQUESTED && (
@@ -320,7 +320,7 @@ export const GroupMembersView: FC<{}> = (props) => {
                                 <div className="octane-group-member-row__actions">
                                     {member.rank !== GroupRank.REQUESTED && member.rank !== GroupRank.BLOCKED && (
                                         <div className="flex items-center justify-center">
-                                            <div
+                                            <BaseButton type="button" aria-label={LocalizeText(getRankDescription(member))}
                                                 className={classNames(
                                                     `octane-icon icon-group-small-${member.rank === GroupRank.OWNER ? 'owner' : member.rank === GroupRank.ADMIN ? 'admin' : membersData.admin && member.rank === GroupRank.MEMBER ? 'not-admin' : ''}`,
                                                     membersData.admin && 'cursor-pointer'
@@ -332,7 +332,7 @@ export const GroupMembersView: FC<{}> = (props) => {
                                     )}
                                     {membersData.admin && member.rank === GroupRank.REQUESTED && (
                                         <Flex alignItems="center">
-                                            <div
+                                            <BaseButton type="button" aria-label={LocalizeText('group.members.accept')}
                                                 className="cursor-pointer octane-friends-spritesheet icon-accept"
                                                 title={LocalizeText('group.members.accept')}
                                                 onClick={(event) => acceptMembership(member)}
@@ -365,7 +365,7 @@ export const GroupMembersView: FC<{}> = (props) => {
                                     )}
                                     {membersData.admin && member.rank !== GroupRank.OWNER && member.rank !== GroupRank.BLOCKED && member.id !== GetSessionDataManager().userId && (
                                         <Flex alignItems="center">
-                                            <div
+                                            <BaseButton type="button" aria-label={LocalizeText(member.rank === GroupRank.REQUESTED ? 'group.members.reject' : 'group.members.kick')}
                                                 className="cursor-pointer octane-friends-spritesheet icon-deny"
                                                 title={LocalizeText(member.rank === GroupRank.REQUESTED ? 'group.members.reject' : 'group.members.kick')}
                                                 onClick={(event) => removeMemberOrDeclineMembership(member)}

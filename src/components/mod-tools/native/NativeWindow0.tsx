@@ -1,4 +1,4 @@
-import { CSSProperties, FC, Fragment, ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { CSSProperties, FC, Fragment, ReactNode, useEffect, useLayoutEffect, useRef, useState, ElementType } from 'react';
 import { NativeTextStyleName } from '../../../common/native-text/NativeTextStyles';
 import '../../../css/mod-tools/NativeWindow0.css';
 import blueAtlas from '../../../assets/mod-tools/skins/habbo-blue-skin.png';
@@ -17,6 +17,7 @@ import headerXml from '../../../assets/mod-tools/skins/skin-header.xml?raw';
 import { NativeSkin, parseNativeSkin } from './NativeSkin';
 import { NativeSkinView } from './NativeSkinView';
 import { BaseButton } from '../../../common/BaseButton';
+import { ToggleButton } from '../../../common/ToggleButton';
 
 // Legacy window-manager style 0 (habbo_element_description_xml): blue frame 0xff418db0, white border, default button, checkbox, dropmenu, close button.
 const SKINS = {
@@ -75,6 +76,7 @@ interface Native0TextProps {
  */
 export const Native0Text: FC<Native0TextProps> = ({ text, x, y, width, height, bold, color = 0, underline, wrap, background, glow, clip, textStyle, onClick, style, onSize }) => {
     const ref = useRef<HTMLDivElement>(null);
+    const Tag: ElementType = onClick ? BaseButton : 'div';
     const white = textStyle === 'frame_title';
     const lineRef = useRef<HTMLSpanElement>(null);
     const [lineStarts, setLineStarts] = useState('');
@@ -116,9 +118,10 @@ export const Native0Text: FC<Native0TextProps> = ({ text, x, y, width, height, b
                 // drawn apart from the text: text on an opaque background is set with LCD subpixel fringes
                 <div className="native0-text__background" style={{ left: x, top: y, width, height: height ?? 13, backgroundColor: `#${background.toString(16).padStart(6, '0')}` }} />
             )}
-            <div
+            <Tag
                 ref={ref}
                 className="native0-text"
+                {...(onClick ? { type: 'button' } : {})}
                 style={{ left: x, top: y, width: wrap || clip ? width : undefined, height: height === undefined ? undefined : height, overflow: clip ? 'hidden' : undefined, cursor: onClick ? 'pointer' : undefined, color: `#${(white ? 0xffffff : color).toString(16).padStart(6, '0')}`, ...(glow === undefined ? {} : { ['--native0-glow' as string]: glow }), ...style }}
                 onClick={onClick}
             >
@@ -138,7 +141,7 @@ export const Native0Text: FC<Native0TextProps> = ({ text, x, y, width, height, b
                           ))
                         : text}
                 </span>
-            </div>
+            </Tag>
         </>
     );
 };
@@ -200,7 +203,7 @@ export const Native0Button: FC<Native0ButtonProps> = ({ x, y, width, height, lab
     }, [label, width, height]);
 
     return (
-        <div
+        <BaseButton type="button"
             className="native0-box native0-button"
             data-native-name={name}
             data-native-enabled={enabled}
@@ -220,14 +223,14 @@ export const Native0Button: FC<Native0ButtonProps> = ({ x, y, width, height, lab
                     {label}
                 </span>
             </div>
-        </div>
+        </BaseButton>
     );
 };
 
 export const Native0Checkbox: FC<{ x: number; y: number; checked: boolean; enabled?: boolean; onToggle: () => void; name?: string }> = ({ x, y, checked, enabled = true, onToggle, name }) => (
-    <div className="native0-box native0-checkbox" data-native-name={name} data-native-enabled={enabled} style={rect(x, y, 16, 16)} onClick={enabled ? onToggle : undefined}>
+    <ToggleButton type="button" pressed={checked} className="native0-box native0-checkbox" data-native-name={name} data-native-enabled={enabled} style={rect(x, y, 16, 16)} onClick={enabled ? onToggle : undefined}>
         <NativeSkinView atlas={blueAtlas} height={16} layout="button_checkbox" skin={SKINS.checkbox} state={checked ? 'selected' : 'default'} width={16} />
-    </div>
+    </ToggleButton>
 );
 
 interface Native0InputProps {
@@ -281,14 +284,14 @@ export const Native0Dropmenu: FC<Native0DropmenuProps> = ({ x, y, width, height,
         <div className="native0-box native0-dropmenu" data-native-name={name} style={rect(x, y, width, height)}>
             <NativeSkinView atlas={blueAtlas} height={height} layout="dropmenu_frame" skin={SKINS.dropmenu} width={width} />
             <Native0Text text={caption} width={width - 40} x={10} y={4} />
-            <div className="native0-dropmenu__region" onClick={onToggle} />
+            <BaseButton type="button" aria-label={caption} className="native0-dropmenu__region" onClick={onToggle} />
             {open && (
                 <div className="native0-dropmenu__list" style={{ top: 0, width, height: items.length * 16 + 7 }} onPointerLeave={() => setHover(-1)}>
                     <NativeSkinView atlas={blueAtlas} height={items.length * 16 + 7} layout="dropmenu_frame" skin={DROPMENU_LIST} width={width} />
                     {items.map((item, index) => (
-                        <div key={index} className={`native0-dropmenu__item${hover === index ? ' is-hover' : ''}`} style={{ top: 2 + index * 16 }} onClick={() => onSelect(index)} onPointerMove={() => setHover(index)}>
+                        <BaseButton type="button" key={index} className={`native0-dropmenu__item${hover === index ? ' is-hover' : ''}`} style={{ top: 2 + index * 16 }} onClick={() => onSelect(index)} onPointerMove={() => setHover(index)}>
                             <Native0Text text={item} width={width - 12} x={7} y={1} />
-                        </div>
+                        </BaseButton>
                     ))}
                 </div>
             )}
@@ -443,12 +446,12 @@ export const Native0Tab: FC<Native0TabProps> = ({ x, y, width, height, label, se
     }, [label, width, height]);
 
     return (
-        <div className="native0-box native0-tab" style={rect(x, y, width, height)} onClick={onClick} onPointerEnter={() => setOver(true)} onPointerLeave={() => setOver(false)}>
+        <ToggleButton type="button" pressed={selected} className="native0-box native0-tab" style={rect(x, y, width, height)} onClick={onClick} onPointerEnter={() => setOver(true)} onPointerLeave={() => setOver(false)}>
             <NativeSkinView atlas={blueAtlas} height={height} layout="button_tab" skin={SKINS.tab} state={state} width={width} />
             <span ref={labelRef} className="native0-text__line native0-tab__label" style={offset}>
                 {label}
             </span>
-        </div>
+        </ToggleButton>
     );
 };
 

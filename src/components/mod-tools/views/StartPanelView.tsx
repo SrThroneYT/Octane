@@ -122,12 +122,12 @@ export const StartPanelView: FC<StartPanelProps> = (props) => {
                                 </div>
                             )}
                             {searchResults.slice(0, 12).map((result, index) => (
-                                <div key={result.avatarId} className="native-start-panel__result" style={{ top: 2 + index * RESULT_HEIGHT }} onClick={() => onPickUser(result)}>
+                                <BaseButton type="button" key={result.avatarId} className="native-start-panel__result" style={{ top: 2 + index * RESULT_HEIGHT }} onClick={() => onPickUser(result)}>
                                     <span className={`native-start-panel__presence${result.isAvatarOnline ? ' is-present' : ''}`} style={{ left: 3, top: 5 }} />
                                     <div style={{ position: 'absolute', left: 12, top: 1 }}>
                                         <NativeText background={0xffffff} text={result.avatarName} textStyle="il_regular" />
                                     </div>
-                                </div>
+                                </BaseButton>
                             ))}
                         </div>
                     )}
