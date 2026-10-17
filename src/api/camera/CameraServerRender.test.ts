@@ -12,13 +12,13 @@ const effect = (name: string, type: string) => ({ name, type }) as never;
 const selected = (name: string, type: string, strength: number) => ({ effect: effect(name, type), strength }) as never;
 
 describe('camera server render helpers', () => {
-    it('reads camera.render.mode, upload unless it says server', () => {
+    it('reads camera.render.mode, server unless it says upload', () => {
         config.values = {};
-        expect(GetCameraRenderMode()).toBe('upload');
-        config.values = { 'camera.render.mode': 'server' };
         expect(GetCameraRenderMode()).toBe('server');
-        config.values = { 'camera.render.mode': 'something' };
+        config.values = { 'camera.render.mode': 'upload' };
         expect(GetCameraRenderMode()).toBe('upload');
+        config.values = { 'camera.render.mode': 'something' };
+        expect(GetCameraRenderMode()).toBe('server');
     });
 
     it('writes the effects like AIR getEffectDataJson: lab order, int(strength * 255), frames last without alpha', () => {

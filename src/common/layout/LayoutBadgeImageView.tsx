@@ -1,5 +1,5 @@
 import { BadgeImageReadyEvent, GetEventDispatcher, GetSessionDataManager, OctaneSprite, TextureUtils } from '@octane/renderer';
-import React, { CSSProperties, FC, useEffect, useMemo, useRef, useState } from 'react';
+import { CSSProperties, FC, useEffect, useMemo, useRef, useState } from 'react';
 import {
     BadgeLeaderboardStat,
     ensureBadgeLeaderboardLoaded,
@@ -10,18 +10,13 @@ import {
     LocalizeText
 } from '../../api';
 import {
-    badgeRarityColorToCss,
-    formatBadgeOwnerCount,
     getBadgeRarityFromPacket,
     getBadgeRarityGlowColor,
-    getBadgeRarityLabelKey,
-    getBadgeRarityTagColor,
     getBadgeRarityTier,
-    isBadgeRarityStandaloneTier,
-    shouldShowBadgeOwnerCount
+    isBadgeRarityStandaloneTier
 } from '../../api/badges/badgeRarity';
 import { Base, BaseProps } from '../Base';
-import { useTooltip } from '../Tooltip';
+import { BadgeDetailsTooltip } from './BadgeDetailsTooltip';
 import { PIXEL_ART_RENDERING } from './PixelArtRendering';
 
 export interface LayoutBadgeImageViewProps extends BaseProps<HTMLDivElement> {
@@ -223,44 +218,7 @@ export const LayoutBadgeImageView: FC<LayoutBadgeImageViewProps> = (props) => {
 
     const stopBreathing = () => setGlowBreathing(false);
 
-    // Official badge_details bubble: a coloured "rarity_tag" with "<Tier> badge"
-    // (non-standalone tiers read "Common"), and an owner count only while it
-    // stays under 1000 (BadgeOwnerCountUtils.shouldShowOwnerCount).
-    const rarityLabel = rarityTier !== null ? LocalizeText(getBadgeRarityLabelKey(rarityTier, uncommonRarityEnabled)) : '';
-    const rarityText = rarityTier !== null ? LocalizeText('badge.rarity.badge', ['rarity'], [rarityLabel]) : '';
-    const rarityTagColor = rarityTier !== null ? badgeRarityColorToCss(getBadgeRarityTagColor(rarityTier, uncommonRarityEnabled)) : '';
-    const showOwnerCount = rarityTier !== null && shouldShowBadgeOwnerCount(ownerCount);
-    const ownersText = showOwnerCount ? LocalizeText('badge.owner_count', ['count'], [formatBadgeOwnerCount(ownerCount)]) : '';
-
-    // The badge element itself is the hover target: wrapping it would change
-    // the grid cell it sits in, so the headless hook spreads onto Base instead.
-    const { anchorProps, tooltip } = useTooltip({
-        disabled: !tooltipsEnabled,
-        className: 'max-w-[210px]',
-        content: tooltipsEnabled ? (
-            <>
-                <div className="font-bold">{isGroup ? customTitle : LocalizeBadgeName(badgeCode)}</div>
-                {showRarityInfo && rarityTier !== null && (
-                    <div className="mb-1">
-                        <div
-                            className="octane-badge-rarity-tag inline-block rounded-[3px] px-[5px] py-[2px] font-bold text-[10px] tracking-[0.04em] text-white"
-                            data-rarity-tier={rarityTier}
-                            style={{ backgroundColor: rarityTagColor }}
-                        >
-                            {rarityText}
-                        </div>
-                        {showOwnerCount && <div className="text-[10px] opacity-80">{ownersText}</div>}
-                    </div>
-                )}
-                <div>{isGroup ? LocalizeText('group.badgepopup.body') : LocalizeBadgeDescription(badgeCode)}</div>
-            </>
-        ) : null
-    });
-
-    const { onMouseEnter: tooltipMouseEnter, onMouseLeave: tooltipMouseLeave, ...anchorRest } = anchorProps as {
-        onMouseEnter?: (event: React.MouseEvent<HTMLDivElement>) => void;
-        onMouseLeave?: (event: React.MouseEvent<HTMLDivElement>) => void;
-    } & Record<string, unknown>;
+    const [isTooltipVisible, setIsTooltipVisible] = useState(false);
     const glowAnimation: CSSProperties = glowBreathing
         ? { animationDuration: `${BADGE_GLOW_DURATION_MS * 2}ms`, animationIterationCount: 'infinite', animationDirection: 'alternate' }
         : { animationDuration: `${BADGE_GLOW_DURATION_MS}ms` };
@@ -270,14 +228,13 @@ export const LayoutBadgeImageView: FC<LayoutBadgeImageViewProps> = (props) => {
             innerRef={badgeRef}
             classNames={getClassNames}
             style={getStyle}
-            {...anchorRest}
             {...rest}
-            onMouseEnter={(event) => {
-                tooltipMouseEnter?.(event);
+            onMouseEnter={() => {
+                if (tooltipsEnabled) setIsTooltipVisible(true);
                 startBreathing();
             }}
-            onMouseLeave={(event) => {
-                tooltipMouseLeave?.(event);
+            onMouseLeave={() => {
+                setIsTooltipVisible(false);
                 stopBreathing();
             }}
         >
@@ -297,7 +254,17 @@ export const LayoutBadgeImageView: FC<LayoutBadgeImageViewProps> = (props) => {
                     )}
                 </span>
             )}
-            {tooltip}
+            {tooltipsEnabled && isTooltipVisible && (
+                <BadgeDetailsTooltip
+                    key={badgeCode}
+                    anchor={badgeRef}
+                    name={isGroup ? (customTitle ?? '') : LocalizeBadgeName(badgeCode)}
+                    description={isGroup ? LocalizeText('group.badgepopup.body') : LocalizeBadgeDescription(badgeCode)}
+                    rarityTier={showRarityInfo ? rarityTier : null}
+                    ownerCount={ownerCount}
+                    uncommonEnabled={uncommonRarityEnabled}
+                />
+            )}
             {children}
         </Base>
     );

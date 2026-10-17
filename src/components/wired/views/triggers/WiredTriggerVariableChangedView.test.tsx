@@ -37,7 +37,8 @@ vi.mock('../WiredVariablePickerData', () => ({
     createFallbackVariableEntry: () => null,
     flattenWiredVariablePickerEntries: () => [],
     getCustomVariableItemId: () => 0,
-    normalizeVariableTokenFromWire: (token: string) => token
+    normalizeVariableTokenFromWire: (token: string) => token,
+    withoutExecutionContextVariables: <T,>(definitions: T[]) => definitions
 }));
 
 vi.mock('./WiredTriggerBaseView', () => ({

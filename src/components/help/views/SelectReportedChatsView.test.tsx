@@ -24,6 +24,8 @@ vi.mock('../../../common', () => ({
 }));
 vi.mock('../../../hooks', () => ({
     useChatHistory: () => ({ chatHistory: [chat], messengerHistory: [] }),
+    useFriendsState: () => ({ friends: [] }),
+    useMessenger: () => ({ messageThreads: [] }),
     useHelp: () => ({ activeReport: { reportType: 1, reportedUserId: 7, currentStep: 2 }, setActiveReport })
 }));
 

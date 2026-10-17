@@ -82,6 +82,7 @@ export const WiredActionChestRewardBaseView: FC<{ extra: ChestRewardExtra }> = (
             requiresFurni={WiredFurniType.STUFF_SELECTION_OPTION_BY_ID}
             save={save}
             validate={validate}
+            footerCollapsible={false}
             footer={
                 <WiredSourcesSelector
                     showUsers={true}

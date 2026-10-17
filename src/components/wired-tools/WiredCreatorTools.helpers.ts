@@ -135,6 +135,9 @@ export const normalizeMonitorReason = (reason: string): string => {
 };
 
 /** The server's text-connector table as the variables tab lists it; undefined when there is none. */
+/** A pointer (AIR requiresExecutionContext) only exists while a stack runs: nobody holds it, so it cannot be highlighted or managed. */
+export const isStackOnlyVariable = (definition?: { requiresExecutionContext?: boolean } | null): boolean => !!definition?.requiresExecutionContext;
+
 export const toVariableTextValues = (textConnector?: Array<{ key: number; value: string }>): VariableTextValue[] | undefined => {
     if (!textConnector?.length) return undefined;
 

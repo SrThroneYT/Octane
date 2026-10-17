@@ -21,6 +21,7 @@ import { FurnitureRecolorView } from './FurnitureRecolorView';
 import { FurnitureStackHeightView } from './FurnitureStackHeightView';
 import { FurnitureStickieView } from './FurnitureStickieView';
 import { FurnitureTrophyView } from './FurnitureTrophyView';
+import { FurnitureWiredChestRewardView } from './FurnitureWiredChestRewardView';
 import { FurnitureYoutubeDisplayView } from './FurnitureYoutubeDisplayView';
 import { FurniturePlaylistEditorWidgetView } from './playlist-editor/FurniturePlaylistEditorWidgetView';
 
@@ -38,6 +39,9 @@ export const FurnitureWidgetsView: FC<{}> = (props) => {
             </WidgetErrorBoundary>
             <WidgetErrorBoundary name="FurnitureChest">
                 <FurnitureChestView />
+            </WidgetErrorBoundary>
+            <WidgetErrorBoundary name="FurnitureWiredChestReward">
+                <FurnitureWiredChestRewardView />
             </WidgetErrorBoundary>
             <WidgetErrorBoundary name="FurnitureRecolor">
                 <FurnitureRecolorView />

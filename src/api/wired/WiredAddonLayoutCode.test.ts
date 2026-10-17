@@ -14,7 +14,7 @@ const OFFICIAL_ADDONS: Record<string, number> = {
 };
 const OFFICIAL_VARIABLES: Record<string, number> = {
     FURNI_VARIABLE: 0, USER_VARIABLE: 1, GLOBAL_VARIABLE: 2, CONTEXT_VARIABLE: 3, REFERENCE_VARIABLE: 4, QUEST_VARIABLE: 5,
-    QUEST_CHAIN_VARIABLE: 6, ECHO_VARIABLE: 7, DAILY_TASK_VARIABLE: 8
+    QUEST_CHAIN_VARIABLE: 6, ECHO_VARIABLE: 7, DAILY_TASK_VARIABLE: 8, POINTER_VARIABLE: 9
 };
 const values = (table: unknown) => Object.values(table as Record<string, number>);
 

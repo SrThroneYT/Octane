@@ -43,7 +43,8 @@ import {
     WiredClipboardEntry,
     wiredClipboardKeyOf,
     WiredFurniType,
-    WiredSelectionVisualizer
+    WiredSelectionVisualizer,
+    withServerDefaultIntParams
 } from '../../api';
 import { useMessageEvent } from '../events';
 import { useNotification } from '../notification';
@@ -59,6 +60,22 @@ const WIRED_ERROR_FALLBACKS: Record<string, string> = {
     'wiredfurni.error.variable_leaderboard.column_name_length': 'Column names must contain at least two characters.',
     'wiredfurni.error.variable_leaderboard.filter_required': 'Select a filtering variable.',
     'wiredfurni.error.variable_leaderboard.global_operand_required': 'Select a global comparison variable.'
+};
+
+/**
+ * Placeholders of server refusal keys that arrive without values: the limits the server applies (Users By Name refuses
+ * more than 20 names or 1000 characters).
+ */
+const WIRED_ERROR_PARAMETERS: Record<string, [string[], string[]]> = {
+    'wiredfurni.error.usernames_count': [['max_usernames'], ['20']],
+    'wiredfurni.error.too_much_text': [['limit'], ['1000']]
+};
+
+/** The text for a server refusal key, with its known placeholders filled. */
+export const localizeWiredError = (key: string) => {
+    const [parameters, replacements] = WIRED_ERROR_PARAMETERS[key] ?? [null, null];
+
+    return localizeWithFallback(key, WIRED_ERROR_FALLBACKS[key] ?? key, parameters, replacements);
 };
 
 /** Whether a clicked floor furni may be picked, from its room object and furnidata. */
@@ -176,8 +193,25 @@ const useWiredState = () => {
 
         const trigger = triggerRef.current;
 
-        // Official: editing someone else's wired asks once per session.
-        if (!nonOwnerConfirmedRef.current && !IsOwnerOfFloorFurniture(target ? target.id : trigger.id)) {
+        const isSelector = trigger instanceof WiredSelectorDefinition;
+        const invert = selectorOptionsRef.current?.invert ?? (isSelector ? trigger.isInvert : false) ?? false;
+        const filter = selectorOptionsRef.current?.filter ?? (isSelector ? trigger.isFilter : false) ?? false;
+
+        // Official: a selector saved with Invert but without Filter asks first. Accepting any of these
+        // confirmations also counts as the non-owner confirmation.
+        if (isSelector && invert && !filter) {
+            showConfirm(
+                LocalizeText('wiredfurni.danger.1.change.confirm.body'),
+                () => {
+                    nonOwnerConfirmedRef.current = true;
+                    save(trigger);
+                },
+                null,
+                null,
+                null,
+                LocalizeText('wiredfurni.danger.1.change.confirm.title')
+            );
+        } else if (!nonOwnerConfirmedRef.current && !IsOwnerOfFloorFurniture(target ? target.id : trigger.id)) {
             showConfirm(
                 LocalizeText('wiredfurni.nonowner.change.confirm.body'),
                 () => {
@@ -490,9 +524,7 @@ const useWiredState = () => {
         const parser = event.getParser();
 
         if (parser.info && parser.info.length) {
-            const message = /^[a-z0-9_.]+$/i.test(parser.info)
-                ? localizeWithFallback(parser.info, WIRED_ERROR_FALLBACKS[parser.info] ?? parser.info)
-                : parser.info;
+            const message = /^[a-z0-9_.]+$/i.test(parser.info) ? localizeWiredError(parser.info) : parser.info;
 
             simpleAlert(message, null, null, null, LocalizeText('wiredfurni.title'));
         }
@@ -522,7 +554,7 @@ const useWiredState = () => {
 
         // Official: every newly opened box starts with paste-into off.
         setPasteIntoMode(false);
-        setTrigger(definition);
+        setTrigger(withServerDefaultIntParams(definition));
     };
 
     useMessageEvent<WiredFurniAddonEvent>(WiredFurniAddonEvent, (event) => openDefinition(event.getParser().definition));

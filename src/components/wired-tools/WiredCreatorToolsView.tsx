@@ -49,6 +49,7 @@ import {
     userVariableHolderKey,
     WiredSelectionVisualizer
 } from '../../api';
+import { IsBuildersClubFurniId, IsTemporaryFurniId } from '../../api/utils/FurniIdBand';
 import wiredGlobalPlaceholderImage from '../../assets/images/wiredtools/wired_global_placeholder.png';
 import wiredMonitorImage from '../../assets/images/wiredtools/wired_monitor.png';
 import {
@@ -84,6 +85,7 @@ import {
     WIRED_FREEZE_EFFECT_IDS,
     WIRED_FURNI_RUNTIME_ACTION_READ,
     WIRED_FURNI_RUNTIME_ACTION_WRITE,
+    getBuiltinTextConnectorLabel,
     WIRED_INSPECTION_REFRESH_MS,
     WIRED_MONITOR_ACTION_CLEAR_LOGS,
     WIRED_MONITOR_ACTION_FETCH,
@@ -99,6 +101,7 @@ import {
     formatVariableTimestamp,
     getHotelDateTimeParts,
     getHotelTimeFormatter,
+    isStackOnlyVariable,
     normalizeMonitorReason,
     toVariableTextValues
 } from './WiredCreatorTools.helpers';
@@ -138,6 +141,7 @@ import { WiredVariableHolderPanelView } from './WiredVariableHolderPanelView';
 import { WiredVariablesTabView } from './WiredVariablesTabView';
 import { translateWiredMenuLink, wiredMenuTabKey } from './WiredMenuLinks';
 import { useWiredCreatorToolsUiStore } from './wiredCreatorToolsUiStore';
+import { isDerivedVariableItemId } from '../wired/views/WiredVariablePickerData';
 
 const WIRED_FURNI_GRAVITY_MODEL_KEY = 'wired_furni_gravity';
 
@@ -222,6 +226,7 @@ export const WiredCreatorToolsView: FC<{}> = () => {
     const variableHighlightOverlays = useWiredCreatorToolsUiStore((s) => s.variableHighlightOverlays);
     const setVariableHighlightOverlays = useWiredCreatorToolsUiStore((s) => s.setVariableHighlightOverlays);
     const variableHighlightObjectsRef = useRef<Array<{ category: number; objectId: number }>>([]);
+    const canInspectRef = useRef(false);
     const monitorRequestGateRef = useRef<ReturnType<typeof createPacketCooldownGate> | null>(null);
 
     if (!monitorRequestGateRef.current) {
@@ -975,6 +980,10 @@ export const WiredCreatorToolsView: FC<{}> = () => {
                         setActiveTab('monitor');
                         setIsVisible(true);
                         return;
+                    case 'open':
+                        // wiredmenu/open: the menu on its current tab.
+                        setIsVisible(true);
+                        return;
                     case 'hide':
                         setIsVisible(false);
                         return;
@@ -994,7 +1003,7 @@ export const WiredCreatorToolsView: FC<{}> = () => {
                                 NotificationAlertType.ALERT,
                                 null,
                                 null,
-                                LocalizeText('generic.alert.title')
+                                LocalizeText('wiredmenu.invalid_room.title')
                             );
                         return;
                     case 'inspection':
@@ -1048,6 +1057,12 @@ export const WiredCreatorToolsView: FC<{}> = () => {
         // The official wired menu links (notifications, other windows) land on the same handler.
         const wiredMenuTracker: ILinkEventTracker = {
             linkReceived: (url: string) => {
+                // Without read permission every wired menu link only alerts.
+                if (!canInspectRef.current) {
+                    linkTracker.linkReceived('wired-tools/invalid');
+                    return;
+                }
+
                 const translated = translateWiredMenuLink(url);
 
                 if (translated) linkTracker.linkReceived(translated);
@@ -1062,6 +1077,10 @@ export const WiredCreatorToolsView: FC<{}> = () => {
             RemoveLinkEventTracker(wiredMenuTracker);
         };
     }, [refreshSelectedFurni, refreshSelectedUser, simpleAlert, setIsRoomLogsOpen]);
+
+    useEffect(() => {
+        canInspectRef.current = !!roomSettings.canInspect;
+    }, [roomSettings.canInspect]);
 
     useEffect(() => {
         if (!isVisible || !roomSession?.roomId || !roomSettings.isLoaded || roomSettings.canInspect) return;
@@ -1337,6 +1356,12 @@ export const WiredCreatorToolsView: FC<{}> = () => {
             };
         });
 
+        // Official furni @type: 0 normal, 1 Builders Club, 2 a temporary (Wired) copy.
+        const selectedFurniTypeValue = IsTemporaryFurniId(selectedFurni.objectId)
+            ? 2
+            : IsBuildersClubFurniId(selectedFurni.objectId) || selectedFurnitureData?.availableForBuildersClub
+              ? 1
+              : 0;
         const variables: InspectionVariable[] = [
             ...customVariables,
             ...(Number(selectedFurni.info?.teleportTargetId ?? 0) > 0
@@ -1365,7 +1390,8 @@ export const WiredCreatorToolsView: FC<{}> = () => {
             ...(wallItemOffset ? [{ key: '@wallitem_offset', value: wallItemOffset, editable: canEditInspection }] : []),
             {
                 key: '@type',
-                value: `${selectedFurnitureData?.availableForBuildersClub ? 1 : 0}${selectedFurnitureData?.availableForBuildersClub ? ' (BC)' : ' (Normal)'}`
+                value: String(selectedFurniTypeValue),
+                label: getBuiltinTextConnectorLabel('furni', '@type', selectedFurniTypeValue)
             },
             ...dynamicFlags,
             { key: '@dimensions.x', value: String(selectedFurni.info?.tileSizeX ?? 0) },
@@ -1438,6 +1464,8 @@ export const WiredCreatorToolsView: FC<{}> = () => {
         const identityKey =
             selectedUser.kind === 'pet' ? '@pet_id' : selectedUser.kind === 'bot' || selectedUser.kind === 'rentable_bot' ? '@bot_id' : '@user_id';
         const teamData = getSelectedUserTeamData(effectValue);
+        const selectedUserTypeValue = selectedUser.kind === 'user' ? 1 : selectedUser.kind === 'pet' ? 2 : 4;
+        const selectedUserGenderValue = selectedUser.gender === 'F' ? 1 : selectedUser.gender === 'M' ? 0 : -1;
         const dynamicUserFlags: InspectionVariable[] = [];
         const dynamicUserActions: InspectionVariable[] = [];
 
@@ -1470,15 +1498,20 @@ export const WiredCreatorToolsView: FC<{}> = () => {
         return [
             ...customVariables,
             { key: '@index', value: String(selectedUser.roomIndex) },
-            { key: '@type', value: `${selectedUser.kind === 'user' ? 1 : selectedUser.kind === 'pet' ? 2 : 4} (${selectedUser.kind})` },
-            { key: '@gender', value: `${selectedUser.gender === 'F' ? 1 : selectedUser.gender === 'M' ? 0 : -1} (${selectedUser.gender || 'U'})` },
+            { key: '@type', value: String(selectedUserTypeValue), label: getBuiltinTextConnectorLabel('user', '@type', selectedUserTypeValue) },
+            { key: '@gender', value: String(selectedUserGenderValue), label: getBuiltinTextConnectorLabel('user', '@gender', selectedUserGenderValue) },
             { key: '@level', value: String(currentControllerLevel) },
             { key: '@achievement_score', value: String(selectedUser.achievementScore ?? 0) },
             ...dynamicUserFlags,
             ...dynamicUserActions,
             { key: '@position_x', value: String(liveState?.positionX ?? 0), editable: canEditSelectedUser },
             { key: '@position_y', value: String(liveState?.positionY ?? 0), editable: canEditSelectedUser },
-            { key: '@direction', value: String(liveState?.direction ?? 0), editable: canEditSelectedUser },
+            {
+                key: '@direction',
+                value: String(liveState?.direction ?? 0),
+                label: getBuiltinTextConnectorLabel('user', '@direction', liveState?.direction ?? 0),
+                editable: canEditSelectedUser
+            },
             { key: '@altitude', value: String(liveState?.altitude ?? 0) },
             ...(Number(selectedUser.favouriteGroupId ?? 0) > 0 ? [{ key: '@favourite_group_id', value: String(selectedUser.favouriteGroupId) }] : []),
             ...(selectedUser.roomEntryMethod && selectedUser.roomEntryMethod !== 'unknown'
@@ -1576,7 +1609,7 @@ export const WiredCreatorToolsView: FC<{}> = () => {
             { key: '@timezone_server', value: `${hotelTimeZoneOffsetMinutes} (${hotelTimeZone})` },
             { key: '@timezone_client', value: `${clientTimeZoneOffsetMinutes} (${clientTimeZone})` },
             { key: '@current_time', value: String(Math.floor(hotelCurrentTimeMs / 1000)) },
-            { key: '@current_time.millisecond_of_second', value: String(hotelNow.millisecond) },
+            { key: '@current_time.milliseconds_of_seconds', value: String(hotelNow.millisecond) },
             { key: '@current_time.seconds_of_minute', value: String(hotelNow.second) },
             { key: '@current_time.minute_of_hour', value: String(hotelNow.minute) },
             { key: '@current_time.hour_of_day', value: String(hotelNow.hour) },
@@ -1626,7 +1659,7 @@ export const WiredCreatorToolsView: FC<{}> = () => {
         const assignedIds = new Set(assignments.map((assignment) => assignment.variableItemId));
 
         return definitions
-            .filter((definition) => !assignedIds.has(definition.itemId) && !definition.isReadOnly)
+            .filter((definition) => !assignedIds.has(definition.itemId) && !definition.isReadOnly && !isDerivedVariableItemId(definition.itemId))
             .sort((left, right) => left.name.localeCompare(right.name, undefined, { sensitivity: 'base' }) || left.itemId - right.itemId);
     }, [inspectionType, selectedUser, selectedFurni, userVariableDefinitions, furniVariableDefinitions, selectedUserAssignments, selectedFurniAssignments]);
     const selectedInspectionGiveDefinition = useMemo(() => {
@@ -1643,7 +1676,10 @@ export const WiredCreatorToolsView: FC<{}> = () => {
         return false;
     }, [roomSettings.canModify, inspectionType, selectedUser, selectedFurni]);
     const canRemoveInspectionVariable =
-        canManageInspectionVariableAssignments && !!selectedInspectionCustomDefinition && !selectedInspectionCustomDefinition.isReadOnly;
+        canManageInspectionVariableAssignments &&
+        !!selectedInspectionCustomDefinition &&
+        !selectedInspectionCustomDefinition.isReadOnly &&
+        !isDerivedVariableItemId(selectedInspectionCustomDefinition.itemId);
     const canGiveInspectionVariable = canManageInspectionVariableAssignments && !!availableInspectionDefinitions.length;
     const variableDefinitionsByType = useMemo<Record<VariablesElementType, VariableDefinition[]>>(() => {
         const customUserDefinitions: VariableDefinition[] = userVariableDefinitions
@@ -1662,7 +1698,8 @@ export const WiredCreatorToolsView: FC<{}> = () => {
                 hasUpdateTime: true,
                 isTextConnected: definition.isTextConnected,
                 isAlwaysAvailable: false,
-                textConnector: toVariableTextValues(definition.textConnector)
+                textConnector: toVariableTextValues(definition.textConnector),
+                requiresExecutionContext: !!definition.requiresExecutionContext
             }))
             .sort((left, right) => left.key.localeCompare(right.key, undefined, { sensitivity: 'base' }));
         const customFurniDefinitions: VariableDefinition[] = furniVariableDefinitions
@@ -1681,7 +1718,8 @@ export const WiredCreatorToolsView: FC<{}> = () => {
                 hasUpdateTime: true,
                 isTextConnected: definition.isTextConnected,
                 isAlwaysAvailable: false,
-                textConnector: toVariableTextValues(definition.textConnector)
+                textConnector: toVariableTextValues(definition.textConnector),
+                requiresExecutionContext: !!definition.requiresExecutionContext
             }))
             .sort((left, right) => left.key.localeCompare(right.key, undefined, { sensitivity: 'base' }));
         const customRoomDefinitions: VariableDefinition[] = roomVariableDefinitions
@@ -1700,7 +1738,8 @@ export const WiredCreatorToolsView: FC<{}> = () => {
                 hasUpdateTime: true,
                 isTextConnected: definition.isTextConnected,
                 isAlwaysAvailable: false,
-                textConnector: toVariableTextValues(definition.textConnector)
+                textConnector: toVariableTextValues(definition.textConnector),
+                requiresExecutionContext: !!definition.requiresExecutionContext
             }))
             .sort((left, right) => left.key.localeCompare(right.key, undefined, { sensitivity: 'base' }));
         const customContextDefinitions: VariableDefinition[] = contextVariableDefinitions
@@ -1719,7 +1758,8 @@ export const WiredCreatorToolsView: FC<{}> = () => {
                 hasUpdateTime: true,
                 isTextConnected: definition.isTextConnected,
                 isAlwaysAvailable: false,
-                textConnector: toVariableTextValues(definition.textConnector)
+                textConnector: toVariableTextValues(definition.textConnector),
+                requiresExecutionContext: !!definition.requiresExecutionContext
             }))
             .sort((left, right) => left.key.localeCompare(right.key, undefined, { sensitivity: 'base' }));
 
@@ -1967,9 +2007,11 @@ export const WiredCreatorToolsView: FC<{}> = () => {
         },
         [roomSession]
     );
+    // AIR's overview tab cannot highlight or manage a variable that only exists while a stack runs (a pointer).
     const canVariableHighlight =
         !!selectedVariableDefinition?.itemId &&
         selectedVariableDefinition.type === 'Custom' &&
+        !isStackOnlyVariable(selectedVariableDefinition) &&
         (variablesType === 'user' || variablesType === 'furni') &&
         !!roomSession;
     const variableHighlightTargets = useMemo((): VariableHighlightTarget[] => {
@@ -2196,7 +2238,7 @@ export const WiredCreatorToolsView: FC<{}> = () => {
         const definitions = variablesType === 'user' ? userVariableDefinitions : furniVariableDefinitions;
 
         return definitions
-            .filter((definition) => !assignedIds.has(definition.itemId) && !definition.isReadOnly)
+            .filter((definition) => !assignedIds.has(definition.itemId) && !definition.isReadOnly && !isDerivedVariableItemId(definition.itemId))
             .sort((left, right) => left.name.localeCompare(right.name, undefined, { sensitivity: 'base' }));
     }, [selectedManagedVariableEntry, variablesType, managedHolderVariableEntries, userVariableDefinitions, furniVariableDefinitions]);
     const selectedManagedGiveDefinition = useMemo(() => {
@@ -2298,7 +2340,8 @@ export const WiredCreatorToolsView: FC<{}> = () => {
         variablesType !== 'global' &&
         variablesType !== 'context' &&
         !!selectedManagedHolderVariableEntry &&
-        !selectedManagedHolderVariableEntry.isReadOnly;
+        !selectedManagedHolderVariableEntry.isReadOnly &&
+        !isDerivedVariableItemId(selectedManagedHolderVariableEntry.variableItemId);
     const canGiveManagedHolderVariable =
         canManageHolderVariables && variablesType !== 'global' && variablesType !== 'context' && !!availableManagedHolderDefinitions.length;
     useEffect(() => {
@@ -2344,7 +2387,11 @@ export const WiredCreatorToolsView: FC<{}> = () => {
 
         setEditingManagedHolderValue(String(selectedManagedHolderVariableEntry.value ?? 0));
     }, [selectedManagedHolderVariableEntry, editingManagedHolderVariableId]);
-    const variableManageCanOpen = !!selectedVariableDefinition && selectedVariableDefinition.type === 'Custom' && variablesType !== 'context';
+    const variableManageCanOpen =
+        !!selectedVariableDefinition &&
+        selectedVariableDefinition.type === 'Custom' &&
+        variablesType !== 'context' &&
+        !isStackOnlyVariable(selectedVariableDefinition);
     // Clearing reaches holders outside the room, so only the owner of the definition box gets the
     // button; the server enforces the same rule.
     const canVariableClear =

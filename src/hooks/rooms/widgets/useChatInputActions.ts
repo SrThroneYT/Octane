@@ -97,6 +97,14 @@ export const useChatInputActions = () => {
                         }
 
                         break;
+                    case ':67':
+                        if (GetConfigurationValue('avatar.expression.67.enabled', false) && GetClubMemberLevel() === HabboClubLevelEnum.VIP) {
+                            roomSession?.sendExpressionMessage(AvatarExpressionEnum.EXPRESSION_67.ordinal);
+
+                            return null;
+                        }
+
+                        break;
                     case ':jump':
                         if (GetClubMemberLevel() === HabboClubLevelEnum.VIP) {
                             roomSession?.sendExpressionMessage(AvatarExpressionEnum.JUMP.ordinal);
@@ -203,6 +211,18 @@ export const useChatInputActions = () => {
                     case ':bcfloor':
                         if ((roomSession?.controllerLevel ?? 0) >= RoomControllerLevel.ROOM_OWNER) CreateLinkEvent('floor-editor/show');
 
+                        return null;
+                    case ':wf':
+                    case ':wired':
+                        CreateLinkEvent('wiredmenu/open');
+                        return null;
+                    case ':var':
+                    case ':variables':
+                        CreateLinkEvent('wiredmenu/open/variable_overview');
+                        return null;
+                    case ':inspect':
+                    case ':inspection':
+                        CreateLinkEvent('wiredmenu/open/inspection');
                         return null;
                     case ':togglefps': {
                         if (GetTicker().maxFPS > 0) GetTicker().maxFPS = 0;

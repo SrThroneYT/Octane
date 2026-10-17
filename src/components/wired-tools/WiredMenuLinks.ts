@@ -2,7 +2,8 @@
  * The official wired menu links (`wiredmenu/...`, WiredMenuController.linkReceived) as our creator
  * tools links (`wired-tools/...`). Null when the link names nothing we have.
  *
- * - `wiredmenu/open[/<tab>]`, with `variable_overview` for our variables tab;
+ * - `wiredmenu/open` shows the menu on its current tab (`wired-tools/open`);
+ * - `wiredmenu/open/<tab>` also selects that tab, with `variable_overview` for our variables tab;
  * - `wiredmenu/open/variable_overview/<name>` opens the variables tab;
  * - `wiredmenu/open/inspection/<0 furni | 1 user>/<id>`;
  * - `wiredmenu/logs` opens the room logs.
@@ -25,7 +26,7 @@ export const translateWiredMenuLink = (url: string): string | null => {
 
     if (parts[1] === 'logs') return 'wired-tools/logs';
     if (parts[1] !== 'open') return null;
-    if (parts.length < 3 || !parts[2]) return 'wired-tools/show';
+    if (parts.length < 3 || !parts[2]) return 'wired-tools/open';
 
     if (parts[2] === 'inspection' && parts.length > 4) {
         const id = parseInt(parts[4], 10);
@@ -37,7 +38,7 @@ export const translateWiredMenuLink = (url: string): string | null => {
 
     const tab = OFFICIAL_TABS[parts[2]];
 
-    return tab ? `wired-tools/tab/${tab}` : 'wired-tools/show';
+    return tab ? `wired-tools/tab/${tab}` : 'wired-tools/open';
 };
 
 /** The official tab title key of one of our tabs. */

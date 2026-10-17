@@ -1,17 +1,17 @@
 import { GetRoomEngine, IRoomCameraWidgetEffect, IRoomCameraWidgetSelectedEffect, OctaneRectangle, RenderRoomMessageComposer } from '@octane/renderer';
 import { GetConfigurationValue } from '../octane/GetConfigurationValue';
 
-// Client configuration: "upload" (default) renders the photo in the browser and uploads the PNG;
-// "server" sends the AIR scene (RenderRoom with the zlib-deflated JSON) and the server renders the photo.
+// Client configuration: "server" (default) sends the AIR scene (RenderRoom with the zlib-deflated JSON) and
+// the server renders the photo; "upload" renders the photo in the browser and uploads the PNG.
 export const CAMERA_RENDER_MODE_KEY = 'camera.render.mode';
 
 export type CameraRenderMode = 'upload' | 'server';
 
 export const GetCameraRenderMode = (): CameraRenderMode =>
 {
-    const value = GetConfigurationValue<string>(CAMERA_RENDER_MODE_KEY, 'upload');
+    const value = GetConfigurationValue<string>(CAMERA_RENDER_MODE_KEY, 'server');
 
-    return ((typeof value === 'string') && (value.trim().toLowerCase() === 'server')) ? 'server' : 'upload';
+    return ((typeof value === 'string') && (value.trim().toLowerCase() === 'upload')) ? 'upload' : 'server';
 };
 
 /**

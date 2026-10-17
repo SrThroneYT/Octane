@@ -55,6 +55,9 @@ export const WiredActionPlaceTemporaryFurniView: FC<{}> = () =>
     const [ offsetY, setOffsetY ] = useState(0);
     const [ offsetAltitude, setOffsetAltitude ] = useState(0);
     const [ showOffsets, setShowOffsets ] = useState(false);
+    // Furni slot 0 holds the picks the copies are made from: the server opens it on their snapshot (110), as Habbo
+    // does, and our older saves hold 100. The editor has no row for it, so it goes back as the box sent it.
+    const [ templateSource, setTemplateSource ] = useState(SOURCE_PICKED);
     const [ targetFurniSource, setTargetFurniSource ] = useState(SOURCE_TRIGGER);
     const [ targetUserSource, setTargetUserSource ] = useState(SOURCE_TRIGGER);
     const [ spawnWithVariable, setSpawnWithVariable ] = useState(false);
@@ -87,6 +90,7 @@ export const WiredActionPlaceTemporaryFurniView: FC<{}> = () =>
         setOffsetY(clamp(params[4] ?? 0, MAX_OFFSET));
         setOffsetAltitude(clamp(params[5] ?? 0, MAX_OFFSET_ALTITUDE));
         setShowOffsets(!!(params[3] || params[4] || params[5]));
+        setTemplateSource(trigger.furniSourceTypes?.[0] ?? trigger.inputSourcesConf?.furniDefaults?.[0] ?? SOURCE_PICKED);
         setTargetFurniSource(trigger.furniSourceTypes?.[1] ?? SOURCE_TRIGGER);
         setTargetUserSource(trigger.userSourceTypes?.[0] ?? SOURCE_TRIGGER);
 
@@ -110,7 +114,7 @@ export const WiredActionPlaceTemporaryFurniView: FC<{}> = () =>
         setIntParams([ targetIsUser ? 1 : 0, location, altitude, offsetX, offsetY, offsetAltitude, ...spawn ]);
         setStringParam(`${ getCustomVariableItemId(spawnToken) }\t${ getCustomVariableItemId(valueToken) }`);
         setSourceTypes({
-            furni: [ SOURCE_PICKED, targetFurniSource, valueFurniSource ],
+            furni: [ templateSource, targetFurniSource, valueFurniSource ],
             users: [ targetUserSource, valueUserSource ]
         });
     };

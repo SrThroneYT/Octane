@@ -8,6 +8,25 @@ export const TIME_UTIL_MODE_LAST_UPDATE_TIME = 2;
 
 export const TIME_UTIL_MODES = [TIME_UTIL_MODE_VALUE, TIME_UTIL_MODE_CREATION_TIME, TIME_UTIL_MODE_LAST_UPDATE_TIME];
 
+/** The mode segment of a part's name: the server names a part `<variable>.<mode>.<part>`, e.g. `joined.value.hour_of_day`. */
+const TIME_UTIL_MODE_KEYS: Record<number, string> = {
+    [TIME_UTIL_MODE_VALUE]: 'value',
+    [TIME_UTIL_MODE_CREATION_TIME]: 'creation_time',
+    [TIME_UTIL_MODE_LAST_UPDATE_TIME]: 'last_update_time'
+};
+
+/** The name a part gets after its variable's name, for the box's mode. */
+export const timeUtilPartName = (mode: number, partName: string) => `${TIME_UTIL_MODE_KEYS[mode] ?? TIME_UTIL_MODE_KEYS[TIME_UTIL_MODE_VALUE]}.${partName}`;
+
+/**
+ * A timestamp mode also lists the timestamp itself after the variable's name (`joined.creation_time`,
+ * `joined.last_update_time`), whatever parts are ticked; the value mode lists nothing extra.
+ */
+export const timeUtilTimestampName = (mode: number) => (mode === TIME_UTIL_MODE_CREATION_TIME || mode === TIME_UTIL_MODE_LAST_UPDATE_TIME ? TIME_UTIL_MODE_KEYS[mode] : null);
+
+/** Value-mode parts can be written (the variable moves by the difference); timestamp parts are read-only. */
+export const isTimeUtilModeWritable = (mode: number) => mode === TIME_UTIL_MODE_VALUE;
+
 export interface ITimeUtilSubVariable {
     id: number;
     name: string;
@@ -15,7 +34,7 @@ export interface ITimeUtilSubVariable {
 }
 
 export const TIME_UTIL_SUB_VARIABLES: ITimeUtilSubVariable[] = [
-    { id: 1, name: 'millisecond_of_second', label: 'Millisecond of the second' },
+    { id: 1, name: 'milliseconds_of_seconds', label: 'Millisecond of the second' },
     { id: 2, name: 'seconds_of_minute', label: 'Second of the minute' },
     { id: 3, name: 'minute_of_hour', label: 'Minute of the hour' },
     { id: 4, name: 'hour_of_day', label: 'Hour of the day' },

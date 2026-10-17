@@ -1,11 +1,19 @@
 import { FurniturePickupAllComposer, RoomObjectCategory } from '@octane/renderer';
 import { FC, useEffect, useEffectEvent, useMemo, useState } from 'react';
 import { chooserSelectionVisualizer, localizeWithFallback, LocalizeText, RoomObjectItem, SendMessageComposer } from '../../../../api';
+import { IsBuildersClubFurniId, IsTemporaryFurniId } from '../../../../api/utils/FurniIdBand';
 import { Button, InfiniteScroll, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView } from '../../../../common';
 import { useFurniPickupGuard } from '../../../../hooks';
 import { classNames, OctaneInput } from '../../../../layout';
 
 const LIMIT_FURNI_PICKALL = 100;
+
+/** Official FurniChooserTableObject: Builders Club and temporary (Wired) furni show "-" in the owner column. */
+const furniOwnerCell = (item: RoomObjectItem) => {
+    if (IsBuildersClubFurniId(item.id) || IsTemporaryFurniId(item.id)) return '-';
+
+    return item.ownerName && item.ownerName !== '-' ? item.ownerName : '';
+};
 const FILTER_ALL = 'all';
 
 interface ChooserWidgetViewProps {
@@ -195,7 +203,7 @@ export const ChooserWidgetView: FC<ChooserWidgetViewProps> = (props) => {
                                     )}
                                     <span className="octane-chooser-cell grow truncate">{row.name}</span>
                                     <span className={classNames('octane-chooser-cell truncate', isUsers ? 'w-[90px]' : 'w-[120px]')}>
-                                        {isUsers ? filterValueOf(row) : row.ownerName && row.ownerName !== '-' ? row.ownerName : ''}
+                                        {isUsers ? filterValueOf(row) : furniOwnerCell(row)}
                                     </span>
                                     {!isUsers && <span className="octane-chooser-cell w-[90px] truncate">{row.id}</span>}
                                 </div>

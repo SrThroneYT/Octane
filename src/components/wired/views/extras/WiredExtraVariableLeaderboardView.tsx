@@ -29,6 +29,7 @@ import {
 import { Text } from '../../../../common';
 import { useWired, useWiredLeaderboardStore, useWiredTools } from '../../../../hooks';
 import { OctaneInput } from '../../../../layout';
+import { withoutExecutionContextVariables } from '../WiredVariablePickerData';
 import { WiredExtraBaseView } from './WiredExtraBaseView';
 
 const P = 'wiredfurni.params.variable_leaderboard';
@@ -70,7 +71,10 @@ const retypeColumn = (column: ILeaderboardColumn, type: number): ILeaderboardCol
  */
 export const WiredExtraVariableLeaderboardView: FC<{}> = () => {
     const { trigger = null, setIntParams = null, setStringParam = null } = useWired();
-    const { userVariableDefinitions = [], roomVariableDefinitions = [] } = useWiredTools();
+    const tools = useWiredTools();
+    // AIR's leaderboard picker leaves pointers out: a leaderboard is read without a running stack.
+    const userVariableDefinitions = useMemo(() => withoutExecutionContextVariables(tools.userVariableDefinitions), [tools.userVariableDefinitions]);
+    const roomVariableDefinitions = useMemo(() => withoutExecutionContextVariables(tools.roomVariableDefinitions), [tools.roomVariableDefinitions]);
     const draft = useWiredLeaderboardStore((state) => state.editDraft);
     const beginEdit = useWiredLeaderboardStore((state) => state.beginEdit);
     const updateDraft = useWiredLeaderboardStore((state) => state.updateDraft);

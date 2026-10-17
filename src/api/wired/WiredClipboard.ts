@@ -17,6 +17,13 @@ export interface WiredTriggerableData {
     stringParam?: string;
     furniIds?: number[];
     delayInPulses?: number;
+    furniIds2?: number[];
+    furniSourceTypes?: number[];
+    userSourceTypes?: number[];
+    variableIds?: string[];
+    quantifierCode?: number;
+    selectorFilter?: boolean;
+    selectorInvert?: boolean;
 }
 
 export const wiredHolderOf = (triggerable: Triggerable): WiredHolder => {
@@ -46,13 +53,46 @@ export const withTriggerableData = <T extends Triggerable>(triggerable: T, data:
     if (data.stringParam !== undefined) fields._stringParam = data.stringParam;
     if (data.furniIds !== undefined) fields._stuffIds = [...data.furniIds];
     if (data.delayInPulses !== undefined && wiredHolderOf(triggerable) === 'action') fields._delayInPulses = data.delayInPulses;
+    if (data.furniIds2 !== undefined) fields._stuffIds2 = [...data.furniIds2];
+    if (data.furniSourceTypes !== undefined) fields._furniSourceTypes = [...data.furniSourceTypes];
+    if (data.userSourceTypes !== undefined) fields._userSourceTypes = [...data.userSourceTypes];
+    if (data.variableIds !== undefined) fields._variableIds = [...data.variableIds];
+    if (data.quantifierCode !== undefined && wiredHolderOf(triggerable) === 'condition') fields._quantifierCode = data.quantifierCode;
+    if (data.selectorFilter !== undefined && wiredHolderOf(triggerable) === 'selector') fields._isFilter = data.selectorFilter;
+    if (data.selectorInvert !== undefined && wiredHolderOf(triggerable) === 'selector') fields._isInvert = data.selectorInvert;
 
     return clone;
 };
 
-/** The box as it comes out of the catalog: no params, no text, no picks, no delay. */
+/**
+ * The official "reset to default" (UserDefinedRoomEventsCtrl.resetToDefault): the int params the server sent as the
+ * box's defaults, no text, no picks in either list, the default sources of its input sources conf, no variables, no
+ * delay, quantifier "all" and a plain selector.
+ */
 export const resetTriggerableData = <T extends Triggerable>(triggerable: T): T =>
-    withTriggerableData(triggerable, { intParams: [], stringParam: '', furniIds: [], delayInPulses: 0 });
+    withTriggerableData(triggerable, {
+        intParams: triggerable.defaultIntParams ?? [],
+        stringParam: '',
+        furniIds: [],
+        furniIds2: [],
+        furniSourceTypes: triggerable.inputSourcesConf?.furniDefaults ?? [],
+        userSourceTypes: triggerable.inputSourcesConf?.userDefaults ?? [],
+        variableIds: [],
+        delayInPulses: 0,
+        quantifierCode: 0,
+        selectorFilter: false,
+        selectorInvert: false
+    });
+
+/**
+ * A box that sent no int params opens on the defaults the server sent for it (its official defaultIntParams), so a
+ * fresh box starts where the official editor does. A box with params of its own is left alone.
+ */
+export const withServerDefaultIntParams = <T extends Triggerable>(triggerable: T): T => {
+    if (!triggerable || triggerable.intData?.length || !triggerable.defaultIntParams?.length) return triggerable;
+
+    return withTriggerableData(triggerable, { intParams: triggerable.defaultIntParams });
+};
 
 /**
  * The box with a clipboard entry pasted in. "Paste into" keeps the box's own furni picks and

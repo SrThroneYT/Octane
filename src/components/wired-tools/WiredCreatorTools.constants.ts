@@ -141,6 +141,22 @@ export const WIRED_FURNI_RUNTIME_ACTION_READ = 0;
 export const WIRED_FURNI_RUNTIME_ACTION_WRITE = 1;
 export const EDITABLE_USER_VARIABLES: string[] = ['@position_x', '@position_y', '@direction'];
 
+/** Official text connectors of built-in variables: the label shown after a value, per holder. */
+export const WIRED_BUILTIN_TEXT_CONNECTORS: Record<'furni' | 'user', Record<string, Record<number, string>>> = {
+    furni: {
+        '@type': { 0: 'Normal', 1: 'BC', 2: 'Temp' }
+    },
+    user: {
+        '@direction': { 0: 'N', 1: 'NE', 2: 'E', 3: 'SE', 4: 'S', 5: 'SW', 6: 'W', 7: 'NW' },
+        '@gender': { [-1]: 'Unknown', 0: 'M', 1: 'F' },
+        '@type': { 1: 'User', 2: 'Pet', 3: 'Old bot', 4: 'Bot' }
+    }
+};
+
+/** The built-in text connector label of a value, or undefined. */
+export const getBuiltinTextConnectorLabel = (holder: 'furni' | 'user', key: string, value: number): string | undefined =>
+    WIRED_BUILTIN_TEXT_CONNECTORS[holder][key]?.[value];
+
 const createVariableDefinition = (
     key: string,
     target: 'Furni' | 'User' | 'Global' | 'Context',
@@ -246,7 +262,7 @@ export const VARIABLE_DEFINITIONS: Record<VariablesElementType, VariableDefiniti
         createVariableDefinition('@timezone_server', 'Global'),
         createVariableDefinition('@timezone_client', 'Global'),
         createVariableDefinition('@current_time', 'Global'),
-        createVariableDefinition('@current_time.millisecond_of_second', 'Global'),
+        createVariableDefinition('@current_time.milliseconds_of_seconds', 'Global'),
         createVariableDefinition('@current_time.seconds_of_minute', 'Global'),
         createVariableDefinition('@current_time.minute_of_hour', 'Global'),
         createVariableDefinition('@current_time.hour_of_day', 'Global'),

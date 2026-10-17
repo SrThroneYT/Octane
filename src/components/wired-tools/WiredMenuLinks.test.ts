@@ -3,7 +3,7 @@ import { translateWiredMenuLink, wiredMenuTabKey } from './WiredMenuLinks';
 
 describe('WiredMenuLinks', () => {
     it('opens the tools and their tabs', () => {
-        expect(translateWiredMenuLink('wiredmenu/open')).toBe('wired-tools/show');
+        expect(translateWiredMenuLink('wiredmenu/open')).toBe('wired-tools/open');
         expect(translateWiredMenuLink('wiredmenu/open/settings')).toBe('wired-tools/tab/settings');
         expect(translateWiredMenuLink('wiredmenu/open/variable_overview')).toBe('wired-tools/tab/variables');
         expect(translateWiredMenuLink('wiredmenu/open/variable_overview/@score')).toBe('wired-tools/tab/variables');

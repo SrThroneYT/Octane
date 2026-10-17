@@ -28,6 +28,7 @@ import {
     WiredSelectionVisualizer,
     wiredStyleClassName
 } from '../../../api';
+import { isUsingAdvancedSettings } from '../../../api/wired/WiredAdvancedSettings';
 import wiredBgLeft from '../../../assets/images/wired/wired_bg_left.png';
 import wiredBgRight from '../../../assets/images/wired/wired_bg_right.png';
 import { Button, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Text } from '../../../common';
@@ -286,7 +287,8 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
     useEffect(() => {
         if (!trigger) return;
 
-        setShowFooter(false);
+        // Official: the advanced section opens expanded when it holds a non-default choice.
+        setShowFooter(isUsingAdvancedSettings(trigger, wiredType));
         setIsMenuOpen(false);
 
         WiredSelectionVisualizer.clearAllSelectionShaders();
@@ -304,7 +306,7 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
             setIntParams(trigger.intData);
             setStringParam(trigger.stringData);
         }
-    }, [trigger, hasSpecialInput, setIntParams, setStringParam]);
+    }, [trigger, wiredType, hasSpecialInput, setIntParams, setStringParam]);
 
     useEffect(() => {
         if (!trigger) return;

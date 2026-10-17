@@ -11,7 +11,10 @@ import {
     TIME_UTIL_ADVANCED_SUB_VARIABLES,
     TIME_UTIL_MODE_VALUE,
     TIME_UTIL_MODES,
-    TIME_UTIL_SUB_VARIABLES
+    TIME_UTIL_SUB_VARIABLES,
+    isTimeUtilModeWritable,
+    timeUtilPartName,
+    timeUtilTimestampName
 } from './timeUtilitiesParams';
 import { WiredExtraBaseView } from './WiredExtraBaseView';
 
@@ -37,6 +40,8 @@ export const WiredExtraTimeUtilitiesView: FC<{}> = () => {
         setStringParam('');
     };
 
+    const timestampName = timeUtilTimestampName(mode);
+
     const renderSubVariables = (subVariables: ITimeUtilSubVariable[]) => (
         <div className="octane-wired__levelup-subvariables">
             {subVariables.map((subVariable) => (
@@ -50,7 +55,7 @@ export const WiredExtraTimeUtilitiesView: FC<{}> = () => {
                         />
                         <Text>{localizeWithFallback(`${SUB_VARIABLE_KEY}${subVariable.id}`, subVariable.label)}</Text>
                     </label>
-                    <input className="octane-wired__levelup-subvariable-token" readOnly tabIndex={-1} type="text" value={subVariable.name} />
+                    <input className="octane-wired__levelup-subvariable-token" readOnly tabIndex={-1} type="text" value={timeUtilPartName(mode, subVariable.name)} />
                 </div>
             ))}
         </div>
@@ -75,6 +80,17 @@ export const WiredExtraTimeUtilitiesView: FC<{}> = () => {
                             </label>
                         ))}
                     </div>
+                    <Text small>
+                        {isTimeUtilModeWritable(mode)
+                            ? localizeWithFallback('wiredfurni.params.time_util.writable_info', 'Writing a part moves the variable by that part.')
+                            : localizeWithFallback('wiredfurni.params.time_util.readonly_info', 'The parts of a timestamp are read-only.')}
+                    </Text>
+                    {timestampName && (
+                        <div className="octane-wired__levelup-subvariable-row">
+                            <Text>{localizeWithFallback('wiredfurni.params.time_util.timestamp', 'Timestamp')}</Text>
+                            <input className="octane-wired__levelup-subvariable-token" readOnly tabIndex={-1} type="text" value={timestampName} />
+                        </div>
+                    )}
                 </div>
 
                 <div className="octane-wired__divider" />

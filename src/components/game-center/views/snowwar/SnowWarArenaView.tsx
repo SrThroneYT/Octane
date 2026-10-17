@@ -12,6 +12,7 @@ import {
 } from '../../../../api';
 import { SNOWWAR_AIR_ASSETS } from '../../../../assets/images/snowstorm/air';
 import {
+    findSnowWarOfficialBackdrop,
     INITIAL_SNOWBALL_COUNT,
     LONG_LOB_MAX_RANGE_WORLD,
     QUICK_THROW_MAX_RANGE_WORLD,
@@ -29,6 +30,7 @@ import {
     TRAJECTORY_LONG_LOB,
     TRAJECTORY_QUICK,
     TRAJECTORY_SHORT_LOB,
+    layoutSnowWarOfficialBackdrop,
     tileToWorld,
 } from '../../../../api/snowwar';
 import snowballPileImage from '../../../../assets/images/snowstorm/original/snst_ballpile.png';
@@ -339,19 +341,12 @@ const snowballRise = (height: number): number => height * SNOWWAR_WORLD_Z_TO_PX;
 const DESIGN_W = 1920;
 const DESIGN_H = 1080;
 
-// AIR Arctic Island room-ad backdrop (snst_bg_1_a_big). Drawn 2000 stage px
-// wide - the scale at which its painted tiles are exactly 32px, like the AIR
-// scale-32 floor here - whatever the resolution of the file the hotel serves
-// (hi-res copies exist), with the centre of its painted frozen moat pinned to
-// the centre of the heightmap's moat (tiles x 20..32, y 19..30 of the original
-// Arctic Island floor; its four planks then land on the four plank tiles).
-// The moat is off-centre in the artwork, so the stage is built around the
-// artwork instead of centring a 1920x1080 stage on the floor - that left
-// empty strips on the left and at the bottom.
-const ARCTIC_BACKDROP_WIDTH = 2000;
-const ARCTIC_BACKDROP_DEFAULT_RATIO = 1222 / 2000;
-const ARCTIC_BACKDROP_MOAT_CENTRE = { fx: 1011 / 2000, fy: 647 / 1222 };
-const ARCTIC_MOAT_CENTRE_TILE = { x: 26.5, y: 25 };
+// The official room-ad backdrops (Arctic Island, Dragon Top, Fight Night) are
+// fitted from SNOWWAR_OFFICIAL_BACKDROPS (api/snowwar/SnowWarBackdrops.ts): each
+// is drawn at the size whose painted tiles are 32px and pinned to its own tile
+// anchor. Their painted fields are off-centre in the artwork, so the stage is
+// built around the artwork instead of centring a 1920x1080 stage on the floor -
+// that left empty strips at the edges.
 
 // Camera dead zone: the avatar roams the central (1 - 2*DEADZONE) of the
 // viewport with the camera held still; only when it pushes into the outer
@@ -587,7 +582,10 @@ export const SnowWarArenaView: FC = () =>
         return () => window.removeEventListener('keydown', onKeyDown);
     }, [ editing ]);
     const zoom = ZOOM;
-    const [arcticBackdropRatio, setArcticBackdropRatio] = useState(ARCTIC_BACKDROP_DEFAULT_RATIO);
+    // Loaded height / width per official backdrop file, and the files whose
+    // image-library copy failed (those fall back to the URL the server sent).
+    const [backdropRatios, setBackdropRatios] = useState<Record<string, number>>({});
+    const [backdropLibraryFailed, setBackdropLibraryFailed] = useState<Record<string, boolean>>({});
     const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
     // Set when a throw is blocked for being out of range; shows a short hint.
     const [rangeWarningAt, setRangeWarningAt] = useState(0);
@@ -1402,8 +1400,10 @@ export const SnowWarArenaView: FC = () =>
     // top of the floor tiles (hiding them, but they stay walkable) while still
     // sitting under the furni and avatars. Edit-aware so it previews live.
     const arenaBackdrop = displayItems.find(item => item.imageUrl) ?? null;
-    const officialArcticBackdrop = !!arenaBackdrop?.imageUrl.includes('snst_bg_1_a_big');
-    const backdropOverlay = !!(arenaBackdrop && !officialArcticBackdrop && (arenaBackdrop.offsetZ ?? 0) > 0);
+    // An official backdrop (keyed on its file name) is fitted to the floor and is
+    // never an overlay, whatever offsetZ the server sends (AIR's depth push).
+    const officialBackdrop = findSnowWarOfficialBackdrop(arenaBackdrop?.imageUrl);
+    const backdropOverlay = !!(arenaBackdrop && !officialBackdrop && (arenaBackdrop.offsetZ ?? 0) > 0);
     const selectedItem = (editing && selectedIndex >= 0 && editItems[selectedIndex]) ? editItems[selectedIndex] : null;
     const placingFurni = (editing && paletteSel && paletteSel !== 'edit' && paletteSel !== 'walk')
         ? GetSessionDataManager()?.getFloorItemDataByName?.(paletteSel) : null;
@@ -1493,25 +1493,25 @@ export const SnowWarArenaView: FC = () =>
     let stageH = Math.max(DESIGN_H, floorH);
     let floorOffsetX = (stageW - floorW) / 2;
     let floorOffsetY = (stageH - floorH) / 2;
-    let arcticBackdropRect: { left: number; top: number; width: number; height: number } | null = null;
+    let officialBackdropRect: { left: number; top: number; width: number; height: number } | null = null;
 
-    if (officialArcticBackdrop)
+    if (officialBackdrop)
     {
         // Stage = artwork (plus the floor, should a map ever stick out of it),
         // so the camera can never pan onto an area the artwork doesn't paint.
-        const backdropW = ARCTIC_BACKDROP_WIDTH;
-        const backdropH = ARCTIC_BACKDROP_WIDTH * arcticBackdropRatio;
-        const moat = toScreen(ARCTIC_MOAT_CENTRE_TILE.x, ARCTIC_MOAT_CENTRE_TILE.y);
-        // Whole pixels, so neither the artwork nor the floor lands on a half pixel.
-        const backdropX = Math.round((moat.x * zoom) - (ARCTIC_BACKDROP_MOAT_CENTRE.fx * backdropW));
-        const backdropY = Math.round((moat.y * zoom) - (ARCTIC_BACKDROP_MOAT_CENTRE.fy * backdropH));
-        const minX = Math.min(0, backdropX);
-        const minY = Math.min(0, backdropY);
-        stageW = Math.max(floorW, backdropX + backdropW) - minX;
-        stageH = Math.max(floorH, backdropY + backdropH) - minY;
-        floorOffsetX = -minX;
-        floorOffsetY = -minY;
-        arcticBackdropRect = { left: backdropX - minX, top: backdropY - minY, width: backdropW, height: backdropH };
+        const anchor = toScreen(officialBackdrop.tile.x, officialBackdrop.tile.y);
+        const layout = layoutSnowWarOfficialBackdrop(
+            officialBackdrop,
+            backdropRatios[officialBackdrop.file] ?? officialBackdrop.defaultRatio,
+            { x: anchor.x * zoom, y: anchor.y * zoom },
+            floorW,
+            floorH,
+        );
+        stageW = layout.stageW;
+        stageH = layout.stageH;
+        floorOffsetX = layout.floorOffsetX;
+        floorOffsetY = layout.floorOffsetY;
+        officialBackdropRect = layout.rect;
     }
 
     // Camera as a GPU translate on the stage. Instead of hard-locking the
@@ -2006,21 +2006,28 @@ export const SnowWarArenaView: FC = () =>
                     // between pixels and looks blurry / shimmers while the camera moves.
                     style={{ width: stageW, height: stageH, transform: `translate(${Math.round(cameraX)}px, ${Math.round(cameraY)}px)`, transformOrigin: '0 0' }}
                 >
-                    {officialArcticBackdrop && (
+                    {officialBackdrop && arenaBackdrop && (
                         <img
+                            key={officialBackdrop.file}
                             alt=""
-                            className="snowwar-official-arctic-backdrop"
+                            className="snowwar-official-backdrop"
                             draggable={false}
-                            src={getOfficialSnowWarAssetUrl('snst_bg_1_a_big.png')}
-                            style={arcticBackdropRect ?? undefined}
+                            src={backdropLibraryFailed[officialBackdrop.file] ? arenaBackdrop.imageUrl : getOfficialSnowWarAssetUrl(officialBackdrop.file)}
+                            style={officialBackdropRect ?? undefined}
                             onLoad={event =>
                             {
                                 const { naturalWidth, naturalHeight } = event.currentTarget;
-                                if (naturalWidth > 0 && naturalHeight > 0) setArcticBackdropRatio(naturalHeight / naturalWidth);
+                                const file = officialBackdrop.file;
+                                if (naturalWidth > 0 && naturalHeight > 0) setBackdropRatios(ratios => ({ ...ratios, [file]: naturalHeight / naturalWidth }));
+                            }}
+                            onError={() =>
+                            {
+                                const file = officialBackdrop.file;
+                                setBackdropLibraryFailed(failed => (failed[file] ? failed : { ...failed, [file]: true }));
                             }}
                         />
                     )}
-                    {arenaBackdrop && !officialArcticBackdrop && !backdropOverlay && (
+                    {arenaBackdrop && !officialBackdrop && !backdropOverlay && (
                         <img
                             alt=""
                             className="snowwar-arena-bg"
@@ -2036,10 +2043,10 @@ export const SnowWarArenaView: FC = () =>
                             ref={canvasRef}
                             width={canvasWidth}
                             height={canvasHeight}
-                            className={`snowwar-floor${officialArcticBackdrop ? ' snowwar-floor--official-arctic' : ''}`}
+                            className={`snowwar-floor${officialBackdrop ? ' snowwar-floor--official-backdrop' : ''}`}
                         />
 
-                    {arenaBackdrop && !officialArcticBackdrop && backdropOverlay && (
+                    {arenaBackdrop && !officialBackdrop && backdropOverlay && (
                         <img
                             alt=""
                             className="snowwar-arena-bg-overlay"

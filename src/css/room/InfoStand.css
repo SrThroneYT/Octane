@@ -448,3 +448,9 @@
     background: rgba(0, 0, 0, 0.45);
   }
 }
+
+/* A temporary (Wired) copy: the official spacers 0x2F4C6B on the blue panel. */
+.octane-infostand-furni--temporary hr {
+    background: #2f4c6b;
+    opacity: 1;
+}

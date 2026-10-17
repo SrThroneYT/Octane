@@ -38,6 +38,13 @@ export const WIRED_VARIABLE_TYPE_INTERNAL = 1;
 export const WIRED_VARIABLE_TYPE_USER_DERIVED = 2;
 export const WIRED_VARIABLE_TYPE_DYNAMIC = 3;
 
+/**
+ * Sub-variables (level-up, quest and Time Utilities parts) get synthetic ids from 700 000 000 up. A writable one
+ * (a value-mode Time Utilities part such as `joined.value.hour_of_day`) can be changed, but never given or removed.
+ */
+export const DERIVED_VARIABLE_ITEM_ID_MIN = 700_000_000;
+export const isDerivedVariableItemId = (itemId: number) => itemId >= DERIVED_VARIABLE_ITEM_ID_MIN;
+
 interface IInternalVariableMeta {
     key: string;
     canUseAsDestination: boolean;
@@ -48,6 +55,8 @@ const INTERNAL_VARIABLE_ALIASES: Record<string, string> = {
     '@position.x': '@position_x',
     '@position.y': '@position_y',
     '@effect': '@effect_id',
+    // Our earlier name; the server keeps it as an alias of AIR's part name.
+    '@current_time.millisecond_of_second': '@current_time.milliseconds_of_seconds',
     '@handitems': '@handitem_id',
     '@is_mute': '@is_muted',
     '@teams.red.score': '@team_red_score',
@@ -167,7 +176,7 @@ const INTERNAL_VARIABLES: Record<'user' | 'furni' | 'global' | 'context', IInter
         createInternalMeta('@timezone_server', false, true),
         createInternalMeta('@timezone_client', false, true),
         createInternalMeta('@current_time', false, true),
-        createInternalMeta('@current_time.millisecond_of_second', false, true),
+        createInternalMeta('@current_time.milliseconds_of_seconds', false, true),
         createInternalMeta('@current_time.seconds_of_minute', false, true),
         createInternalMeta('@current_time.minute_of_hour', false, true),
         createInternalMeta('@current_time.hour_of_day', false, true),
@@ -227,7 +236,8 @@ const getCustomSelectable = (usage: WiredVariablePickerUsage, definition: IWired
         case 'change-destination':
             return !!definition.hasValue && !definition.isReadOnly;
         default:
-            return !definition.isReadOnly;
+            // Give / remove: a sub-variable lives as long as its parent, so only its value can be written.
+            return !definition.isReadOnly && !isDerivedVariableItemId(definition.itemId);
     }
 };
 
@@ -329,6 +339,13 @@ export const createFallbackVariableEntry = (target: WiredVariablePickerTarget, t
 
     return null;
 };
+
+/**
+ * AIR leaves pointers (requiresExecutionContext) out of the pickers of boxes that read a variable without a running
+ * stack: the variable-changed trigger, echo, the variable fx override and audience, and the leaderboard.
+ */
+export const withoutExecutionContextVariables = <T extends { requiresExecutionContext?: boolean }>(definitions: T[]): T[] =>
+    (definitions || []).filter((definition) => !definition?.requiresExecutionContext);
 
 /**
  * One entry per variable, in catalogue order: the room's own variables as the server lists them, then the built-in

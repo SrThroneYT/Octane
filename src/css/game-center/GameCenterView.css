@@ -1063,11 +1063,12 @@
   will-change: transform;
 }
 
-/* AIR Arctic Island room-ad background, drawn 1:1 with its painted moat on
-   the heightmap's moat instead of cover-cropping it; left/top/width/height
-   are set inline (SnowWarArenaView, ARCTIC_BACKDROP_*), and the stage is
-   sized to the artwork so no unpainted strip shows at its edges. */
-.snowwar-official-arctic-backdrop {
+/* Official room-ad backgrounds (Arctic Island, Dragon Top, Fight Night), drawn
+   1:1 with their painted field on the heightmap instead of cover-cropping
+   them; left/top/width/height are set inline (SnowWarArenaView,
+   SNOWWAR_OFFICIAL_BACKDROPS), and the stage is sized to the artwork so no
+   unpainted strip shows at its edges. */
+.snowwar-official-backdrop {
   position: absolute;
   left: 0;
   top: 0;
@@ -1080,7 +1081,7 @@
 
 /* The official room-ad already paints the snow field. Keep the logical canvas
    for hit-testing, but do not draw a second isometric grid over the artwork. */
-.snowwar-floor--official-arctic {
+.snowwar-floor--official-backdrop {
   opacity: 0;
 }
 

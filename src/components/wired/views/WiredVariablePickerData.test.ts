@@ -3,12 +3,14 @@ import {
     buildWiredVariableNodes,
     buildWiredVariablePickerEntries,
     flattenWiredVariablePickerEntries,
+    isDerivedVariableItemId,
     isSmartVariableKey,
     isWiredVariableNodeDisabled,
     IWiredVariableNode,
     WIRED_VARIABLE_TYPE_DYNAMIC,
     WIRED_VARIABLE_TYPE_INTERNAL,
-    WIRED_VARIABLE_TYPE_USER
+    WIRED_VARIABLE_TYPE_USER,
+    withoutExecutionContextVariables
 } from './WiredVariablePickerData';
 
 const variable = (itemId: number, name: string, hasValue = true) => ({ itemId, name, availability: 0, hasValue, isReadOnly: false });
@@ -115,5 +117,46 @@ describe('Wired variable picker echo filter', () => {
         expect(user.find((entry) => entry.label === 'temp')?.selectable).toBe(false);
         expect(user.find((entry) => entry.label === '@index')?.selectable).toBe(true);
         expect(context.every((entry) => !entry.selectable)).toBe(true);
+    });
+});
+
+describe('Wired variable picker sub-variables', () => {
+    const hourOfDay = { itemId: 1_500_000_000 + 10 * 32 + 4, name: 'joined.value.hour_of_day', availability: 0, hasValue: true, isReadOnly: false };
+    const selectable = (usage: Parameters<typeof buildWiredVariablePickerEntries>[1], definition = hourOfDay) =>
+        buildWiredVariablePickerEntries('user', usage, [definition]).find((entry) => entry.label === definition.name)?.selectable;
+
+    it('recognises the synthetic sub-variable ids', () => {
+        expect(isDerivedVariableItemId(hourOfDay.itemId)).toBe(true);
+        expect(isDerivedVariableItemId(700_000_017)).toBe(true);
+        expect(isDerivedVariableItemId(123)).toBe(false);
+    });
+
+    it('lets a writable Time Utilities part be changed but never given or removed', () => {
+        expect(selectable('change-destination')).toBe(true);
+        expect(selectable('change-reference')).toBe(true);
+        expect(selectable('give')).toBe(false);
+        expect(selectable('remove')).toBe(false);
+        expect(selectable('give', variable(9, 'score'))).toBe(true);
+    });
+
+    it('keeps a timestamp part read-only', () => {
+        expect(selectable('change-destination', { ...hourOfDay, name: 'joined.creation_time', isReadOnly: true })).toBe(false);
+    });
+
+    it('leaves pointers out where no stack runs and never offers one as an echo source', () => {
+        const definitions = [
+            { itemId: 1, name: 'hp', hasValue: true, availability: 0 },
+            { itemId: 2, name: 'ptr', hasValue: true, availability: 0, requiresExecutionContext: true }
+        ];
+
+        expect(withoutExecutionContextVariables(definitions).map((definition) => definition.name)).toEqual([ 'hp' ]);
+        expect(withoutExecutionContextVariables(null)).toEqual([]);
+
+        const echo = buildWiredVariablePickerEntries('user', 'echo', definitions).filter((entry) => entry.kind === 'custom');
+        expect(echo.map((entry) => [ entry.label, entry.selectable ])).toEqual([ [ 'hp', true ], [ 'ptr', false ] ]);
+
+        // Every box that runs in a stack can pick a pointer like any other variable.
+        const give = buildWiredVariablePickerEntries('user', 'give', definitions).filter((entry) => entry.kind === 'custom');
+        expect(give.every((entry) => entry.selectable)).toBe(true);
     });
 });

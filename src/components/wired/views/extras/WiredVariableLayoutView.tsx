@@ -2,6 +2,7 @@ import { WiredVariableLayoutCode } from '../../../../api';
 import { WiredExtraContextVariableView } from './WiredExtraContextVariableView';
 import { WiredExtraDailyTaskView } from './WiredExtraDailyTaskView';
 import { WiredExtraFurniVariableView } from './WiredExtraFurniVariableView';
+import { WiredExtraPointerVariableView } from './WiredExtraPointerVariableView';
 import { WiredExtraQuestChainView } from './WiredExtraQuestChainView';
 import { WiredExtraQuestView } from './WiredExtraQuestView';
 import { WiredExtraRoomVariableView } from './WiredExtraRoomVariableView';
@@ -32,6 +33,8 @@ export const WiredVariableLayoutView = (code: number) =>
             return <WiredExtraVariableEchoView />;
         case WiredVariableLayoutCode.DAILY_TASK_VARIABLE:
             return <WiredExtraDailyTaskView />;
+        case WiredVariableLayoutCode.POINTER_VARIABLE:
+            return <WiredExtraPointerVariableView />;
     }
 
     return null;

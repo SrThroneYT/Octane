@@ -11,7 +11,8 @@ import {
     createFallbackVariableEntry,
     flattenWiredVariablePickerEntries,
     IWiredVariablePickerEntry,
-    normalizeVariableTokenFromWire
+    normalizeVariableTokenFromWire,
+    withoutExecutionContextVariables
 } from '../WiredVariablePickerData';
 import { WiredTriggerBaseView } from './WiredTriggerBaseView';
 
@@ -72,7 +73,11 @@ const getTargetValue = (value: VariableTargetType) => {
 
 export const WiredTriggerVariableChangedView: FC<{}> = () => {
     const { trigger = null, setIntParams = null, setStringParam = null } = useWired();
-    const { userVariableDefinitions = [], furniVariableDefinitions = [], roomVariableDefinitions = [] } = useWiredTools();
+    const tools = useWiredTools();
+    // A pointer only exists while a stack runs, so nothing can watch it change (AIR VariableUpdate filter).
+    const userVariableDefinitions = useMemo(() => withoutExecutionContextVariables(tools.userVariableDefinitions), [tools.userVariableDefinitions]);
+    const furniVariableDefinitions = useMemo(() => withoutExecutionContextVariables(tools.furniVariableDefinitions), [tools.furniVariableDefinitions]);
+    const roomVariableDefinitions = useMemo(() => withoutExecutionContextVariables(tools.roomVariableDefinitions), [tools.roomVariableDefinitions]);
     const [targetType, setTargetType] = useState<VariableTargetType>('user');
     const [variableToken, setVariableToken] = useState('');
     const [createdEnabled, setCreatedEnabled] = useState(true);

@@ -8,6 +8,7 @@ import { Slider, Text } from '../../../../common';
 import { useWired, useWiredTools } from '../../../../hooks';
 import { OctaneInput } from '../../../../layout';
 import { WiredFurniSelectionSourceRow } from '../WiredFurniSelectionSourceRow';
+import { toEditorPickSource, toWirePickSource, VARIABLE_PICK_SOURCE } from '../WiredVariablePickSource';
 import { sortWiredSourceOptions, USER_SOURCES, useAvailableUserSources, WiredSourceOption } from '../WiredSourcesSelector';
 import { WiredVariablePicker } from '../WiredVariablePicker';
 import {
@@ -46,7 +47,6 @@ const STRENGTH_MIN = -1000;
 const STRENGTH_MAX = 1000;
 const STRENGTH_DEFAULT = 80;
 const SOURCE_TRIGGER = 0;
-const SOURCE_SECONDARY_SELECTED = 101;
 
 const TARGETS: Array<{ key: VariableTarget; value: number; icon: string }> = [
     { key: 'furni', value: 0, icon: furniVariableIcon },
@@ -58,7 +58,7 @@ const TARGETS: Array<{ key: VariableTarget; value: number; icon: string }> = [
 const FURNI_SOURCES: WiredSourceOption[] = sortWiredSourceOptions(
     [
         { value: SOURCE_TRIGGER, label: 'wiredfurni.params.sources.furni.0' },
-        { value: SOURCE_SECONDARY_SELECTED, label: 'wiredfurni.params.sources.furni.101' },
+        { value: VARIABLE_PICK_SOURCE, label: 'wiredfurni.params.sources.furni.100' },
         { value: 200, label: 'wiredfurni.params.sources.furni.200' },
         { value: 201, label: 'wiredfurni.params.sources.furni.201' }
     ],
@@ -101,7 +101,7 @@ export const WiredExtraMovementCurveView: FC<{}> = () => {
         return fallback ? [fallback, ...built] : built;
     }, [definitions, target, variableToken]);
 
-    const picksFurni = fromVariable && target === 'furni' && furniSource === SOURCE_SECONDARY_SELECTED;
+    const picksFurni = fromVariable && target === 'furni' && furniSource === VARIABLE_PICK_SOURCE;
     const sourceOptions = target === 'furni' ? FURNI_SOURCES : target === 'global' ? GLOBAL_SOURCES : target === 'context' ? CONTEXT_SOURCES : userSources;
     const sourceValue = target === 'furni' ? furniSource : target === 'user' ? userSource : SOURCE_TRIGGER;
 
@@ -116,7 +116,7 @@ export const WiredExtraMovementCurveView: FC<{}> = () => {
         setCurveType(ints.length > 3 ? clamp(ints[3], 0, CURVE_MAX, CURVE_JUMP) : CURVE_JUMP);
         setIntensity(ints.length > 4 ? clamp(ints[4], 0, 100, INTENSITY_DEFAULT) : INTENSITY_DEFAULT);
         setUserSource(trigger.userSourceTypes?.[0] ?? SOURCE_TRIGGER);
-        setFurniSource(trigger.furniSourceTypes?.[0] ?? SOURCE_TRIGGER);
+        setFurniSource(toEditorPickSource(trigger.furniSourceTypes?.[0] ?? SOURCE_TRIGGER));
         setVariableToken(normalizeVariableTokenFromWire(trigger.stringData ?? ''));
     }, [trigger]);
 
@@ -136,7 +136,7 @@ export const WiredExtraMovementCurveView: FC<{}> = () => {
             curveType,
             intensity
         ]);
-        setSourceTypes({ furni: [furniSource], users: [userSource] });
+        setSourceTypes({ furni: [toWirePickSource(trigger, furniSource)], users: [userSource] });
         setStringParam(fromVariable ? variableToken : '');
         if (!picksFurni) setFurniIds([]);
     };
@@ -227,7 +227,7 @@ export const WiredExtraMovementCurveView: FC<{}> = () => {
                         options={sourceOptions}
                         selectionActive={true}
                         selectionCount={furniIds.length}
-                        selectionEnabledValues={[SOURCE_SECONDARY_SELECTED]}
+                        selectionEnabledValues={[VARIABLE_PICK_SOURCE]}
                         selectionKind="primary"
                         selectionLimit={trigger?.maximumItemSelectionCount ?? 0}
                         showSelectionToggle={false}
@@ -236,7 +236,7 @@ export const WiredExtraMovementCurveView: FC<{}> = () => {
                         onChange={(value) => {
                             if (target === 'furni') {
                                 setFurniSource(value);
-                                if (value !== SOURCE_SECONDARY_SELECTED) setFurniIds([]);
+                                if (value !== VARIABLE_PICK_SOURCE) setFurniIds([]);
                                 return;
                             }
 
