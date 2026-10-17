@@ -362,7 +362,8 @@ const useRoomState = () => {
         };
     }, [roomSession]);
 
-    return { roomSession, isHandItemBlocked };
+    // roomBackgroundColor: the room background colour (AIR roomDesktop.roomBackgroundColor), used by the camera scene.
+    return { roomSession, isHandItemBlocked, roomBackgroundColor: originalRoomBackgroundColor };
 };
 
 export const useRoom = () => useSharedHook(useRoomState);

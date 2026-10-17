@@ -1,8 +1,8 @@
 import { CreateLinkEvent, GetRenderer, GetRoomEngine, OctaneTexture, TextureUtils } from '@octane/renderer';
 import { FC, useEffect, useRef } from 'react';
-import { blitRoomCanvasToViewfinder, CameraPicture, GetRoomSession, getViewfinderRoomFrame, LocalizeText, PlaySound, SoundNames } from '../../../api';
+import { blitRoomCanvasToViewfinder, CameraPicture, CaptureCameraRenderMessage, GetCameraRenderMode, GetRoomSession, getViewfinderRoomFrame, LocalizeText, PlaySound, SoundNames } from '../../../api';
 import { Column, DraggableWindow } from '../../../common';
-import { useCamera, useNotification } from '../../../hooks';
+import { useCamera, useNotification, useRoom } from '../../../hooks';
 import { getNextEmptyCameraSlot, willFillLastCameraSlot } from '../CameraAirUtilities';
 import { CameraCenteredText } from './CameraNativeText';
 
@@ -28,6 +28,7 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
         setActivePictureSlotIndex = null
     } = useCamera();
     const { simpleAlert = null } = useNotification();
+    const { roomBackgroundColor = 0 } = useRoom();
     const elementRef = useRef<HTMLCanvasElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const flashRef = useRef<HTMLDivElement>(null);
@@ -170,6 +171,21 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
 
             if (!texture) return;
 
+            // camera.render.mode "server": AIR captures the scene for the server at the shutter, from the same
+            // viewfinder frame; no scene means camera.alert.too_much_stuff and no photo.
+            let renderRoomMessage = null;
+
+            if (GetCameraRenderMode() === 'server') {
+                renderRoomMessage = CaptureCameraRenderMessage(frame, roomBackgroundColor);
+
+                if (!renderRoomMessage) {
+                    texture.destroy?.(true);
+                    texture = null;
+                    simpleAlert(LocalizeText('camera.alert.too_much_stuff'), null, null, null, LocalizeText('generic.alert.title'));
+                    return;
+                }
+            }
+
             PlaySound(SoundNames.CAMERA_SHUTTER);
             flashRef.current?.classList.remove('octane-camera-capture__flash--active');
             // Restart the CSS flash even when two photographs are taken quickly.
@@ -193,7 +209,7 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
 
             const nextRoll = Array.from({ length: CAMERA_ROLL_LIMIT }, (_, index) => cameraRoll[index] ?? null);
 
-            nextRoll[targetSlot] = new CameraPicture(texture, imageUrl);
+            nextRoll[targetSlot] = new CameraPicture(texture, imageUrl, renderRoomMessage);
             pendingCapturedSlotRef.current = targetSlot;
             pendingShouldShowFullAlertRef.current = !hasShownFullRollAlert && willFillLastCameraSlot(cameraRoll, targetSlot);
             texture = null;

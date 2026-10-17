@@ -19,7 +19,8 @@ export interface CameraWidgetEditorViewProps {
     myLevel: number;
     onClose: () => void;
     onCancel: () => void;
-    onCheckout: (pictureUrl: string) => void;
+    // The edited preview, plus what the AIR scene needs when the server renders: the effects that are on and the zoom (1 or 2).
+    onCheckout: (pictureUrl: string, effects: IRoomCameraWidgetSelectedEffect[], zoom: number) => void;
 }
 
 const TABS: string[] = [CameraEditorTabs.COLORMATRIX, CameraEditorTabs.COMPOSITE];
@@ -88,7 +89,7 @@ export const CameraWidgetEditorView: FC<CameraWidgetEditorViewProps> = (props) =
                     onCancel();
                     return;
                 case 'checkout':
-                    if (!isRendering && currentPictureUrl) onCheckout(currentPictureUrl);
+                    if (!isRendering && currentPictureUrl) onCheckout(currentPictureUrl, selectedEffects, isZoomed ? 2 : 1);
                     return;
                 case 'change_tab':
                     setCurrentTab(String(effectName));
@@ -152,8 +153,9 @@ export const CameraWidgetEditorView: FC<CameraWidgetEditorViewProps> = (props) =
             onCancel,
             onCheckout,
             onClose,
+            isZoomed,
             selectedEffectName,
-            selectedEffects.length
+            selectedEffects
         ]
     );
 

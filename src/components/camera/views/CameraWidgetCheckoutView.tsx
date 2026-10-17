@@ -7,6 +7,8 @@ import {
     GetEventDispatcher,
     GetRoomEngine,
     GetSessionDataManager,
+    IRoomCameraWidgetEffect,
+    IRoomCameraWidgetSelectedEffect,
     OctaneToolbarAnimateIconEvent,
     PhotoCompetitionMessageComposer,
     PublishPhotoMessageComposer,
@@ -14,7 +16,7 @@ import {
     ToolbarIconEnum
 } from '@octane/renderer';
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { GetConfigurationValue, LocalizeText, OpenUrl, SendMessageComposer } from '../../../api';
+import { CameraPicture, FinishCameraRenderMessage, GetCameraEffectDataJson, GetCameraRenderMode, GetConfigurationValue, LocalizeText, OpenUrl, SendMessageComposer } from '../../../api';
 import creditIcon from '../../../assets/images/camera/checkout/credit.png';
 import ducketIcon from '../../../assets/images/camera/checkout/ducket.png';
 import { OctaneCardView } from '../../../common';
@@ -28,12 +30,26 @@ export interface CameraWidgetCheckoutViewProps {
     onCloseClick: () => void;
     onCancelClick: () => void;
     price: { credits: number; duckets: number; publishDucketPrice: number };
+    // camera.render.mode "server": the photo (with the scene captured at the shutter), its effects and zoom.
+    picture?: CameraPicture;
+    effects?: IRoomCameraWidgetSelectedEffect[];
+    zoom?: number;
+    availableEffects?: IRoomCameraWidgetEffect[];
 }
 
 const CAMERA_POINT_CURRENCY_TYPE = 0;
 
 export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (props) => {
-    const { base64Url = null, onCloseClick = null, onCancelClick = null, price: offeredPrice = null } = props;
+    const {
+        base64Url = null,
+        onCloseClick = null,
+        onCancelClick = null,
+        price: offeredPrice = null,
+        picture = null,
+        effects = null,
+        zoom = 1,
+        availableEffects = null
+    } = props;
     // Official (setPrices runs once): the prices are fixed when the dialog opens.
     const [price, setPrice] = useState(offeredPrice);
     // A second click before React re-renders must not send the request again (the server would
@@ -304,10 +320,28 @@ export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (prop
         }
     };
 
+    // AIR sends the photo data once, when the purchase dialog opens.
     useEffect(() => {
+        if (GetCameraRenderMode() === 'server') {
+            // The scene captured at the shutter, now with the editor's effects (frames last) and zoom; the server renders it.
+            const composer = picture?.renderRoomMessage ?? null;
+
+            if (!FinishCameraRenderMessage(composer, GetCameraEffectDataJson(effects ?? [], availableEffects ?? []), zoom)) {
+                setHasRenderingFailed(true);
+                setStatusLocalization('');
+                simpleAlert(LocalizeText('camera.alert.too_much_stuff'), null, null, null, LocalizeText('generic.alert.title'));
+                return;
+            }
+
+            SendMessageComposer(composer);
+            return;
+        }
+
         if (!base64Url) return;
 
         GetRoomEngine().saveBase64AsScreenshot(base64Url);
+        // Sent once per opened dialog, like AIR; the other inputs belong to the same checkout.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [base64Url]);
 
     useEffect(() => {

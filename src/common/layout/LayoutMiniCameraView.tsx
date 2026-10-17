@@ -1,11 +1,12 @@
-import { GetRoomEngine, OctaneTexture } from '@octane/renderer';
+import { GetRoomEngine, OctaneRectangle, OctaneTexture } from '@octane/renderer';
 import { FC, useEffect, useRef, useState } from 'react';
 import { blitRoomCanvasToViewfinder, getViewfinderRoomFrame, LocalizeText, PlaySound, SoundNames } from '../../api';
 import { OctaneCardContentView, OctaneCardHeaderView, OctaneCardView } from '../card';
 
 interface LayoutMiniCameraViewProps {
     roomId: number;
-    textureReceiver: (texture: OctaneTexture) => Promise<void>;
+    // The frame is the viewfinder rectangle the picture was taken from (the AIR scene is captured from it).
+    textureReceiver: (texture: OctaneTexture, frame?: InstanceType<typeof OctaneRectangle>) => Promise<void>;
     onClose: () => void;
     isSaving?: boolean;
 }
@@ -38,7 +39,7 @@ export const LayoutMiniCameraView: FC<LayoutMiniCameraViewProps> = (props) => {
         PlaySound(SoundNames.CAMERA_SHUTTER);
 
         try {
-            await textureReceiver(GetRoomEngine().createTextureFromRoom(roomId, 1, frame));
+            await textureReceiver(GetRoomEngine().createTextureFromRoom(roomId, 1, frame), frame);
         } finally {
             setIsCapturing(false);
         }

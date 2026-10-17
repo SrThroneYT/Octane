@@ -4,6 +4,8 @@ import { RoomWidgetThumbnailEvent } from '../../../../events';
 import { RoomThumbnailWidgetView } from './RoomThumbnailWidgetView';
 
 const mocks = vi.hoisted(() => ({
+    captureCameraRenderMessage: vi.fn((): unknown => ({ id: 'thumbnail-scene' })),
+    renderMode: 'upload' as 'upload' | 'server',
     messageHandler: null as null | ((event: any) => void),
     refreshRoomThumbnail: vi.fn(),
     saveTextureAsScreenshot: vi.fn(() => Promise.resolve()),
@@ -22,6 +24,8 @@ vi.mock('@octane/renderer', async () => {
 });
 
 vi.mock('../../../../api', () => ({
+    CaptureCameraRenderMessage: mocks.captureCameraRenderMessage,
+    GetCameraRenderMode: () => mocks.renderMode,
     LocalizeText: (key: string) => key,
     RefreshRoomThumbnail: mocks.refreshRoomThumbnail,
     SendMessageComposer: mocks.sendMessageComposer
@@ -30,7 +34,7 @@ vi.mock('../../../../api', () => ({
 vi.mock('../../../../common', () => ({
     LayoutMiniCameraView: ({ isSaving, onClose, textureReceiver }: any) => (
         <div role="dialog" aria-label="room-thumbnail-camera">
-            <button type="button" disabled={isSaving} onClick={() => textureReceiver({ id: 'texture' })}>
+            <button type="button" disabled={isSaving} onClick={() => textureReceiver({ id: 'texture', destroy: vi.fn() }, { x: 10, y: 20, width: 110, height: 110 })}>
                 navigator.thumbeditor.save
             </button>
             <button type="button" disabled={isSaving} onClick={onClose}>
@@ -45,7 +49,7 @@ vi.mock('../../../../hooks', () => ({
         mocks.messageHandler = handler;
     },
     useNotification: () => ({ simpleAlert: mocks.simpleAlert }),
-    useRoom: () => ({ roomSession: { roomId: 42 } }),
+    useRoom: () => ({ roomSession: { roomId: 42 }, roomBackgroundColor: 0x123456 }),
     useUiEvent: (_types: string[], handler: (event: { type: string }) => void) => {
         mocks.uiHandler = handler;
     }
@@ -55,6 +59,8 @@ afterEach(() => {
     vi.useRealTimers();
     cleanup();
     mocks.messageHandler = null;
+    mocks.renderMode = 'upload';
+    mocks.captureCameraRenderMessage.mockClear();
     mocks.refreshRoomThumbnail.mockClear();
     mocks.saveTextureAsScreenshot.mockClear();
     mocks.sendMessageComposer.mockClear();
@@ -111,5 +117,27 @@ describe('AIR room thumbnail server handshake', () => {
 
         expect(screen.getByRole('button', { name: 'navigator.thumbeditor.save' })).toBeEnabled();
         expect(mocks.simpleAlert).toHaveBeenCalledWith('camera.error.creation');
+    });
+
+    it('sends the AIR thumbnail scene from the viewfinder frame when the server renders', async () => {
+        mocks.renderMode = 'server';
+        openCamera();
+        fireEvent.click(screen.getByRole('button', { name: 'navigator.thumbeditor.save' }));
+
+        await waitFor(() => expect(mocks.sendMessageComposer).toHaveBeenCalledWith({ id: 'thumbnail-scene' }));
+        expect(mocks.captureCameraRenderMessage).toHaveBeenCalledWith({ x: 10, y: 20, width: 110, height: 110 }, 0x123456, true);
+        expect(mocks.saveTextureAsScreenshot).not.toHaveBeenCalled();
+        expect(screen.getByRole('button', { name: 'navigator.thumbeditor.save' })).toBeDisabled();
+    });
+
+    it('alerts like AIR when the thumbnail scene cannot be built', async () => {
+        mocks.renderMode = 'server';
+        mocks.captureCameraRenderMessage.mockReturnValueOnce(null);
+        openCamera();
+        fireEvent.click(screen.getByRole('button', { name: 'navigator.thumbeditor.save' }));
+
+        await waitFor(() => expect(mocks.simpleAlert).toHaveBeenCalledWith('camera.alert.too_much_stuff'));
+        expect(mocks.sendMessageComposer).not.toHaveBeenCalled();
+        expect(screen.getByRole('button', { name: 'navigator.thumbeditor.save' })).toBeEnabled();
     });
 });

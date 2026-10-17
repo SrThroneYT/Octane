@@ -3,13 +3,14 @@ import {
     GetRoomEngine,
     GetSessionDataManager,
     ILinkEventTracker,
+    IRoomCameraWidgetSelectedEffect,
     RemoveLinkEventTracker,
     RoomEngineEvent,
     RoomGeometry,
     RoomSessionEvent
 } from '@octane/renderer';
 import { FC, useCallback, useEffect, useMemo, useState } from 'react';
-import { GetConfigurationValue, LocalizeText } from '../../api';
+import { CameraPicture, GetConfigurationValue, LocalizeText } from '../../api';
 import { useAchievements, useCamera, useOctaneEvent, useNotification, useRoom } from '../../hooks';
 import { getCameraAchievementLevel } from './CameraAirUtilities';
 import { CameraWidgetCaptureView } from './views/CameraWidgetCaptureView';
@@ -38,6 +39,8 @@ const isDefaultRoomZoom = (roomId: number): boolean => Math.abs(getLogicalRoomZo
 export const CameraWidgetView: FC<{}> = (props) => {
     const [mode, setMode] = useState<number>(MODE_NONE);
     const [base64Url, setSavedPictureUrl] = useState<string>(null);
+    // What the checkout sends when the server renders (camera.render.mode "server"): the photo's scene, effects, zoom.
+    const [checkout, setCheckout] = useState<{ picture: CameraPicture; effects: IRoomCameraWidgetSelectedEffect[]; zoom: number }>(null);
     const {
         availableEffects = [],
         selectedPictureIndex = -1,
@@ -97,7 +100,7 @@ export const CameraWidgetView: FC<{}> = (props) => {
         }
     };
 
-    const checkoutPictureUrl = (pictureUrl: string) => {
+    const checkoutPictureUrl = (pictureUrl: string, effects: IRoomCameraWidgetSelectedEffect[] = [], zoom: number = 1) => {
         if (GetSessionDataManager().isSafetyLocked) {
             simpleAlert(LocalizeText('notifications.text.safety_locked'), null, null, null, LocalizeText('generic.alert.title'));
 
@@ -113,6 +116,7 @@ export const CameraWidgetView: FC<{}> = (props) => {
         }
 
         setSavedPictureUrl(pictureUrl);
+        setCheckout({ picture: cameraRoll[selectedPictureIndex] ?? null, effects, zoom });
         setMode(MODE_CHECKOUT);
     };
 
@@ -178,7 +182,11 @@ export const CameraWidgetView: FC<{}> = (props) => {
             )}
             {mode === MODE_CHECKOUT && (
                 <CameraWidgetCheckoutView
+                    availableEffects={availableEffects}
                     base64Url={base64Url}
+                    effects={checkout?.effects}
+                    picture={checkout?.picture}
+                    zoom={checkout?.zoom}
                     price={price}
                     onCancelClick={() => processAction('editor_cancel')}
                     onCloseClick={() => processAction('editor_cancel')}
