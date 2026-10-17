@@ -98,7 +98,6 @@ export const ModActionView: FC<ModActionProps> = ({ userId, userName, settings, 
     const topicMap = useMemo(readTopicSanctionMap, []);
     const [topicIndex, setTopicIndex] = useState(-1);
     const [sanctionIndex, setSanctionIndex] = useState(-1);
-    const [openMenu, setOpenMenu] = useState<'template' | null>(null);
     const [message, setMessage] = useState('');
     const [inputActive, setInputActive] = useState(false);
     const [defaultLabel, setDefaultLabel] = useState(nativeCaption(findNativeNode(root, 'default_sanction_label')));
@@ -262,16 +261,13 @@ export const ModActionView: FC<ModActionProps> = ({ userId, userName, settings, 
                         caption="Select from message templates"
                         height={20}
                         items={templates.map((template) => (template.length > 50 ? `${template.slice(0, 47)}...` : template))}
-                        open={openMenu === 'template'}
                         width={210}
                         x={custom.x + 110}
                         y={custom.y}
                         onSelect={(index) => {
                             setMessage(templates[index]);
                             setInputActive(true);
-                            setOpenMenu(null);
                         }}
-                        onToggle={() => setOpenMenu((value) => (value === 'template' ? null : 'template'))}
                     />
                 )}
                 <Native100Dropmenu

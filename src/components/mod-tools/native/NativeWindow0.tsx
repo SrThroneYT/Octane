@@ -17,6 +17,7 @@ import headerXml from '../../../assets/mod-tools/skins/skin-header.xml?raw';
 import { NativeSkin, parseNativeSkin } from './NativeSkin';
 import { NativeSkinView } from './NativeSkinView';
 import { BaseButton } from '../../../common/BaseButton';
+import { ListSelect } from '../../../common/ListSelect';
 import { ToggleButton } from '../../../common/ToggleButton';
 
 // Legacy window-manager style 0 (habbo_element_description_xml): blue frame 0xff418db0, white border, default button, checkbox, dropmenu, close button.
@@ -270,31 +271,36 @@ interface Native0DropmenuProps {
     height: number;
     caption: string;
     items: string[];
-    open: boolean;
-    onToggle: () => void;
     onSelect: (index: number) => void;
     name?: string;
 }
 
-/** dropmenu style 0: the closed menu is the dropmenu_frame skin with the caption at (10, 4); the open list is a white box over the menu (outline, 1px, then 16px rows) with a grey hover row. */
-export const Native0Dropmenu: FC<Native0DropmenuProps> = ({ x, y, width, height, caption, items, open, onToggle, onSelect, name }) => {
-    const [hover, setHover] = useState(-1);
+/** dropmenu style 0: the closed menu is the dropmenu_frame skin with the caption at (10, 4); the open list is a white box over the menu (outline, 1px, then 16px rows) with a grey hover row. Opening, closing, keyboard and outside press are Base UI Select; no item is ever selected, so choosing the same row twice reports it twice (the callers use it to apply a template). */
+export const Native0Dropmenu: FC<Native0DropmenuProps> = ({ x, y, width, height, caption, items, onSelect, name }) => {
+    const listHeight = items.length * 16 + 7;
 
     return (
         <div className="native0-box native0-dropmenu" data-native-name={name} style={rect(x, y, width, height)}>
             <NativeSkinView atlas={blueAtlas} height={height} layout="dropmenu_frame" skin={SKINS.dropmenu} width={width} />
             <Native0Text text={caption} width={width - 40} x={10} y={4} />
-            <BaseButton type="button" aria-label={caption} className="native0-dropmenu__region" onClick={onToggle} />
-            {open && (
-                <div className="native0-dropmenu__list" style={{ top: 0, width, height: items.length * 16 + 7 }} onPointerLeave={() => setHover(-1)}>
-                    <NativeSkinView atlas={blueAtlas} height={items.length * 16 + 7} layout="dropmenu_frame" skin={DROPMENU_LIST} width={width} />
-                    {items.map((item, index) => (
-                        <BaseButton type="button" key={index} className={`native0-dropmenu__item${hover === index ? ' is-hover' : ''}`} style={{ top: 2 + index * 16 }} onClick={() => onSelect(index)} onPointerMove={() => setHover(index)}>
-                            <Native0Text text={item} width={width - 12} x={7} y={1} />
-                        </BaseButton>
-                    ))}
-                </div>
-            )}
+            <ListSelect
+                aria-label={caption}
+                itemClassName="native0-dropmenu__item"
+                options={items.map((item, index) => ({
+                    value: String(index),
+                    label: <Native0Text text={item} width={width - 12} x={7} y={1} />
+                }))}
+                popupClassName="native0-dropmenu__list"
+                popupDecoration={<NativeSkinView atlas={blueAtlas} height={listHeight} layout="dropmenu_frame" skin={DROPMENU_LIST} width={width} />}
+                popupStyle={{ width, height: listHeight }}
+                positionerClassName="native0-dropmenu__positioner"
+                renderTrigger={() => null}
+                scaleWithTrigger
+                sideOffset={({ anchor }) => -anchor.height}
+                triggerClassName="native0-dropmenu__region"
+                value="-1"
+                onValueChange={(next) => onSelect(Number(next))}
+            />
         </div>
     );
 };
