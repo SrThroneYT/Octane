@@ -65,7 +65,7 @@
 }
 
 .octane-groups-button,
-.octane-groups-window button:not(.octane-card-header-close),
+.octane-groups-window button:not(.octane-card-header-close):not(.octane-select-trigger),
 .octane-group-room-info .octane-groups-button {
     min-height: 24px;
     border: 3px solid transparent !important;
@@ -83,20 +83,20 @@
 }
 
 .octane-groups-button:hover,
-.octane-groups-window button:not(.octane-card-header-close):hover,
+.octane-groups-window button:not(.octane-card-header-close):not(.octane-select-trigger):hover,
 .octane-group-room-info .octane-groups-button:hover {
     border-image-source: var(--habbo-skin-button-hover) !important;
     filter: none !important;
 }
 
 .octane-groups-button:active,
-.octane-groups-window button:not(.octane-card-header-close):active,
+.octane-groups-window button:not(.octane-card-header-close):not(.octane-select-trigger):active,
 .octane-group-room-info .octane-groups-button:active {
     border-image-source: var(--habbo-skin-button-pressed) !important;
 }
 
 .octane-groups-button:disabled,
-.octane-groups-window button:disabled,
+.octane-groups-window button:disabled:not(.octane-select-trigger),
 .octane-group-room-info .octane-groups-button:disabled {
     border-image-source: var(--habbo-skin-button-disabled) !important;
     color: #777777 !important;

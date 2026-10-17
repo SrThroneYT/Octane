@@ -37,7 +37,7 @@
         font-weight: 700;
     }
 
-    button {
+    button:not(.octane-select-trigger) {
         min-height: 29px;
         border-radius: 0 !important;
         font-size: 11px;

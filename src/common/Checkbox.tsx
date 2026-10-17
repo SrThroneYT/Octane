@@ -1,7 +1,7 @@
 import { Checkbox as BaseCheckbox } from '@base-ui/react/checkbox';
 import { ComponentProps, FC } from 'react';
 
-export interface CheckboxProps extends Omit<ComponentProps<typeof BaseCheckbox.Root>, 'onCheckedChange' | 'className'> {
+export interface CheckboxProps extends Omit<ComponentProps<typeof BaseCheckbox.Root>, 'onCheckedChange' | 'onChange' | 'className'> {
     className?: string;
     onCheckedChange?: (checked: boolean) => void;
 }

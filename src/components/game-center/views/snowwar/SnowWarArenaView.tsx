@@ -46,6 +46,7 @@ import {
 import { Checkbox } from '../../../../common/Checkbox';
 import { BaseButton } from '../../../../common/BaseButton';
 import { Hint } from '../../../../common/Tooltip';
+import { isTextEntryTarget } from '../../../../hooks/rooms/useRoomKeyboardMovement';
 
 const localizeWithFallback = (key: string, fallback: string) =>
 {
@@ -579,7 +580,7 @@ export const SnowWarArenaView: FC = () =>
 
             const target = event.target as HTMLElement | null;
 
-            if (target && (target.isContentEditable || (target.tagName === 'INPUT') || (target.tagName === 'TEXTAREA') || (target.tagName === 'SELECT'))) return;
+            if (isTextEntryTarget(target)) return;
 
             event.preventDefault();
             chatInputRef.current?.focus();
@@ -1309,9 +1310,7 @@ export const SnowWarArenaView: FC = () =>
         ]);
         const isEditableTarget = (target: EventTarget | null): boolean =>
         {
-            const element = target as HTMLElement | null;
-            if (!element) return false;
-            return element.isContentEditable || element.tagName === 'INPUT' || element.tagName === 'TEXTAREA' || element.tagName === 'SELECT';
+            return isTextEntryTarget(target);
         };
         const move = () =>
         {

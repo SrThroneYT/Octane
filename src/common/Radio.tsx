@@ -6,6 +6,8 @@ export interface RadioProps extends Omit<ComponentProps<typeof BaseRadio.Root>, 
     checked?: boolean;
     className?: string;
     name?: string;
+    /** What a surrounding form submits when this radio is checked (native default: "on"). */
+    value?: string;
     /** Fires when the radio becomes checked, like a native radio's change event. */
     onCheckedChange?: () => void;
 }
@@ -32,7 +34,7 @@ const isEnabled = (element: HTMLElement) => element.getAttribute('aria-disabled'
  * the selection between them and only the checked one is a tab stop.
  */
 export const Radio: FC<RadioProps> = (props) => {
-    const { checked = false, className, name, onCheckedChange, onKeyDown, disabled, readOnly, required, ...rest } = props;
+    const { checked = false, className, name, value = CHECKED, onCheckedChange, onKeyDown, disabled, readOnly, required, ...rest } = props;
     const rootRef = useRef<HTMLElement | null>(null);
     const [tabbable, setTabbable] = useState(true);
 
@@ -98,7 +100,7 @@ export const Radio: FC<RadioProps> = (props) => {
             name={name}
             readOnly={readOnly}
             required={required}
-            value={checked ? CHECKED : ''}
+            value={checked ? value : ''}
             onValueChange={() => onCheckedChange?.()}
         >
             <BaseRadio.Root
@@ -106,7 +108,7 @@ export const Radio: FC<RadioProps> = (props) => {
                 render={<i />}
                 className={className ? `octane-radio ${className}` : 'octane-radio'}
                 tabIndex={tabbable ? 0 : -1}
-                value={CHECKED}
+                value={value}
                 {...{ [NAME_ATTRIBUTE]: name }}
                 {...rest}
                 onKeyDown={handleKeyDown}

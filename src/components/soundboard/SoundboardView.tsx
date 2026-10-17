@@ -3,6 +3,7 @@ import { AddLinkEventTracker, ILinkEventTracker, RemoveLinkEventTracker } from '
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { LocalizeText } from '../../api';
 import { useSoundboard } from '../../hooks';
+import { isTextEntryTarget } from '../../hooks/rooms/useRoomKeyboardMovement';
 import { useSoundboardFeedStore } from '../../hooks/soundboard/soundboardFeedStore';
 import {
     DisplaySoundboardSound,
@@ -18,8 +19,7 @@ const PAGE_SIZE = 10;
 const PLAYING_MS = 1_500;
 const SHELF_SIZE = 6;
 
-const isTypingTarget = (target: EventTarget | null) =>
-    target instanceof HTMLElement && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+const isTypingTarget = isTextEntryTarget;
 
 interface SoundboardContentViewProps {
     sounds: DisplaySoundboardSound[];

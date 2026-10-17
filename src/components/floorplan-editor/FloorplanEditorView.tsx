@@ -18,6 +18,7 @@ import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { GetLocalStorage, LocalizeText, SendMessageComposer, SetLocalStorage } from '../../api';
 import { Base, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView } from '../../common';
 import { useMessageEvent, useOctaneEvent } from '../../hooks';
+import { isTextEntryTarget } from '../../hooks/rooms/useRoomKeyboardMovement';
 import { useFloorplanLiveSync } from '../../hooks/rooms/widgets/useFloorplanLiveSync';
 import { useFloorplanReducer } from './hooks/useFloorplanReducer';
 import { MAX_WALL_HEIGHT, MIN_WALL_HEIGHT } from './state/constants';
@@ -196,9 +197,7 @@ export const FloorplanEditorView: FC<Props> = ({ externalSession }) => {
         if (!isVisible) return;
         const handler = (e: KeyboardEvent) => {
             if (!(e.ctrlKey || e.metaKey)) return;
-            const target = e.target as HTMLElement | null;
-            const tag = target?.tagName;
-            if (tag === 'INPUT' || tag === 'TEXTAREA' || target?.isContentEditable) return;
+            if (isTextEntryTarget(e.target)) return;
             const key = e.key.toLowerCase();
             if (key === 'z' && !e.shiftKey) {
                 e.preventDefault();

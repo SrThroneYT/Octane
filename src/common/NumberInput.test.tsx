@@ -50,7 +50,9 @@ describe('NumberInput', () => {
     it('keeps decimals and does not group digits', () => {
         render(<NumberInput aria-label="Ratio" step={0.01} value={1234.567} onChange={() => undefined} />);
 
-        expect((screen.getByRole('spinbutton') as HTMLInputElement).value).toBe('1234.567');
+        const expected = new Intl.NumberFormat(undefined, { useGrouping: false, maximumFractionDigits: 20 }).format(1234.567);
+
+        expect((screen.getByRole('spinbutton') as HTMLInputElement).value).toBe(expected);
     });
 
     it('reports NaN when the field is cleared', () => {
