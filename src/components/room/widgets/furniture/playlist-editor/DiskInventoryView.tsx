@@ -71,6 +71,7 @@ export const DiskInventoryView: FC<DiskInventoryViewProps> = (props) =>
 
                             return (
                                 <LayoutGridItem
+                                    component="div"
                                     key={index}
                                     classNames={['text-black']}
                                     itemActive={selectedItem === index}

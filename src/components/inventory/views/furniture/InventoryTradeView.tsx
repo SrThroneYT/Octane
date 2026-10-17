@@ -191,6 +191,7 @@ export const InventoryTradeView: FC<InventoryTradeViewProps> = (props) => {
                                         <LayoutGridItem
                                             key={index}
                                             className={!count ? 'opacity-0-5 ' : ''}
+                                            component="div"
                                             itemActive={groupItem === item}
                                             itemCount={count}
                                             itemImage={item.iconUrl}
@@ -245,6 +246,7 @@ export const InventoryTradeView: FC<InventoryTradeViewProps> = (props) => {
                                     return (
                                         <LayoutGridItem
                                             key={i}
+                                            component="div"
                                             itemActive={ownGroupItem === item}
                                             itemCount={item.getTotalCount()}
                                             itemImage={item.iconUrl}
