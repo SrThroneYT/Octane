@@ -14,6 +14,7 @@ import {
 import { Button, LayoutBadgeImageView, Text } from '../../../common';
 import { useGroupLeave, useNotification } from '../../../hooks';
 import { BaseButton } from '../../../common/BaseButton';
+import { Hint } from '../../../common/Tooltip';
 
 const STATES: string[] = ['regular', 'exclusive', 'private'];
 
@@ -58,11 +59,11 @@ export const GroupInformationView: FC<GroupInformationViewProps> = (props) => {
         if (groupInformation.membershipType === GroupMembershipType.NOT_MEMBER || groupInformation.membershipType === GroupMembershipType.REQUEST_PENDING)
             return null;
 
-        if (isRealOwner) return <i className="octane-icon icon-group-owner" title={LocalizeText('group.youareowner')} />;
+        if (isRealOwner) return <Hint content={LocalizeText('group.youareowner')}><i aria-label={LocalizeText('group.youareowner')} className="octane-icon icon-group-owner" role="img" /></Hint>;
 
-        if (groupInformation.isAdmin) return <i className="octane-icon icon-group-admin" title={LocalizeText('group.youareadmin')} />;
+        if (groupInformation.isAdmin) return <Hint content={LocalizeText('group.youareadmin')}><i aria-label={LocalizeText('group.youareadmin')} className="octane-icon icon-group-admin" role="img" /></Hint>;
 
-        return <i className="octane-icon icon-group-member" title={LocalizeText('group.youaremember')} />;
+        return <Hint content={LocalizeText('group.youaremember')}><i aria-label={LocalizeText('group.youaremember')} className="octane-icon icon-group-member" role="img" /></Hint>;
     };
 
     const getButtonText = () => {
@@ -158,7 +159,7 @@ export const GroupInformationView: FC<GroupInformationViewProps> = (props) => {
                                 title={LocalizeText(`group.edit.settings.type.${STATES[groupInformation.type]}.help`)}
                             />
                             {groupInformation.canMembersDecorate && (
-                                <i className="octane-icon icon-group-decorate" title={LocalizeText('group.memberscandecorate')} />
+                                <Hint content={LocalizeText('group.memberscandecorate')}><i aria-label={LocalizeText('group.memberscandecorate')} className="octane-icon icon-group-decorate" role="img" /></Hint>
                             )}
                         </div>
                     </div>

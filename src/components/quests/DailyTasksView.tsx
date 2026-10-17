@@ -4,6 +4,7 @@ import { getDailyTaskImageUrl, getDailyTaskProgressPercent, getDailyTaskStyle, g
 import { Button, DraggableWindowPosition, LayoutBadgeImageView, LayoutCurrencyIcon, LayoutProgressBar, Text } from '../../common';
 import { useDailyTasks } from '../../hooks';
 import { OctaneCard } from '../../layout';
+import { Hint } from '../../common/Tooltip';
 
 const CURRENCY_TYPES: Record<string, number> = { credits: -1, duckets: 0, diamonds: 5 };
 
@@ -21,9 +22,11 @@ const DailyTaskRowView: FC<{ task: DailyTaskData; onClaim: (task: DailyTaskData)
             <div className="octane-daily-task-left">
                 <div className="octane-daily-task-title">
                     <span>{localizeWithFallback(task.nameLocalizationKey, task.taskCode)}</span>
-                    <span className="octane-daily-task-hint" title={localizeWithFallback(task.hintLocalizationKey, '')}>
-                        ?
-                    </span>
+                    <Hint content={localizeWithFallback(task.hintLocalizationKey, '')}>
+                        <span aria-label={localizeWithFallback(task.hintLocalizationKey, '')} className="octane-daily-task-hint" role="img">
+                            ?
+                        </span>
+                    </Hint>
                 </div>
                 <div className="octane-daily-task-body">
                     <img className="octane-daily-task-image" src={getDailyTaskImageUrl(task)} alt="" draggable={false} />

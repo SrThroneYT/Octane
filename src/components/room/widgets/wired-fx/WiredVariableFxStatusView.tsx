@@ -14,6 +14,7 @@ import {
 import { IWiredVariableFxStatusEntry } from '../../../../hooks';
 import { classNames } from '../../../../layout';
 import { wiredVariableFxIconGlyph, wiredVariableFxSegmentFills } from './WiredVariableFxOverlay.helpers';
+import { Hint } from '../../../../common/Tooltip';
 
 export interface WiredVariableFxStatusViewProps {
     config: IWiredVariableFxConfig;
@@ -24,9 +25,11 @@ const Icon: FC<{ icon: string }> = ({ icon }) => {
     if (!icon) return null;
 
     return (
-        <span className={`octane-wired-fx__icon octane-wired-fx__icon--${icon}`} title={icon.replace(/_/g, ' ')}>
-            {wiredVariableFxIconGlyph(icon)}
-        </span>
+        <Hint content={icon.replace(/_/g, ' ')}>
+            <span aria-label={icon.replace(/_/g, ' ')} className={`octane-wired-fx__icon octane-wired-fx__icon--${icon}`} role="img">
+                {wiredVariableFxIconGlyph(icon)}
+            </span>
+        </Hint>
     );
 };
 

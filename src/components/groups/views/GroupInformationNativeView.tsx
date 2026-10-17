@@ -21,6 +21,7 @@ import typeIconPrivate from '../../../assets/images/groups/native/grouptype_icon
 import { LayoutBadgeImageView } from '../../../common';
 import { useGroupLeave, useNotification } from '../../../hooks';
 import { flatText, GroupBox, GroupButton, GroupText } from './GroupNativeLayout';
+import { Hint } from '../../../common/Tooltip';
 
 const TYPE_ICONS: string[] = [typeIconRegular, typeIconExclusive, typeIconPrivate];
 const TYPE_HELP: string[] = ['regular', 'exclusive', 'private'];
@@ -111,9 +112,9 @@ export const GroupInformationNativeView: FC<GroupInformationNativeViewProps> = (
             <div className="octane-group-info__badge" style={{ left: BASE_X + 11, top: BASE_Y + 14 }}>
                 <LayoutBadgeImageView badgeCode={groupInformation.badge} isGroup={true} scale={2} />
             </div>
-            <img alt="" className="octane-group-info__icon" draggable={false} src={TYPE_ICONS[groupInformation.type]} style={{ left: BASE_X + 107, top: BASE_Y + 10 }} title={LocalizeText(`group.edit.settings.type.${TYPE_HELP[groupInformation.type]}.help`)} />
+            <Hint content={LocalizeText(`group.edit.settings.type.${TYPE_HELP[groupInformation.type]}.help`)}><img alt={LocalizeText(`group.edit.settings.type.${TYPE_HELP[groupInformation.type]}.help`)} className="octane-group-info__icon" draggable={false} src={TYPE_ICONS[groupInformation.type]} style={{ left: BASE_X + 107, top: BASE_Y + 10 }} /></Hint>
             {groupInformation.canMembersDecorate && (
-                <img alt="" className="octane-group-info__icon" draggable={false} src={decorateIcon} style={{ left: BASE_X + 125, top: BASE_Y + 10 }} title={LocalizeText('group.memberscandecorate')} />
+                <Hint content={LocalizeText('group.memberscandecorate')}><img alt={LocalizeText('group.memberscandecorate')} className="octane-group-info__icon" draggable={false} src={decorateIcon} style={{ left: BASE_X + 125, top: BASE_Y + 10 }} /></Hint>
             )}
             <GroupText background={0xcccccc} height={17} overrides={flatText(12, { bold: true })} text={groupInformation.title} width={206} x={nameX} y={BASE_Y + 9} />
             <GroupText
@@ -175,7 +176,7 @@ export const GroupInformationNativeView: FC<GroupInformationNativeViewProps> = (
                 </>
             )}
             {isRealOwner && (
-                <img alt="" className="octane-group-info__icon" draggable={false} src={ownerIcon} style={{ left: BASE_X + 40, top: BASE_Y + 183 }} title={LocalizeText('group.youareowner')} />
+                <Hint content={LocalizeText('group.youareowner')}><img alt={LocalizeText('group.youareowner')} className="octane-group-info__icon" draggable={false} src={ownerIcon} style={{ left: BASE_X + 40, top: BASE_Y + 183 }} /></Hint>
             )}
             {isNotMember && groupInformation.type === GroupType.REGULAR && (
                 <GroupButton height={29} label={LocalizeText('group.join')} width={160} x={BASE_X + 99} y={BASE_Y + 179} onClick={() => TryJoinGroup(groupInformation.id)} />

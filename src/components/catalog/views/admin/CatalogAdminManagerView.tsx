@@ -511,9 +511,11 @@ export const CatalogAdminManagerView: FC<{}> = () => {
                                     onDragStart={(event) => handleOfferDragStart(event, index)}
                                     onDrop={(event) => handleOfferDrop(event, index)}
                                 >
-                                    <span className="octane-catalog-admin-offer-drag" title="Drag to reorder">
-                                        <FaArrowsAlt />
-                                    </span>
+                                    <Hint content="Drag to reorder">
+                                        <span aria-label="Drag to reorder" className="octane-catalog-admin-offer-drag" role="img">
+                                            <FaArrowsAlt />
+                                        </span>
+                                    </Hint>
                                     <div className="octane-catalog-admin-manager-reorder">
                                         <Hint content="Move up"><BaseButton aria-label="Move up" disabled={index === 0} onClick={() => moveOffer(index, -1)}>
                                             <FaArrowUp />

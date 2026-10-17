@@ -15,6 +15,7 @@ import {
 } from '../../../../api/wired/WiredLeaderboard';
 import { LayoutAvatarImageView } from '../../../../common';
 import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 /** Where a panel stands: a tile, a horizontal offset and an altitude, both in pixels at scale 1. */
 export interface ILeaderboardLocation {
@@ -196,7 +197,11 @@ export const WiredLeaderboardPanelView: FC<WiredLeaderboardPanelViewProps> = (pr
                     </div>
                     {description.length > 0 && <div className="octane-wired-leaderboard__description">{description}</div>}
                 </div>
-                {onRelocate && <span className="octane-wired-leaderboard__drag" title={localizeWithFallback('wiredfurni.params.variable_leaderboard.location.drag_status', 'Drag to move')}>✥</span>}
+                {onRelocate && (
+                    <Hint content={localizeWithFallback('wiredfurni.params.variable_leaderboard.location.drag_status', 'Drag to move')}>
+                        <span aria-label={localizeWithFallback('wiredfurni.params.variable_leaderboard.location.drag_status', 'Drag to move')} className="octane-wired-leaderboard__drag" role="img">✥</span>
+                    </Hint>
+                )}
                 {choices.length > 1 && (
                     <BaseButton type="button" className="octane-wired-leaderboard__choice-toggle" onMouseDown={(event) => event.stopPropagation()} onClick={() => setChoicesOpen((open) => !open)}>▾</BaseButton>
                 )}

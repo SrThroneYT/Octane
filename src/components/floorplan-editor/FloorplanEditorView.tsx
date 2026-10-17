@@ -35,6 +35,7 @@ import { FloorplanPreviewSVG } from './views/FloorplanPreviewSVG';
 import { FloorplanToolbar } from './views/FloorplanToolbar';
 import { FloorplanWallHeightSlider } from './views/FloorplanWallHeightSlider';
 import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 export type FloorplanEditorExternalSession = {
     tilemap: string;
@@ -307,9 +308,11 @@ export const FloorplanEditorView: FC<Props> = ({ externalSession }) => {
                             <div className="fp-panels">
                                 <div className="fp-panel" data-testid="floorplan-plan-panel">
                                     <div className="fp-panel-head">
-                                        <div className="fp-badge is-brush" data-testid="brush-height-badge" title="Brush height">
-                                            {state.brush.h}
-                                        </div>
+                                        <Hint content="Brush height">
+                                            <div aria-label={`Brush height ${state.brush.h}`} className="fp-badge is-brush" data-testid="brush-height-badge" role="img">
+                                                {state.brush.h}
+                                            </div>
+                                        </Hint>
                                         <span className="fp-panel-title">{localizeOr('floor.plan.editor.tile.height', 'Set height')}</span>
                                         <span className="fp-panel-info" data-testid="floorplan-area">
                                             {localizeOr('floor.plan.editor.area', `Area: ${area.total} (${area.walkable} tiles)`, ['total', 'walkable'], [String(area.total), String(area.walkable)])}
@@ -322,9 +325,11 @@ export const FloorplanEditorView: FC<Props> = ({ externalSession }) => {
                                 </div>
                                 <div className="fp-panel" data-testid="floorplan-preview-panel">
                                     <div className="fp-panel-head">
-                                        <div className="fp-badge" data-testid="wall-height-badge" title="Wall height">
-                                            {state.wallHeight}
-                                        </div>
+                                        <Hint content="Wall height">
+                                            <div aria-label={`Wall height ${state.wallHeight}`} className="fp-badge" data-testid="wall-height-badge" role="img">
+                                                {state.wallHeight}
+                                            </div>
+                                        </Hint>
                                         <span className="fp-panel-title">{LocalizeText('floor.editor.wall.height')}</span>
                                         <div className="fp-view-switch" data-testid="floorplan-view-switch" role="group" aria-label={localizeOr('floor.plan.editor.preview.mode', 'Preview')}>
                                             <BaseButton

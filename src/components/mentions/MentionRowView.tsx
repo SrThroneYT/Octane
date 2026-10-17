@@ -33,9 +33,9 @@ export const MentionRowView: FC<MentionRowViewProps> = (props) => {
                 <span className="mention-row-body">
                     <span className="mention-row-head">
                         <span className="mention-row-name">{mention.senderUsername}</span>
-                        <span className={`mention-row-chip ${isRoom ? 'is-room' : 'is-direct'}`} title={typeTitle}>
-                            {typeChip}
-                        </span>
+                        <Hint content={typeTitle}>
+                            <span className={`mention-row-chip ${isRoom ? 'is-room' : 'is-direct'}`}>{typeChip}</span>
+                        </Hint>
                         {mention.roomName && mention.roomName.length > 0 && <span className="mention-row-room">· {mention.roomName}</span>}
                     </span>
                     <MentionMessageView className="mention-row-msg" ownUsername={ownUsername} text={mention.message} />
