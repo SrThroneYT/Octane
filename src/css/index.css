@@ -791,6 +791,7 @@ body {
     .form-select,
     input[type='text'],
     input[type='number'],
+    .octane-number-input,
     textarea {
         min-height: 24px;
         border: 1px solid #8d8d8d !important;
@@ -1771,6 +1772,7 @@ body {
     .form-select,
     input[type='text'],
     input[type='number'],
+    .octane-number-input,
     textarea {
         min-height: 22px;
         border: 1px solid #8d8d8d !important;
