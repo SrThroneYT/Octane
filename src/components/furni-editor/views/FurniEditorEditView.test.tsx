@@ -233,6 +233,33 @@ describe('FurniEditorEditView', () => {
         vi.useRealTimers();
     });
 
+    it('jumps to a field picked from the suggestion list', () => {
+        vi.useFakeTimers();
+        renderView();
+
+        fireEvent.change(screen.getByLabelText('Jump to field'), { target: { value: 'eight' } });
+        fireEvent.click(screen.getByRole('option', { name: 'Multiheight' }));
+        vi.runAllTimers();
+
+        expect(screen.getByLabelText('Multiheight')).toHaveFocus();
+        expect(screen.getByLabelText('Jump to field')).toHaveValue('');
+        vi.useRealTimers();
+    });
+
+    it('flips an allow flag from its toggle button', () => {
+        renderView();
+
+        // allowWalk is stored false, allowSit true.
+        const walk = screen.getByRole('button', { name: 'Walk' });
+        const sit = screen.getByRole('button', { name: 'Sit' });
+        expect(walk).toHaveAttribute('aria-pressed', 'false');
+        expect(sit).toHaveAttribute('aria-pressed', 'true');
+
+        fireEvent.click(walk);
+        expect(walk).toHaveAttribute('aria-pressed', 'true');
+        expect(sit).toHaveAttribute('aria-pressed', 'true');
+    });
+
     it('previews the furni with rotation, a state stepper and the stored footprint', () => {
         renderView({ item: { ...item, width: 2, length: 3, interactionModesCount: 3 } });
 

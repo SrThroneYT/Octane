@@ -15,6 +15,7 @@ import { Checkbox } from '../../../../common/Checkbox';
 import { Select } from '../../../../common/Select';
 import { NumberInput } from '../../../../common/NumberInput';
 import { BaseButton } from '../../../../common/BaseButton';
+import { SuggestInput } from '../../../../common/SuggestInput';
 
 const EMPTY_DRAFT: SoundboardCatalogDraft = { id: 0, name: '', classname: '', url: '', minRank: 1, enabled: true, cooldownSeconds: 0 };
 const RESULT_KEYS = [
@@ -167,20 +168,15 @@ export const HousekeepingSoundboardTab: FC = () => {
                 </label>
                 <label className="flex flex-col gap-0.5 text-[10px] font-semibold uppercase tracking-wide">
                     {LocalizeText('housekeeping.soundboard.classname')}
-                    <input
+                    <SuggestInput
                         aria-label={LocalizeText('housekeeping.soundboard.classname')}
                         disabled={draftLocked}
-                        value={draft.classname}
-                        list="soundboard-classnames"
+                        options={knownClassnames}
                         placeholder={knownClassnames[0] ?? ''}
-                        onChange={(event) => setDraft((current) => ({ ...current, classname: event.target.value }))}
+                        value={draft.classname}
+                        onChange={(classname) => setDraft((current) => ({ ...current, classname }))}
                         className="rounded border border-zinc-300 bg-white px-2 py-1 text-xs font-normal normal-case"
                     />
-                    <datalist id="soundboard-classnames">
-                        {knownClassnames.map((classname) => (
-                            <option key={classname} value={classname} />
-                        ))}
-                    </datalist>
                 </label>
                 <label className="flex flex-col gap-0.5 text-[10px] font-semibold uppercase tracking-wide">
                     {LocalizeText('housekeeping.soundboard.url')}

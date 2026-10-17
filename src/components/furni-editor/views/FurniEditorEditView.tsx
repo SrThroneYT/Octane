@@ -21,6 +21,8 @@ import {
 import { NumberInput } from '../../../common/NumberInput';
 import { TabBar, TabBarTab } from '../../../common/TabBar';
 import { BaseButton } from '../../../common/BaseButton';
+import { SuggestInput } from '../../../common/SuggestInput';
+import { ToggleButton } from '../../../common/ToggleButton';
 
 interface FurniEditorEditViewProps {
     item: FurniDetail;
@@ -104,6 +106,8 @@ const FIELD_LABELS: Record<EditField, string> = {
     effectIdFemale: 'Effect ID (female)',
     clothingOnWalk: 'Clothing on walk'
 };
+
+const JUMP_FIELD_LABELS = Object.values(FIELD_LABELS);
 
 // Mirrors FurniEditorUpdatePayload.validateValue on the emulator: a value the
 // server would reject is flagged here instead of failing silently after Save.
@@ -490,11 +494,11 @@ const CopyValue: FC<{ value: string | number; compact?: boolean }> = ({ value, c
     }, [copied]);
 
     return (
-        <div
-            role="button"
+        <BaseButton
+            type="button"
             title="Click to copy"
             onClick={copy}
-            className={`group relative cursor-pointer w-full font-mono rounded-lg border transition ${compact ? 'px-1.5 py-0.5 text-[10px]' : 'px-3 py-1.5 text-sm'} ${copied ? 'border-primary/50 bg-primary/5 text-primary' : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300 hover:bg-slate-100'}`}
+            className={`group relative cursor-pointer w-full text-left font-mono rounded-lg border transition ${compact ? 'px-1.5 py-0.5 text-[10px]' : 'px-3 py-1.5 text-sm'} ${copied ? 'border-primary/50 bg-primary/5 text-primary' : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300 hover:bg-slate-100'}`}
         >
             <span className={`block truncate ${compact ? 'pr-8' : 'pr-12'}`}>{String(value)}</span>
             <span
@@ -502,7 +506,7 @@ const CopyValue: FC<{ value: string | number; compact?: boolean }> = ({ value, c
             >
                 {copied ? 'copied!' : 'copy'}
             </span>
-        </div>
+        </BaseButton>
     );
 };
 
@@ -1114,19 +1118,14 @@ export const FurniEditorEditView: FC<FurniEditorEditViewProps> = (props) => {
                             );
                         })}
                     </TabBar>
-                    <input
-                        list="furni-editor-fields"
+                    <SuggestInput
+                        options={JUMP_FIELD_LABELS}
                         value={jumpQuery}
-                        onChange={(e) => handleJump(e.target.value)}
+                        onChange={handleJump}
                         placeholder="Jump to field"
                         aria-label="Jump to field"
                         className="ml-auto w-28 px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 bg-[#ffffff] text-slate-700 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 transition"
                     />
-                    <datalist id="furni-editor-fields">
-                        {(Object.keys(FIELD_LABELS) as EditField[]).map((field) => (
-                            <option key={field} value={FIELD_LABELS[field]} />
-                        ))}
-                    </datalist>
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto pr-0.5">
                     <div className={groupClass('names')}>
@@ -1455,11 +1454,11 @@ export const FurniEditorEditView: FC<FurniEditorEditViewProps> = (props) => {
                                             {group.keys.map((key) => {
                                                 const on = form[key] === true;
                                                 return (
-                                                    <BaseButton
+                                                    <ToggleButton
                                                         key={key}
                                                         type="button"
+                                                        pressed={on}
                                                         onClick={() => setField(key, !on)}
-                                                        aria-pressed={on}
                                                         title={on ? 'Enabled — click to disable' : 'Disabled — click to enable'}
                                                         className={`inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-lg border font-medium transition ${on ? 'bg-[#418db0] border-[#418db0] text-[#ffffff] shadow-sm' : 'bg-slate-100 border-slate-200 text-slate-400 hover:bg-slate-200 hover:text-slate-600'}${isChanged(key) ? ' ring-2 ring-amber-300' : ''}`}
                                                     >
@@ -1467,7 +1466,7 @@ export const FurniEditorEditView: FC<FurniEditorEditViewProps> = (props) => {
                                                             className={`inline-block w-2 h-2 rounded-full ring-1 ${on ? 'bg-[#22c55e] ring-[#ffffff]/70' : 'bg-[#ef4444] ring-[#00000014]'}`}
                                                         />
                                                         {key.replace('allow', '')}
-                                                    </BaseButton>
+                                                    </ToggleButton>
                                                 );
                                             })}
                                         </div>

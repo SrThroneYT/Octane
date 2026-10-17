@@ -60,7 +60,7 @@ vi.mock('../../../../hooks', () => ({
     useSoundboardManifest: () => ({
         manifest: { categories: [], byClassname: new Map() },
         manifestRef: { current: { categories: [], byClassname: new Map() } },
-        classnames: [],
+        classnames: ['snd_alpha', 'snd_beta'],
         loaded: true
     })
 }));
@@ -106,6 +106,26 @@ describe('HousekeepingSoundboardTab', () => {
         expect(mocks.playSoundboardPreview).toHaveBeenCalledWith('https://assets.example.test/sounds/fanfare.mp3');
         fireEvent.click(screen.getByRole('button', { name: 'Save sound' }));
         expect(mocks.upsert).toHaveBeenCalledWith(expect.objectContaining({ id: 0, name: 'Fanfara', enabled: true }));
+    });
+
+    it('suggests the known class names but keeps whatever is typed', () => {
+        render(<HousekeepingSoundboardTab />);
+        fireEvent.click(screen.getByRole('button', { name: 'New sound' }));
+        fireEvent.change(screen.getByRole('textbox', { name: 'Name' }), { target: { value: 'Fanfara' } });
+        fireEvent.change(screen.getByRole('textbox', { name: 'URL' }), { target: { value: 'sounds/fanfare.mp3' } });
+        fireEvent.change(screen.getByRole('spinbutton', { name: 'Minimum rank' }), { target: { value: '1' } });
+
+        const classname = screen.getByRole('combobox', { name: /class/i });
+        fireEvent.change(classname, { target: { value: 'snd_b' } });
+        fireEvent.click(screen.getByRole('option', { name: 'snd_beta' }));
+        expect(classname).toHaveValue('snd_beta');
+
+        fireEvent.change(classname, { target: { value: 'my_own_class' } });
+        expect(classname).toHaveValue('my_own_class');
+        expect(screen.queryAllByRole('option')).toHaveLength(0);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Save sound' }));
+        expect(mocks.upsert).toHaveBeenCalledWith(expect.objectContaining({ classname: 'my_own_class' }));
     });
 
     it('adopts the server id after creation so a second save updates the same sound', () => {
