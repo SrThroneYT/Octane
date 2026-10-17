@@ -257,7 +257,7 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
                     <div ref={flashRef} className="octane-camera-capture__flash" aria-hidden="true" />
                     {selectedPicture && (
                         <div className="octane-camera-capture__preview-actions">
-                            {/* A real <BaseButton>: the drag handle lets only native controls take the mouse. */}
+                            {/* A real <button>: the drag handle lets only native controls take the mouse. */}
                             <BaseButton
                                 className="habbo-btn-primary octane-camera-capture__editor-button"
                                 title={LocalizeText('camera.editor.button.tooltip')}
@@ -272,7 +272,7 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
                                     textStyle="button_shiny_bold"
                                     width={38}
                                 />
-                            </button>
+                            </BaseButton>
                         </div>
                     )}
                     <BaseButton

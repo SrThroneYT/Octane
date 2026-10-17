@@ -4,6 +4,8 @@ import dropmenuArrow from '../../../assets/images/habbo-skin/slices/dropmenu-def
 import { NativeText } from '../../../common/native-text/NativeText';
 import { NativeFontStyle } from '../../../common/native-text/NativeFont';
 import { NativeTextStyleName } from '../../../common/native-text/NativeTextStyles';
+import { BaseButton } from '../../../common/BaseButton';
+import { ListSelect } from '../../../common/ListSelect';
 
 // groups_main_window client coordinates: the frame draws 33px of title above them.
 export const GROUP_SURFACE = 0xe9e9e1;
@@ -129,7 +131,7 @@ interface GroupButtonProps {
 
 /** button_thick, style 3 (habbo_skin_button_shiny_thick). */
 export const GroupButton: FC<GroupButtonProps> = ({ label, x, y, width, height, disabled = false, labelShift = 0, onClick }) => (
-    <button
+    <BaseButton
         className="octane-group-native__button"
         disabled={disabled}
         style={{ left: x, top: y, width, height, paddingLeft: labelShift * 2 }}
@@ -137,7 +139,7 @@ export const GroupButton: FC<GroupButtonProps> = ({ label, x, y, width, height, 
         onClick={onClick}
     >
         <GroupText blend="multiply" className="is-static" text={label} textStyle="u_bold" x={0} y={0} />
-    </button>
+    </BaseButton>
 );
 
 /** group_guild_color_btm tinted with the guild colour, group_guild_color_top drawn over it. */
@@ -262,58 +264,28 @@ interface GroupDropMenuProps {
 /** A dropmenu (style 0): the chosen caption on the default skin; a click opens the option list under it. */
 export const GroupDropMenu: FC<GroupDropMenuProps> = ({ label, options, value, x, y, width, height, onSelect }) =>
 {
-    const [isOpen, setIsOpen] = useState(false);
-    const rootRef = useRef<HTMLDivElement>(null);
     const selected = options.find((option) => option.value === value) ?? options[0];
 
-    useEffect(() =>
-    {
-        if (!isOpen) return;
-
-        const close = (event: PointerEvent) =>
-        {
-            if (!rootRef.current?.contains(event.target as Node)) setIsOpen(false);
-        };
-
-        document.addEventListener('pointerdown', close);
-
-        return () => document.removeEventListener('pointerdown', close);
-    }, [isOpen]);
-
     return (
-        <div ref={rootRef} style={{ position: 'absolute', left: x, top: y, width, height }}>
-            <button
-                aria-expanded={isOpen}
-                aria-haspopup="listbox"
+        <div className="octane-group-native__dropmenu-root" style={{ position: 'absolute', left: x, top: y, width, height }}>
+            <ListSelect
                 aria-label={label}
-                className="octane-group-native__dropmenu"
-                style={{ left: 0, top: 0, width, height }}
-                type="button"
-                onClick={() => setIsOpen((open) => !open)}
-            >
-                <GroupText blend="multiply" text={selected?.label ?? ''} width={width - 30} height={height - 4} x={8} y={3} />
-                <img alt="" draggable={false} src={dropmenuArrow} />
-            </button>
-            {isOpen && (
-                <div className="octane-group-native__dropmenu-list" role="listbox" style={{ left: 0, top: height - 1, width }}>
-                    {options.map((option) => (
-                        <button
-                            key={option.value}
-                            aria-selected={option.value === value}
-                            className={`octane-group-native__dropmenu-item${option.value === value ? ' is-selected' : ''}`}
-                            role="option"
-                            type="button"
-                            onClick={() =>
-                            {
-                                onSelect(option.value);
-                                setIsOpen(false);
-                            }}
-                        >
-                            <GroupText blend="multiply" text={option.label} x={0} y={1} />
-                        </button>
-                    ))}
-                </div>
-            )}
+                itemClassName="octane-group-native__dropmenu-item"
+                options={options.map((option) => ({ value: String(option.value), label: <GroupText blend="multiply" text={option.label} x={0} y={1} /> }))}
+                popupClassName="octane-group-native__dropmenu-list"
+                positionerClassName="octane-group-native__dropmenu-positioner"
+                renderTrigger={() => (
+                    <>
+                        <GroupText blend="multiply" text={selected?.label ?? ''} width={width - 30} height={height - 4} x={8} y={3} />
+                        <img alt="" draggable={false} src={dropmenuArrow} />
+                    </>
+                )}
+                scaleWithTrigger
+                sideOffset={-1}
+                triggerClassName="octane-group-native__dropmenu"
+                value={String(selected?.value ?? '')}
+                onValueChange={(next) => onSelect(Number(next))}
+            />
         </div>
     );
 };

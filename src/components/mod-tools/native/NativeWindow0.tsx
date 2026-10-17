@@ -16,6 +16,7 @@ import tabXml from '../../../assets/mod-tools/skins/skin-button_tab.xml?raw';
 import headerXml from '../../../assets/mod-tools/skins/skin-header.xml?raw';
 import { NativeSkin, parseNativeSkin } from './NativeSkin';
 import { NativeSkinView } from './NativeSkinView';
+import { BaseButton } from '../../../common/BaseButton';
 
 // Legacy window-manager style 0 (habbo_element_description_xml): blue frame 0xff418db0, white border, default button, checkbox, dropmenu, close button.
 const SKINS = {
@@ -345,10 +346,10 @@ export const Native0Frame: FC<Native0FrameProps> = ({ width, height, caption, on
                 <div ref={captionRef} className="native0-header__caption" style={{ left: Math.floor((headerWidth - captionWidth) / 2), top: 0, height: 15, ...(glow === undefined ? {} : { ['--native0-glow' as string]: glow }) }}>
                     <span className="native0-text__line is-bold">{caption}</span>
                 </div>
-                <div
+                <BaseButton
                     aria-label="Close"
                     className="native0-close"
-                    role="button"
+                    type="button"
                     style={rect(headerWidth - 15, 0, 15, 15)}
                     onClick={onClose}
                     onPointerDown={() => setCloseState('pressed')}
@@ -357,7 +358,7 @@ export const Native0Frame: FC<Native0FrameProps> = ({ width, height, caption, on
                     onPointerUp={() => setCloseState('hovering')}
                 >
                     <NativeSkinView atlas={blueAtlas} height={15} fill={FRAME_COLOR} layout="button_close" skin={SKINS.close} state={closeState} width={15} />
-                </div>
+                </BaseButton>
             </div>
             <div className="native0-client" style={{ left: 6, top: 25 }}>
                 {children}
