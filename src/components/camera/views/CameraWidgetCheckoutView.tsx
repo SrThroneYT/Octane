@@ -15,9 +15,13 @@ import {
 } from '@octane/renderer';
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { GetConfigurationValue, LocalizeText, OpenUrl, SendMessageComposer } from '../../../api';
-import { Button, LayoutCurrencyIcon, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView } from '../../../common';
+import creditIcon from '../../../assets/images/camera/checkout/credit.png';
+import ducketIcon from '../../../assets/images/camera/checkout/ducket.png';
+import { OctaneCardView } from '../../../common';
 import { useMessageEvent, useNotification, usePurse } from '../../../hooks';
 import { joinCameraPhotoUrl } from '../CameraAirUtilities';
+import { CameraCenteredText, CameraNativeText } from './CameraNativeText';
+import { CameraSkinButton } from './CameraSkinButton';
 
 export interface CameraWidgetCheckoutViewProps {
     base64Url: string;
@@ -27,7 +31,6 @@ export interface CameraWidgetCheckoutViewProps {
 }
 
 const CAMERA_POINT_CURRENCY_TYPE = 0;
-const CAMERA_POINT_ICON_TYPE = 5;
 
 export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (props) => {
     const { base64Url = null, onCloseClick = null, onCancelClick = null, price: offeredPrice = null } = props;
@@ -317,18 +320,33 @@ export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (prop
 
     if (!price) return null;
 
+    const buyDisabled = isWaiting || !isImageLoaded || !disclaimerAccepted;
+    const publishButtonDisabled = isWaiting || !isImageLoaded || publishCooldown > 0;
+    const competitionDisabled = isWaiting || !isImageLoaded || ['submitted', 'limit', 'error'].includes(competitionState);
+    const costLabel = LocalizeText('catalog.purchase.confirmation.dialog.cost');
+    const renderButton = (key: string, className: string, label: string, disabled: boolean, variant: 'green' | 'gray', onClick: () => void) => (
+        <CameraSkinButton key={key} className={className} disabled={disabled} label={label} variant={variant} onClick={onClick} />
+    );
+
     return (
-        <OctaneCardView className="octane-camera-checkout" theme="primary-slim" isResizable={false}>
-            <OctaneCardHeaderView headerText={LocalizeText('camera.confirm_phase.title')} onCloseClick={() => processAction('close')} />
-            <OctaneCardContentView className="octane-camera-checkout__content">
-                <div ref={productImageContainerRef} className="octane-camera-checkout__image">
-                    {!isImageLoaded && !hasRenderingFailed && <div className="octane-camera-checkout__loading">{LocalizeText('camera.loading')}</div>}
-                    {hasRenderingFailed && <div aria-hidden="true" className="absolute inset-0 bg-black" />}
+        <OctaneCardView className="octane-camera-checkout" frameStyle={3} isResizable={false} theme="primary-slim">
+            <div className="octane-card-header-shell">
+                <span className="octane-card-title">
+                    <CameraCenteredText color={0xffffff} text={LocalizeText('camera.confirm_phase.title')} textStyle="u_frame_title" width={340} />
+                </span>
+                <button aria-label={LocalizeText('generic.close')} className="octane-card-close-button" type="button" onClick={() => processAction('close')} />
+            </div>
+            <div className="octane-camera-checkout__list">
+                <div ref={productImageContainerRef} className={`octane-camera-checkout__image${hasRenderingFailed ? ' is-failed' : ''}`}>
+                    {!isImageLoaded && !hasRenderingFailed && (
+                        <div className="octane-camera-checkout__loading">
+                            <CameraNativeText color={0xffffff} size={36} text={LocalizeText('camera.loading')} />
+                        </div>
+                    )}
                     {pictureUrl && !hasRenderingFailed && (
                         <img
                             ref={productImageRef}
                             alt=""
-                            className="absolute inset-0"
                             src={pictureUrl}
                             style={{ visibility: isImageLoaded ? 'visible' : 'hidden' }}
                             onLoad={() => {
@@ -341,117 +359,127 @@ export const CameraWidgetCheckoutView: FC<CameraWidgetCheckoutViewProps> = (prop
                     )}
                 </div>
 
-                <div className="octane-camera-checkout__status">{statusLocalization ? LocalizeText(statusLocalization) : ''}</div>
+                <div className={`octane-camera-checkout__status${statusLocalization ? '' : ' is-empty'}`}>
+                    {!!statusLocalization && <CameraNativeText maxWidth={320} text={LocalizeText(statusLocalization)} />}
+                </div>
 
                 {competitionEnabled && (
-                    <section className="octane-camera-checkout__section octane-camera-checkout__section--competition">
-                        <div className="octane-camera-checkout__section-copy">
-                            <h2>
-                                {LocalizeText(
+                    <section className="octane-camera-checkout__box is-competition">
+                        <div className="octane-camera-checkout__box-name">
+                            <CameraNativeText
+                               
+                                color={0xffffff}
+                                size={14}
+                                text={LocalizeText(
                                     competitionState === 'submitted'
                                         ? 'camera.competition.submitted.info'
                                         : competitionState === 'limit'
                                           ? 'camera.competition.limit.info'
                                           : 'camera.competition.header'
                                 )}
-                            </h2>
-                            <p>{LocalizeText('camera.competition.info')}</p>
+                                textStyle="u_bold"
+                            />
                         </div>
-                        <Button
-                            className="octane-camera-checkout__section-button"
-                            disabled={isWaiting || !isImageLoaded || ['submitted', 'limit', 'error'].includes(competitionState)}
-                            variant="success"
-                            onClick={() => processAction('competition')}
-                        >
-                            {LocalizeText('generic.submit')}
-                        </Button>
+                        <div className="octane-camera-checkout__competition-info">
+                            <CameraNativeText color={0xffffff} maxWidth={190} text={LocalizeText('camera.competition.info')} />
+                        </div>
+                        {renderButton('competition', 'is-competition-button', LocalizeText('generic.submit'), competitionDisabled, 'green', () => processAction('competition'))}
                     </section>
                 )}
 
-                <section className="octane-camera-checkout__section octane-camera-checkout__section--purchase">
-                    <div className="octane-camera-checkout__section-copy">
-                        <h2>{LocalizeText('camera.purchase.header')}</h2>
-                        <div className="octane-camera-checkout__price">
-                            <span>{LocalizeText('catalog.purchase.confirmation.dialog.cost')}</span>
-                            <span className="octane-camera-checkout__currency">
-                                <strong>{price.credits}</strong>
-                                <LayoutCurrencyIcon type={-1} />
-                            </span>
-                            {price.duckets > 0 && (
-                                <span className="octane-camera-checkout__currency">
-                                    <strong>{price.duckets}</strong>
-                                    <LayoutCurrencyIcon type={CAMERA_POINT_ICON_TYPE} />
-                                </span>
-                            )}
-                        </div>
-                        {picturesBought > 0 && (
-                            <div className="octane-camera-checkout__inventory-link">
-                                <strong>{LocalizeText('camera.purchase.count.info')}</strong>
-                                <span>{picturesBought}</span>
-                                <button type="button" onClick={() => CreateLinkEvent('inventory/show/furni')}>
-                                    {LocalizeText('camera.open.inventory')}
-                                </button>
-                            </div>
+                <section className={`octane-camera-checkout__box is-purchase${picturesBought > 0 ? ' has-inventory-link' : ''}`}>
+                    <div className="octane-camera-checkout__box-name">
+                        <CameraNativeText size={14} text={LocalizeText('camera.purchase.header')} textStyle="u_bold" />
+                    </div>
+                    <div className="octane-camera-checkout__price-row">
+                        <CameraNativeText size={14} text={costLabel} />
+                        <CameraNativeText size={14} text={String(price.credits)} textStyle="u_bold" />
+                        <img alt="" className="octane-camera-checkout__icon" src={creditIcon} />
+                        {price.duckets > 0 && (
+                            <>
+                                <CameraNativeText size={14} text={String(price.duckets)} textStyle="u_bold" />
+                                <img alt="" className="octane-camera-checkout__icon" src={ducketIcon} />
+                            </>
                         )}
                     </div>
-                    <Button
-                        className="octane-camera-checkout__section-button"
-                        disabled={isWaiting || !isImageLoaded || !disclaimerAccepted}
-                        variant="success"
-                        onClick={() => processAction('buy')}
-                    >
-                        {LocalizeText(picturesBought ? 'camera.buy.another.button.text' : 'catalog.purchase_confirmation.buy')}
-                    </Button>
+                    {picturesBought > 0 && (
+                        <div className="octane-camera-checkout__inventory-row">
+                            <CameraNativeText size={14} text={LocalizeText('camera.purchase.count.info')} textStyle="u_bold" />
+                            <CameraNativeText size={14} text={String(picturesBought)} />
+                            <button className="octane-camera-checkout__link" type="button" onClick={() => CreateLinkEvent('inventory/show/furni')}>
+                                <CameraNativeText text={LocalizeText('camera.open.inventory')} underline />
+                            </button>
+                        </div>
+                    )}
+                    {renderButton(
+                        'buy',
+                        'is-buy-button',
+                        LocalizeText(picturesBought ? 'camera.buy.another.button.text' : 'catalog.purchase_confirmation.buy'),
+                        buyDisabled,
+                        'green',
+                        () => processAction('buy')
+                    )}
                 </section>
 
                 {!publishDisabled && (
-                    <section className="octane-camera-checkout__section octane-camera-checkout__section--publish">
-                        <div className="octane-camera-checkout__section-copy">
-                            <h2>{LocalizeText(wasPicturePublished ? 'camera.publish.successful' : 'camera.publish.explanation')}</h2>
-                            <p>{LocalizeText(wasPicturePublished ? 'camera.publish.success.short.info' : 'camera.publish.detailed.explanation')}</p>
-                            {wasPicturePublished && publishedPhotoUrl && (
-                                <a href={publishedPhotoUrl} rel="noreferrer" target="_blank">
-                                    {LocalizeText('camera.link.to.published')}
-                                </a>
-                            )}
-                            {!wasPicturePublished && (
-                                <div className="octane-camera-checkout__price">
-                                    <span>{LocalizeText('catalog.purchase.confirmation.dialog.cost')}</span>
-                                    <span className="octane-camera-checkout__currency">
-                                        <strong>{price.publishDucketPrice}</strong>
-                                        <LayoutCurrencyIcon type={CAMERA_POINT_ICON_TYPE} />
-                                    </span>
-                                </div>
-                            )}
+                    <section className={`octane-camera-checkout__box is-publish${wasPicturePublished ? ' is-published' : ''}`}>
+                        <div className="octane-camera-checkout__box-name">
+                            <CameraNativeText
+                               
+                                maxWidth={300}
+                                size={14}
+                                text={LocalizeText(wasPicturePublished ? 'camera.publish.successful' : 'camera.publish.explanation')}
+                                textStyle="u_bold"
+                            />
+                        </div>
+                        <div className="octane-camera-checkout__publish-info">
+                            <CameraNativeText
+                               
+                                maxWidth={191}
+                                text={LocalizeText(wasPicturePublished ? 'camera.publish.success.short.info' : 'camera.publish.detailed.explanation')}
+                            />
                         </div>
                         {!wasPicturePublished && (
-                            <Button
-                                className="octane-camera-checkout__section-button"
-                                disabled={isWaiting || !isImageLoaded || publishCooldown > 0}
-                                variant="success"
-                                onClick={() => processAction('publish')}
-                            >
-                                {LocalizeText('camera.publish.button.text')}
-                            </Button>
+                            <div className="octane-camera-checkout__price-row is-publish-price">
+                                <CameraNativeText size={14} text={costLabel} />
+                                <CameraNativeText size={14} text={String(price.publishDucketPrice)} textStyle="u_bold" />
+                                <img alt="" className="octane-camera-checkout__icon" src={ducketIcon} />
+                            </div>
                         )}
+                        {wasPicturePublished && !!publishedPhotoUrl && (
+                            <a className="octane-camera-checkout__link is-publish-link" href={publishedPhotoUrl} rel="noreferrer" target="_blank">
+                                <CameraNativeText text={LocalizeText('camera.link.to.published')} underline />
+                            </a>
+                        )}
+                        {!wasPicturePublished &&
+                            renderButton('publish', 'is-publish-button', LocalizeText('camera.publish.button.text'), publishButtonDisabled, 'green', () => processAction('publish'))}
                     </section>
                 )}
 
-                <div className="octane-camera-checkout__removal-disclaimer">{LocalizeText('camera.warning.disclaimer')}</div>
+                <div className="octane-camera-checkout__removal">
+                    <CameraNativeText maxWidth={320} text={LocalizeText('camera.warning.disclaimer')} />
+                </div>
 
                 {spendingDisclaimerEnabled && (
-                    <label className="octane-camera-checkout__spending-disclaimer">
-                        <input type="checkbox" checked={disclaimerAccepted} onChange={(event) => setDisclaimerAccepted(event.target.checked)} />
-                        <span>{LocalizeText('disclaimer.credit_spending')}</span>
+                    <label className="octane-camera-checkout__spending">
+                        <input checked={disclaimerAccepted} type="checkbox" onChange={(event) => setDisclaimerAccepted(event.target.checked)} />
+                        <span className="octane-camera-checkout__spending-text">
+                            <CameraNativeText maxWidth={278} text={LocalizeText('disclaimer.credit_spending')} />
+                        </span>
                     </label>
                 )}
 
                 <div className="octane-camera-checkout__buttons">
-                    <Button variant="secondary" onClick={() => processAction('cancel')}>
-                        {LocalizeText(isWaiting || picturesBought > 0 || wasPicturePublished ? 'generic.close' : 'catalog.purchase_confirmation.cancel')}
-                    </Button>
+                    {renderButton(
+                        'cancel',
+                        'is-cancel-button',
+                        LocalizeText(isWaiting || picturesBought > 0 || wasPicturePublished ? 'generic.close' : 'catalog.purchase_confirmation.cancel'),
+                        false,
+                        'gray',
+                        () => processAction('cancel')
+                    )}
                 </div>
-            </OctaneCardContentView>
+            </div>
         </OctaneCardView>
     );
 };

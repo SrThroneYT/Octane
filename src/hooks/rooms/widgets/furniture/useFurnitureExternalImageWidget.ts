@@ -1,6 +1,6 @@
 import { GetRoomEngine, RoomEngineTriggerWidgetEvent, RoomObjectCategory, RoomObjectVariable } from '@octane/renderer';
 import { useState } from 'react';
-import { IPhotoData } from '../../../../api';
+import { getCameraPhotoCreatorId, IPhotoData } from '../../../../api';
 import { useOctaneEvent } from '../../../events';
 import { useFurniRemovedEvent } from '../../engine';
 import { useRoom } from '../../useRoom';
@@ -16,6 +16,31 @@ export const parsePhotoData = (data: string): IPhotoData | null => {
     } catch {
         return null;
     }
+};
+
+export interface IPhotoCreator {
+    id: number;
+    name: string;
+}
+
+/**
+ * Who took the photo. Official data names the creator (`n`, id `s`); our server stores the room id in
+ * `s` and no name, so the id then comes from the file name (`<userId>_<ts>.png`) or the owner fields,
+ * and the name only from the wall item's owner when that is the same user.
+ */
+export const getPhotoCreator = (photo: IPhotoData, ownerId: number = 0, ownerName: string = ''): IPhotoCreator => {
+    if (!photo) return { id: 0, name: '' };
+
+    if (photo.n) return { id: Number(photo.s ?? photo.oi ?? 0) || 0, name: photo.n };
+
+    const fileCreatorId = getCameraPhotoCreatorId(photo.w);
+    const namedOwnerId = Number(photo.oi ?? 0) || 0;
+
+    if (photo.o && namedOwnerId && (!fileCreatorId || fileCreatorId === namedOwnerId)) return { id: namedOwnerId, name: photo.o };
+
+    const id = fileCreatorId || namedOwnerId;
+
+    return { id, name: id && id === ownerId ? (ownerName ?? '') : '' };
 };
 
 const useFurnitureExternalImageWidgetState = () => {
@@ -37,28 +62,24 @@ const useFurnitureExternalImageWidgetState = () => {
 
     useOctaneEvent<RoomEngineTriggerWidgetEvent>(RoomEngineTriggerWidgetEvent.REQUEST_EXTERNAL_IMAGE, (event) => {
         const roomObject = GetRoomEngine().getRoomObject(event.roomId, event.objectId, event.category);
-        const roomTotalImages = GetRoomEngine().getRoomObjects(roomSession?.roomId, RoomObjectCategory.WALL);
 
         if (!roomObject) return;
 
+        // Official: browsing cycles the wall items of the clicked item's type only.
+        const roomTotalImages = GetRoomEngine().getRoomObjects(roomSession?.roomId ?? event.roomId, RoomObjectCategory.WALL) ?? [];
         const datas: IPhotoData[] = [];
         const objectIds: number[] = [];
 
         roomTotalImages.forEach((object) => {
-            if (object.type !== 'external_image_wallitem_poster_small') return null;
+            if (object.type !== roomObject.type) return;
 
             const jsonData = parsePhotoData(object.model.getValue<string>(RoomObjectVariable.FURNITURE_DATA));
 
-            if (!jsonData) return null;
+            if (!jsonData) return;
 
             datas.push(jsonData);
             objectIds.push(object.id);
         });
-
-        setObjectId(event.objectId);
-        setCategory(event.category);
-        setCurrentPhotos(datas);
-        setCurrentObjectIds(objectIds);
 
         // The photo that was clicked: by its wall item first, then by its photo id.
         let index = objectIds.indexOf(event.objectId);
@@ -69,11 +90,25 @@ const useFurnitureExternalImageWidgetState = () => {
             index = roomObjectPhotoData ? datas.findIndex((data) => data.u === roomObjectPhotoData.u) : -1;
         }
 
-        setCurrentPhotoIndex(Math.max(0, index));
+        // A clicked item without readable photo data has nothing to show.
+        if (index < 0) {
+            onClose();
+            return;
+        }
+
+        setObjectId(event.objectId);
+        setCategory(event.category);
+        setCurrentPhotos(datas);
+        setCurrentObjectIds(objectIds);
+        setCurrentPhotoIndex(index);
     });
 
     useFurniRemovedEvent(objectId !== -1 && category !== -1, (event) => {
-        if (event.id !== objectId || event.category !== category) return;
+        if (event.category !== category) return;
+
+        const shownObjectId = currentObjectIds[currentPhotoIndex] ?? objectId;
+
+        if (event.id !== shownObjectId) return;
 
         onClose();
     });
