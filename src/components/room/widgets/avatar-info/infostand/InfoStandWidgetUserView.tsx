@@ -30,6 +30,7 @@ import { InfoStandBadgeSlotView } from './InfoStandBadgeSlotView';
 import { InfoStandWidgetUserRelationshipsView } from './InfoStandWidgetUserRelationshipsView';
 import { InfoStandWidgetUserTagsView } from './InfoStandWidgetUserTagsView';
 import { BaseButton } from '../../../../../common/BaseButton';
+import { Hint } from '../../../../../common/Tooltip';
 
 interface InfoStandWidgetUserViewProps {
     avatarInfo: AvatarInfoUser;
@@ -326,14 +327,13 @@ export const InfoStandWidgetUserView: FC<InfoStandWidgetUserViewProps> = (props)
                     <>
                         <div className="octane-infostand__rule" />
                         {isOwnUser ? (
-                            <BaseButton
+                            <Hint content={localizeWithFallback('achievements.title', 'Achievements')}><BaseButton aria-label={localizeWithFallback('achievements.title', 'Achievements')}
                                 type="button"
                                 className="octane-infostand__score octane-infostand__score-link"
-                                title={localizeWithFallback('achievements.title', 'Achievements')}
                                 onClick={() => CreateLinkEvent('achievements/show')}
                             >
                                 {LocalizeText('infostand.text.achievement_score')} {avatarInfo.achievementScore}
-                            </BaseButton>
+                            </BaseButton></Hint>
                         ) : (
                             <div className="octane-infostand__score">
                                 {LocalizeText('infostand.text.achievement_score')} {avatarInfo.achievementScore}

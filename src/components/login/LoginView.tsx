@@ -24,6 +24,7 @@ import { Checkbox } from '../../common/Checkbox';
 import { Radio } from '../../common/Radio';
 import { Select } from '../../common/Select';
 import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 type DialogMode = 'login' | 'register' | 'forgot';
 type LoginLocale = { code: string; file: string; label: string; flag: string };
@@ -1592,30 +1593,32 @@ const RegisterDialog: FC<RegisterDialogProps> = (props) => {
                     />
 
                     <div className="hot-looks-row">
-                        <BaseButton
-                            type="button"
-                            className="ok-button hot-looks-button"
-                            onClick={cycleHotLook}
-                            disabled={!hotLooks.length || busy}
-                            title={
+                        <Hint content={
+                                hotLooks.length
+                                    ? t('nitro.login.register.hotlooks.count', '%count% looks available', ['count'], [String(hotLooks.length)])
+                                    : t('nitro.login.register.hotlooks.none', 'No hot looks loaded')
+                            }><BaseButton aria-label={
                                 hotLooks.length
                                     ? t('nitro.login.register.hotlooks.count', '%count% looks available', ['count'], [String(hotLooks.length)])
                                     : t('nitro.login.register.hotlooks.none', 'No hot looks loaded')
                             }
+                            type="button"
+                            className="ok-button hot-looks-button"
+                            onClick={cycleHotLook}
+                            disabled={!hotLooks.length || busy}
                         >
                             {t('nitro.login.register.hotlooks', 'Hot Looks')}
                             {hotLookIndex >= 0 && hotLooks.length ? ` (${hotLookIndex + 1}/${hotLooks.length})` : ''}
-                        </BaseButton>
-                        <BaseButton
+                        </BaseButton></Hint>
+                        <Hint content={t('nitro.login.register.randomlook.title', 'Generate a random look')}><BaseButton aria-label={t('nitro.login.register.randomlook.title', 'Generate a random look')}
                             type="button"
                             className="ok-button back-button hot-looks-button random-look-button"
                             onClick={randomizeLook}
                             disabled={!canRandomizeLook || busy}
-                            title={t('nitro.login.register.randomlook.title', 'Generate a random look')}
                         >
                             <FaDice aria-hidden="true" />
                             {t('nitro.login.register.randomlook', 'Random Look')}
-                        </BaseButton>
+                        </BaseButton></Hint>
                     </div>
 
                     {turnstileEnabled && (

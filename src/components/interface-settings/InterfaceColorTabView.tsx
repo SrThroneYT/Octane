@@ -5,6 +5,7 @@ import { LocalizeText, PRESET_COLORS, THEME_PRESETS, useUiSettings } from '../..
 import { Flex, Text } from '../../common';
 import { NumberInput } from '../../common/NumberInput';
 import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 const hexToRgba = (hex: string, a = 1): RgbaColor => {
     const num = parseInt(hex.replace('#', ''), 16);
@@ -207,42 +208,38 @@ export const InterfaceColorTabView: FC<{}> = () => {
 
             {/* Action buttons */}
             <Flex gap={1} className="w-full mt-2">
-                <BaseButton
+                <Hint content={LocalizeText('interface.settings.color.reset')}><BaseButton aria-label={LocalizeText('interface.settings.color.reset')}
                     className="flex-1 flex items-center justify-center gap-1 py-2 rounded cursor-pointer text-white text-xs"
                     style={{ backgroundColor: '#5f9ea0' }}
                     onClick={onReset}
-                    title={LocalizeText('interface.settings.color.reset')}
                 >
                     <FaUndo size={12} />
                     {LocalizeText('interface.settings.color.reset')}
-                </BaseButton>
-                <BaseButton
+                </BaseButton></Hint>
+                <Hint content={LocalizeText('interface.settings.color.remove')}><BaseButton aria-label={LocalizeText('interface.settings.color.remove')}
                     className="flex-1 flex items-center justify-center gap-1 py-2 rounded cursor-pointer text-white text-xs"
                     style={{ backgroundColor: '#c0392b' }}
                     onClick={onDelete}
-                    title={LocalizeText('interface.settings.color.remove')}
                 >
                     <FaTrash size={12} />
                     {LocalizeText('interface.settings.color.remove')}
-                </BaseButton>
-                <BaseButton
+                </BaseButton></Hint>
+                <Hint content={LocalizeText('interface.settings.color.export')}><BaseButton aria-label={LocalizeText('interface.settings.color.export')}
                     className="flex-1 flex items-center justify-center gap-1 py-2 rounded cursor-pointer text-white text-xs"
                     style={{ backgroundColor: '#2980b9' }}
                     onClick={onExport}
-                    title={LocalizeText('interface.settings.color.export')}
                 >
                     <FaDownload size={12} />
                     {copyFeedback ? LocalizeText('interface.settings.color.copied') : LocalizeText('interface.settings.color.export')}
-                </BaseButton>
-                <BaseButton
+                </BaseButton></Hint>
+                <Hint content={LocalizeText('interface.settings.color.import')}><BaseButton aria-label={LocalizeText('interface.settings.color.import')}
                     className="flex-1 flex items-center justify-center gap-1 py-2 rounded cursor-pointer text-white text-xs"
                     style={{ backgroundColor: '#27ae60' }}
                     onClick={() => setShowImport(!showImport)}
-                    title={LocalizeText('interface.settings.color.import')}
                 >
                     <FaUpload size={12} />
                     {LocalizeText('interface.settings.color.import')}
-                </BaseButton>
+                </BaseButton></Hint>
             </Flex>
 
             {/* Import panel */}

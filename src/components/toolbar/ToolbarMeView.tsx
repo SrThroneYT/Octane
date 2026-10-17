@@ -6,6 +6,7 @@ import { GuideToolEvent } from '../../events';
 import { useDailyTasks, useRewardTracks } from '../../hooks';
 import { useGroupForumUnreadStore } from '../../state/groupForumUnreadStore';
 import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 export const ToolbarMeView: FC<
     PropsWithChildren<{
@@ -63,25 +64,22 @@ export const ToolbarMeView: FC<
             >
                 {unseenAchievementCount > 0 && <LayoutItemCountView count={unseenAchievementCount} />}
             </BaseButton>
-            <BaseButton type="button"
+            <Hint content={localizeWithFallback('toolbar.me.quests', 'Quests')}><BaseButton aria-label={localizeWithFallback('toolbar.me.quests', 'Quests')} type="button"
                 className="navigation-item relative icon-me-quests cursor-pointer"
-                title={localizeWithFallback('toolbar.me.quests', 'Quests')}
                 onClick={(event) => CreateLinkEvent('quests/toggle')}
-            />
-            <BaseButton type="button"
+            /></Hint>
+            <Hint content={localizeWithFallback('toolbar.me.dailytasks', 'Daily rewards')}><BaseButton aria-label={localizeWithFallback('toolbar.me.dailytasks', 'Daily rewards')} type="button"
                 className="navigation-item relative icon-me-dailytasks cursor-pointer"
-                title={localizeWithFallback('toolbar.me.dailytasks', 'Daily rewards')}
                 onClick={(event) => CreateLinkEvent('dailytasks/toggle')}
             >
                 {unseenDailyTaskCount > 0 && <LayoutItemCountView count={unseenDailyTaskCount} />}
-            </BaseButton>
-            <BaseButton type="button"
+            </BaseButton></Hint>
+            <Hint content={localizeWithFallback('toolbar.me.rewardtrack', 'Reward track')}><BaseButton aria-label={localizeWithFallback('toolbar.me.rewardtrack', 'Reward track')} type="button"
                 className="navigation-item relative icon-me-rewardtrack cursor-pointer"
-                title={localizeWithFallback('toolbar.me.rewardtrack', 'Reward track')}
                 onClick={(event) => CreateLinkEvent('reward_track/toggle')}
             >
                 {unseenRewardTrackCount > 0 && <LayoutItemCountView count={unseenRewardTrackCount} />}
-            </BaseButton>
+            </BaseButton></Hint>
             <BaseButton type="button"
                 className="navigation-item relative octane-icon icon-me-profile cursor-pointer"
                 onClick={(event) => GetUserProfile(GetSessionDataManager().userId)}
@@ -91,19 +89,17 @@ export const ToolbarMeView: FC<
                 onClick={(event) => CreateLinkEvent('navigator/search/myworld_view')}
             />
             <BaseButton type="button" className="navigation-item relative octane-icon icon-me-clothing cursor-pointer" onClick={(event) => CreateLinkEvent('avatar-editor/toggle')} />
-            <BaseButton type="button"
+            <Hint content={LocalizeText('toolbar.icon.label.badge_creator')}><BaseButton aria-label={LocalizeText('toolbar.icon.label.badge_creator')} type="button"
                 className="navigation-item relative octane-icon icon-me-badge-creator cursor-pointer"
                 onClick={(event) => CreateLinkEvent('badge-creator/toggle')}
-                title={LocalizeText('toolbar.icon.label.badge_creator')}
-            />
+            /></Hint>
             <BaseButton type="button" className="navigation-item relative octane-icon icon-me-settings cursor-pointer" onClick={(event) => CreateLinkEvent('user-settings/toggle')} />
-            <BaseButton type="button"
+            <Hint content={LocalizeText('toolbar.icon.label.forums')}><BaseButton aria-label={LocalizeText('toolbar.icon.label.forums')} type="button"
                 className="navigation-item relative octane-icon icon-me-forums cursor-pointer"
                 onClick={(event) => CreateLinkEvent('groupforum/toggle')}
-                title={LocalizeText('toolbar.icon.label.forums')}
             >
                 {unreadForumsCount > 0 && <LayoutItemCountView count={unreadForumsCount} />}
-            </BaseButton>
+            </BaseButton></Hint>
             {children}
         </Flex>
     );

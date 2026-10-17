@@ -13,6 +13,7 @@ import removeSelectionSrc from '../../assets/images/avatareditor/air/remove-sele
 import { ClassicScrollAreaView } from '../../common/scroll-area/ClassicScrollAreaView';
 import { OwnedAvatarEffect, useAvatarEffects } from '../../hooks';
 import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 const isEffectRunning = (effect: OwnedAvatarEffect) => effect.isPermanent || effect.secondsLeft > 0;
 
@@ -76,10 +77,9 @@ export const AvatarEditorEffectsView: FC<{
                                 const iconUrl = getAvatarEffectIconUrl(effect.type);
 
                                 return (
-                                    <BaseButton
+                                    <Hint content={localizeWithFallback(`fx_${effect.type}`, `fx_${effect.type}`)}><BaseButton aria-label={localizeWithFallback(`fx_${effect.type}`, `fx_${effect.type}`)}
                                         key={effect.type}
                                         type="button"
-                                        title={localizeWithFallback(`fx_${effect.type}`, `fx_${effect.type}`)}
                                         className={`avatar-parts octane-avatar-editor-effect-item${effect.type === selectedType ? ' part-selected' : ''}`}
                                         onClick={() => onSelect(effect.type)}
                                     >
@@ -94,7 +94,7 @@ export const AvatarEditorEffectsView: FC<{
                                                 />
                                             </span>
                                         )}
-                                    </BaseButton>
+                                    </BaseButton></Hint>
                                 );
                             })}
                         </div>

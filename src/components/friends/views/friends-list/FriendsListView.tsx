@@ -275,13 +275,12 @@ export const FriendsListView: FC<{}> = (props) => {
                                         />
                                     </Hint>
                                 )}
-                                <BaseButton
+                                <Hint content={LocalizeText('generic.delete')}><BaseButton aria-label={LocalizeText('generic.delete')}
                                     type="button"
                                     className="hfl-footer-button delete"
                                     disabled={!selectedFriendsIds.length}
-                                    title={LocalizeText('generic.delete')}
                                     onClick={() => selectedFriendsIds.length && setShowRemoveFriendsConfirmation(true)}
-                                />
+                                /></Hint>
                             </div>
                         </div>
                     )}

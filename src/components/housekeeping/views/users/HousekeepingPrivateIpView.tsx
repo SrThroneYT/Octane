@@ -3,6 +3,7 @@ import { FaEye } from 'react-icons/fa';
 import { HousekeepingApi, housekeepingFailureKey, LocalizeText } from '../../../../api';
 import { useHasPermission } from '../../../../hooks';
 import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 /**
  * The user's IP as the server sends it (masked), with a reveal for operators holding
@@ -51,15 +52,14 @@ export const HousekeepingPrivateIpView: FC<{ userId: number; masked: string }> =
                 {masked || '-'}
             </span>
             {canReveal && masked && (
-                <BaseButton
+                <Hint content={LocalizeText('housekeeping.user.private.reveal')}><BaseButton aria-label={LocalizeText('housekeeping.user.private.reveal')}
                     className="shrink-0 text-zinc-400 hover:text-sky-600 disabled:opacity-40"
                     disabled={isLoading}
-                    title={LocalizeText('housekeeping.user.private.reveal')}
                     type="button"
                     onClick={reveal}
                 >
                     <FaEye size={9} />
-                </BaseButton>
+                </BaseButton></Hint>
             )}
         </span>
     );

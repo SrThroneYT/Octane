@@ -1,6 +1,7 @@
 import { FC, MouseEvent } from 'react';
 import { DisplaySoundboardSound, SoundboardTone } from '../../hooks/soundboard/soundboardPresentation';
 import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 interface SoundboardPadViewProps {
     sound: DisplaySoundboardSound;
@@ -43,14 +44,13 @@ export const SoundboardPadView: FC<SoundboardPadViewProps> = ({ sound, disabled,
     };
 
     return (
-        <BaseButton
+        <Hint content={sound.name}><BaseButton
             type="button"
             aria-label={sound.name}
             aria-disabled={disabled}
             data-tone={sound.tone}
             data-favorite={favorite || undefined}
             data-playing={playing || undefined}
-            title={sound.name}
             onClick={() => !disabled && onPlay(sound)}
             onContextMenu={toggleFavorite}
             className="soundboard-pad"
@@ -59,6 +59,6 @@ export const SoundboardPadView: FC<SoundboardPadViewProps> = ({ sound, disabled,
             <span className="soundboard-pad__name">{sound.name}</span>
             {favorite && <span aria-hidden="true" className="soundboard-pad__star">★</span>}
             {hotkey && <span aria-hidden="true" className="soundboard-pad__key">{hotkey}</span>}
-        </BaseButton>
+        </BaseButton></Hint>
     );
 };

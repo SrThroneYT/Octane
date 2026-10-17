@@ -15,6 +15,7 @@ import { Button, Column, OctaneCardContentView, OctaneCardHeaderView, OctaneCard
 import { AvatarEffectPreviewView } from './AvatarEffectPreviewView';
 import { Checkbox } from '../../common/Checkbox';
 import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 interface EffectMapEntry {
     id: string;
@@ -235,14 +236,13 @@ export const AvatarEffectsView: FC<{}> = () => {
                             </label>
                         )}
                         {selectedId > 0 && (
-                            <BaseButton
+                            <Hint content="Jump to selected effect"><BaseButton aria-label="Jump to selected effect"
                                 type="button"
                                 onClick={jumpToSelected}
                                 className="text-[#3a78c4] hover:text-[#2a5d9e] hover:underline normal-case font-semibold cursor-pointer"
-                                title="Jump to selected effect"
                             >
                                 #{selectedId} selected
-                            </BaseButton>
+                            </BaseButton></Hint>
                         )}
                     </div>
                     <div className="flex-1 min-h-0 overflow-auto">
@@ -262,7 +262,7 @@ export const AvatarEffectsView: FC<{}> = () => {
                                     const isActive = id === activeEffectType;
                                     return (
                                         <li key={effect.id}>
-                                            <BaseButton
+                                            <Hint content={effect.lib}><BaseButton aria-label={effect.lib}
                                                 ref={isSelected ? selectedRowRef : undefined}
                                                 type="button"
                                                 onClick={() => setSelectedId(id)}
@@ -271,7 +271,6 @@ export const AvatarEffectsView: FC<{}> = () => {
                                                         ? 'border-[#3a78c4] bg-[#cfe1f5] text-[#1d3a5e]'
                                                         : `border-transparent hover:bg-[#eef3f9] ${index % 2 === 0 ? 'bg-white' : 'bg-[#fafafa]'}`
                                                 }`}
-                                                title={effect.lib}
                                             >
                                                 <span className={`font-mono text-xs w-12 text-right shrink-0 ${isSelected ? 'opacity-80' : 'opacity-50'}`}>
                                                     #{id}
@@ -287,7 +286,7 @@ export const AvatarEffectsView: FC<{}> = () => {
                                                         {LocalizeText('inventory.effects.owned') || 'owned'}
                                                     </span>
                                                 )}
-                                            </BaseButton>
+                                            </BaseButton></Hint>
                                         </li>
                                     );
                                 })}

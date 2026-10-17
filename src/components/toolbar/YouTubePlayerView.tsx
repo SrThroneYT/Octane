@@ -14,6 +14,7 @@ import ReactPlayer from '../youtube/YoutubeReactPlayer';
 import { Checkbox } from '../../common/Checkbox';
 import { Slider } from '../../common/Slider';
 import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 const CONTROL_COMMAND_PREVIOUS_VIDEO = 0;
 const CONTROL_COMMAND_NEXT_VIDEO = 1;
@@ -355,17 +356,16 @@ export const YouTubePlayerView: FC<{}> = () => {
                                 placeholder="YouTube URL / video ID"
                             />
                             {isMyRoom && youtubeEnabled && videoId && (
-                                <BaseButton
+                                <Hint content="Speel deze video voor iedereen in de kamer"><BaseButton aria-label="Speel deze video voor iedereen in de kamer"
                                     onClick={() => {
                                         try {
                                             SendMessageComposer(new YouTubeRoomPlayComposer(videoId, playlist));
                                         } catch (e) {}
                                     }}
                                     className="px-3 bg-purple-600 rounded text-white text-sm whitespace-nowrap"
-                                    title="Speel deze video voor iedereen in de kamer"
                                 >
                                     📡 {LocalizeText('wiredchests.logs.type.1')}
-                                </BaseButton>
+                                </BaseButton></Hint>
                             )}
                         </div>
                     </>

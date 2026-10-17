@@ -23,6 +23,7 @@ import { TabBar, TabBarTab } from '../../../common/TabBar';
 import { BaseButton } from '../../../common/BaseButton';
 import { SuggestInput } from '../../../common/SuggestInput';
 import { ToggleButton } from '../../../common/ToggleButton';
+import { Hint } from '../../../common/Tooltip';
 
 interface FurniEditorEditViewProps {
     item: FurniDetail;
@@ -338,25 +339,23 @@ const FurniPreview: FC<FurniPreviewProps> = ({ item, width, length, modes }) => 
                 {width}×{length}
             </span>
             <div className="absolute bottom-1 left-1 flex gap-1">
-                <BaseButton
+                <Hint content="Rotate"><BaseButton
                     type="button"
                     onClick={() => setDirectionIndex((prev) => prev + 1)}
                     aria-label={`Rotate, facing ${direction}`}
-                    title="Rotate"
                     className="inline-flex items-center gap-0.5 text-[9px] rounded-full border border-slate-200 bg-[#ffffff] px-1.5 py-px text-slate-600 hover:border-slate-300"
                 >
                     <span aria-hidden="true">⟳</span> {direction}
-                </BaseButton>
+                </BaseButton></Hint>
                 {stateCount > 1 && (
-                    <BaseButton
+                    <Hint content="Next state"><BaseButton
                         type="button"
                         onClick={nextState}
                         aria-label={`Next state, showing ${state < 0 ? 'base' : state + 1} of ${stateCount}`}
-                        title="Next state"
                         className="inline-flex items-center gap-0.5 text-[9px] rounded-full border border-slate-200 bg-[#ffffff] px-1.5 py-px text-slate-600 hover:border-slate-300"
                     >
                         <span aria-hidden="true">▸</span> {state < 0 ? 'base' : `${state + 1}/${stateCount}`}
-                    </BaseButton>
+                    </BaseButton></Hint>
                 )}
             </div>
         </div>
@@ -494,9 +493,8 @@ const CopyValue: FC<{ value: string | number; compact?: boolean }> = ({ value, c
     }, [copied]);
 
     return (
-        <BaseButton
+        <Hint content="Click to copy"><BaseButton aria-label="Click to copy"
             type="button"
-            title="Click to copy"
             onClick={copy}
             className={`group relative cursor-pointer w-full text-left font-mono rounded-lg border transition ${compact ? 'px-1.5 py-0.5 text-[10px]' : 'px-3 py-1.5 text-sm'} ${copied ? 'border-primary/50 bg-primary/5 text-primary' : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300 hover:bg-slate-100'}`}
         >
@@ -506,7 +504,7 @@ const CopyValue: FC<{ value: string | number; compact?: boolean }> = ({ value, c
             >
                 {copied ? 'copied!' : 'copy'}
             </span>
-        </BaseButton>
+        </BaseButton></Hint>
     );
 };
 
@@ -859,30 +857,28 @@ export const FurniEditorEditView: FC<FurniEditorEditViewProps> = (props) => {
     // "was X" next to a changed field's label: one click puts the stored value back.
     const revert = (field: EditField) =>
         isChanged(field) && (
-            <BaseButton
+            <Hint content="Put the stored value back"><BaseButton
                 type="button"
                 onClick={() => setField(field, stored[field])}
-                title="Put the stored value back"
                 aria-label={`Revert ${FIELD_LABELS[field]}`}
                 className="ml-auto inline-flex items-center gap-0.5 text-[9px] font-normal text-amber-600 hover:text-amber-800 transition"
             >
                 <span aria-hidden="true">↺</span> was {formatValue(stored[field])}
-            </BaseButton>
+            </BaseButton></Hint>
         );
 
     const chipClass = 'mt-1 inline-flex items-center gap-1 text-[10px] font-medium rounded-md px-2 py-0.5 transition';
     const suggestionChip = (s: Suggestion) => (
-        <BaseButton
+        <Hint content={s.reason}><BaseButton
             key={`${s.field}:${String(s.value)}`}
             type="button"
             onClick={() => applySuggestion(s)}
-            title={s.reason}
             aria-label={`Apply ${FIELD_LABELS[s.field]} ${formatValue(s.value)}`}
             className={`${chipClass} text-primary bg-primary/10 border border-primary/20 hover:bg-primary/15 mr-1`}
         >
             <span aria-hidden="true">✦</span> Suggested: <span className="font-mono">{formatValue(s.value)}</span>
             <span className="text-primary/70 font-normal">· {s.reason}</span>
-        </BaseButton>
+        </BaseButton></Hint>
     );
     const warningChip = (w: { field: EditField; message: string }) => (
         <span key={w.field} role="note" className={`${chipClass} text-amber-700 bg-amber-100 border border-amber-200`}>
@@ -899,17 +895,16 @@ export const FurniEditorEditView: FC<FurniEditorEditViewProps> = (props) => {
     const permissionChips = permissionSuggestions.length > 0 && (
         <div className="flex flex-wrap items-center gap-0.5">
             {permissionSuggestions.map((s) => (
-                <BaseButton
+                <Hint content={s.reason}><BaseButton
                     key={s.field}
                     type="button"
                     onClick={() => applySuggestion(s)}
-                    title={s.reason}
                     aria-label={`Apply ${FIELD_LABELS[s.field]} ${formatValue(s.value)}`}
                     className={`${chipClass} mt-0 text-primary bg-primary/10 border border-primary/20 hover:bg-primary/15`}
                 >
                     <span aria-hidden="true">✦</span> {FIELD_LABELS[s.field]} {formatValue(s.value)}
                     <span className="text-primary/70 font-normal">· {s.reason}</span>
-                </BaseButton>
+                </BaseButton></Hint>
             ))}
         </div>
     );
@@ -1178,11 +1173,10 @@ export const FurniEditorEditView: FC<FurniEditorEditViewProps> = (props) => {
                                                 <Button variant="secondary" disabled={loading} onClick={() => onRevertFurnidata(item.id)}>
                                                     Revert
                                                 </Button>
-                                                <BaseButton
+                                                <Hint content="Fetch the official name &amp; description from Habbo"><BaseButton aria-label="Fetch the official name &amp; description from Habbo"
                                                     type="button"
                                                     disabled={loading}
                                                     onClick={() => onImportText(item.id)}
-                                                    title="Fetch the official name &amp; description from Habbo"
                                                     className="ml-auto inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1.5 rounded-lg border border-slate-300 bg-[#ffffff] text-slate-600 hover:bg-slate-50 hover:border-slate-400 disabled:opacity-50 transition"
                                                 >
                                                     <svg
@@ -1199,7 +1193,7 @@ export const FurniEditorEditView: FC<FurniEditorEditViewProps> = (props) => {
                                                         <path d="M4 16h12" />
                                                     </svg>
                                                     Import from Habbo
-                                                </BaseButton>
+                                                </BaseButton></Hint>
                                             </>
                                         )}
                                     </Flex>
@@ -1454,19 +1448,18 @@ export const FurniEditorEditView: FC<FurniEditorEditViewProps> = (props) => {
                                             {group.keys.map((key) => {
                                                 const on = form[key] === true;
                                                 return (
-                                                    <ToggleButton
+                                                    <Hint content={on ? 'Enabled — click to disable' : 'Disabled — click to enable'}><ToggleButton aria-label={on ? 'Enabled — click to disable' : 'Disabled — click to enable'}
                                                         key={key}
                                                         type="button"
                                                         pressed={on}
                                                         onClick={() => setField(key, !on)}
-                                                        title={on ? 'Enabled — click to disable' : 'Disabled — click to enable'}
                                                         className={`inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-lg border font-medium transition ${on ? 'bg-[#418db0] border-[#418db0] text-[#ffffff] shadow-sm' : 'bg-slate-100 border-slate-200 text-slate-400 hover:bg-slate-200 hover:text-slate-600'}${isChanged(key) ? ' ring-2 ring-amber-300' : ''}`}
                                                     >
                                                         <span
                                                             className={`inline-block w-2 h-2 rounded-full ring-1 ${on ? 'bg-[#22c55e] ring-[#ffffff]/70' : 'bg-[#ef4444] ring-[#00000014]'}`}
                                                         />
                                                         {key.replace('allow', '')}
-                                                    </ToggleButton>
+                                                    </ToggleButton></Hint>
                                                 );
                                             })}
                                         </div>
@@ -1493,15 +1486,14 @@ export const FurniEditorEditView: FC<FurniEditorEditViewProps> = (props) => {
                                         onChange={(value) => setField('interactionType', value)}
                                     />
                                     {suggestedType && (
-                                        <BaseButton
+                                        <Hint content={suggestedType.reason}><BaseButton aria-label={suggestedType.reason}
                                             type="button"
                                             onClick={() => setField('interactionType', suggestedType.type)}
-                                            title={suggestedType.reason}
                                             className="mt-1 inline-flex items-center gap-1 text-[10px] font-medium text-primary bg-primary/10 border border-primary/20 rounded-md px-2 py-0.5 hover:bg-primary/15 transition"
                                         >
                                             <span aria-hidden="true">✦</span> Suggested: <span className="font-mono">{suggestedType.type}</span>
                                             <span className="text-primary/70 font-normal">· {suggestedType.reason}</span>
-                                        </BaseButton>
+                                        </BaseButton></Hint>
                                     )}
                                     {interactionUnregistered && (
                                         <span className="mt-1 inline-flex items-center gap-1 text-[10px] font-medium text-amber-700 bg-amber-100 border border-amber-200 rounded-md px-2 py-0.5">

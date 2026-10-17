@@ -15,6 +15,7 @@ import { Checkbox } from '../../../../common/Checkbox';
 import { Select } from '../../../../common/Select';
 import { NumberInput } from '../../../../common/NumberInput';
 import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 const MODE_OPTIONS = [
     { value: 'NORMAL', label: 'Normal' },
@@ -545,16 +546,15 @@ export const CatalogAdminPageEditView: FC<{}> = () => {
                                     <label className="octane-catalog-admin-label is-field">
                                         {localizeWithFallback('catalog.admin.page.text.1', 'Page text')}
                                     </label>
-                                    <BaseButton
+                                    <Hint content={localizeWithFallback('catalog.admin.translate.title', 'Translate via Google Translate')}><BaseButton aria-label={localizeWithFallback('catalog.admin.translate.title', 'Translate via Google Translate')}
                                         className="octane-catalog-admin-button is-ghost is-compact"
                                         disabled={isTranslating || !pageText1.trim().length}
-                                        title={localizeWithFallback('catalog.admin.translate.title', 'Translate via Google Translate')}
                                         type="button"
                                         onClick={openTranslate}
                                     >
                                         {isTranslating ? <FaSpinner className="text-[8px] animate-spin" /> : <FaLanguage className="text-[10px]" />}
                                         {localizeWithFallback('catalog.admin.translate.action', 'Translate')}
-                                    </BaseButton>
+                                    </BaseButton></Hint>
                                 </div>
                                 {showTranslate && (
                                     <div className="octane-catalog-admin-translate-bar">

@@ -1710,13 +1710,12 @@ export const SnowWarArenaView: FC = () =>
                                         src={getHudAssetUrl(`load_${getLoopFrame(frameNow, 8)}`)}
                                     />
                                 )}
-                                <BaseButton
+                                <Hint content={localizeWithFallback('snowwar.make_snowball', 'Scoop up a snowball')}><BaseButton aria-label={localizeWithFallback('snowwar.make_snowball', 'Scoop up a snowball')}
                                     type="button"
                                     className="snowwar-official-hud__make-ball"
                                     disabled={phase !== 'playing' || ownAvatar.snowballCount >= INITIAL_SNOWBALL_COUNT}
-                                    title={localizeWithFallback('snowwar.make_snowball', 'Scoop up a snowball')}
                                     onClick={() => createSnowball()}
-                                />
+                                /></Hint>
                             </div>
 
                             <div
@@ -1860,15 +1859,14 @@ export const SnowWarArenaView: FC = () =>
                     {furniMatches.length > 0 && (
                         <div className="snowwar-editor__palette snowwar-editor__palette--furni">
                             {furniMatches.map(furni => (
-                                <BaseButton
+                                <Hint content={furni.className}><BaseButton aria-label={furni.className}
                                     key={furni.id}
                                     type="button"
-                                    title={furni.className}
                                     className={'snowwar-editor__chip' + (paletteSel === furni.className ? ' snowwar-editor__chip--active' : '')}
                                     onClick={() => { setPaletteSel(prev => prev === furni.className ? null : furni.className); setSelectedIndex(-1); setHoverTile(null); }}
                                 >
                                     {(furni.name && furni.name.trim()) || furni.className}
-                                </BaseButton>
+                                </BaseButton></Hint>
                             ))}
                         </div>
                     )}

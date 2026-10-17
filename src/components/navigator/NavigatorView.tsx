@@ -40,6 +40,7 @@ import { NavigatorSearchSavesResultView } from './views/search/NavigatorSearchSa
 import { NavigatorSearchView } from './views/search/NavigatorSearchView';
 import { TabBar, TabBarTab } from '../../common/TabBar';
 import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 const persistNavigatorBounds = (element: HTMLElement | null) => {
     if (!element) return;
@@ -281,26 +282,24 @@ export const NavigatorView: FC<{}> = () => {
                         <div className="octane-navigator-air__tab-shelf" aria-hidden="true" />
                         <div className="octane-navigator-air__caption">
                             <div className="octane-navigator-air__history">
-                                <BaseButton
+                                <Hint content={localizeWithFallback('navigator.back', 'back')}><BaseButton
                                     type="button"
                                     className="octane-navigator-air__history-button"
                                     aria-label={localizeWithFallback('navigator.back', 'back')}
-                                    title={localizeWithFallback('navigator.back', 'back')}
                                     disabled={!canGoBack}
                                     onClick={() => useNavigatorUiStore.getState().goBack()}
                                 >
                                     ‹
-                                </BaseButton>
-                                <BaseButton
+                                </BaseButton></Hint>
+                                <Hint content={localizeWithFallback('navigator.forward', 'forward')}><BaseButton
                                     type="button"
                                     className="octane-navigator-air__history-button"
                                     aria-label={localizeWithFallback('navigator.forward', 'forward')}
-                                    title={localizeWithFallback('navigator.forward', 'forward')}
                                     disabled={!canGoForward}
                                     onClick={() => useNavigatorUiStore.getState().goForward()}
                                 >
                                     ›
-                                </BaseButton>
+                                </BaseButton></Hint>
                             </div>
                             <span className="octane-navigator-air__title">{headerText}</span>
                             <BaseButton

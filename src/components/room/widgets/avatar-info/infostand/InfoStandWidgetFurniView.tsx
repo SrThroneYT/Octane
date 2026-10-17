@@ -71,6 +71,7 @@ import statYIcon from '../../../../../assets/images/infostand/stat-y.png';
 import { ImagePositionEditorView } from './ImagePositionEditorView';
 import { NumberInput } from '../../../../../common/NumberInput';
 import { BaseButton } from '../../../../../common/BaseButton';
+import { Hint } from '../../../../../common/Tooltip';
 
 interface InfoStandWidgetFurniViewProps {
     avatarInfo: AvatarInfoFurni;
@@ -109,10 +110,9 @@ const InfoStandStat: FC<{ icon: ReactNode; label: string; value: string | number
     const shown = copied ? '✓' : value;
 
     return (
-        <BaseButton
+        <Hint content={`${tooltip ?? label}: ${value} - ${localizeWithFallback('infostand.copy.tooltip', 'Click to copy')}`}><BaseButton aria-label={`${tooltip ?? label}: ${value} - ${localizeWithFallback('infostand.copy.tooltip', 'Click to copy')}`}
             type="button"
             className={`group flex items-center gap-1 min-w-0 w-full rounded px-0.5 border-0 bg-transparent cursor-pointer transition-colors duration-100 hover:bg-[#ffffff14] active:bg-[#ffffff24] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#7ec8e3] ${iconAfter ? 'justify-end' : 'justify-start'}`}
-            title={`${tooltip ?? label}: ${value} - ${localizeWithFallback('infostand.copy.tooltip', 'Click to copy')}`}
             onClick={() => void CopyToClipboard(String(value)).then((ok) => setCopied(ok))}
         >
             {!iconAfter && icon}
@@ -120,7 +120,7 @@ const InfoStandStat: FC<{ icon: ReactNode; label: string; value: string | number
                 {iconAfter ? `${shown}:` : `:${shown}`}
             </Text>
             {iconAfter && icon}
-        </BaseButton>
+        </BaseButton></Hint>
     );
 };
 

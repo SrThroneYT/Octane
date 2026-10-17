@@ -128,15 +128,14 @@ export const HousekeepingPasswordReveal: FC = () => {
                     onFocus={(event) => event.currentTarget.select()}
                     aria-label={LocalizeText('housekeeping.password.value_label')}
                 />
-                <BaseButton
+                <Hint content={copyLabel}><BaseButton
                     className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold border transition-colors ${copyState === 'ok' ? 'bg-emerald-100 border-emerald-300 text-emerald-800' : copyState === 'fail' ? 'bg-rose-100 border-rose-300 text-rose-800' : 'bg-amber-100 border-amber-300 text-amber-900 hover:bg-amber-200'}`}
                     onClick={copyPassword}
-                    title={copyLabel}
                     aria-label={copyLabel}
                 >
                     {copyIcon}
                     <span>{copyLabel}</span>
-                </BaseButton>
+                </BaseButton></Hint>
             </div>
 
             <p className="text-[10px] text-amber-700/80 leading-snug">{LocalizeText('housekeeping.password.hint')}</p>

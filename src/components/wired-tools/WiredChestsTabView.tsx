@@ -19,6 +19,7 @@ import { Button, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Te
 import { useMessageEvent, useNotification, useRoom } from '../../hooks';
 import { Select } from '../../common/Select';
 import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 /** Rows per request. The preview and the detail window share one page size, so one response shape
  * serves both and there is never a question of which request a page belongs to. */
@@ -404,17 +405,19 @@ const WiredChestTransactionsWindow: FC<WiredChestTransactionsWindowProps> = (pro
                                     <Fragment key={row.transactionId}>
                                         <tr className="border-t border-[#e4e0d5]">
                                             <td className="px-2 py-1 tabular-nums">
-                                                <BaseButton
-                                                    type="button"
-                                                    className="underline decoration-dotted"
-                                                    title={localizeWithFallback(
+                                                <Hint content={localizeWithFallback(
+                                                        'wiredmenu.chests.room_logs.only_this_chest',
+                                                        'Only this chest',
+                                                    )}><BaseButton aria-label={localizeWithFallback(
                                                         'wiredmenu.chests.room_logs.only_this_chest',
                                                         'Only this chest',
                                                     )}
+                                                    type="button"
+                                                    className="underline decoration-dotted"
                                                     onClick={() => onFilterChest(row.chestId)}
                                                 >
                                                     {row.chestId}
-                                                </BaseButton>
+                                                </BaseButton></Hint>
                                             </td>
                                             <td className="px-2 py-1">{formatTimestamp(row.timestamp)}</td>
                                             <td className="px-2 py-1">{typeLabel(row)}</td>

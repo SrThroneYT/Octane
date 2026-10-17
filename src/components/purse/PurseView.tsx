@@ -144,39 +144,36 @@ export const PurseView: FC<{}> = (props) => {
                     </div>
                     <div className="octane-purse__col octane-purse__col--primary subscription-container">
                         {!hcDisabled && (
-                            <BaseButton
+                            <Hint content={clubLabel}><BaseButton aria-label={clubLabel}
                                 type="button"
                                 className="octane-purse__btn octane-purse__btn--join octane-purse-subscription club-text"
                                 onClick={openClub}
-                                title={clubLabel}
                             >
                                 <img src={hcIcon} alt="" className="octane-purse__btn-img" />
                                 <span>{clubLabel}</span>
-                            </BaseButton>
+                            </BaseButton></Hint>
                         )}
-                        <BaseButton
+                        <Hint content={earningsLabel}><BaseButton aria-label={earningsLabel}
                             type="button"
                             className="octane-purse__btn octane-purse__btn--earnings octane-purse-subscription club-text"
                             onClick={openEarnings}
-                            title={earningsLabel}
                         >
                             <img src={earningsIcon} alt="" className="octane-purse__btn-img" />
                             <span>{earningsLabel}</span>
-                        </BaseButton>
+                        </BaseButton></Hint>
                     </div>
                     <div className="octane-purse__divider" aria-hidden="true" />
                     <div className="octane-purse__col octane-purse__col--actions">
-                        <BaseButton
+                        <Hint content={helpLabel}><BaseButton aria-label={helpLabel}
                             type="button"
                             className="octane-purse__btn octane-purse__btn--help octane-purse-right-button help"
                             onClick={(event) => {
                                 event.stopPropagation();
                                 CreateLinkEvent('help/show');
                             }}
-                            title={helpLabel}
                         >
                             <span>{helpLabel}</span>
-                        </BaseButton>
+                        </BaseButton></Hint>
                         <Hint content="Log out">
                             <BaseButton aria-label="Log out"
                                 type="button"

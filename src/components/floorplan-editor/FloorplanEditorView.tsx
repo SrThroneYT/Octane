@@ -332,26 +332,24 @@ export const FloorplanEditorView: FC<Props> = ({ externalSession }) => {
                                         </Hint>
                                         <span className="fp-panel-title">{LocalizeText('floor.editor.wall.height')}</span>
                                         <div className="fp-view-switch" data-testid="floorplan-view-switch" role="group" aria-label={localizeOr('floor.plan.editor.preview.mode', 'Preview')}>
-                                            <BaseButton
+                                            <Hint content={localizeOr('floor.plan.editor.preview.2d.title', 'Flat preview (light, works on every device)')}><BaseButton aria-label={localizeOr('floor.plan.editor.preview.2d.title', 'Flat preview (light, works on every device)')}
                                                 type="button"
                                                 data-testid="floorplan-view-2d"
                                                 data-active={preview3d ? 'false' : 'true'}
                                                 className={`fp-pill ${preview3d ? '' : 'is-on'}`}
-                                                title={localizeOr('floor.plan.editor.preview.2d.title', 'Flat preview (light, works on every device)')}
                                                 onClick={() => choosePreview(false)}
                                             >
                                                 2D
-                                            </BaseButton>
-                                            <BaseButton
+                                            </BaseButton></Hint>
+                                            <Hint content={localizeOr('floor.plan.editor.preview.3d.title', '3D preview (WebGL, editable, heavier)')}><BaseButton aria-label={localizeOr('floor.plan.editor.preview.3d.title', '3D preview (WebGL, editable, heavier)')}
                                                 type="button"
                                                 data-testid="floorplan-view-3d"
                                                 data-active={preview3d ? 'true' : 'false'}
                                                 className={`fp-pill ${preview3d ? 'is-on' : ''}`}
-                                                title={localizeOr('floor.plan.editor.preview.3d.title', '3D preview (WebGL, editable, heavier)')}
                                                 onClick={() => choosePreview(true)}
                                             >
                                                 3D
-                                            </BaseButton>
+                                            </BaseButton></Hint>
                                         </div>
                                     </div>
                                     <div className="fp-panel-body">

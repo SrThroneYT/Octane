@@ -12,6 +12,7 @@ import { t } from '../utils/i18n';
 import { TabBar, TabBarTab } from '../../../common/TabBar';
 import { BaseButton } from '../../../common/BaseButton';
 import { ToggleButton } from '../../../common/ToggleButton';
+import { Hint } from '../../../common/Tooltip';
 
 type GenderKey = 'M' | 'F';
 type FigureSelection = Record<string, { partId: number; colors: number[] }>;
@@ -196,22 +197,20 @@ export const RegistrationAvatarWardrobe: FC<RegistrationAvatarWardrobeProps> = (
                         <div className="registration-avatar-shadow" />
                     </div>
                     <div className="registration-wardrobe-rotation">
-                        <BaseButton
+                        <Hint content={t('nitro.login.register.wardrobe.rotate_left', 'Rotate left')}><BaseButton
                             type="button"
                             aria-label={t('nitro.login.register.wardrobe.rotate_left', 'Rotate left')}
-                            title={t('nitro.login.register.wardrobe.rotate_left', 'Rotate left')}
                             onClick={() => rotateAvatar(1)}
                         >
                             <AvatarEditorIcon icon="arrow-left" />
-                        </BaseButton>
-                        <BaseButton
+                        </BaseButton></Hint>
+                        <Hint content={t('nitro.login.register.wardrobe.rotate_right', 'Rotate right')}><BaseButton
                             type="button"
                             aria-label={t('nitro.login.register.wardrobe.rotate_right', 'Rotate right')}
-                            title={t('nitro.login.register.wardrobe.rotate_right', 'Rotate right')}
                             onClick={() => rotateAvatar(-1)}
                         >
                             <AvatarEditorIcon icon="arrow-right" />
-                        </BaseButton>
+                        </BaseButton></Hint>
                     </div>
                 </div>
 

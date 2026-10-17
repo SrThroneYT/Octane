@@ -588,9 +588,8 @@ export const BadgeCreatorView: FC<{}> = () => {
                                         </svg>
                                     </BaseButton>
                                 </Hint>
-                                <BaseButton aria-label={argbToHex(selectedColor)}
+                                <Hint content={argbToHex(selectedColor)}><BaseButton aria-label={argbToHex(selectedColor)}
                                     onClick={openColorPicker}
-                                    title={argbToHex(selectedColor)}
                                     style={{
                                         width: 26,
                                         height: 26,
@@ -601,7 +600,7 @@ export const BadgeCreatorView: FC<{}> = () => {
                                                 : argbToCss(selectedColor),
                                         cursor: 'pointer'
                                     }}
-                                />
+                                /></Hint>
                                 <Text small variant="muted">
                                     {argbToHex(selectedColor).toUpperCase()}
                                 </Text>

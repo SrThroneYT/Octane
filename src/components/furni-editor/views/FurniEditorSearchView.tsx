@@ -4,6 +4,7 @@ import { FurniItem } from '../../../hooks/furni-editor';
 import { suggestInteractionType } from '../furniEditorSuggestions';
 import { BaseButton } from '../../../common/BaseButton';
 import { ToggleButton } from '../../../common/ToggleButton';
+import { Hint } from '../../../common/Tooltip';
 
 interface FurniEditorSearchViewProps {
     items: FurniItem[];
@@ -46,15 +47,14 @@ const SortArrow: FC<{ field: SortField; active: SortField; dir: SortDir }> = ({ 
 };
 
 const PagBtn: FC<{ disabled?: boolean; onClick: () => void; children: ReactNode; title?: string }> = ({ disabled, onClick, children, title }) => (
-    <BaseButton
+    <Hint content={title}><BaseButton aria-label={title}
         type="button"
-        title={title}
         disabled={disabled}
         onClick={onClick}
         className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 bg-[#ffffff] text-slate-600 text-sm leading-none hover:bg-slate-50 hover:border-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition"
     >
         {children}
-    </BaseButton>
+    </BaseButton></Hint>
 );
 
 export const FurniEditorSearchView: FC<FurniEditorSearchViewProps> = (props) => {
@@ -197,15 +197,14 @@ export const FurniEditorSearchView: FC<FurniEditorSearchViewProps> = (props) => 
                 </Text>
                 {loading && <span className="w-3 h-3 rounded-full border-2 border-slate-300 border-t-primary animate-spin" />}
                 {flaggedCount > 0 && (
-                    <ToggleButton
+                    <Hint content="Rows whose interaction type has no class or does not match the classname"><ToggleButton aria-label="Rows whose interaction type has no class or does not match the classname"
                         type="button"
                         onClick={() => setOnlyFlagged((prev) => !prev)} pressed={onlyFlagged}
-                        title="Rows whose interaction type has no class or does not match the classname"
                         className={`ml-auto inline-flex items-center gap-1.5 text-[10px] font-medium rounded-full border px-2 py-0.5 transition ${onlyFlagged ? 'bg-amber-100 border-amber-300 text-amber-800' : 'bg-[#ffffff] border-slate-200 text-slate-500 hover:border-slate-300'}`}
                     >
                         <span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]" />
                         {flaggedCount} to check on this page
-                    </ToggleButton>
+                    </ToggleButton></Hint>
                 )}
             </Flex>
 

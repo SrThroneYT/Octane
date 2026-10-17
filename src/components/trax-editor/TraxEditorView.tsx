@@ -9,6 +9,7 @@ import { CreateEmptyChannels, ITraxPlacement, ParseTraxSong, SerializeTraxSong, 
 import { GetTraxSampleId, GetTraxSoundSetForSample, TraxSoundSets } from './TraxSoundSets';
 import { BaseButton } from '../../common/BaseButton';
 import { ToggleButton } from '../../common/ToggleButton';
+import { Hint } from '../../common/Tooltip';
 
 const CELL_WIDTH = 22;
 const CARTRIDGES_PER_PAGE = 8;
@@ -35,8 +36,7 @@ interface MachineButtonProps {
 }
 
 const MachineButton: FC<MachineButtonProps> = ({ title = undefined, disabled = false, accent = undefined, onClick, children = null }) => (
-    <BaseButton
-        title={title}
+    <Hint content={title}><BaseButton aria-label={title}
         disabled={disabled}
         onClick={onClick}
         className="flex h-9 w-10 shrink-0 items-center justify-center rounded-[5px] border font-bold"
@@ -54,7 +54,7 @@ const MachineButton: FC<MachineButtonProps> = ({ title = undefined, disabled = f
         }}
     >
         {children}
-    </BaseButton>
+    </BaseButton></Hint>
 );
 
 export const TraxEditorView: FC<{}> = () =>
@@ -567,9 +567,8 @@ export const TraxEditorView: FC<{}> = () =>
                                     </MachineButton>
                                     <div className="grid min-w-0 flex-1 grid-cols-4 gap-1">
                                         {rackCartridges.map((set) => (
-                                            <BaseButton
+                                            <Hint content={`${set.title} — ${set.artist}`}><BaseButton aria-label={`${set.title} — ${set.artist}`}
                                                 key={set.cd}
-                                                title={`${set.title} — ${set.artist}`}
                                                 onClick={() => loadCartridge(set.cd)}
                                                 className={`flex h-8 cursor-pointer items-center gap-1 rounded-[3px] border px-1 ${slotSets[activeSlot] === set.cd ? 'border-white' : 'border-black/50'}`}
                                                 style={{
@@ -583,7 +582,7 @@ export const TraxEditorView: FC<{}> = () =>
                                                     <span className="h-5 w-4 shrink-0 rounded-[2px] border border-black/30" style={{ backgroundColor: set.color }} />
                                                 )}
                                                 <span className="truncate text-left text-[10px] font-bold leading-tight text-black/75">{set.title}</span>
-                                            </BaseButton>
+                                            </BaseButton></Hint>
                                         ))}
                                     </div>
                                     <MachineButton
@@ -627,9 +626,8 @@ export const TraxEditorView: FC<{}> = () =>
                                                 </Flex>
                                                 <div className="grid grid-cols-9 gap-0.5">
                                                     {(set?.sampleLengths ?? []).map((length, index) => (
-                                                        <BaseButton
+                                                        <Hint content={`#${index + 1} — ${length * 2}s`}><BaseButton aria-label={`#${index + 1} — ${length * 2}s`}
                                                             key={index}
-                                                            title={`#${index + 1} — ${length * 2}s`}
                                                             onClick={(event) =>
                                                             {
                                                                 event.stopPropagation();
@@ -643,7 +641,7 @@ export const TraxEditorView: FC<{}> = () =>
                                                             }}
                                                         >
                                                             {index + 1}
-                                                        </BaseButton>
+                                                        </BaseButton></Hint>
                                                     ))}
                                                 </div>
                                             </div>

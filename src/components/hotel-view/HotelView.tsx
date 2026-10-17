@@ -520,7 +520,7 @@ export const HotelView: FC = () => {
                     {landingData.canEdit && <BaseButton type="button" className="hotelview-scene-edit hotelview-scene-edit-left" onClick={() => setEditingScene(scene)} aria-label="Edit left image">✎</BaseButton>}
                     {landingData.canEdit && <BaseButton type="button" className="hotelview-scene-edit hotelview-scene-edit-right" onClick={() => setEditingScene(scene)} aria-label="Edit right image">✎</BaseButton>}
                     {landingData.canEdit && <BaseButton type="button" className="hotelview-scene-edit hotelview-scene-edit-drape" onClick={() => setEditingScene(scene)} aria-label="Edit drape image">✎</BaseButton>}
-                    {landingData.canEdit && <BaseButton type="button" className="hotelview-scene-edit hotelview-scene-edit-background" onClick={() => setEditingScene(scene)} aria-label="Edit HotelView background" title="Edit HotelView background">BG</BaseButton>}
+                    {landingData.canEdit && <Hint content="Edit HotelView background"><BaseButton type="button" className="hotelview-scene-edit hotelview-scene-edit-background" onClick={() => setEditingScene(scene)} aria-label="Edit HotelView background">BG</BaseButton></Hint>}
                     <main className="hotelview-slots">
                         {landingData.slots.filter((slot) => slot.enabled || landingData.canEdit).map((slot) => (
                             <section key={slot.id} className={`hotelview-slot hotelview-slot-${slot.id} hotelview-slot-${slot.type}${slot.enabled ? '' : ' hotelview-slot-disabled'}`} style={getSlotPositionStyle(slot)}>

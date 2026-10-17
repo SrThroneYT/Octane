@@ -5,6 +5,7 @@ import { localizeOr } from '../state/localize';
 import { Base } from '../../../common';
 import { EntryDir, FloorplanAction, FloorplanState, ThicknessLevel } from '../state/types';
 import { BaseButton } from '../../../common/BaseButton';
+import { Hint } from '../../../common/Tooltip';
 
 type Props = {
     state: FloorplanState;
@@ -71,24 +72,22 @@ const ThicknessStepper: FC<StepperProps> = ({ value, onChange, testIdPrefix, lab
                 {label}
             </BaseButton>
             <div className="fp-select-arrows">
-                <BaseButton
+                <Hint content="Thicker"><BaseButton
                     aria-disabled={thicker === null}
                     aria-label="Thicker"
                     data-testid={`${testIdPrefix}-up`}
                     className={`fp-select-arrow is-up ${thicker === null ? 'is-disabled' : ''}`}
-                    title="Thicker"
                     type="button"
                     onClick={() => thicker !== null && onChange(thicker)}
-                />
-                <BaseButton
+                /></Hint>
+                <Hint content="Thinner"><BaseButton
                     aria-disabled={thinner === null}
                     aria-label="Thinner"
                     data-testid={`${testIdPrefix}-down`}
                     className={`fp-select-arrow is-down ${thinner === null ? 'is-disabled' : ''}`}
-                    title="Thinner"
                     type="button"
                     onClick={() => thinner !== null && onChange(thinner)}
-                />
+                /></Hint>
             </div>
         </div>
     );

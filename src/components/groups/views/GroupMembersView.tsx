@@ -40,6 +40,7 @@ import { classNames } from '../../../layout';
 import { Select } from '../../../common/Select';
 import { NumberInput } from '../../../common/NumberInput';
 import { BaseButton } from '../../../common/BaseButton';
+import { Hint } from '../../../common/Tooltip';
 
 export const GroupMembersView: FC<{}> = (props) => {
     const [groupId, setGroupId] = useState<number>(-1);
@@ -320,56 +321,51 @@ export const GroupMembersView: FC<{}> = (props) => {
                                 <div className="octane-group-member-row__actions">
                                     {member.rank !== GroupRank.REQUESTED && member.rank !== GroupRank.BLOCKED && (
                                         <div className="flex items-center justify-center">
-                                            <BaseButton type="button" aria-label={LocalizeText(getRankDescription(member))}
+                                            <Hint content={LocalizeText(getRankDescription(member))}><BaseButton type="button" aria-label={LocalizeText(getRankDescription(member))}
                                                 className={classNames(
                                                     `octane-icon icon-group-small-${member.rank === GroupRank.OWNER ? 'owner' : member.rank === GroupRank.ADMIN ? 'admin' : membersData.admin && member.rank === GroupRank.MEMBER ? 'not-admin' : ''}`,
                                                     membersData.admin && 'cursor-pointer'
                                                 )}
-                                                title={LocalizeText(getRankDescription(member))}
                                                 onClick={(event) => toggleAdmin(member)}
-                                            />
+                                            /></Hint>
                                         </div>
                                     )}
                                     {membersData.admin && member.rank === GroupRank.REQUESTED && (
                                         <Flex alignItems="center">
-                                            <BaseButton type="button" aria-label={LocalizeText('group.members.accept')}
+                                            <Hint content={LocalizeText('group.members.accept')}><BaseButton type="button" aria-label={LocalizeText('group.members.accept')}
                                                 className="cursor-pointer octane-friends-spritesheet icon-accept"
-                                                title={LocalizeText('group.members.accept')}
                                                 onClick={(event) => acceptMembership(member)}
-                                            />
+                                            /></Hint>
                                         </Flex>
                                     )}
                                     {membersData.admin && member.rank === GroupRank.BLOCKED && (
                                         <Flex alignItems="center">
-                                            <BaseButton
+                                            <Hint content={localizeWithFallback('group.members.unblock', 'Unblock')}><BaseButton aria-label={localizeWithFallback('group.members.unblock', 'Unblock')}
                                                 className="octane-group-member-row__action cursor-pointer text-[#1e7295] hover:text-[#0d4a63]"
-                                                title={localizeWithFallback('group.members.unblock', 'Unblock')}
                                                 type="button"
                                                 onClick={() => unblockMember(member)}
                                             >
                                                 <FaUndo size={11} />
-                                            </BaseButton>
+                                            </BaseButton></Hint>
                                         </Flex>
                                     )}
                                     {membersData.admin && blockingEnabled && (member.rank === GroupRank.MEMBER || member.rank === GroupRank.ADMIN) && member.id !== GetSessionDataManager().userId && (
                                         <Flex alignItems="center">
-                                            <BaseButton
+                                            <Hint content={localizeWithFallback('group.members.block', 'Block from group')}><BaseButton aria-label={localizeWithFallback('group.members.block', 'Block from group')}
                                                 className="octane-group-member-row__action cursor-pointer text-[#a81a12] hover:text-[#6f0f0a]"
-                                                title={localizeWithFallback('group.members.block', 'Block from group')}
                                                 type="button"
                                                 onClick={() => blockMember(member)}
                                             >
                                                 <FaBan size={11} />
-                                            </BaseButton>
+                                            </BaseButton></Hint>
                                         </Flex>
                                     )}
                                     {membersData.admin && member.rank !== GroupRank.OWNER && member.rank !== GroupRank.BLOCKED && member.id !== GetSessionDataManager().userId && (
                                         <Flex alignItems="center">
-                                            <BaseButton type="button" aria-label={LocalizeText(member.rank === GroupRank.REQUESTED ? 'group.members.reject' : 'group.members.kick')}
+                                            <Hint content={LocalizeText(member.rank === GroupRank.REQUESTED ? 'group.members.reject' : 'group.members.kick')}><BaseButton type="button" aria-label={LocalizeText(member.rank === GroupRank.REQUESTED ? 'group.members.reject' : 'group.members.kick')}
                                                 className="cursor-pointer octane-friends-spritesheet icon-deny"
-                                                title={LocalizeText(member.rank === GroupRank.REQUESTED ? 'group.members.reject' : 'group.members.kick')}
                                                 onClick={(event) => removeMemberOrDeclineMembership(member)}
-                                            />
+                                            /></Hint>
                                         </Flex>
                                     )}
                                 </div>

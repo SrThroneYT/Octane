@@ -29,6 +29,7 @@ import {
 import { Select } from '../../../../../../common/Select';
 import { BaseButton } from '../../../../../../common/BaseButton';
 import { ToggleButton } from '../../../../../../common/ToggleButton';
+import { Hint } from '../../../../../../common/Tooltip';
 
 interface PendingPetPurchase {
     extraData: string;
@@ -328,18 +329,17 @@ export const CatalogLayoutPetView: FC<CatalogLayoutProps> = ({ page = null }) =>
                                 const locked = isBreedLocked(choice.palette);
 
                                 return (
-                                    <ToggleButton
+                                    <Hint content={locked ? hcOnlyLabel : undefined}><ToggleButton
                                         key={choice.palette.paletteId}
                                         aria-label={locked ? `${colorLabel} ${index + 1} — ${hcOnlyLabel}` : `${colorLabel} ${index + 1}`} pressed={selectedPaletteIndex === index}
                                         className={`octane-catalog-pet-color-swatch${locked ? ' octane-catalog-pet-color-swatch--locked' : ''}`}
                                         disabled={controlsDisabled || locked}
                                         style={style}
-                                        title={locked ? hcOnlyLabel : undefined}
                                         type="button"
                                         onClick={() => setSelectedPaletteIndex(index)}
                                     >
                                         {locked && <FaLock className="octane-catalog-pet-swatch-lock" />}
-                                    </ToggleButton>
+                                    </ToggleButton></Hint>
                                 );
                             })}
                         </CatalogScrollAreaView>

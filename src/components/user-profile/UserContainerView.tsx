@@ -17,6 +17,7 @@ import { LayoutAvatarImageView, LayoutBadgeImageView, Text, UserIdentityView } f
 import { RelationshipsContainerView } from './RelationshipsContainerView';
 import { BaseButton } from '../../common/BaseButton';
 import { ToggleButton } from '../../common/ToggleButton';
+import { Hint } from '../../common/Tooltip';
 
 interface UserContainerViewProps {
     userProfile: UserProfileParser;
@@ -77,15 +78,15 @@ export const UserContainerView: FC<UserContainerViewProps> = (props) => {
     return (
         <div className={`octane-extended-profile${isBlocked ? ' is-blocked' : ''}`}>
             {!isOwnProfile && onToggleBlock && (
-                <ToggleButton
+                <Hint content={isBlocked ? localizeWithFallback('extendedprofile.unblock_player.title', 'Unblock user') : localizeWithFallback('extendedprofile.block_player.title', 'Block user')}><ToggleButton aria-label={isBlocked ? localizeWithFallback('extendedprofile.unblock_player.title', 'Unblock user') : localizeWithFallback('extendedprofile.block_player.title', 'Block user')}
                     type="button"
                     className={`octane-extended-profile__block-button${isBlocked ? ' is-active' : ''}`}
-                    title={isBlocked ? localizeWithFallback('extendedprofile.unblock_player.title', 'Unblock user') : localizeWithFallback('extendedprofile.block_player.title', 'Block user')} pressed={isBlocked}
+                    pressed={isBlocked}
                     onClick={onToggleBlock}
                 >
                     {/* The official extended_profile_block_icon, 16x16. */}
                     <img src={profileBlockIcon} alt="" draggable={false} />
-                </ToggleButton>
+                </ToggleButton></Hint>
             )}
             <div className="octane-extended-profile__top">
                 <div className="octane-extended-profile__left">

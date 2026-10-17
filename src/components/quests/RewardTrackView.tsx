@@ -85,11 +85,10 @@ const RewardTrackPrizeView: FC<{
     };
 
     return (
-        <BaseButton
+        <Hint content={getRewardTrackPrizeTooltip(state)}><BaseButton aria-label={getRewardTrackPrizeTooltip(state)}
             className={`octane-reward-track-prize octane-reward-track-prize-${state}`}
             style={column ? { gridColumn: column } : undefined}
             data-premium={prize.premium}
-            title={getRewardTrackPrizeTooltip(state)}
             onClick={onClick}
         >
             <div className="octane-reward-track-prize-icon air-bitmap-surface">
@@ -98,7 +97,7 @@ const RewardTrackPrizeView: FC<{
             </div>
             {state === 'premium_locked' && <div className="octane-reward-track-prize-marker octane-reward-track-prize-marker-locked" />}
             {state === 'claimed' && <div className="octane-reward-track-prize-marker octane-reward-track-prize-marker-claimed" />}
-        </BaseButton>
+        </BaseButton></Hint>
     );
 };
 

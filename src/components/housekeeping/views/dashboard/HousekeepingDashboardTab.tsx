@@ -15,6 +15,7 @@ import { useHousekeepingStore, useNotification } from '../../../../hooks';
 import { HousekeepingButton } from '../common/HousekeepingParts';
 import { HousekeepingStatsView } from './HousekeepingStatsView';
 import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 const AUTO_REFRESH_MS = 30_000;
 const STALE_AFTER_MS = 60_000;
@@ -295,16 +296,15 @@ export const HousekeepingDashboardTab: FC = () => {
                     </h4>
                     <div className="flex flex-wrap gap-1">
                         {recentLookups.map((entry, index) => (
-                            <BaseButton
+                            <Hint content={`${entry.kind} #${entry.id}`}><BaseButton aria-label={`${entry.kind} #${entry.id}`}
                                 key={`${entry.kind}-${entry.id}-${index}`}
                                 type="button"
                                 onClick={() => onRecentClick(entry)}
                                 className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] border transition-colors ${entry.kind === 'user' ? 'bg-sky-50 border-sky-200 text-sky-700 hover:bg-sky-100' : 'bg-violet-50 border-violet-200 text-violet-700 hover:bg-violet-100'}`}
-                                title={`${entry.kind} #${entry.id}`}
                             >
                                 <span className="opacity-60 font-bold">{entry.kind === 'user' ? 'U' : 'R'}</span>
                                 <span className="font-medium">{entry.label}</span>
-                            </BaseButton>
+                            </BaseButton></Hint>
                         ))}
                     </div>
                 </div>
