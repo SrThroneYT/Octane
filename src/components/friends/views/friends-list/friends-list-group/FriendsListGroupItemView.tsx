@@ -47,7 +47,7 @@ export const FriendsListGroupItemView: FC<{ friend: MessengerFriend; selected: b
             tabIndex={0}
             onClick={() => selectFriend(friend.id)}
             onDoubleClick={() => friend.online && OpenMessengerChat(friend.id)}
-            onKeyDown={(event) => event.key === 'Enter' && selectFriend(friend.id)}
+            onKeyDown={(event) => event.target === event.currentTarget && event.key === 'Enter' && selectFriend(friend.id)}
         >
             <div className="hfl-friend-avatar">
                 {isStaffChat ? (
