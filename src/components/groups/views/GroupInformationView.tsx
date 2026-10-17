@@ -13,6 +13,7 @@ import {
 } from '../../../api';
 import { Button, LayoutBadgeImageView, Text } from '../../../common';
 import { useGroupLeave, useNotification } from '../../../hooks';
+import { BaseButton } from '../../../common/BaseButton';
 
 const STATES: string[] = ['regular', 'exclusive', 'private'];
 
@@ -126,37 +127,23 @@ export const GroupInformationView: FC<GroupInformationViewProps> = (props) => {
                     <LayoutBadgeImageView badgeCode={groupInformation.badge} isGroup={true} scale={2.1} />
                 </div>
                 <div className="octane-extended-profile-group-info__meta">
-                    <span
+                    <BaseButton
                         className="octane-extended-profile-group-info__member-link"
-                        role="button"
-                        tabIndex={0}
+                        type="button"
                         onMouseDown={(event) => event.stopPropagation()}
                         onClick={(event) => { event.stopPropagation(); handleAction('members'); }}
-                        onKeyDown={(event) => {
-                            if (event.key !== 'Enter' && event.key !== ' ') return;
-                            event.preventDefault();
-                            event.stopPropagation();
-                            handleAction('members');
-                        }}
                     >
                         {LocalizeText('group.membercount', ['totalMembers'], [groupInformation.membersCount.toString()])}
-                    </span>
+                    </BaseButton>
                     {groupInformation.pendingRequestsCount > 0 && (
-                        <span
+                        <BaseButton
                             className="octane-extended-profile-group-info__member-link"
-                            role="button"
-                            tabIndex={0}
+                            type="button"
                             onMouseDown={(event) => event.stopPropagation()}
                             onClick={(event) => { event.stopPropagation(); handleAction('members_pending'); }}
-                            onKeyDown={(event) => {
-                                if (event.key !== 'Enter' && event.key !== ' ') return;
-                                event.preventDefault();
-                                event.stopPropagation();
-                                handleAction('members_pending');
-                            }}
                         >
                             {LocalizeText('group.pendingmembercount', ['amount'], [groupInformation.pendingRequestsCount.toString()])}
-                        </span>
+                        </BaseButton>
                     )}
                 </div>
                 <div className="octane-extended-profile-group-info__role" aria-hidden="true">{getRoleIcon()}</div>

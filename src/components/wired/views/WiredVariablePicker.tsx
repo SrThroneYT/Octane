@@ -22,6 +22,7 @@ import {
 } from './WiredVariablePickerData';
 import { addWiredVariablePickerHistory, getWiredVariablePickerHistory, registerWiredVariablePickerFinalizer } from './WiredVariablePickerHistory';
 import { BaseButton } from '../../../common/BaseButton';
+import { TabBar, TabBarTab } from '../../../common/TabBar';
 
 /*
  * Port of the AIR variable picker, build WIN63-202610131318-860371703, under
@@ -494,27 +495,26 @@ export const WiredVariablePicker: FC<WiredVariablePickerProps> = (props) => {
                             className="octane-wired__vpicker-expanded"
                             style={{ left: panelRect.left, top: panelRect.top, width: panelRect.width }}
                         >
-                            <div className="octane-wired__vpicker-tabs">
+                            <TabBar className="octane-wired__vpicker-tabs" value={tabId}>
                                 {TAB_BUTTONS.map((tab, index) => {
                                     const colors = tab.id === tabId ? TAB_COLORS.active : hoveredTab === tab.id ? TAB_COLORS.hover : TAB_COLORS.none;
 
                                     return (
-                                        <BaseButton
+                                        <TabBarTab
                                             key={tab.id}
-                                            aria-pressed={tab.id === tabId}
+                                            value={tab.id}
                                             className="octane-wired__vpicker-tab"
                                             title={LocalizeText(tab.tooltip)}
-                                            type="button"
                                             style={{ width: widths[index], background: colors.border, borderBottom: `1px solid ${colors.shadow}` }}
                                             onClick={() => selectTab(tab.id)}
                                             onMouseEnter={() => setHoveredTab(tab.id)}
                                             onMouseLeave={() => setHoveredTab(null)}
                                         >
                                             <img alt={LocalizeText(tab.tooltip)} src={tab.icon} style={{ opacity: colors.blend }} />
-                                        </BaseButton>
+                                        </TabBarTab>
                                     );
                                 })}
-                            </div>
+                            </TabBar>
                             {/* Live AIR: the tab row is above the search field. */}
                             <div className="octane-wired__vpicker-search">{input}</div>
                             <div className="octane-wired__vpicker-content">

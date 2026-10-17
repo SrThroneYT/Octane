@@ -202,6 +202,16 @@
     gap: 1px;
 }
 
+.octane-extended-profile-group-info__member-link {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: inherit;
+    cursor: pointer;
+}
+
 .octane-group-information-standalone .octane-extended-profile-group-info__member-link {
     display: block;
     width: 82px !important;

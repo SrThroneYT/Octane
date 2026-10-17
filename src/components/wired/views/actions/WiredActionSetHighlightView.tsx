@@ -21,6 +21,7 @@ import {
     wiredHighlightStrengthOptions,
     WiredActionSetHighlightState
 } from './WiredActionSetHighlightState';
+import { ToggleButton } from '../../../../common/ToggleButton';
 
 const TYPE_FALLBACKS = ['Outline', 'Soft glow', 'Darken', 'Colour tint', 'Brighten', 'Neon aura'];
 const EASING_FALLBACKS = ['Instant', 'Linear', 'Ease in', 'Ease out', 'Ease in and out'];
@@ -164,10 +165,10 @@ export const WiredActionSetHighlightView: FC<{}> = () => {
                 <Text bold>{localizeWithFallback('wiredfurni.params.set_furni_highlight.color', 'Highlight colour:')}</Text>
                 <div className="flex flex-wrap gap-1">
                     {palette.map((color) => (
-                        <button
+                        <ToggleButton
                             key={color}
                             aria-label={hexColor(color)}
-                            aria-pressed={state.color === color}
+                            pressed={state.color === color}
                             className={`h-[14px] w-[14px] border ${state.color === color ? 'border-black' : 'border-[#9a9a9a]'}`}
                             style={{ background: hexColor(color) }}
                             type="button"

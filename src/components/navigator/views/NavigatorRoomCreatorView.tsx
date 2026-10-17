@@ -12,6 +12,7 @@ import { useNavigatorData, useNavigatorUiStore, useUserDataSnapshot, useUserPerm
 import { useRoomCreatorStore } from './navigatorRoomCreatorStore';
 import { BaseButton } from '../../../common/BaseButton';
 import { ListSelect } from '../../../common/ListSelect';
+import { ToggleButton } from '../../../common/ToggleButton';
 
 const AIR_TRADE_KEYS = ['navigator.roomsettings.trade_not_allowed', 'navigator.roomsettings.trade_not_with_Controller', 'navigator.roomsettings.trade_allowed'];
 
@@ -239,16 +240,12 @@ export const NavigatorRoomCreatorView: FC = () => {
                             const isSelected = selectedModelName === model.name;
 
                             return (
-                                <div
+                                <ToggleButton
                                     key={model.name}
+                                    type="button"
                                     className={`octane-room-creator-air__thumbnail${isSelected ? ' is-selected' : ''}`}
-                                    role="button"
-                                    tabIndex={0}
-                                    aria-pressed={isSelected}
+                                    pressed={isSelected}
                                     onClick={() => selectModel(model)}
-                                    onKeyDown={(event) => {
-                                        if (event.key === 'Enter' || event.key === ' ') selectModel(model);
-                                    }}
                                 >
                                     <span className="octane-room-creator-air__thumbnail-bg" aria-hidden="true" />
                                     <img className="octane-room-creator-air__thumbnail-pic" src={getRoomModelImage(model.name)} alt="" />
@@ -265,7 +262,7 @@ export const NavigatorRoomCreatorView: FC = () => {
                                     {model.clubLevel > 0 && (
                                         <img className="octane-room-creator-air__thumbnail-club" src={vipIconSmall} alt="" width={19} height={10} />
                                     )}
-                                </div>
+                                </ToggleButton>
                             );
                         })}
                         {showVipPromo && (
