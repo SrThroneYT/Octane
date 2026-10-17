@@ -84,6 +84,36 @@ describe('Slider', () => {
         expect(onChange).toHaveBeenLastCalledWith(0.3, 0);
     });
 
+    it('reports which thumb of a range moved', () => {
+        const onChange = vi.fn();
+
+        render(<Slider min={0} max={10} value={[2, 8]} onChange={onChange} />);
+        fireEvent.change(screen.getAllByRole('slider')[1], { target: { value: '9' } });
+
+        expect(onChange).toHaveBeenCalledWith([2, 9], 1);
+    });
+
+    it('keeps its own position and starts from defaultValue when not controlled', () => {
+        render(<Slider min={0} max={10} step={3} defaultValue={4} />);
+
+        expect((screen.getByRole('slider') as HTMLInputElement).value).toBe('4');
+
+        fireEvent.click(getButtons().right!);
+        expect((screen.getByRole('slider') as HTMLInputElement).value).toBe('7');
+
+        fireEvent.click(getButtons().right!);
+        expect((screen.getByRole('slider') as HTMLInputElement).value).toBe('10');
+    });
+
+    it('never steps past the bounds with a step that does not divide the range', () => {
+        const onChange = vi.fn();
+
+        render(<Slider min={0} max={10} step={4} value={9} onChange={onChange} />);
+        fireEvent.click(getButtons().right!);
+
+        expect(onChange).toHaveBeenLastCalledWith(10, 0);
+    });
+
     it('hides the side buttons with disabledButton', () => {
         render(<Slider disabledButton value={1} onChange={() => undefined} />);
 

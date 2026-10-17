@@ -74,6 +74,22 @@ describe('Select', () => {
         expect(screen.getByRole('combobox', { name: 'Letter' }).textContent).toContain('Gamma');
     });
 
+    it('keeps its own choice, starting from defaultValue, when no value is given', () => {
+        render(
+            <Select aria-label="Free" defaultValue="b">
+                <option value="a">Alpha</option>
+                <option value="b">Beta</option>
+            </Select>
+        );
+
+        const trigger = screen.getByRole('combobox', { name: 'Free' });
+
+        expect(trigger.textContent).toContain('Beta');
+
+        selectOption(trigger, 'Alpha');
+        expect(trigger.textContent).toContain('Alpha');
+    });
+
     it('does not open when disabled', () => {
         render(
             <Select disabled aria-label="Off" value="a" onChange={() => undefined}>

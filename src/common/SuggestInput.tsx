@@ -29,13 +29,16 @@ export const SuggestInput: FC<SuggestInputProps> = ({ value, options, onChange, 
         return list.slice(0, maxItems);
     }, [options, needle, maxItems]);
 
+    // What the user sees: Escape only belongs to the list while the list is actually showing.
+    const listVisible = open && items.length > 0 && (needle.length > 0 || forced);
+
     return (
         <Autocomplete.Root
             disabled={disabled}
             filter={null}
             items={items}
             mode="list"
-            open={open && items.length > 0 && (needle.length > 0 || forced)}
+            open={listVisible}
             value={value}
             onOpenChange={(next) => {
                 setOpen(next);
@@ -57,7 +60,7 @@ export const SuggestInput: FC<SuggestInputProps> = ({ value, options, onChange, 
                     if (event.key === 'ArrowDown' && !needle) {
                         setForced(true);
                         setOpen(true);
-                    } else if (event.key === 'Escape' && open) {
+                    } else if (event.key === 'Escape' && listVisible) {
                         event.stopPropagation();
                         setOpen(false);
                         setForced(false);

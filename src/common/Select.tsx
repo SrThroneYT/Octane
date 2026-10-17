@@ -1,5 +1,5 @@
 import { Select as BaseSelect } from '@base-ui/react/select';
-import { Children, CSSProperties, FC, Fragment, isValidElement, ReactElement, ReactNode } from 'react';
+import { Children, CSSProperties, FC, Fragment, isValidElement, ReactElement, ReactNode, useState } from 'react';
 
 export interface SelectChangeEvent {
     target: { value: string; name?: string };
@@ -10,6 +10,8 @@ export interface SelectChangeEvent {
 
 export interface SelectProps {
     value?: string | number;
+    /** Initial value when `value` is not given: the select then keeps its own choice, like an uncontrolled native one. */
+    defaultValue?: string | number;
     /** Same shape as a native select's change event: read `event.target.value` (always a string). */
     onChange?: (event: SelectChangeEvent) => void;
     /** `<option>` / `<optgroup>` elements, written exactly like a native select. */
@@ -91,13 +93,15 @@ const makeEvent = (value: string, name?: string): SelectChangeEvent => ({
  * and carries `octane-select-trigger` so the css written for `select` also applies.
  */
 export const Select: FC<SelectProps> = (props) => {
-    const { value, onChange, children, className, style, disabled, id, name, title, ...aria } = props;
+    const { value, defaultValue, onChange, children, className, style, disabled, id, name, title, ...aria } = props;
     const entries: SelectEntry[] = [];
 
     collect(children, entries);
 
     const flat = entries.flatMap((entry) => (isGroup(entry) ? entry.options : [entry]));
-    const current = value === undefined || value === null ? '' : String(value);
+    const [innerValue, setInnerValue] = useState(defaultValue);
+    const selected = value !== undefined ? value : innerValue;
+    const current = selected === undefined || selected === null ? '' : String(selected);
     // A native select shows its first option when the value matches none.
     const shown = flat.find((option) => option.value === current) ?? flat[0];
 
@@ -112,7 +116,12 @@ export const Select: FC<SelectProps> = (props) => {
             disabled={disabled}
             name={name}
             value={current}
-            onValueChange={(next) => onChange?.(makeEvent(next === null || next === undefined ? '' : String(next), name))}
+            onValueChange={(next) => {
+                const picked = next === null || next === undefined ? '' : String(next);
+
+                if (value === undefined) setInnerValue(picked);
+                onChange?.(makeEvent(picked, name));
+            }}
         >
             <BaseSelect.Trigger
                 className={className ? `octane-select-trigger ${className}` : 'octane-select-trigger'}

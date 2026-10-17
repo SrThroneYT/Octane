@@ -1,5 +1,5 @@
 import { Slider as BaseSlider } from '@base-ui/react/slider';
-import { CSSProperties, FC, ReactNode } from 'react';
+import { CSSProperties, FC, ReactNode, useState } from 'react';
 import { FaAngleLeft, FaAngleRight } from 'react-icons/fa';
 import { Button } from './Button';
 import { Flex } from './Flex';
@@ -33,11 +33,11 @@ export interface SliderProps {
     renderThumbContent?: (state: SliderThumbState) => ReactNode;
 }
 
-const toArray = (value: number | number[] | undefined): number[] => {
+const toArray = (value: number | number[] | undefined, fallback = 0): number[] => {
     if (Array.isArray(value)) return value;
     if (typeof value === 'number') return [value];
 
-    return [0];
+    return [fallback];
 };
 
 const cn = (...parts: (string | undefined | false)[]) => parts.filter(Boolean).join(' ');
@@ -65,10 +65,13 @@ export const Slider: FC<SliderProps> = (props) => {
         renderThumbContent
     } = props;
 
-    const valueArr = toArray(value);
-    const currentValue = valueArr[0] ?? 0;
     const minimum = typeof min === 'number' ? min : 0;
     const maximum = typeof max === 'number' ? max : 0;
+    // Without `value` the slider keeps its own position, seeded from `defaultValue`.
+    const [innerValue, setInnerValue] = useState<number | number[] | undefined>(defaultValue);
+    const source = value !== undefined ? value : innerValue;
+    const valueArr = toArray(source, minimum);
+    const currentValue = valueArr[0] ?? minimum;
     const buttonStep = typeof step === 'number' && step > 0 ? step : 1;
     const isRange = valueArr.length > 1;
 
@@ -79,21 +82,23 @@ export const Slider: FC<SliderProps> = (props) => {
         return parseFloat(nextValue.toFixed(precision));
     };
 
-    const emit = (next: number[]) => {
+    const emit = (next: number[], thumbIndex = 0) => {
+        if (value === undefined) setInnerValue(isRange ? next : next[0]);
+
         if (!onChange) return;
 
-        if (isRange) onChange(next, 0);
-        else onChange(next[0], 0);
+        if (isRange) onChange(next, thumbIndex);
+        else onChange(next[0], thumbIndex);
     };
 
     const stepDown = () => {
-        const next = roundToStep(minimum < currentValue ? currentValue - buttonStep : minimum);
+        const next = Math.max(minimum, roundToStep(currentValue - buttonStep));
 
         emit([next, ...valueArr.slice(1)]);
     };
 
     const stepUp = () => {
-        const next = roundToStep(maximum > currentValue ? currentValue + buttonStep : maximum);
+        const next = Math.min(maximum, roundToStep(currentValue + buttonStep));
 
         emit([next, ...valueArr.slice(1)]);
     };
@@ -124,9 +129,8 @@ export const Slider: FC<SliderProps> = (props) => {
                 step={step}
                 orientation="vertical"
                 thumbAlignment="center"
-                value={value !== undefined ? (isRange ? valueArr : currentValue) : undefined}
-                defaultValue={defaultValue !== undefined ? defaultValue : undefined}
-                onValueChange={(next) => emit(toArray(next))}
+                value={isRange ? valueArr : currentValue}
+                onValueChange={(next, details) => emit(toArray(next), details.activeThumbIndex)}
             >
                 <BaseSlider.Control className={cn('octane-slider-vertical-control', controlClassName)}>
                     <BaseSlider.Track className={cn('octane-slider-vertical-track', trackClassName)} style={trackStyle} data-testid={trackTestId} />
@@ -155,9 +159,8 @@ export const Slider: FC<SliderProps> = (props) => {
                 min={min}
                 step={step}
                 thumbAlignment="center"
-                value={value !== undefined ? (isRange ? valueArr : currentValue) : undefined}
-                defaultValue={defaultValue !== undefined ? defaultValue : undefined}
-                onValueChange={(next) => emit(toArray(next))}
+                value={isRange ? valueArr : currentValue}
+                onValueChange={(next, details) => emit(toArray(next), details.activeThumbIndex)}
             >
                 <BaseSlider.Control className="flex h-full w-full grow items-center">
                     <BaseSlider.Track className={cn('track', 'track-1', 'grow', trackClassName)}>

@@ -65,6 +65,19 @@ describe('SuggestInput', () => {
         expect(screen.queryAllByRole('option')).toHaveLength(0);
     });
 
+    it('lets Escape through while the list is not showing', () => {
+        const onKeyDown = vi.fn();
+
+        render(
+            <div onKeyDown={(event) => onKeyDown(event.key)}>
+                <Demo />
+            </div>
+        );
+        fireEvent.keyDown(screen.getByLabelText('Class'), { key: 'Escape' });
+
+        expect(onKeyDown).toHaveBeenCalledWith('Escape');
+    });
+
     it('is not editable while disabled', () => {
         render(<Demo disabled />);
 
