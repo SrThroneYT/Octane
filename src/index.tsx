@@ -49,6 +49,8 @@ import './css/forms/base-ui-menus.css';
 import './css/friends/FriendsView.css';
 import './css/fortune-wheel/FortuneWheelView.css';
 import './css/groups/GroupView.css';
+import './css/groups/GroupManagement.css';
+import './css/groups/GroupForum.css';
 
 import './css/game-center/GameCenterView.css';
 
