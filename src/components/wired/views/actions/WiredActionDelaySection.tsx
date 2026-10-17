@@ -13,6 +13,7 @@ import delayPreciseIcon from '../../../../assets/images/wired/delay/delay_precis
 import delayStandardIcon from '../../../../assets/images/wired/delay/delay_standard.png';
 import { Slider, Text } from '../../../../common';
 import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 interface WiredActionDelaySectionProps {
     /** The delay as sent: pulses, or a negative number of milliseconds in precise mode. */
@@ -66,14 +67,15 @@ export const WiredActionDelaySection: FC<WiredActionDelaySectionProps> = ({ valu
                     }}
                 />
                 <div className="octane-wired__delay-mode">
-                    <BaseButton
-                        type="button"
-                        className="octane-wired__delay-mode-button"
-                        title={LocalizeText(precise ? 'wiredfurni.params.delay.mode.precise' : 'wiredfurni.params.delay.mode.standard')}
-                        onClick={() => setMenuOpen((open) => !open)}
-                    >
-                        <img src={precise ? delayPreciseIcon : delayStandardIcon} alt="" />
-                    </BaseButton>
+                    <Hint content={LocalizeText(precise ? 'wiredfurni.params.delay.mode.precise' : 'wiredfurni.params.delay.mode.standard')}>
+                        <BaseButton aria-label={LocalizeText(precise ? 'wiredfurni.params.delay.mode.precise' : 'wiredfurni.params.delay.mode.standard')}
+                            type="button"
+                            className="octane-wired__delay-mode-button"
+                            onClick={() => setMenuOpen((open) => !open)}
+                        >
+                            <img src={precise ? delayPreciseIcon : delayStandardIcon} alt="" />
+                        </BaseButton>
+                    </Hint>
                     {menuOpen && (
                         <div className="octane-wired__delay-mode-menu">
                             <BaseButton type="button" className={!precise ? 'is-active' : ''} onClick={() => selectMode(false)}>

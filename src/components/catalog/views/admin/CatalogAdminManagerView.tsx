@@ -39,6 +39,7 @@ import {
 import { CatalogAdminOfferPriceView } from './CatalogAdminOfferPriceView';
 import { TabBar, TabBarTab } from '../../../../common/TabBar';
 import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 type CatalogAdminOffer = Parameters<NonNullable<ReturnType<typeof useCatalogAdmin>>['setEditingOffer']>[0];
 type ManagerTab = 'catalog' | 'sql' | 'history';
@@ -549,25 +550,29 @@ export const CatalogAdminManagerView: FC<{}> = () => {
                                         {editableProducts.map((product, productIndex) => {
                                             const productLabel = product.furnitureData?.className || `#${product.productClassId}`;
 
-                                            return <BaseButton
-                                                key={`${product.productType}-${product.productClassId}-${productIndex}`}
-                                                aria-label={`Edit Furni ${productLabel}`}
-                                                title={`Edit Furni: ${productLabel}`}
-                                                onClick={() => window.dispatchEvent(new CustomEvent('furni-editor:open', {
-                                                    detail: { spriteId: product.productClassId }
-                                                }))}
-                                            >
-                                                <FaWrench />
-                                            </BaseButton>;
+                                            return <Hint key={`${product.productType}-${product.productClassId}-${productIndex}`} content={`Edit Furni: ${productLabel}`}>
+                                                <BaseButton
+                                                                                                aria-label={`Edit Furni ${productLabel}`}
+                                                                                                onClick={() => window.dispatchEvent(new CustomEvent('furni-editor:open', {
+                                                                                                    detail: { spriteId: product.productClassId }
+                                                                                                }))}
+                                                                                            >
+                                                                                                <FaWrench />
+                                                                                            </BaseButton>
+                                            </Hint>;
                                         })}
-                                        <BaseButton title="Edit offer" onClick={() => {
-                                            catalogAdmin.setEditingOffer(offer);
-                                        }}>
-                                            <FaEdit />
-                                        </BaseButton>
-                                        <BaseButton className="danger" title="Delete offer" onClick={() => deleteOffer(offer)}>
-                                            <FaTrash />
-                                        </BaseButton>
+                                        <Hint content="Edit offer">
+                                            <BaseButton aria-label="Edit offer" onClick={() => {
+                                                catalogAdmin.setEditingOffer(offer);
+                                            }}>
+                                                <FaEdit />
+                                            </BaseButton>
+                                        </Hint>
+                                        <Hint content="Delete offer">
+                                            <BaseButton aria-label="Delete offer" className="danger" onClick={() => deleteOffer(offer)}>
+                                                <FaTrash />
+                                            </BaseButton>
+                                        </Hint>
                                     </div>
                                 </div>
                             );

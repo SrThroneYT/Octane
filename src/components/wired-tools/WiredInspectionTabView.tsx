@@ -8,6 +8,7 @@ import { Checkbox } from '../../common/Checkbox';
 import { Select } from '../../common/Select';
 import { NumberInput } from '../../common/NumberInput';
 import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 /**
  * Structural shape we need from the renderer's variable-definition
@@ -105,15 +106,15 @@ export const WiredInspectionTabView = (props: WiredInspectionTabViewProps) => {
                     <Text bold>Element type:</Text>
                     <div className="flex gap-1">
                         {INSPECTION_ELEMENTS.map((element) => (
-                            <BaseButton
-                                key={element.key}
-                                type="button"
-                                className={`w-[42px] h-[38px] rounded border flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,.7)] ${inspectionType === element.key ? 'border-[#222] bg-[#d9d6cf]' : 'border-[#7f7f7f] bg-[#ece9e1]'}`}
-                                onClick={() => setInspectionType(element.key)}
-                                title={element.label}
-                            >
-                                <img alt={element.label} className="w-auto h-auto max-w-[22px] max-h-[22px] object-contain" src={element.icon} />
-                            </BaseButton>
+                            <Hint key={element.key} content={element.label}>
+                                <BaseButton aria-label={element.label}
+                                    type="button"
+                                    className={`w-[42px] h-[38px] rounded border flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,.7)] ${inspectionType === element.key ? 'border-[#222] bg-[#d9d6cf]' : 'border-[#7f7f7f] bg-[#ece9e1]'}`}
+                                    onClick={() => setInspectionType(element.key)}
+                                >
+                                    <img alt={element.label} className="w-auto h-auto max-w-[22px] max-h-[22px] object-contain" src={element.icon} />
+                                </BaseButton>
+                            </Hint>
                         ))}
                     </div>
                 </div>

@@ -29,6 +29,7 @@ import { RoomWidgetThumbnailEvent } from '../../../events';
 import { useHasPermission, useHelp, useNavigatorData, useNavigatorFavourite, useRoom } from '../../../hooks';
 import { classNames } from '../../../layout';
 import { BaseButton } from '../../../common/BaseButton';
+import { Hint } from '../../../common/Tooltip';
 
 export interface NavigatorRoomInfoViewProps {
     onCloseClick: () => void;
@@ -148,15 +149,16 @@ export const NavigatorRoomInfoView: FC<NavigatorRoomInfoViewProps> = (props) => 
             <OctaneCardContentView className="octane-room-info__content text-black max-h-[calc(100vh-72px)]" overflow="auto">
                 <div className="octane-room-info__heading">
                     <Text bold>{navigatorData.enteredGuestRoom.roomName}</Text>
-                    <BaseButton
-                        type="button"
-                        className={classNames(
-                            'octane-room-info__home shrink-0',
-                            navigatorData.homeRoomId === navigatorData.enteredGuestRoom.roomId && 'is-home'
-                        )}
-                        title={LocalizeText('navigator.room.popup.room.info.home')}
-                        onClick={() => processAction('set_home_room')}
-                    />
+                    <Hint content={LocalizeText('navigator.room.popup.room.info.home')}>
+                        <BaseButton aria-label={LocalizeText('navigator.room.popup.room.info.home')}
+                            type="button"
+                            className={classNames(
+                                'octane-room-info__home shrink-0',
+                                navigatorData.homeRoomId === navigatorData.enteredGuestRoom.roomId && 'is-home'
+                            )}
+                            onClick={() => processAction('set_home_room')}
+                        />
+                    </Hint>
                 </div>
                 {navigatorData.enteredGuestRoom.showOwner && (
                     <Flex alignItems="center" gap={1} className="octane-room-info__meta">
@@ -176,13 +178,14 @@ export const NavigatorRoomInfoView: FC<NavigatorRoomInfoViewProps> = (props) => 
                     roomId={navigatorData.enteredGuestRoom.roomId}
                 >
                     {hasPermission('settings') && canUseRoomThumbnailCamera && (
-                        <BaseButton
-                            type="button"
-                            className="octane-room-info__camera octane-icon icon-camera-small absolute bottom-0 right-0 m-1"
-                            aria-label={LocalizeText('navigator.thumbnail.camera.title')}
-                            title={LocalizeText('navigator.thumbnail.camera.title')}
-                            onClick={() => processAction('open_room_thumbnail_camera')}
-                        />
+                        <Hint content={LocalizeText('navigator.thumbnail.camera.title')}>
+                            <BaseButton
+                                type="button"
+                                className="octane-room-info__camera octane-icon icon-camera-small absolute bottom-0 right-0 m-1"
+                                aria-label={LocalizeText('navigator.thumbnail.camera.title')}
+                                onClick={() => processAction('open_room_thumbnail_camera')}
+                            />
+                        </Hint>
                     )}
                 </LayoutRoomThumbnailView>
                 <Flex className="octane-room-info__quick-actions" gap={1} justifyContent="center">
@@ -194,14 +197,15 @@ export const NavigatorRoomInfoView: FC<NavigatorRoomInfoViewProps> = (props) => 
                         />
                     )}
                     {hasPermission('guest') && (
-                        <BaseButton
-                            type="button"
-                            className="border-0 bg-transparent p-0 cursor-pointer"
-                            title={LocalizeText('navigator.roominfo.removerights.tooltip')}
-                            onClick={() => processAction('remove_rights')}
-                        >
-                            <img src={removeRightsIcon} alt="" width={17} height={22} />
-                        </BaseButton>
+                        <Hint content={LocalizeText('navigator.roominfo.removerights.tooltip')}>
+                            <BaseButton aria-label={LocalizeText('navigator.roominfo.removerights.tooltip')}
+                                type="button"
+                                className="border-0 bg-transparent p-0 cursor-pointer"
+                                onClick={() => processAction('remove_rights')}
+                            >
+                                <img src={removeRightsIcon} alt="" width={17} height={22} />
+                            </BaseButton>
+                        </Hint>
                     )}
                 </Flex>
                 <Flex pointer alignItems="center" gap={1} className="octane-room-info__room-link" onClick={() => processAction('toggle_room_link')}>

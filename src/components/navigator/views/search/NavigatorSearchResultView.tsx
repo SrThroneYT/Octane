@@ -12,6 +12,7 @@ import { LayoutSearchSavesView } from '../../../../common';
 import { useNavigatorData, useNavigatorUiStore } from '../../../../hooks';
 import { NavigatorSearchResultItemView } from './NavigatorSearchResultItemView';
 import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 export interface NavigatorSearchResultViewProps {
     searchResult: NavigatorSearchResultList;
@@ -85,36 +86,42 @@ export const NavigatorSearchResultView: FC<NavigatorSearchResultViewProps> = (pr
                 </Collapsible.Trigger>
                 <div className="octane-navigator-air__category-controls">
                     {isExtended && displayMode === NavigatorSearchResultViewDisplayMode.LIST && (
-                        <BaseButton
-                            type="button"
-                            className="octane-navigator-air__icon-button"
-                            aria-label={tileViewLabel}
-                            title={tileViewLabel}
-                            onClick={toggleDisplayMode}
-                        >
-                            <img src={navViewThumbs} alt="" />
-                        </BaseButton>
+                        <Hint content={tileViewLabel}>
+                            <BaseButton
+                                type="button"
+                                className="octane-navigator-air__icon-button"
+                                aria-label={tileViewLabel}
+                                onClick={toggleDisplayMode}
+                            >
+                                <img src={navViewThumbs} alt="" />
+                            </BaseButton>
+                        </Hint>
                     )}
                     {isExtended && isTileMode && (
-                        <BaseButton
-                            type="button"
-                            className="octane-navigator-air__icon-button"
-                            aria-label={listViewLabel}
-                            title={listViewLabel}
-                            onClick={toggleDisplayMode}
-                        >
-                            <img src={navViewRow} alt="" />
-                        </BaseButton>
+                        <Hint content={listViewLabel}>
+                            <BaseButton
+                                type="button"
+                                className="octane-navigator-air__icon-button"
+                                aria-label={listViewLabel}
+                                onClick={toggleDisplayMode}
+                            >
+                                <img src={navViewRow} alt="" />
+                            </BaseButton>
+                        </Hint>
                     )}
                     {searchResult.action > 0 && searchResult.action === 1 && (
-                        <BaseButton type="button" className="octane-navigator-air__icon-button" title={LocalizeText('navigator.more.rooms')} onClick={showMore}>
-                            <img src={categoryShowMore} alt="" />
-                        </BaseButton>
+                        <Hint content={LocalizeText('navigator.more.rooms')}>
+                            <BaseButton aria-label={LocalizeText('navigator.more.rooms')} type="button" className="octane-navigator-air__icon-button" onClick={showMore}>
+                                <img src={categoryShowMore} alt="" />
+                            </BaseButton>
+                        </Hint>
                     )}
                     {searchResult.action > 0 && searchResult.action !== 1 && (
-                        <BaseButton type="button" className="octane-navigator-air__icon-button" title={LocalizeText('navigator.back')} onClick={showMore}>
-                            <img src={navViewMini} alt="" />
-                        </BaseButton>
+                        <Hint content={LocalizeText('navigator.back')}>
+                            <BaseButton aria-label={LocalizeText('navigator.back')} type="button" className="octane-navigator-air__icon-button" onClick={showMore}>
+                                <img src={navViewMini} alt="" />
+                            </BaseButton>
+                        </Hint>
                     )}
                     {!hideSave && (
                         <LayoutSearchSavesView

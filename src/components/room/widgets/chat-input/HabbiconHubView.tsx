@@ -7,6 +7,7 @@ import { HabbiconProgressBarView } from './HabbiconProgressBarView';
 import { HabbiconPurchaseView } from './HabbiconPurchaseView';
 import { TabBar, TabBarTab } from '../../../../common/TabBar';
 import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 export const HabbiconPrice: FC<{ priceCredits: number; priceActivityPoints: number; activityPointType: number }> = ({
     priceCredits,
@@ -61,17 +62,17 @@ export const HabbiconHubView: FC = () => {
     };
 
     const renderTile = (entry: HabbiconEntry) => (
-        <BaseButton
-            className={`habbicon-tile air-bitmap-surface ${entry.owned ? 'owned' : 'unowned'} ${entry.claimable ? 'claimable' : ''} ${popup?.id === entry.id ? 'active' : ''}`}
-            key={entry.id}
-            type="button"
-            title={localizeHabbiconName(entry)}
-            onClick={(event) => showPopup(event, entry)}
-        >
-            <LayoutHabbiconImageView id={entry.id} className="habbicon-tile-image" />
-            {entry.favorite && <img alt="" className="habbicon-hub-fav" src={HabbiconFavorite} />}
-            {entry.claimable && <span className="habbicon-claimable-marker" />}
-        </BaseButton>
+        <Hint key={entry.id} content={localizeHabbiconName(entry)}>
+            <BaseButton aria-label={localizeHabbiconName(entry)}
+                className={`habbicon-tile air-bitmap-surface ${entry.owned ? 'owned' : 'unowned'} ${entry.claimable ? 'claimable' : ''} ${popup?.id === entry.id ? 'active' : ''}`}
+                type="button"
+                onClick={(event) => showPopup(event, entry)}
+            >
+                <LayoutHabbiconImageView id={entry.id} className="habbicon-tile-image" />
+                {entry.favorite && <img alt="" className="habbicon-hub-fav" src={HabbiconFavorite} />}
+                {entry.claimable && <span className="habbicon-claimable-marker" />}
+            </BaseButton>
+        </Hint>
     );
 
     return (

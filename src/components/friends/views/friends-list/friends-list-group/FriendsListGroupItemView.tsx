@@ -8,6 +8,7 @@ import { resolveAvatarFigure } from '../resolveAvatarFigure';
 import { resolveAvatarGender } from '../resolveAvatarGender';
 import { canFollowFriendListEntry } from './friendsListActions.helpers';
 import { BaseButton } from '../../../../../common/BaseButton';
+import { Hint } from '../../../../../common/Tooltip';
 
 export const FriendsListGroupItemView: FC<{ friend: MessengerFriend; selected: boolean; selectFriend: (userId: number) => void }> = ({
     friend,
@@ -86,9 +87,13 @@ export const FriendsListGroupItemView: FC<{ friend: MessengerFriend; selected: b
                     </Popover>
                 )}
                 {canFollowFriendListEntry(friend) && (
-                    <BaseButton type="button" className="hfl-action follow" title={LocalizeText('friendlist.tip.follow')} onClick={() => followFriend(friend)} />
+                    <Hint content={LocalizeText('friendlist.tip.follow')}>
+                        <BaseButton aria-label={LocalizeText('friendlist.tip.follow')} type="button" className="hfl-action follow" onClick={() => followFriend(friend)} />
+                    </Hint>
                 )}
-                <BaseButton type="button" className="hfl-action chat" title={LocalizeText('friendlist.tip.im')} onClick={() => OpenMessengerChat(friend.id)} />
+                <Hint content={LocalizeText('friendlist.tip.im')}>
+                    <BaseButton aria-label={LocalizeText('friendlist.tip.im')} type="button" className="hfl-action chat" onClick={() => OpenMessengerChat(friend.id)} />
+                </Hint>
             </div>
         </div>
     );

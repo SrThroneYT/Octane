@@ -2,6 +2,7 @@ import { FriendCategoryData } from '@octane/renderer';
 import { FC } from 'react';
 import { countFriendsByCategory, LocalizeText, MessengerFriend } from '../../../../api';
 import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 interface FriendsListGroupChipsViewProps {
     categories: FriendCategoryData[];
@@ -23,6 +24,8 @@ export const FriendsListGroupChipsView: FC<FriendsListGroupChipsViewProps> = ({ 
                 {category.name} ({counts.get(category.id) ?? 0})
             </BaseButton>)}
         </div>
-        <BaseButton type="button" className="friends-group-chip friends-group-chip-manage" title={LocalizeText('friendlist.friends')} onClick={onManageClick} />
+        <Hint content={LocalizeText('friendlist.friends')}>
+            <BaseButton aria-label={LocalizeText('friendlist.friends')} type="button" className="friends-group-chip friends-group-chip-manage" onClick={onManageClick} />
+        </Hint>
     </div>;
 };

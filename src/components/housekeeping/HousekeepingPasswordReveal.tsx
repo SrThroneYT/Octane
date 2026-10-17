@@ -3,6 +3,7 @@ import { FaCheck, FaCopy, FaKey, FaTimes } from 'react-icons/fa';
 import { LocalizeText } from '../../api';
 import { useHousekeepingStore } from '../../hooks';
 import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 const COPY_CONFIRM_MS = 1600;
 
@@ -103,14 +104,15 @@ export const HousekeepingPasswordReveal: FC = () => {
                 <span className="grow">
                     {LocalizeText('housekeeping.password.title', ['username', 'id'], [passwordReveal.username || '-', String(passwordReveal.userId)])}
                 </span>
-                <BaseButton
-                    className="inline-flex items-center justify-center w-5 h-5 rounded text-amber-700 hover:text-amber-900 hover:bg-amber-200/60"
-                    onClick={() => clearPasswordReveal()}
-                    title={LocalizeText('housekeeping.password.dismiss')}
-                    aria-label={LocalizeText('housekeeping.password.dismiss')}
-                >
-                    <FaTimes size={10} />
-                </BaseButton>
+                <Hint content={LocalizeText('housekeeping.password.dismiss')}>
+                    <BaseButton
+                        className="inline-flex items-center justify-center w-5 h-5 rounded text-amber-700 hover:text-amber-900 hover:bg-amber-200/60"
+                        onClick={() => clearPasswordReveal()}
+                        aria-label={LocalizeText('housekeeping.password.dismiss')}
+                    >
+                        <FaTimes size={10} />
+                    </BaseButton>
+                </Hint>
             </div>
 
             <div className="flex items-center gap-2">

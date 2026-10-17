@@ -11,6 +11,7 @@ import { ClubExtendView } from './views/ClubExtendView';
 import { CurrencyView } from './views/CurrencyView';
 import { SeasonalView } from './views/SeasonalView';
 import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 export const PurseView: FC<{}> = (props) => {
     const { purse = null, hcDisabled = false } = usePurse();
@@ -176,25 +177,27 @@ export const PurseView: FC<{}> = (props) => {
                         >
                             <span>{helpLabel}</span>
                         </BaseButton>
-                        <BaseButton
-                            type="button"
-                            className="octane-purse__btn octane-purse__btn--icon octane-purse__btn--logout octane-purse-right-button disconnect"
-                            onClick={handleLogout}
-                            title="Log out"
-                        >
-                            <img src={logoutIcon} alt="" className="octane-purse__btn-img" />
-                        </BaseButton>
-                        <BaseButton
-                            type="button"
-                            className="octane-purse__btn octane-purse__btn--icon octane-purse__btn--settings octane-purse-right-button settings"
-                            onClick={(event) => {
-                                event.stopPropagation();
-                                setSettingsMenuOpen((value) => !value);
-                            }}
-                            title={LocalizeText('widget.memenu.settings.title')}
-                        >
-                            <img src={settingsIcon} alt="" className="octane-purse__btn-img" />
-                        </BaseButton>
+                        <Hint content="Log out">
+                            <BaseButton aria-label="Log out"
+                                type="button"
+                                className="octane-purse__btn octane-purse__btn--icon octane-purse__btn--logout octane-purse-right-button disconnect"
+                                onClick={handleLogout}
+                            >
+                                <img src={logoutIcon} alt="" className="octane-purse__btn-img" />
+                            </BaseButton>
+                        </Hint>
+                        <Hint content={LocalizeText('widget.memenu.settings.title')}>
+                            <BaseButton aria-label={LocalizeText('widget.memenu.settings.title')}
+                                type="button"
+                                className="octane-purse__btn octane-purse__btn--icon octane-purse__btn--settings octane-purse-right-button settings"
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    setSettingsMenuOpen((value) => !value);
+                                }}
+                            >
+                                <img src={settingsIcon} alt="" className="octane-purse__btn-img" />
+                            </BaseButton>
+                        </Hint>
                     </div>
                 </div>
             </div>

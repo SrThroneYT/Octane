@@ -27,6 +27,7 @@ import { HousekeepingUserEconomyView } from './HousekeepingUserEconomyView';
 import { DEFAULT_SANCTION_DRAFT, HousekeepingSanctionDraft, HousekeepingUserSanctionsView, sanctionReason } from './HousekeepingUserSanctionsView';
 import { Checkbox } from '../../../../common/Checkbox';
 import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 const BULK_CONFIRM_THRESHOLD = 5;
 
@@ -256,13 +257,14 @@ export const HousekeepingUsersTab: FC = () => {
                         <FaUserSlash size={10} />
                         <span>{LocalizeText('housekeeping.action.kick')}</span>
                     </HousekeepingButton>
-                    <BaseButton
-                        className="ml-auto px-1 text-zinc-500 hover:text-rose-600"
-                        title={LocalizeText('housekeeping.bulk.clear')}
-                        onClick={clearUserSelection}
-                    >
-                        <FaTimes size={10} />
-                    </BaseButton>
+                    <Hint content={LocalizeText('housekeeping.bulk.clear')}>
+                        <BaseButton aria-label={LocalizeText('housekeeping.bulk.clear')}
+                            className="ml-auto px-1 text-zinc-500 hover:text-rose-600"
+                            onClick={clearUserSelection}
+                        >
+                            <FaTimes size={10} />
+                        </BaseButton>
+                    </Hint>
                 </div>
             )}
 

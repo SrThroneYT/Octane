@@ -6,6 +6,7 @@ import { useCamera, useNotification, useRoom } from '../../../hooks';
 import { getNextEmptyCameraSlot, willFillLastCameraSlot } from '../CameraAirUtilities';
 import { CameraCenteredText } from './CameraNativeText';
 import { BaseButton } from '../../../common/BaseButton';
+import { Hint } from '../../../common/Tooltip';
 
 export interface CameraWidgetCaptureViewProps {
     onClose: () => void;
@@ -258,30 +259,32 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
                     {selectedPicture && (
                         <div className="octane-camera-capture__preview-actions">
                             {/* A real <button>: the drag handle lets only native controls take the mouse. */}
-                            <BaseButton
-                                className="habbo-btn-primary octane-camera-capture__editor-button"
-                                title={LocalizeText('camera.editor.button.tooltip')}
-                                type="button"
-                                onClick={onEdit}
-                            >
-                                <CameraCenteredText
-                                    background={0x000000}
-                                    color={0xffffff}
-                                    style={{ mixBlendMode: 'screen' }}
-                                    text={LocalizeText('camera.editor.button.text')}
-                                    textStyle="button_shiny_bold"
-                                    width={38}
-                                />
-                            </BaseButton>
+                            <Hint content={LocalizeText('camera.editor.button.tooltip')}>
+                                <BaseButton aria-label={LocalizeText('camera.editor.button.tooltip')}
+                                    className="habbo-btn-primary octane-camera-capture__editor-button"
+                                    type="button"
+                                    onClick={onEdit}
+                                >
+                                    <CameraCenteredText
+                                        background={0x000000}
+                                        color={0xffffff}
+                                        style={{ mixBlendMode: 'screen' }}
+                                        text={LocalizeText('camera.editor.button.text')}
+                                        textStyle="button_shiny_bold"
+                                        width={38}
+                                    />
+                                </BaseButton>
+                            </Hint>
                         </div>
                     )}
-                    <BaseButton
-                        type="button"
-                        className="octane-camera-capture__shutter"
-                        aria-label={LocalizeText('camera.take.photo.button.tooltip')}
-                        title={LocalizeText('camera.take.photo.button.tooltip')}
-                        onClick={takePicture}
-                    />
+                    <Hint content={LocalizeText('camera.take.photo.button.tooltip')}>
+                        <BaseButton
+                            type="button"
+                            className="octane-camera-capture__shutter"
+                            aria-label={LocalizeText('camera.take.photo.button.tooltip')}
+                            onClick={takePicture}
+                        />
+                    </Hint>
                 </div>
                 <div className={`octane-camera-roll${hasPictures ? '' : ' octane-camera-roll--hidden'}`} aria-hidden={!hasPictures}>
                     {Array.from({ length: CAMERA_ROLL_LIMIT }, (_, index) => {
@@ -304,15 +307,16 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
                                     {picture && <img alt="" src={picture.imageUrl} />}
                                 </BaseButton>
                                 {picture && selectedPictureIndex === index && (
-                                    <BaseButton
-                                        type="button"
-                                        className="octane-camera-roll__delete"
-                                        aria-label={LocalizeText('camera.delete.button.text')}
-                                        title={LocalizeText('camera.delete.button.text')}
-                                        onClick={() => {
-                                            if (!isTakingPictureRef.current) onDelete();
-                                        }}
-                                    />
+                                    <Hint content={LocalizeText('camera.delete.button.text')}>
+                                        <BaseButton
+                                            type="button"
+                                            className="octane-camera-roll__delete"
+                                            aria-label={LocalizeText('camera.delete.button.text')}
+                                            onClick={() => {
+                                                if (!isTakingPictureRef.current) onDelete();
+                                            }}
+                                        />
+                                    </Hint>
                                 )}
                             </div>
                         );

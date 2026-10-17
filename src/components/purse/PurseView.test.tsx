@@ -65,7 +65,7 @@ describe('PurseView', () => {
         expect(actionColumn).toBeTruthy();
 
         const actionButtons = within(actionColumn as HTMLElement).getAllByRole('button');
-        expect(actionButtons.map((button) => button.textContent?.trim() || button.getAttribute('title'))).toEqual([
+        expect(actionButtons.map((button) => button.textContent?.trim() || button.getAttribute('aria-label'))).toEqual([
             'Help',
             'Log out',
             'widget.memenu.settings.title'

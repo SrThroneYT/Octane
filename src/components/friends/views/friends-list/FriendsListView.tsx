@@ -11,6 +11,7 @@ import { FriendsSearchView } from './FriendsListSearchView';
 import { FriendsListGroupView } from './friends-list-group/FriendsListGroupView';
 import { FriendsListRequestView } from './friends-list-request/FriendsListRequestView';
 import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 export const FriendsListView: FC<{}> = (props) => {
     const [isVisible, setIsVisible] = useState(false);
@@ -238,37 +239,41 @@ export const FriendsListView: FC<{}> = (props) => {
                     {activePanel === 'friends' && (
                         <div className="hfl-footer" data-testid="friends-footer">
                             <div className="hfl-footer-border">
-                                <BaseButton
-                                    type="button"
-                                    className="hfl-footer-button invite"
-                                    title={LocalizeText('friendlist.tip.invite')}
-                                    onClick={() => setShowRoomInvite(true)}
-                                />
-                                <BaseButton
-                                    type="button"
-                                    className="hfl-footer-button home"
-                                    title={LocalizeText('friendlist.tip.home')}
-                                    onClick={() => CreateLinkEvent('navigator/goto/home')}
-                                />
+                                <Hint content={LocalizeText('friendlist.tip.invite')}>
+                                    <BaseButton aria-label={LocalizeText('friendlist.tip.invite')}
+                                        type="button"
+                                        className="hfl-footer-button invite"
+                                        onClick={() => setShowRoomInvite(true)}
+                                    />
+                                </Hint>
+                                <Hint content={LocalizeText('friendlist.tip.home')}>
+                                    <BaseButton aria-label={LocalizeText('friendlist.tip.home')}
+                                        type="button"
+                                        className="hfl-footer-button home"
+                                        onClick={() => CreateLinkEvent('navigator/goto/home')}
+                                    />
+                                </Hint>
                                 {isFriendSearchOpen ? (
                                     <div className="hfl-footer-search">
                                         <input autoFocus value={friendSearchValue} onChange={(event) => setFriendSearchValue(event.target.value)} />
-                                        <BaseButton
-                                            type="button"
-                                            title={LocalizeText('generic.clear')}
-                                            onClick={() => {
-                                                if (friendSearchValue.length) setFriendSearchValue('');
-                                                else setIsFriendSearchOpen(false);
-                                            }}
-                                        />
+                                        <Hint content={LocalizeText('generic.clear')}>
+                                            <BaseButton aria-label={LocalizeText('generic.clear')}
+                                                type="button"
+                                                onClick={() => {
+                                                    if (friendSearchValue.length) setFriendSearchValue('');
+                                                    else setIsFriendSearchOpen(false);
+                                                }}
+                                            />
+                                        </Hint>
                                     </div>
                                 ) : (
-                                    <BaseButton
-                                        type="button"
-                                        className="hfl-footer-button search"
-                                        title={LocalizeText('people.search.title')}
-                                        onClick={() => setIsFriendSearchOpen(true)}
-                                    />
+                                    <Hint content={LocalizeText('people.search.title')}>
+                                        <BaseButton aria-label={LocalizeText('people.search.title')}
+                                            type="button"
+                                            className="hfl-footer-button search"
+                                            onClick={() => setIsFriendSearchOpen(true)}
+                                        />
+                                    </Hint>
                                 )}
                                 <BaseButton
                                     type="button"

@@ -45,6 +45,7 @@ import {
 } from './SnowWarEditorTools';
 import { Checkbox } from '../../../../common/Checkbox';
 import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 const localizeWithFallback = (key: string, fallback: string) =>
 {
@@ -1661,14 +1662,15 @@ export const SnowWarArenaView: FC = () =>
             ) : (
                 <div className="snowwar-official-hud">
                     {/* AIR snowwar_exit: the ui_exit_up / ui_exit_down bitmap button, no caption. */}
-                    <BaseButton
-                        aria-label={localizeWithFallback('snowwar.exit.title', 'Leave game?')}
-                        className="snowwar-official-hud__quit"
-                        style={{ '--exit-up': `url(${getHudAssetUrl('ui_exit_up')})`, '--exit-down': `url(${getHudAssetUrl('ui_exit_down')})` } as CSSProperties}
-                        title={localizeWithFallback('snowwar.exit.title', 'Leave game?')}
-                        type="button"
-                        onClick={confirmExitGame}
-                    />
+                    <Hint content={localizeWithFallback('snowwar.exit.title', 'Leave game?')}>
+                        <BaseButton
+                            aria-label={localizeWithFallback('snowwar.exit.title', 'Leave game?')}
+                            className="snowwar-official-hud__quit"
+                            style={{ '--exit-up': `url(${getHudAssetUrl('ui_exit_up')})`, '--exit-down': `url(${getHudAssetUrl('ui_exit_down')})` } as CSSProperties}
+                            type="button"
+                            onClick={confirmExitGame}
+                        />
+                    </Hint>
 
                     {ownAvatar && (
                         <>
@@ -2168,13 +2170,14 @@ export const SnowWarArenaView: FC = () =>
                                 } : undefined}
                             >
                                 {item.name === 'ads_igorraygun' && !editing && (
-                                    <BaseButton
-                                        type="button"
-                                        className="snowwar-raygun-hitbox"
-                                        aria-label={localizeWithFallback('snowwar.raygun.use', 'Use Ray Gun')}
-                                        title={localizeWithFallback('snowwar.raygun.use', 'Use Ray Gun')}
-                                        onClick={event => fireRayGun(event, item.x, item.y, item.rotation, item.width ?? 1, item.length ?? 1)}
-                                    />
+                                    <Hint content={localizeWithFallback('snowwar.raygun.use', 'Use Ray Gun')}>
+                                        <BaseButton
+                                            type="button"
+                                            className="snowwar-raygun-hitbox"
+                                            aria-label={localizeWithFallback('snowwar.raygun.use', 'Use Ray Gun')}
+                                            onClick={event => fireRayGun(event, item.x, item.y, item.rotation, item.width ?? 1, item.length ?? 1)}
+                                        />
+                                    </Hint>
                                 )}
                                 {item.name === 'snst_ballpile'
                                     ? furniData

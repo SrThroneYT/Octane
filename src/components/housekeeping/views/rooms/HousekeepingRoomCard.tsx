@@ -4,6 +4,7 @@ import { CreateLinkEvent, formatHousekeepingDate, IHousekeepingRoom, LocalizeTex
 import { useNavigatorData } from '../../../../hooks';
 import { HousekeepingFact, HousekeepingPill } from '../common/HousekeepingParts';
 import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 const RoomStatePill: FC<{ room: IHousekeepingRoom }> = ({ room }) => {
     const state = room.settings?.state ?? (room.isLocked ? 1 : 0);
@@ -71,9 +72,11 @@ export const HousekeepingRoomCard: FC<{ room: IHousekeepingRoom; onClear: () => 
                 >
                     {LocalizeText('housekeeping.room.go')}
                 </BaseButton>
-                <BaseButton className="p-1 text-zinc-400 transition-colors hover:text-rose-600" title={LocalizeText('housekeeping.room.clear')} onClick={onClear}>
-                    <FaTimes size={12} />
-                </BaseButton>
+                <Hint content={LocalizeText('housekeeping.room.clear')}>
+                    <BaseButton aria-label={LocalizeText('housekeeping.room.clear')} className="p-1 text-zinc-400 transition-colors hover:text-rose-600" onClick={onClear}>
+                        <FaTimes size={12} />
+                    </BaseButton>
+                </Hint>
             </div>
             <div className="mt-2 grid grid-cols-4 gap-1">
                 <HousekeepingFact

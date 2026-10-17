@@ -19,6 +19,7 @@ import { OctaneButton } from '../../../../layout';
 import { InventoryCategoryEmptyView } from '../InventoryCategoryEmptyView';
 import { InventoryFurnitureItemView } from './InventoryFurnitureItemView';
 import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 const attemptPlaceMarketplaceOffer = (groupItem: GroupItem) => {
     const item = groupItem.getLastItem();
@@ -189,19 +190,20 @@ export const InventoryFurnitureView: FC<{
                         </div>
                     )}
                     {selectedItem && (
-                        <BaseButton
-                            type="button"
-                            className="octane-inventory-preview-delete"
-                            aria-label={LocalizeText('generic.delete')}
-                            title={LocalizeText('generic.delete')}
-                            onPointerDown={(event) => event.stopPropagation()}
-                            onClick={(event) => {
-                                event.stopPropagation();
-                                attemptDeleteItem(selectedItem);
-                            }}
-                        >
-                            <FaTrashAlt aria-hidden="true" />
-                        </BaseButton>
+                        <Hint content={LocalizeText('generic.delete')}>
+                            <BaseButton
+                                type="button"
+                                className="octane-inventory-preview-delete"
+                                aria-label={LocalizeText('generic.delete')}
+                                onPointerDown={(event) => event.stopPropagation()}
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    attemptDeleteItem(selectedItem);
+                                }}
+                            >
+                                <FaTrashAlt aria-hidden="true" />
+                            </BaseButton>
+                        </Hint>
                     )}
                     {selectedItem && selectedItem.stuffData.isUnique && (
                         <LayoutLimitedEditionCompactPlateView

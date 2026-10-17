@@ -86,7 +86,7 @@ describe('HabbiconHubView popup', () => {
 
     afterEach(() => cleanup());
 
-    const tile = (name: string) => screen.getByTitle(name);
+    const tile = (name: string) => screen.getByLabelText(name);
 
     it('opens a dialog-less popup next to the clicked tile with the owned actions', async () => {
         render(<HabbiconHubView />);

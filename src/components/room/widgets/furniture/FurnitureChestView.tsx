@@ -43,6 +43,7 @@ import { Checkbox } from '../../../../common/Checkbox';
 import { Select } from '../../../../common/Select';
 import { NumberInput } from '../../../../common/NumberInput';
 import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 interface ChestEntry {
     currencyType: number;
@@ -487,25 +488,27 @@ export const FurnitureChestView: FC = () => {
                         </Text>
                         <div style={{ position: 'absolute', top: 7, right: 9, display: 'flex', gap: 5 }}>
                             {/* notification_settings_button 24x24, icon wired_chests_bell_icon 12x15 */}
-                            <BaseButton
-                                type="button"
-                                className="flex items-center justify-center cursor-pointer shrink-0"
-                                style={{ width: 24, height: 24, background: '#f1f0ee', border: '1px solid #cfcabc', borderRadius: 4, padding: 0 }}
-                                onClick={() => setShowNotifications(true)}
-                                title={LocalizeText('wiredchests.notifications.button')}
-                            >
-                                <img src={bellIcon} width={12} height={15} alt="" draggable={false} style={{ imageRendering: PIXEL_ART_RENDERING }} />
-                            </BaseButton>
+                            <Hint content={LocalizeText('wiredchests.notifications.button')}>
+                                <BaseButton aria-label={LocalizeText('wiredchests.notifications.button')}
+                                    type="button"
+                                    className="flex items-center justify-center cursor-pointer shrink-0"
+                                    style={{ width: 24, height: 24, background: '#f1f0ee', border: '1px solid #cfcabc', borderRadius: 4, padding: 0 }}
+                                    onClick={() => setShowNotifications(true)}
+                                >
+                                    <img src={bellIcon} width={12} height={15} alt="" draggable={false} style={{ imageRendering: PIXEL_ART_RENDERING }} />
+                                </BaseButton>
+                            </Hint>
                             {/* settings_button 24x24, icon wired_chests_gear_icon 14x14 */}
-                            <BaseButton
-                                type="button"
-                                className="flex items-center justify-center cursor-pointer shrink-0"
-                                style={{ width: 24, height: 24, background: '#f1f0ee', border: '1px solid #cfcabc', borderRadius: 4, padding: 0 }}
-                                onClick={() => setShowSettings(true)}
-                                title={LocalizeText('wiredchests.settings.button')}
-                            >
-                                <img src={gearIcon} width={14} height={14} alt="" draggable={false} style={{ imageRendering: PIXEL_ART_RENDERING }} />
-                            </BaseButton>
+                            <Hint content={LocalizeText('wiredchests.settings.button')}>
+                                <BaseButton aria-label={LocalizeText('wiredchests.settings.button')}
+                                    type="button"
+                                    className="flex items-center justify-center cursor-pointer shrink-0"
+                                    style={{ width: 24, height: 24, background: '#f1f0ee', border: '1px solid #cfcabc', borderRadius: 4, padding: 0 }}
+                                    onClick={() => setShowSettings(true)}
+                                >
+                                    <img src={gearIcon} width={14} height={14} alt="" draggable={false} style={{ imageRendering: PIXEL_ART_RENDERING }} />
+                                </BaseButton>
+                            </Hint>
                         </div>
                     </div>
                     {/* ===== FURNI CHEST body (furni_chest_contents.xml) ===== */}

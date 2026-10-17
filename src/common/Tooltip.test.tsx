@@ -1,6 +1,6 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { Tooltip } from './Tooltip';
+import { Hint, Tooltip } from './Tooltip';
 
 describe('Tooltip', () => {
     beforeEach(() => vi.useFakeTimers());
@@ -101,5 +101,45 @@ describe('Tooltip', () => {
         const anchor = container.firstElementChild as HTMLElement;
         expect(anchor.tagName).toBe('DIV');
         expect(anchor.classList.contains('flex-col')).toBe(true);
+    });
+
+    it('Hint shows the bubble on the control itself, adds no wrapper and keeps the control handlers', () => {
+        const onMouseEnter = vi.fn();
+        const { container } = render(
+            <div data-testid="row">
+                <Hint content="Close the window" delay={0}>
+                    <button aria-label="Close the window" type="button" onMouseEnter={onMouseEnter} />
+                </Hint>
+            </div>
+        );
+
+        const button = screen.getByRole('button', { name: 'Close the window' });
+        expect(button.parentElement).toBe(container.firstElementChild);
+
+        fireEvent.mouseEnter(button);
+        expect(onMouseEnter).toHaveBeenCalledTimes(1);
+        expect(screen.getByRole('tooltip')).toHaveTextContent('Close the window');
+
+        fireEvent.mouseLeave(button);
+        expect(screen.queryByRole('tooltip')).toBeNull();
+    });
+
+    it('Hint shows on keyboard focus and stays silent without content', () => {
+        const { rerender } = render(
+            <Hint content="Hint" delay={0}>
+                <button type="button">Target</button>
+            </Hint>
+        );
+
+        fireEvent.focus(screen.getByRole('button', { name: 'Target' }));
+        expect(screen.getByRole('tooltip')).toHaveTextContent('Hint');
+
+        rerender(
+            <Hint content="" delay={0}>
+                <button type="button">Target</button>
+            </Hint>
+        );
+        fireEvent.focus(screen.getByRole('button', { name: 'Target' }));
+        expect(screen.queryByRole('tooltip')).toBeNull();
     });
 });

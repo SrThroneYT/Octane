@@ -3,6 +3,7 @@ import { FC, MouseEvent } from 'react';
 import { LocalizeText, localizeWithFallback, SendMessageComposer } from '../../../../api';
 import { useNavigatorUiStore } from '../../../../hooks';
 import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 export interface NavigatorSearchSavesResultItemViewProps {
     search: NavigatorSavedSearch;
@@ -38,13 +39,14 @@ export const NavigatorSearchSavesResultItemView: FC<NavigatorSearchSavesResultIt
             <BaseButton type="button" className="saved-search-row__open" title={LocalizeText('navigator.tooltip.open.saved.search')} onClick={openSearch}>
                 <span className="saved-search-row__label">{title}</span>
             </BaseButton>
-            <BaseButton
-                type="button"
-                className="saved-search-row__delete"
-                aria-label={`${LocalizeText('navigator.tooltip.remove.saved.search')} ${title}`}
-                title={LocalizeText('navigator.tooltip.remove.saved.search')}
-                onClick={deleteSearch}
-            />
+            <Hint content={LocalizeText('navigator.tooltip.remove.saved.search')}>
+                <BaseButton
+                    type="button"
+                    className="saved-search-row__delete"
+                    aria-label={`${LocalizeText('navigator.tooltip.remove.saved.search')} ${title}`}
+                    onClick={deleteSearch}
+                />
+            </Hint>
         </div>
     );
 };

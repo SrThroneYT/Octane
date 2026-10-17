@@ -13,6 +13,7 @@ import {
 import { UseHabbiconIcon } from '../../../../assets/images/habbicons';
 import { LayoutHabbiconImageView, LayoutItemCountView, Popover, PopoverContent, PopoverTrigger } from '../../../../common';
 import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 type SelectorSection = {
     id: string;
@@ -145,16 +146,16 @@ export const ChatInputHabbiconSelectorView: FC = () => {
                                     <div className="habbicon-selector-grid">
                                         {padHabbiconRow(section.entries).map((entry, index) =>
                                             entry ? (
-                                                <BaseButton
-                                                    className="habbicon-selector-item filled"
-                                                    key={entry.id}
-                                                    title={localizeHabbiconName(entry)}
-                                                    type="button"
-                                                    onClick={(event) => void applyHabbicon(entry.id, event.shiftKey)}
-                                                >
-                                                    <LayoutHabbiconImageView id={entry.id} size={30} />
-                                                    {catalog.isUnseen(entry.id) && <LayoutItemCountView count={1} style={{ top: -5, right: -5 }} />}
-                                                </BaseButton>
+                                                <Hint key={entry.id} content={localizeHabbiconName(entry)}>
+                                                    <BaseButton aria-label={localizeHabbiconName(entry)}
+                                                        className="habbicon-selector-item filled"
+                                                        type="button"
+                                                        onClick={(event) => void applyHabbicon(entry.id, event.shiftKey)}
+                                                    >
+                                                        <LayoutHabbiconImageView id={entry.id} size={30} />
+                                                        {catalog.isUnseen(entry.id) && <LayoutItemCountView count={1} style={{ top: -5, right: -5 }} />}
+                                                    </BaseButton>
+                                                </Hint>
                                             ) : (
                                                 <div className="habbicon-selector-item empty" key={`empty-${section.id}-${index}`} />
                                             )

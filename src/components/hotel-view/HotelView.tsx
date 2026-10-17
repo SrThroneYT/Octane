@@ -17,6 +17,7 @@ import { Checkbox } from '../../common/Checkbox';
 import { Select } from '../../common/Select';
 import { NumberInput } from '../../common/NumberInput';
 import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 interface HotelViewLandingData {
     canEdit: boolean;
@@ -510,7 +511,9 @@ export const HotelView: FC = () => {
                 ? <div className="hotelview-edge hotelview-edge-left"><img src={resolveImageUrl(scene.leftUrl, imageLibraryUrl, assetUrl)} alt="" /><LayoutAvatarImageView classNames={['hotelview-avatar']} figure={GetSessionDataManager().figure} gender={GetSessionDataManager().gender} direction={2} /></div>
                 : <LayoutAvatarImageView classNames={['hotelview-avatar hotelview-avatar-fallback']} figure={GetSessionDataManager().figure} gender={GetSessionDataManager().gender} direction={2} />}
             {scene.rightUrl && <div className="hotelview-edge hotelview-edge-right"><img src={resolveImageUrl(scene.rightUrl, imageLibraryUrl, assetUrl)} alt="" /></div>}
-            {scene.drapeUrl && <div className="hotelview-edge hotelview-edge-drape" style={getScenePositionStyle('drape')}><img src={resolveImageUrl(scene.drapeUrl, imageLibraryUrl, assetUrl)} alt="" />{landingData.canEdit && <BaseButton type="button" className="hotelview-scene-drag-handle" onPointerDown={(event) => startSceneDrag(event, 'drape')} onPointerMove={moveSceneDrag} onPointerUp={finishSceneDrag} onPointerCancel={finishSceneDrag} title="Drag drape">↕</BaseButton>}</div>}
+            {scene.drapeUrl && <div className="hotelview-edge hotelview-edge-drape" style={getScenePositionStyle('drape')}><img src={resolveImageUrl(scene.drapeUrl, imageLibraryUrl, assetUrl)} alt="" />{landingData.canEdit && <Hint content="Drag drape">
+                <BaseButton aria-label="Drag drape" type="button" className="hotelview-scene-drag-handle" onPointerDown={(event) => startSceneDrag(event, 'drape')} onPointerMove={moveSceneDrag} onPointerUp={finishSceneDrag} onPointerCancel={finishSceneDrag}>↕</BaseButton>
+            </Hint>}</div>}
             <div className="hotelview-stage" style={stageStyle}>
                 <div ref={hotelViewRef} className="hotelview">
                     <div className="hotelview-background" />
@@ -552,7 +555,9 @@ export const HotelView: FC = () => {
                                     </div>
                                 </>}
                                 {!slot.enabled && <span>Disabled slot</span>}
-                                {landingData.canEdit && <BaseButton type="button" className="hotelview-slot-drag-handle" onPointerDown={(event) => startSlotDrag(event, slot)} onPointerMove={moveSlotDrag} onPointerUp={finishSlotDrag} onPointerCancel={finishSlotDrag} aria-label={`Move slot ${slot.id}`} title="Drag to move">↕</BaseButton>}
+                                {landingData.canEdit && <Hint content="Drag to move">
+                                    <BaseButton type="button" className="hotelview-slot-drag-handle" onPointerDown={(event) => startSlotDrag(event, slot)} onPointerMove={moveSlotDrag} onPointerUp={finishSlotDrag} onPointerCancel={finishSlotDrag} aria-label={`Move slot ${slot.id}`}>↕</BaseButton>
+                                </Hint>}
                                 {landingData.canEdit && <BaseButton type="button" className="hotelview-slot-edit" onClick={() => { setEditingSlot(slot); setCountdownInput(toEditableCountdownValue(parseSlotConfig(slot.configJson).endsAt)); }} aria-label={`Edit slot ${slot.id}`}>✎</BaseButton>}
                             </section>
                         ))}
@@ -566,7 +571,9 @@ export const HotelView: FC = () => {
                             <LayoutAvatarImageView classNames={['hotelview-hall-of-fame-avatar']} figure={user.figure} gender={user.gender} direction={[2, 4][index % 2]} />
                             <span>{user.username}</span>
                         </div>)}
-                        {landingData.canEdit && <BaseButton type="button" className="hotelview-hall-of-fame-drag-handle" onPointerDown={(event) => startSceneDrag(event, 'hallOfFame')} onPointerMove={moveSceneDrag} onPointerUp={finishSceneDrag} onPointerCancel={finishSceneDrag} title="Drag Hall of Fame">↕</BaseButton>}
+                        {landingData.canEdit && <Hint content="Drag Hall of Fame">
+                            <BaseButton aria-label="Drag Hall of Fame" type="button" className="hotelview-hall-of-fame-drag-handle" onPointerDown={(event) => startSceneDrag(event, 'hallOfFame')} onPointerMove={moveSceneDrag} onPointerUp={finishSceneDrag} onPointerCancel={finishSceneDrag}>↕</BaseButton>
+                        </Hint>}
                     </div>}
                     {editingSlot && (
                         <form className="hotelview-editor" onSubmit={saveSlot}>

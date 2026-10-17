@@ -12,6 +12,7 @@ import {
 import { useHasPermission, useHousekeeping, useHousekeepingConfirm } from '../../../../hooks';
 import { HousekeepingButton, HousekeepingEmptyState, HousekeepingPill } from '../common/HousekeepingParts';
 import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 const BANS_LIST = 'hotel.bans';
 
@@ -141,14 +142,15 @@ export const HousekeepingBansTab: FC = () => {
                                 )}
                                 <div className="ml-auto flex items-center gap-1">
                                     {userId > 0 && (
-                                        <BaseButton
-                                            className="p-0.5 text-zinc-400 hover:text-sky-600"
-                                            title={LocalizeText('housekeeping.audit.detail.open_user')}
-                                            type="button"
-                                            onClick={() => openUser(userId)}
-                                        >
-                                            <FaExternalLinkAlt size={9} />
-                                        </BaseButton>
+                                        <Hint content={LocalizeText('housekeeping.audit.detail.open_user')}>
+                                            <BaseButton aria-label={LocalizeText('housekeeping.audit.detail.open_user')}
+                                                className="p-0.5 text-zinc-400 hover:text-sky-600"
+                                                type="button"
+                                                onClick={() => openUser(userId)}
+                                            >
+                                                <FaExternalLinkAlt size={9} />
+                                            </BaseButton>
+                                        </Hint>
                                     )}
                                     {banId > 0 && (
                                         <HousekeepingButton

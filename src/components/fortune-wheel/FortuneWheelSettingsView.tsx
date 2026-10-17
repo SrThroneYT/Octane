@@ -7,6 +7,7 @@ import { OctaneCard } from '../../layout';
 import { Select } from '../../common/Select';
 import { NumberInput } from '../../common/NumberInput';
 import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 interface EditRow {
     id: number;
@@ -139,14 +140,15 @@ export const FortuneWheelSettingsView: FC<FortuneWheelSettingsViewProps> = ({ on
                                     onChange={(event) => updateRow(row.id, { label: event.target.value })}
                                     className="min-w-0 grow rounded border border-black/20 bg-white px-1 py-0.5 text-sm text-[#1f2d34]"
                                 />
-                                <BaseButton
-                                    type="button"
-                                    title={LocalizeText('rarevalues.editor.remove')}
-                                    onClick={() => removeRow(row.id)}
-                                    className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded bg-[#d9534f] font-bold leading-none text-white hover:bg-[#c44440]"
-                                >
-                                    ×
-                                </BaseButton>
+                                <Hint content={LocalizeText('rarevalues.editor.remove')}>
+                                    <BaseButton aria-label={LocalizeText('rarevalues.editor.remove')}
+                                        type="button"
+                                        onClick={() => removeRow(row.id)}
+                                        className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded bg-[#d9534f] font-bold leading-none text-white hover:bg-[#c44440]"
+                                    >
+                                        ×
+                                    </BaseButton>
+                                </Hint>
                             </Flex>
                         ))}
                         {!editRows.length && (

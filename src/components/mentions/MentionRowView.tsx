@@ -3,6 +3,7 @@ import { formatMentionTime, IMentionEntry, LocalizeText, localizeWithFallback, M
 import { LayoutAvatarImageView } from '../../common';
 import { MentionMessageView } from './MentionMessageView';
 import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 interface MentionRowViewProps {
     mention: IMentionEntry;
@@ -44,14 +45,18 @@ export const MentionRowView: FC<MentionRowViewProps> = (props) => {
                 {time.length > 0 && <span className="mention-row-time">{time}</span>}
                 <div className="mention-row-actions">
                     {onGoto && mention.roomId > 0 && (
-                        <BaseButton type="button" className="mention-row-action" title={gotoLabel} aria-label={gotoLabel} onClick={() => onGoto(mention)}>
-                            ›
-                        </BaseButton>
+                        <Hint content={gotoLabel}>
+                            <BaseButton type="button" className="mention-row-action" aria-label={gotoLabel} onClick={() => onGoto(mention)}>
+                                ›
+                            </BaseButton>
+                        </Hint>
                     )}
                     {onRemove && (
-                        <BaseButton type="button" className="mention-row-action is-remove" title={removeLabel} aria-label={removeLabel} onClick={() => onRemove(mention)}>
-                            ×
-                        </BaseButton>
+                        <Hint content={removeLabel}>
+                            <BaseButton type="button" className="mention-row-action is-remove" aria-label={removeLabel} onClick={() => onRemove(mention)}>
+                                ×
+                            </BaseButton>
+                        </Hint>
                     )}
                 </div>
             </div>

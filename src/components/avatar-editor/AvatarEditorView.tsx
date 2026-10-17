@@ -30,6 +30,7 @@ import { AvatarEditorPetView } from './AvatarEditorPetView';
 import { AvatarEditorWardrobeView } from './AvatarEditorWardrobeView';
 import { BaseButton } from '../../common/BaseButton';
 import { ToggleButton } from '../../common/ToggleButton';
+import { Hint } from '../../common/Tooltip';
 
 const MAIN_TAB_ICONS: Record<string, string> = {
     [AvatarEditorFigureCategory.GENERIC]: mainGenericSrc,
@@ -226,30 +227,33 @@ export const AvatarEditorView: FC<{}> = (props) => {
                         <AvatarEditorFigurePreviewView effectType={effectSelection ?? 0} />
                         {!clothingChangeData && (
                             <div className="octane-avatar-editor-secondary-actions">
-                                <BaseButton
-                                    type="button"
-                                    aria-label="Reset avatar"
-                                    title="Reset avatar"
-                                    onClick={() => processAction(AvatarEditorAction.ACTION_RESET)}
-                                >
-                                    <FaRedo className="fa-icon" />
-                                </BaseButton>
-                                <BaseButton
-                                    type="button"
-                                    aria-label="Clear avatar"
-                                    title="Clear avatar"
-                                    onClick={() => processAction(AvatarEditorAction.ACTION_CLEAR)}
-                                >
-                                    <FaTrash className="fa-icon" />
-                                </BaseButton>
-                                <BaseButton
-                                    type="button"
-                                    aria-label="Randomize avatar"
-                                    title="Randomize avatar"
-                                    onClick={() => processAction(AvatarEditorAction.ACTION_RANDOMIZE)}
-                                >
-                                    <FaDice className="fa-icon" />
-                                </BaseButton>
+                                <Hint content="Reset avatar">
+                                    <BaseButton
+                                        type="button"
+                                        aria-label="Reset avatar"
+                                        onClick={() => processAction(AvatarEditorAction.ACTION_RESET)}
+                                    >
+                                        <FaRedo className="fa-icon" />
+                                    </BaseButton>
+                                </Hint>
+                                <Hint content="Clear avatar">
+                                    <BaseButton
+                                        type="button"
+                                        aria-label="Clear avatar"
+                                        onClick={() => processAction(AvatarEditorAction.ACTION_CLEAR)}
+                                    >
+                                        <FaTrash className="fa-icon" />
+                                    </BaseButton>
+                                </Hint>
+                                <Hint content="Randomize avatar">
+                                    <BaseButton
+                                        type="button"
+                                        aria-label="Randomize avatar"
+                                        onClick={() => processAction(AvatarEditorAction.ACTION_RANDOMIZE)}
+                                    >
+                                        <FaDice className="fa-icon" />
+                                    </BaseButton>
+                                </Hint>
                             </div>
                         )}
                         <BaseButton type="button" className="octane-avatar-editor-save" onClick={() => processAction(AvatarEditorAction.ACTION_SAVE)}>

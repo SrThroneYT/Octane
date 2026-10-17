@@ -8,6 +8,7 @@ import { DraggableWindow, DraggableWindowPosition, LayoutImage } from '../../com
 import { RadioStation, useRadio } from '../../hooks';
 import { Slider } from '../../common/Slider';
 import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 export const RadioView: FC<{}> = () => {
     const { stations, currentId, isPlaying, volume, loadError, play, stop, setVolume } = useRadio();
@@ -72,14 +73,15 @@ export const RadioView: FC<{}> = () => {
                     >
                         {collapsed ? <FaChevronDown className="text-[9px]" /> : <FaChevronUp className="text-[9px]" />}
                     </Collapsible.Trigger>
-                    <BaseButton
-                        type="button"
-                        onClick={onClose}
-                        title={localizeWithFallback('radio.close', 'Close')}
-                        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-white/8 text-white/60 transition-colors hover:bg-white/15 hover:text-white"
-                    >
-                        <FaTimes className="text-[9px]" />
-                    </BaseButton>
+                    <Hint content={localizeWithFallback('radio.close', 'Close')}>
+                        <BaseButton aria-label={localizeWithFallback('radio.close', 'Close')}
+                            type="button"
+                            onClick={onClose}
+                            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-white/8 text-white/60 transition-colors hover:bg-white/15 hover:text-white"
+                        >
+                            <FaTimes className="text-[9px]" />
+                        </BaseButton>
+                    </Hint>
                 </div>
 
                 <Collapsible.Panel>

@@ -32,6 +32,7 @@ import { useHasPermission, useNotification, useRewardTracks } from '../../hooks'
 import { OctaneCard } from '../../layout';
 import { RewardTrackAdminView } from './RewardTrackAdminView';
 import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 const CURRENCY_TYPES: Record<string, number> = { credits: -1, duckets: 0, diamonds: 5 };
 
@@ -377,15 +378,16 @@ export const RewardTrackView: FC<{}> = () => {
                         <>
                             <div className="octane-reward-track-header">
                                 {isEditor && (
-                                    <BaseButton
-                                        type="button"
-                                        className="octane-reward-track-admin-toggle"
-                                        title={localizeWithFallback('reward_track.admin.open', 'Edit the reward tracks')}
-                                        data-testid="reward-track-admin-toggle"
-                                        onClick={() => setEditMode(true)}
-                                    >
-                                        <FaCog />
-                                    </BaseButton>
+                                    <Hint content={localizeWithFallback('reward_track.admin.open', 'Edit the reward tracks')}>
+                                        <BaseButton aria-label={localizeWithFallback('reward_track.admin.open', 'Edit the reward tracks')}
+                                            type="button"
+                                            className="octane-reward-track-admin-toggle"
+                                            data-testid="reward-track-admin-toggle"
+                                            onClick={() => setEditMode(true)}
+                                        >
+                                            <FaCog />
+                                        </BaseButton>
+                                    </Hint>
                                 )}
                                 <div className="octane-reward-track-profile">
                                     <LayoutAvatarImageView figure={GetSessionDataManager().figure} direction={2} className="octane-reward-track-avatar" />

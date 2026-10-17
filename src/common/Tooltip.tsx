@@ -1,5 +1,5 @@
 import { Tooltip as BaseTooltip } from '@base-ui/react/tooltip';
-import { FC, FocusEvent, MouseEvent, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import { cloneElement, FC, FocusEvent, MouseEvent, ReactElement, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 
 export type TooltipPlacement = 'auto' | 'above' | 'below';
 
@@ -146,5 +146,35 @@ export const Tooltip: FC<TooltipProps> = (props) => {
             {children}
             {tooltip}
         </span>
+    );
+};
+
+type HintHandler = (event: never) => void;
+
+const chain = (own: HintHandler | undefined, extra: HintHandler): HintHandler => (event) => {
+    own?.(event);
+    extra(event);
+};
+
+/**
+ * The tooltip of a single control, without a wrapper element: the hover and
+ * focus handlers are merged into the child itself, so an absolutely
+ * positioned or flex child keeps its place. A disabled control receives no
+ * pointer events, so use `Tooltip` for those.
+ */
+export const Hint: FC<TooltipOptions & { children: ReactElement<Record<string, HintHandler | undefined>> }> = (props) => {
+    const { children, ...options } = props;
+    const { anchorProps, tooltip } = useTooltip(options);
+
+    return (
+        <>
+            {cloneElement(children, {
+                onMouseEnter: chain(children.props.onMouseEnter, anchorProps.onMouseEnter as HintHandler),
+                onMouseLeave: chain(children.props.onMouseLeave, anchorProps.onMouseLeave as HintHandler),
+                onFocus: chain(children.props.onFocus, anchorProps.onFocus as HintHandler),
+                onBlur: chain(children.props.onBlur, anchorProps.onBlur as HintHandler)
+            })}
+            {tooltip}
+        </>
     );
 };

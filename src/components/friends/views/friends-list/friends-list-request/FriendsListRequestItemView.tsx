@@ -3,6 +3,7 @@ import { LocalizeText, MessengerRequest } from '../../../../../api';
 import { UserProfileIconView } from '../../../../../common';
 import { useFriends } from '../../../../../hooks';
 import { BaseButton } from '../../../../../common/BaseButton';
+import { Hint } from '../../../../../common/Tooltip';
 
 export const FriendsListRequestItemView: FC<{ request: MessengerRequest }> = (props) => {
     const { request = null } = props;
@@ -17,8 +18,12 @@ export const FriendsListRequestItemView: FC<{ request: MessengerRequest }> = (pr
                 </div>
                 <span className="hfl-request-name">{request.name}</span>
             <div className="hfl-request-actions">
-                <BaseButton type="button" className="accept" title={LocalizeText('friendlist.request_accept')} onClick={() => requestResponse(request.id, true)} />
-                <BaseButton type="button" className="decline" title={LocalizeText('friendlist.request_decline')} onClick={() => requestResponse(request.id, false)} />
+                <Hint content={LocalizeText('friendlist.request_accept')}>
+                    <BaseButton aria-label={LocalizeText('friendlist.request_accept')} type="button" className="accept" onClick={() => requestResponse(request.id, true)} />
+                </Hint>
+                <Hint content={LocalizeText('friendlist.request_decline')}>
+                    <BaseButton aria-label={LocalizeText('friendlist.request_decline')} type="button" className="decline" onClick={() => requestResponse(request.id, false)} />
+                </Hint>
             </div>
         </div>
     );
