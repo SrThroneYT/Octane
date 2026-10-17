@@ -24,6 +24,12 @@ export interface SliderProps {
     trackClassName?: string;
     thumbClassName?: string;
     thumbAriaLabel?: string;
+    /** `vertical` renders the bare Base UI parts (max at the top, no step buttons) so the caller styles them. */
+    orientation?: 'horizontal' | 'vertical';
+    title?: string;
+    controlClassName?: string;
+    trackStyle?: CSSProperties;
+    trackTestId?: string;
     renderThumbContent?: (state: SliderThumbState) => ReactNode;
 }
 
@@ -51,6 +57,11 @@ export const Slider: FC<SliderProps> = (props) => {
         trackClassName,
         thumbClassName,
         thumbAriaLabel,
+        orientation = 'horizontal',
+        title,
+        controlClassName,
+        trackStyle,
+        trackTestId,
         renderThumbContent
     } = props;
 
@@ -100,6 +111,34 @@ export const Slider: FC<SliderProps> = (props) => {
             </BaseSlider.Thumb>
         );
     };
+
+    if (orientation === 'vertical') {
+        return (
+            <BaseSlider.Root
+                disabled={disabled}
+                className={cn('octane-slider-vertical', className)}
+                style={style}
+                title={title}
+                max={max}
+                min={min}
+                step={step}
+                orientation="vertical"
+                thumbAlignment="center"
+                value={value !== undefined ? (isRange ? valueArr : currentValue) : undefined}
+                defaultValue={defaultValue !== undefined ? defaultValue : undefined}
+                onValueChange={(next) => emit(toArray(next))}
+            >
+                <BaseSlider.Control className={cn('octane-slider-vertical-control', controlClassName)}>
+                    <BaseSlider.Track className={cn('octane-slider-vertical-track', trackClassName)} style={trackStyle} data-testid={trackTestId} />
+                    {valueArr.map((_, i) => (
+                        <BaseSlider.Thumb key={i} index={i} aria-label={thumbAriaLabel} className={cn('octane-slider-vertical-thumb', thumbClassName)}>
+                            {renderThumbContent?.({ index: i, value: isRange ? valueArr : currentValue, valueNow: valueArr[i] ?? 0 })}
+                        </BaseSlider.Thumb>
+                    ))}
+                </BaseSlider.Control>
+            </BaseSlider.Root>
+        );
+    }
 
     return (
         <Flex fullWidth gap={1} classNames={['octane-slider-wrapper']}>

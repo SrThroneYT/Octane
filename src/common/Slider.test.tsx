@@ -105,4 +105,20 @@ describe('Slider', () => {
         expect(screen.getByText('v5')).toBeTruthy();
         expect(screen.getByLabelText('Brightness')).toBeTruthy();
     });
+
+    it('vertical renders the bare parts without step buttons and moves with the arrow keys', () => {
+        const onChange = vi.fn();
+
+        render(<Slider orientation="vertical" min={0} max={10} step={1} value={4} thumbAriaLabel="Level" title="Level 4" onChange={onChange} />);
+
+        expect(document.querySelector('.octane-slider-button-left')).toBeNull();
+        expect(document.querySelector('.octane-slider-vertical')?.getAttribute('title')).toBe('Level 4');
+
+        const slider = screen.getByRole('slider', { name: 'Level' });
+
+        expect(slider.getAttribute('aria-orientation')).toBe('vertical');
+
+        fireEvent.keyDown(slider, { key: 'ArrowUp' });
+        expect(onChange).toHaveBeenLastCalledWith(5, 0);
+    });
 });
