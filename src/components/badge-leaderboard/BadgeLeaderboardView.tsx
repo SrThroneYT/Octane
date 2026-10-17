@@ -22,7 +22,7 @@ import {
     leaderboardDivider,
     leaderboardDropdownOpener
 } from '../../assets/images/leaderboard_badge';
-import { Column, DraggableWindow, DraggableWindowPosition, Flex, LayoutAvatarImageView, Text } from '../../common';
+import { Column, DraggableWindow, DraggableWindowPosition, Flex, LayoutAvatarImageView, ListSelect, Text } from '../../common';
 import { BaseButton } from '../../common/BaseButton';
 
 type LeaderboardPage =
@@ -58,7 +58,6 @@ export const BadgeLeaderboardView: FC<{}> = (props) => {
     const [version, setVersion] = useState(0);
     const [categoryIndex, setCategoryIndex] = useState(0);
     const [entryPageIndex, setEntryPageIndex] = useState(0);
-    const [isCategoryMenuVisible, setIsCategoryMenuVisible] = useState(false);
 
     useEffect(() => {
         const linkTracker: ILinkEventTracker = {
@@ -174,16 +173,6 @@ export const BadgeLeaderboardView: FC<{}> = (props) => {
 
     useEffect(() => setEntryPageIndex(0), [categoryIndex]);
 
-    useEffect(() => {
-        if (!isCategoryMenuVisible) return;
-
-        const onWindowPointerDown = () => setIsCategoryMenuVisible(false);
-
-        window.addEventListener('pointerdown', onWindowPointerDown);
-
-        return () => window.removeEventListener('pointerdown', onWindowPointerDown);
-    }, [isCategoryMenuVisible]);
-
     const currentPage = pages[categoryIndex] || null;
     const allEntries = currentPage?.board?.entries || [];
     const viewerEntry = useMemo(() => {
@@ -243,34 +232,33 @@ export const BadgeLeaderboardView: FC<{}> = (props) => {
                         <span className="octane-badge-leaderboard__close-icon" style={{ backgroundImage: `url(${leaderboardButtonCloseSwf})` }} />
                     </BaseButton>
                     <div className="octane-badge-leaderboard__header">
-                        <BaseButton
-                            className="octane-badge-leaderboard__category-button"
-                            type="button"
-                            onPointerDown={(event) => event.stopPropagation()}
-                            onClick={() => setIsCategoryMenuVisible((value) => !value)}
-                        >
-                            <Text className="octane-badge-leaderboard__header-title">
-                                {currentPage?.title() || LocalizeText('badge_leaderboard.title.total_badges')}
-                            </Text>
-                            <img className="octane-badge-leaderboard__header-arrow" src={leaderboardDropdownOpener} alt="" />
-                        </BaseButton>
-                        {isCategoryMenuVisible && (
-                            <div className="octane-badge-leaderboard__category-menu" onPointerDown={(event) => event.stopPropagation()}>
-                                {pages.map((page, index) => (
-                                    <BaseButton
-                                        key={page.key}
-                                        className={`octane-badge-leaderboard__category-option ${index === categoryIndex ? 'is-active' : ''}`}
-                                        type="button"
-                                        onClick={() => {
-                                            setCategoryIndex(index);
-                                            setIsCategoryMenuVisible(false);
-                                        }}
-                                    >
-                                        {page.option()}
-                                    </BaseButton>
-                                ))}
-                            </div>
-                        )}
+                        <div onPointerDown={(event) => event.stopPropagation()}>
+                            <ListSelect
+                                aria-label={LocalizeText('badge_leaderboard.title.total_badges')}
+                                itemClassName="octane-badge-leaderboard__category-option"
+                                options={pages.map((page) => ({ value: page.key, label: page.option() }))}
+                                popupClassName="octane-badge-leaderboard__category-menu"
+                                positionerClassName="octane-badge-leaderboard__category-positioner"
+                                renderTrigger={() => (
+                                    <>
+                                        <Text className="octane-badge-leaderboard__header-title">
+                                            {currentPage?.title() || LocalizeText('badge_leaderboard.title.total_badges')}
+                                        </Text>
+                                        <img className="octane-badge-leaderboard__header-arrow" src={leaderboardDropdownOpener} alt="" />
+                                    </>
+                                )}
+                                side="bottom"
+                                sideOffset={-2}
+                                triggerClassName="octane-badge-leaderboard__category-button"
+                                value={currentPage?.key ?? ''}
+                                align="center"
+                                onValueChange={(key) => {
+                                    const index = pages.findIndex((page) => page.key === key);
+
+                                    if (index >= 0) setCategoryIndex(index);
+                                }}
+                            />
+                        </div>
                     </div>
                     <div className="octane-badge-leaderboard__content">
                         {isLoading && !leaderboard && <div className="octane-badge-leaderboard__state">{LocalizeText('generic.loading')}</div>}
