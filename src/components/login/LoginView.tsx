@@ -870,9 +870,9 @@ export const LoginView: FC<LoginViewProps> = ({ onAuthenticated, isEntering = fa
                         <div className="submit-row">
                             <LoginSubmitButton isEntering={isEntering} isLocked={isLocked} loginPingingServer={loginPingingServer} />
                         </div>
-                        <a className="forgot" onClick={() => setMode('forgot')}>
+                        <BaseButton className="forgot" onClick={() => setMode('forgot')}>
                             {t('login.forgot_password', 'Forgotten your password?')}
-                        </a>
+                        </BaseButton>
                     </form>
                 </div>
 

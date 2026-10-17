@@ -87,9 +87,9 @@ export const NameChangeInputView: FC<NameChangeLayoutViewProps> = (props) => {
             {suggestions && (
                 <div className="flex flex-col gap-2">
                     {suggestions.map((suggestion, index) => (
-                        <div key={index} className="octane-card-row p-1 cursor-pointer col" onClick={() => handleUsernameChange(suggestion)}>
+                        <BaseButton key={index} className="octane-card-row p-1 cursor-pointer col w-full text-left" onClick={() => handleUsernameChange(suggestion)}>
                             {suggestion}
-                        </div>
+                        </BaseButton>
                     ))}
                 </div>
             )}

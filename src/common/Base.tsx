@@ -7,6 +7,8 @@ export interface BaseProps<T = HTMLElement> extends DetailedHTMLProps<HTMLAttrib
     component?: ElementType;
     /** Only meaningful when `component` is a button. */
     disabled?: boolean;
+    /** Only meaningful when `component` is a button. */
+    type?: string | number;
     display?: DisplayType;
     fit?: boolean;
     fitV?: boolean;

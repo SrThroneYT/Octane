@@ -85,7 +85,7 @@ const RewardTrackPrizeView: FC<{
     };
 
     return (
-        <div
+        <BaseButton
             className={`octane-reward-track-prize octane-reward-track-prize-${state}`}
             style={column ? { gridColumn: column } : undefined}
             data-premium={prize.premium}
@@ -98,7 +98,7 @@ const RewardTrackPrizeView: FC<{
             </div>
             {state === 'premium_locked' && <div className="octane-reward-track-prize-marker octane-reward-track-prize-marker-locked" />}
             {state === 'claimed' && <div className="octane-reward-track-prize-marker octane-reward-track-prize-marker-claimed" />}
-        </div>
+        </BaseButton>
     );
 };
 
@@ -545,7 +545,7 @@ export const RewardTrackView: FC<{}> = () => {
                                             const level = task.activeLevel;
 
                                             return (
-                                                <div
+                                                <BaseButton
                                                     key={task.id}
                                                     className="octane-reward-track-task"
                                                     data-selected={selectedTask?.id === task.id}
@@ -574,7 +574,7 @@ export const RewardTrackView: FC<{}> = () => {
                                                         {level ? level.pointsReward : 0}
                                                         <img src={pointsIcon} alt="" className="octane-reward-track-points-icon" draggable={false} />
                                                     </div>
-                                                </div>
+                                                </BaseButton>
                                             );
                                         })}
                                     </div>

@@ -588,7 +588,7 @@ export const BadgeCreatorView: FC<{}> = () => {
                                         </svg>
                                     </BaseButton>
                                 </Hint>
-                                <div
+                                <BaseButton aria-label={argbToHex(selectedColor)}
                                     onClick={openColorPicker}
                                     title={argbToHex(selectedColor)}
                                     style={{

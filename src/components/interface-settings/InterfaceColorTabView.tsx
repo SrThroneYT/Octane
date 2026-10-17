@@ -173,7 +173,8 @@ export const InterfaceColorTabView: FC<{}> = () => {
             {/* Preset colors */}
             <div className="grid grid-cols-10 gap-0.5 mt-1">
                 {PRESET_COLORS.map((presetHex, i) => (
-                    <div
+                    <BaseButton
+                        aria-label={presetHex}
                         key={i}
                         className={`w-[24px] h-[24px] rounded cursor-pointer border hover:scale-110 transition-transform ${hexColor.toUpperCase() === presetHex.toUpperCase() ? 'border-white border-2 scale-110' : 'border-black/20'}`}
                         style={{ backgroundColor: presetHex }}
@@ -188,7 +189,7 @@ export const InterfaceColorTabView: FC<{}> = () => {
             </Text>
             <div className="grid grid-cols-6 gap-1 w-full">
                 {THEME_PRESETS.map((theme) => (
-                    <div
+                    <BaseButton
                         key={theme.name}
                         className={`flex flex-col items-center gap-0.5 p-1 rounded cursor-pointer hover:bg-black/5 transition-colors ${hexColor.toUpperCase() === theme.color.toUpperCase() ? 'ring-2 ring-white' : ''}`}
                         onClick={() => onThemeClick(theme.color, theme.alpha)}
@@ -200,7 +201,7 @@ export const InterfaceColorTabView: FC<{}> = () => {
                         <Text small className="text-black text-[10px]">
                             {LocalizeText(`interface.settings.theme.${theme.name}`)}
                         </Text>
-                    </div>
+                    </BaseButton>
                 ))}
             </div>
 
