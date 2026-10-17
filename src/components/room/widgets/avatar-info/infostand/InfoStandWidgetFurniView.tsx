@@ -852,7 +852,7 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
                         </div>
                         {avatarInfo.purchaseOfferId > 0 && (
                             <Flex>
-                                <Text pointer small underline variant="white" onClick={(event) => processButtonAction('buy_one')}>
+                                <Text component={BaseButton} type="button" pointer small underline variant="white" onClick={(event) => processButtonAction('buy_one')}>
                                     {LocalizeText('infostand.button.buy')}
                                 </Text>
                             </Flex>
@@ -865,12 +865,12 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
                         {avatarInfo.isOwner && avatarInfo.expiration >= 0 && (avatarInfo.rentCouldBeUsedForBuyout || avatarInfo.purchaseCouldBeUsedForBuyout) && (
                             <Flex gap={2}>
                                 {avatarInfo.rentCouldBeUsedForBuyout && (
-                                    <Text pointer small underline variant="white" onClick={() => CreateLinkEvent(`rent-furni/extend/${avatarInfo.id}/${avatarInfo.category}`)}>
+                                    <Text component={BaseButton} type="button" pointer small underline variant="white" onClick={() => CreateLinkEvent(`rent-furni/extend/${avatarInfo.id}/${avatarInfo.category}`)}>
                                         {localizeWithFallback('infostand.button.extend', 'Extend')}
                                     </Text>
                                 )}
                                 {avatarInfo.purchaseCouldBeUsedForBuyout && (
-                                    <Text pointer small underline variant="white" onClick={() => CreateLinkEvent(`rent-furni/buyout/${avatarInfo.id}/${avatarInfo.category}`)}>
+                                    <Text component={BaseButton} type="button" pointer small underline variant="white" onClick={() => CreateLinkEvent(`rent-furni/buyout/${avatarInfo.id}/${avatarInfo.category}`)}>
                                         {localizeWithFallback('infostand.button.buyout', 'Buy-out')}
                                     </Text>
                                 )}
@@ -878,7 +878,7 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
                         )}
                         {avatarInfo.expiration < 0 && avatarInfo.rentOfferId > 0 && (
                             <Flex>
-                                <Text pointer small underline variant="white" onClick={() => CreateLinkEvent(`catalog/open/offerId/${avatarInfo.rentOfferId}`)}>
+                                <Text component={BaseButton} type="button" pointer small underline variant="white" onClick={() => CreateLinkEvent(`catalog/open/offerId/${avatarInfo.rentOfferId}`)}>
                                     {localizeWithFallback('infostand.button.rent', 'Rent one')}
                                 </Text>
                             </Flex>
@@ -959,7 +959,7 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
                         {avatarInfo.groupId > 0 && (
                             <>
                                 <hr className="m-0 bg-[#0003] border-0 opacity-[.5] h-px" />
-                                <Flex pointer alignItems="center" gap={2} onClick={() => GetGroupInformation(avatarInfo.groupId)}>
+                                <Flex component={BaseButton} type="button" pointer alignItems="center" gap={2} onClick={() => GetGroupInformation(avatarInfo.groupId)}>
                                     <LayoutBadgeImageView badgeCode={getGroupBadgeCode()} isGroup={true} />
                                     <Text underline variant="white">
                                         {groupName}
@@ -1049,50 +1049,50 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
                                                     </Text>
                                                     <div className="flex flex-col items-center gap-[2px]">
                                                         <div className="flex gap-[0.6em]">
-                                                            <div
+                                                            <BaseButton type="button"
                                                                 className="bg-[#E55959] text-white w-[25px] h-[25px] border border-white cursor-pointer rounded-[3px] flex justify-center items-center transition-[filter] duration-300 hover:brightness-150 rotate-[225deg]"
                                                                 onClick={() => sendUpdate(-1, 0, furniLocationZ ?? 0, 0)}
                                                             >
                                                                 <GrFormNextLink size="1.7em" />
-                                                            </div>
-                                                            <div
+                                                            </BaseButton>
+                                                            <BaseButton type="button"
                                                                 className="bg-[#E55959] text-white w-[25px] h-[25px] border border-white cursor-pointer rounded-[3px] flex justify-center items-center transition-[filter] duration-300 hover:brightness-150 rotate-[315deg]"
                                                                 onClick={() => sendUpdate(0, -1, furniLocationZ ?? 0, 0)}
                                                             >
                                                                 <GrFormNextLink size="1.7em" />
-                                                            </div>
+                                                            </BaseButton>
                                                         </div>
                                                         <div className="flex gap-[0.6em]">
-                                                            <div
+                                                            <BaseButton type="button"
                                                                 className="bg-[#E55959] text-white w-[25px] h-[25px] border border-white cursor-pointer rounded-[3px] flex justify-center items-center transition-[filter] duration-300 hover:brightness-150 rotate-[135deg]"
                                                                 onClick={() => sendUpdate(0, 1, furniLocationZ ?? 0, 0)}
                                                             >
                                                                 <GrFormNextLink size="1.7em" />
-                                                            </div>
-                                                            <div
+                                                            </BaseButton>
+                                                            <BaseButton type="button"
                                                                 className="bg-[#E55959] text-white w-[25px] h-[25px] border border-white cursor-pointer rounded-[3px] flex justify-center items-center transition-[filter] duration-300 hover:brightness-150 rotate-[45deg]"
                                                                 onClick={() => sendUpdate(1, 0, furniLocationZ ?? 0, 0)}
                                                             >
                                                                 <GrFormNextLink size="1.7em" />
-                                                            </div>
+                                                            </BaseButton>
                                                         </div>
                                                     </div>
                                                     <Text small variant="white">
                                                         {LocalizeText('infostand.button.rotate')}
                                                     </Text>
                                                     <div className="flex justify-center gap-[0.6em]">
-                                                        <div
+                                                        <BaseButton type="button"
                                                             className="bg-[#D1A245] text-black w-[28px] h-[28px] border-2 border-[#eee] cursor-pointer rounded-full flex justify-center items-center transition-[filter] duration-300 hover:brightness-150"
                                                             onClick={() => sendUpdate(0, 0, furniLocationZ ?? 0, -1)}
                                                         >
                                                             <GrRotateLeft size="1.4em" />
-                                                        </div>
-                                                        <div
+                                                        </BaseButton>
+                                                        <BaseButton type="button"
                                                             className="bg-[#D1A245] text-black w-[28px] h-[28px] border-2 border-[#eee] cursor-pointer rounded-full flex justify-center items-center transition-[filter] duration-300 hover:brightness-150"
                                                             onClick={() => sendUpdate(0, 0, furniLocationZ ?? 0, 1)}
                                                         >
                                                             <GrRotateRight size="1.4em" />
-                                                        </div>
+                                                        </BaseButton>
                                                     </div>
                                                 </div>
                                                 <div className="flex-1 bg-[#3D5D63] rounded-[6px] border border-white p-[2px] flex flex-col gap-1">
@@ -1102,55 +1102,55 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
                                                     <NumberInput spellCheck={false} className="w-full text-xs bg-[#1a1a2a] text-white border border-[#ffffff44] rounded px-1 py-0.5" value={furniLocationZ !== null ? furniLocationZ.toString() : ''} onChange={handleHeightChange} onBlur={handleHeightBlur} min={0} max={40} step={0.1} />
                                                     <div className="flex justify-center gap-1">
                                                         <div className="flex flex-col items-center gap-[2px]">
-                                                            <div
+                                                            <BaseButton type="button"
                                                                 className="bg-[#247FD1] text-white w-[24px] h-[24px] border border-white cursor-pointer rounded-[3px] leading-none flex justify-center items-center transition-[filter] duration-300 hover:brightness-150"
                                                                 onClick={() => adjustHeight(1)}
                                                             >
                                                                 ↑
-                                                            </div>
+                                                            </BaseButton>
                                                             <Text small variant="white" align="center">
                                                                 █
                                                             </Text>
-                                                            <div
+                                                            <BaseButton type="button"
                                                                 className="bg-[#44A750] text-white w-[24px] h-[24px] border border-white cursor-pointer rounded-[3px] leading-none flex justify-center items-center transition-[filter] duration-300 hover:brightness-150"
                                                                 onClick={() => adjustHeight(-1)}
                                                             >
                                                                 ↓
-                                                            </div>
+                                                            </BaseButton>
                                                         </div>
                                                         <div className="flex flex-col items-center gap-[2px]">
-                                                            <div
+                                                            <BaseButton type="button"
                                                                 className="bg-[#247FD1] text-white w-[24px] h-[24px] border border-white cursor-pointer rounded-[3px] leading-none flex justify-center items-center transition-[filter] duration-300 hover:brightness-150"
                                                                 onClick={() => adjustHeight(0.1)}
                                                             >
                                                                 ↑
-                                                            </div>
+                                                            </BaseButton>
                                                             <Text small variant="white" align="center">
                                                                 ▄
                                                             </Text>
-                                                            <div
+                                                            <BaseButton type="button"
                                                                 className="bg-[#44A750] text-white w-[24px] h-[24px] border border-white cursor-pointer rounded-[3px] leading-none flex justify-center items-center transition-[filter] duration-300 hover:brightness-150"
                                                                 onClick={() => adjustHeight(-0.1)}
                                                             >
                                                                 ↓
-                                                            </div>
+                                                            </BaseButton>
                                                         </div>
                                                         <div className="flex flex-col items-center gap-[2px]">
-                                                            <div
+                                                            <BaseButton type="button"
                                                                 className="bg-[#247FD1] text-white w-[24px] h-[24px] border border-white cursor-pointer rounded-[3px] leading-none flex justify-center items-center transition-[filter] duration-300 hover:brightness-150"
                                                                 onClick={() => adjustHeight(0.01)}
                                                             >
                                                                 ↑
-                                                            </div>
+                                                            </BaseButton>
                                                             <Text small variant="white" align="center">
                                                                 _
                                                             </Text>
-                                                            <div
+                                                            <BaseButton type="button"
                                                                 className="bg-[#44A750] text-white w-[24px] h-[24px] border border-white cursor-pointer rounded-[3px] leading-none flex justify-center items-center transition-[filter] duration-300 hover:brightness-150"
                                                                 onClick={() => adjustHeight(-0.01)}
                                                             >
                                                                 ↓
-                                                            </div>
+                                                            </BaseButton>
                                                         </div>
                                                     </div>
                                                 </div>

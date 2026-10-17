@@ -16,6 +16,7 @@ import {
 import { useFurnitureDimmerWidget, useOctaneEvent } from '../../../../hooks';
 import { classNames } from '../../../../layout';
 import { Checkbox } from '../../../../common/Checkbox';
+import { BaseButton } from '../../../../common/BaseButton';
 
 export const FurnitureDimmerView: FC<{}> = (props) => {
     const [isVisible, setIsVisible] = useState(false);
@@ -94,7 +95,7 @@ export const FurnitureDimmerView: FC<{}> = (props) => {
                                 <Grid columnCount={7} gap={1}>
                                     {FurnitureDimmerUtilities.AVAILABLE_COLORS.map((color, index) => {
                                         return (
-                                            <Column
+                                            <Column component={BaseButton} type="button"
                                                 key={index}
                                                 fullWidth
                                                 pointer

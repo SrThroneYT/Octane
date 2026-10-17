@@ -2,6 +2,7 @@ import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { GetConfigurationValue, LocalizeText } from '../../../../../api';
 import { LayoutBadgeImageView, Popover, PopoverContent } from '../../../../../common';
 import { useInventoryBadges } from '../../../../../hooks';
+import { BaseButton } from '../../../../../common/BaseButton';
 
 interface InfoStandBadgeSlotProps {
     slotIndex: number;
@@ -39,13 +40,13 @@ const BadgeMiniPicker: FC<{
             ) : (
                 <div className="grid grid-cols-4 gap-1 max-h-[160px] overflow-y-auto">
                     {filtered.slice(0, 40).map((code) => (
-                        <div
+                        <BaseButton type="button"
                             key={code}
                             className="flex items-center justify-center w-[36px] h-[36px] cursor-pointer rounded border border-transparent hover:border-white/40 hover:bg-white/10 transition-all"
                             onClick={() => onSelect(code)}
                         >
                             <LayoutBadgeImageView badgeCode={code} />
-                        </div>
+                        </BaseButton>
                     ))}
                     {filtered.length === 0 && (
                         <span className="text-xs text-white/40 col-span-4 text-center py-2">{LocalizeText('generic.no_results_found')}</span>

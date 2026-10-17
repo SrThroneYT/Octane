@@ -294,18 +294,19 @@ export const RoomToolsWidgetView: FC<{}> = (props) => {
                         </BaseButton>
                     </div>
                     {tools.map((tool) => (
-                        <div
+                        <BaseButton type="button"
                             key={tool.action}
                             className={classNames('room-tool-row', tool.disabled && 'is-disabled')}
                             title={tool.label}
+                            aria-disabled={tool.disabled || undefined}
                             onClick={() => !tool.disabled && handleToolClick(tool.action)}
                         >
                             <div className={classNames('octane-icon', tool.icon)} />
                             <span className="room-tool-label">{tool.label}</span>
-                        </div>
+                        </BaseButton>
                     ))}
                     {plugins.map((plugin) => (
-                        <div
+                        <BaseButton type="button"
                             key={plugin.name}
                             className="room-tool-row"
                             title={plugin.label}
@@ -313,22 +314,25 @@ export const RoomToolsWidgetView: FC<{}> = (props) => {
                         >
                             <div className={classNames('octane-icon', plugin.icon || 'icon-cog')} />
                             <span className="room-tool-label">{plugin.label}</span>
-                        </div>
+                        </BaseButton>
                     ))}
                     <div className="room-history-controls">
-                        <div
+                        <BaseButton type="button"
                             className={classNames('octane-icon', canGoBack ? 'cursor-pointer icon-room-history-back-enabled' : 'icon-room-history-back-disabled')}
                             title={LocalizeText('room.history.button.back.tooltip')}
+                            aria-disabled={!canGoBack}
                             onClick={() => canGoBack && handleToolClick('room_history_back')}
                         />
-                        <div
+                        <BaseButton type="button"
                             className={classNames('octane-icon', hasHistory ? 'cursor-pointer icon-room-history-enabled' : 'icon-room-history-disabled')}
                             title={LocalizeText('room.history.button.tooltip')}
+                            aria-disabled={!hasHistory}
                             onClick={() => hasHistory && handleToolClick('room_history')}
                         />
-                        <div
+                        <BaseButton type="button"
                             className={classNames('octane-icon', canGoNext ? 'cursor-pointer icon-room-history-next-enabled' : 'icon-room-history-next-disabled')}
                             title={LocalizeText('room.history.button.forward.tooltip')}
+                            aria-disabled={!canGoNext}
                             onClick={() => canGoNext && handleToolClick('room_history_next')}
                         />
                     </div>
@@ -380,7 +384,7 @@ export const RoomToolsWidgetView: FC<{}> = (props) => {
                     >
                         <div className="flex flex-col px-3 py-2 rounded octane-room-history">
                             {roomHistory.map((history) => (
-                                <Text
+                                <Text component={BaseButton} type="button"
                                     key={history.roomId}
                                     bold={history.roomId === navigatorData.currentRoomId}
                                     variant="white"

@@ -234,13 +234,13 @@ export const InfoStandWidgetUserView: FC<InfoStandWidgetUserViewProps> = (props)
                 </div>
                 <div className="octane-infostand__rule" />
                 <div className="octane-infostand__figure-row">
-                    <div className={`octane-infostand__avatar-well profile-background ${infostandBackgroundClass}`} onClick={handleProfileClick}>
+                    <BaseButton type="button" className={`octane-infostand__avatar-well profile-background ${infostandBackgroundClass}`} onClick={handleProfileClick}>
                         <Base position="absolute" className={`profile-stand ${infostandStandClass}`} />
                         <LayoutAvatarImageView direction={2} figure={avatarInfo.figure} />
                         <Base position="absolute" className={`profile-overlay ${infostandOverlayClass}`} />
-                    </div>
+                    </BaseButton>
                     {avatarInfo.type === AvatarInfoUser.OWN_USER && (
-                        <Base
+                        <Base component={BaseButton} type="button"
                             className="background-edit-icon background-edit-position"
                             style={{ pointerEvents: 'auto', cursor: 'pointer' }}
                             onClick={handleEditClick}
@@ -255,7 +255,7 @@ export const InfoStandWidgetUserView: FC<InfoStandWidgetUserViewProps> = (props)
                             items.push(<InfoStandBadgeSlotView key={0} slotIndex={0} badgeCode={avatarInfo.badges[0]} isOwnUser={isOwnUser} />);
                             if (showGroup) {
                                 items.push(
-                                    <Flex
+                                    <Flex component={BaseButton} type="button" disabled={avatarInfo.groupId <= 0}
                                         key="group"
                                         center
                                         className="relative h-[42px] w-[42px] bg-no-repeat bg-center"
@@ -292,7 +292,7 @@ export const InfoStandWidgetUserView: FC<InfoStandWidgetUserViewProps> = (props)
                         </Text>
                     )}
                     {isOwnUser && !isEditingMotto && (
-                        <Text
+                        <Text component={BaseButton} type="button" align="start"
                             fullWidth
                             pointer
                             textBreak

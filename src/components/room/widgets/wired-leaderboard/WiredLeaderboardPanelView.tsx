@@ -204,12 +204,12 @@ export const WiredLeaderboardPanelView: FC<WiredLeaderboardPanelViewProps> = (pr
             {choicesOpen && choices.length > 1 && (
                 <div className="octane-wired-leaderboard__choices">
                     {choices.map((choice) => (
-                        <div key={choice.variableId} className={`octane-wired-leaderboard__choice${ choice.variableId === variableId ? ' is-selected' : '' }`} onClick={() => {
+                        <BaseButton type="button" key={choice.variableId} className={`octane-wired-leaderboard__choice${ choice.variableId === variableId ? ' is-selected' : '' }`} onClick={() => {
                             setChoicesOpen(false);
                             onSelectVariable?.(choice.variableId);
                         }}>
                             {choice.displayName}
-                        </div>
+                        </BaseButton>
                     ))}
                 </div>
             )}
@@ -232,10 +232,10 @@ export const WiredLeaderboardPanelView: FC<WiredLeaderboardPanelViewProps> = (pr
                         <div className="octane-wired-leaderboard__rank" style={{ width: LEADERBOARD_RANK_GUTTER }}>{row.rank}</div>
                         {columns.map((column, index) => (column.type === LeaderboardColumnType.USERNAME)
                             ? (
-                                <div key={index} className="octane-wired-leaderboard__user" style={{ width: LEADERBOARD_COLUMN_PIXELS[column.width] }} onClick={() => GetUserProfile(row.userId)}>
+                                <BaseButton type="button" key={index} className="octane-wired-leaderboard__user" style={{ width: LEADERBOARD_COLUMN_PIXELS[column.width] }} onClick={() => GetUserProfile(row.userId)}>
                                     <div className="octane-wired-leaderboard__face">{row.figure && <LayoutAvatarImageView figure={row.figure} headOnly compactHead compactHeadSize={18} direction={2} />}</div>
                                     <span>{row.username}</span>
-                                </div>
+                                </BaseButton>
                             )
                             : <div key={index} className={`octane-wired-leaderboard__cell ${ columnAlign(column.type) }`} style={{ width: LEADERBOARD_COLUMN_PIXELS[column.width] }}>{cellText(row, column.type, now)}</div>)}
                     </div>
