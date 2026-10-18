@@ -4,7 +4,7 @@ import { blitRoomCanvasToViewfinder, CameraPicture, CaptureCameraRenderMessage, 
 import { Column, DraggableWindow } from '../../../common';
 import { useCamera, useNotification, useRoom } from '../../../hooks';
 import { getNextEmptyCameraSlot, willFillLastCameraSlot } from '../CameraAirUtilities';
-import { CameraCenteredText } from './CameraNativeText';
+import { CameraCenteredText, CameraNativeText } from './CameraNativeText';
 import { BaseButton } from '../../../common/BaseButton';
 import { Hint } from '../../../common/Tooltip';
 
@@ -258,20 +258,20 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
                     <div ref={flashRef} className="octane-camera-capture__flash" aria-hidden="true" />
                     {selectedPicture && (
                         <div className="octane-camera-capture__preview-actions">
-                            {/* A real <button>: the drag handle lets only native controls take the mouse. */}
+                            {/* A real <BaseButton>: the drag handle lets only native controls take the mouse. */}
                             <Hint content={LocalizeText('camera.editor.button.tooltip')}>
-                                <BaseButton aria-label={LocalizeText('camera.editor.button.tooltip')}
+                                <BaseButton
                                     className="habbo-btn-primary octane-camera-capture__editor-button"
+                                    aria-label={LocalizeText('camera.editor.button.tooltip')}
                                     type="button"
                                     onClick={onEdit}
                                 >
-                                    <CameraCenteredText
+                                    <CameraNativeText
                                         background={0x000000}
                                         color={0xffffff}
                                         style={{ mixBlendMode: 'screen' }}
                                         text={LocalizeText('camera.editor.button.text')}
                                         textStyle="button_shiny_bold"
-                                        width={38}
                                     />
                                 </BaseButton>
                             </Hint>

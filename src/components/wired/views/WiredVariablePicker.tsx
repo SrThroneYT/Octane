@@ -1,5 +1,4 @@
-import { Popover } from '@base-ui/react/popover';
-import { CSSProperties, FC, KeyboardEvent, MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { CSSProperties, FC, KeyboardEvent, MouseEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { GetRoomSession, LocalizeText } from '../../../api';
 import cancelSearchIcon from '../../../assets/images/wired/var/ar_picker_cancel_search.png';
@@ -23,7 +22,7 @@ import {
 } from './WiredVariablePickerData';
 import { addWiredVariablePickerHistory, getWiredVariablePickerHistory, registerWiredVariablePickerFinalizer } from './WiredVariablePickerHistory';
 import { BaseButton } from '../../../common/BaseButton';
-import { TabBar, TabBarTab } from '../../../common/TabBar';
+import { Hint } from '../../../common/Tooltip';
 
 /*
  * Port of the AIR variable picker, build WIN63-202610131318-860371703, under
@@ -42,6 +41,17 @@ interface WiredVariablePickerProps {
     onSelect: (entry: IWiredVariablePickerEntry) => void;
     /** NewVariablePicker.select(null): the search field was emptied or cancelled (NewVariablePicker.as:276-291, 496-500, 571-578). */
     onClear?: () => void;
+    /**
+     * NewVariablePicker.configureExternalPopup (NewVariablePicker.as:104-120, 355-383): no collapsed field; the expanded
+     * view (tabs, search field, list) is drawn in place inside the owner's popup, at `width`.
+     */
+    embedded?: IWiredVariablePickerEmbedding;
+}
+
+export interface IWiredVariablePickerEmbedding {
+    width: number;
+    /** The picker hid its expanded view (a selection, Escape). */
+    onClose: () => void;
 }
 
 /** TabButtonConfigs.as:56-66. */
@@ -91,11 +101,6 @@ const NODE_HEIGHT = 20;
 const ROOT_ROW_GUTTER = 1;
 const SUBLIST_EXTRA_HEIGHT = 6;
 const SUBLIST_EXTRA_WIDTH = 2;
-
-/** AIR does not flip or shift the open picker: it sits exactly over the collapsed field. */
-const NO_COLLISION = { side: 'none', align: 'none', fallbackAxisSide: 'none' } as const;
-const LIST_SELECTOR = '.octane-wired__vpicker-list';
-const isInsideList = (node: EventTarget | null) => node instanceof Element && !!node.closest(LIST_SELECTOR);
 
 const isUserCreated = (entry: IWiredVariablePickerEntry) =>
     entry.variableType === undefined ? entry.kind === 'custom' : entry.variableType === WIRED_VARIABLE_TYPE_USER || entry.variableType === WIRED_VARIABLE_TYPE_USER_DERIVED;
@@ -171,13 +176,11 @@ interface INodeListProps {
     width: number;
     isRoot: boolean;
     position?: { left: number; top: number };
-    /** Sub-lists are fixed to the viewport, so they render beside the picker's popup instead of inside its positioned box. */
-    portalTarget: HTMLElement | null;
     onSelect: (entry: IWiredVariablePickerEntry) => void;
 }
 
 /** VariableNodeListView + VariableNodeView: one list level; hovering a node with children opens its sub-list beside it. */
-const WiredVariableNodeList: FC<INodeListProps> = ({ nodes, width, isRoot, position, portalTarget, onSelect }) => {
+const WiredVariableNodeList: FC<INodeListProps> = ({ nodes, width, isRoot, position, onSelect }) => {
     const [hover, setHover] = useState<{ index: number; left: number; top: number } | null>(null);
     const height = listHeight(nodes.length);
     // VariableNodeListView.as:52-66, 74-77: rows are the list width less the scrollbar, and 3px less inside a sub-list.
@@ -253,24 +256,16 @@ const WiredVariableNodeList: FC<INodeListProps> = ({ nodes, width, isRoot, posit
                     );
                 })}
             </div>
-            {hover &&
-                hoveredNode &&
-                hoveredNode.children.size > 0 &&
-                portalTarget &&
-                createPortal(
-                    <div className="octane-wired octane-wired__variable-picker-portal">
-                        <WiredVariableNodeList
-                            key={`${hover.index}:${hoveredNode.name}`}
-                            nodes={[...hoveredNode.children.values()]}
-                            width={rowWidth - SUBLIST_EXTRA_WIDTH}
-                            isRoot={false}
-                            position={{ left: hover.left, top: hover.top }}
-                            portalTarget={portalTarget}
-                            onSelect={onSelect}
-                        />
-                    </div>,
-                    portalTarget
-                )}
+            {hover && hoveredNode && hoveredNode.children.size > 0 && (
+                <WiredVariableNodeList
+                    key={`${hover.index}:${hoveredNode.name}`}
+                    nodes={[...hoveredNode.children.values()]}
+                    width={rowWidth - SUBLIST_EXTRA_WIDTH}
+                    isRoot={false}
+                    position={{ left: hover.left, top: hover.top }}
+                    onSelect={onSelect}
+                />
+            )}
         </>
     );
 };
@@ -281,10 +276,12 @@ export const WiredVariablePicker: FC<WiredVariablePickerProps> = (props) => {
         selectedToken = '',
         onSelect,
         onClear,
+        embedded,
         placeholder = LocalizeText('wiredfurni.variable_picker.search'),
         emptyText = LocalizeText('wiredfurni.variable_picker.empty')
     } = props;
     const containerRef = useRef<HTMLDivElement>(null);
+    const panelRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const [isExpanded, setIsExpanded] = useState(false);
     const [tabId, setTabId] = useState<number | null>(null);
@@ -293,7 +290,7 @@ export const WiredVariablePicker: FC<WiredVariablePickerProps> = (props) => {
     const [text, setText] = useState('');
     // NewVariablePicker.var_1006: the field was typed in since the last selection.
     const [dirty, setDirty] = useState(false);
-    const [panelRect, setPanelRect] = useState<{ width: number; height: number } | null>(null);
+    const [panelRect, setPanelRect] = useState<{ left: number; top: number; width: number } | null>(null);
     const portalTarget = typeof document !== 'undefined' ? (document.getElementById('draggable-windows-container') ?? document.body) : null;
 
     // NewVariablePicker.filteredAllVariables (NewVariablePicker.as:256-274): every variable with a name; invisible
@@ -332,6 +329,8 @@ export const WiredVariablePicker: FC<WiredVariablePickerProps> = (props) => {
         setIsExpanded(false);
         setPanelRect(null);
         setHoveredTab(null);
+
+        if (embedded) embedded.onClose();
     };
 
     const select = (entry: IWiredVariablePickerEntry | null) => {
@@ -354,11 +353,17 @@ export const WiredVariablePicker: FC<WiredVariablePickerProps> = (props) => {
     const expand = () => {
         if (isExpanded) return;
 
-        const rect = containerRef.current?.getBoundingClientRect();
+        const rect = embedded ? null : containerRef.current?.getBoundingClientRect();
 
         // NewVariablePicker.expandView (NewVariablePicker.as:355-383): the popup takes the picker's width and sits so
-        // that its search field covers the collapsed field.
-        setPanelRect({ width: Math.round(rect?.width ?? 0), height: Math.round(rect?.height ?? 0) });
+        // that its search field covers the collapsed field; an external popup takes its anchor's width.
+        setPanelRect(
+            embedded
+                ? { left: 0, top: 0, width: embedded.width }
+                : rect
+                  ? { left: rect.left, top: rect.top, width: Math.round(rect.width) }
+                  : { left: 0, top: 0, width: 0 }
+        );
         setIsExpanded(true);
         setDirty(false);
 
@@ -374,38 +379,47 @@ export const WiredVariablePicker: FC<WiredVariablePickerProps> = (props) => {
         inputRef.current?.focus();
     };
 
-    // NewVariablePicker.onDeactivate/completeDeactivation (NewVariablePicker.as:421-467): a press outside the open
-    // picker (Base UI's outside press / focus-out dismissal) takes a typed exact name, otherwise the field falls back
-    // to the current selection. The lists, sub-lists included, count as inside.
-    const onOpenChange = (open: boolean, details: { reason: string; event: Event; cancel: () => void }) => {
-        if (open) return;
+    // An embedded picker is its owner's open popup: expanded for as long as it is mounted.
+    useLayoutEffect(() => {
+        if (embedded) expand();
+    }, []);
 
-        if (details.reason === 'escape-key') {
+    // The single input moves between the collapsed and the expanded wrapper and keeps focus (NewVariablePicker.as:375-376, 413-419).
+    useLayoutEffect(() => {
+        if (isExpanded) inputRef.current?.focus();
+    }, [isExpanded]);
+
+    // NewVariablePicker.onDeactivate/completeDeactivation (NewVariablePicker.as:421-467).
+    useEffect(() => {
+        // The owner of an embedded picker closes its popup on an outside click.
+        if (!isExpanded || embedded) return;
+
+        const onMouseDown = (event: globalThis.MouseEvent) => {
+            const target = event.target as Node;
+
+            if (panelRef.current?.contains(target) || containerRef.current?.contains(target)) return;
+            if ((target as HTMLElement)?.closest?.('.octane-wired__vpicker-list')) return;
+
+            // A typed exact name is taken; otherwise the field falls back to the current selection.
+            const match = dirty ? byDisplayName(text) : null;
+
+            if (match) {
+                select(match);
+                return;
+            }
+
+            if (dirty) {
+                setText(selected?.displayLabel ?? '');
+                setDirty(false);
+            }
+
             collapse();
-            return;
-        }
+        };
 
-        const next = typeof FocusEvent !== 'undefined' && details.event instanceof FocusEvent ? details.event.relatedTarget : (details.event?.target ?? null);
+        document.addEventListener('mousedown', onMouseDown);
 
-        if (isInsideList(next) || (next instanceof Node && containerRef.current?.contains(next))) {
-            details.cancel();
-            return;
-        }
-
-        const match = dirty ? byDisplayName(text) : null;
-
-        if (match) {
-            select(match);
-            return;
-        }
-
-        if (dirty) {
-            setText(selected?.displayLabel ?? '');
-            setDirty(false);
-        }
-
-        collapse();
-    };
+        return () => document.removeEventListener('mousedown', onMouseDown);
+    });
 
     const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
         // NewVariablePicker.onKeyUp (NewVariablePicker.as:491-535).
@@ -491,64 +505,72 @@ export const WiredVariablePicker: FC<WiredVariablePickerProps> = (props) => {
         </div>
     );
 
+    const expandedView = panelRect && (
+        <>
+            <div className="octane-wired__vpicker-tabs">
+                {TAB_BUTTONS.map((tab, index) => {
+                    const colors = tab.id === tabId ? TAB_COLORS.active : hoveredTab === tab.id ? TAB_COLORS.hover : TAB_COLORS.none;
+
+                    return (
+                        <Hint key={tab.id} content={LocalizeText(tab.tooltip)}>
+                            <BaseButton
+                                aria-pressed={tab.id === tabId}
+                                className="octane-wired__vpicker-tab"
+                                aria-label={LocalizeText(tab.tooltip)}
+                                type="button"
+                                style={{ width: widths[index], background: colors.border, borderBottom: `1px solid ${colors.shadow}` }}
+                                onClick={() => selectTab(tab.id)}
+                                onMouseEnter={() => setHoveredTab(tab.id)}
+                                onMouseLeave={() => setHoveredTab(null)}
+                            >
+                                <img alt={LocalizeText(tab.tooltip)} src={tab.icon} style={{ opacity: colors.blend }} />
+                            </BaseButton>
+                        </Hint>
+                    );
+                })}
+            </div>
+            {/* Live AIR: the tab row is above the search field. */}
+            <div className="octane-wired__vpicker-search">{input}</div>
+            <div className="octane-wired__vpicker-content">
+                {rootNodes.length ? (
+                    <WiredVariableNodeList key={`${tabId}:${tabLoad}`} isRoot nodes={rootNodes} width={panelRect.width - 2} onSelect={select} />
+                ) : (
+                    <div className="octane-wired__vpicker-empty">{emptyText}</div>
+                )}
+            </div>
+        </>
+    );
+
+    if (embedded) {
+        return (
+            // `width` is the popup's outer width; the view sits inside its 1px frame.
+            <div ref={panelRef} className="octane-wired__vpicker octane-wired__vpicker-embedded" style={{ width: embedded.width - 2 }}>
+                {isExpanded && expandedView}
+            </div>
+        );
+    }
+
     return (
         <div className="octane-wired__vpicker" ref={containerRef}>
             <div className="octane-wired__vpicker-collapsed" style={isExpanded ? { visibility: 'hidden' } : undefined}>
                 {!isExpanded && input}
             </div>
 
-            <Popover.Root modal={false} open={isExpanded && !!panelRect} onOpenChange={onOpenChange}>
-                <Popover.Portal container={portalTarget}>
-                    <Popover.Positioner
-                        align="start"
-                        anchor={containerRef}
-                        className="octane-wired octane-wired__vpicker-positioner"
-                        collisionAvoidance={NO_COLLISION}
-                        positionMethod="fixed"
-                        side="bottom"
-                        sideOffset={-(panelRect?.height ?? 0)}
-                    >
-                        <Popover.Popup className="octane-wired__vpicker-expanded" finalFocus={false} initialFocus={inputRef} style={{ width: panelRect?.width }}>
-                            <TabBar className="octane-wired__vpicker-tabs" value={tabId}>
-                                {TAB_BUTTONS.map((tab, index) => {
-                                    const colors = tab.id === tabId ? TAB_COLORS.active : hoveredTab === tab.id ? TAB_COLORS.hover : TAB_COLORS.none;
-
-                                    return (
-                                        <TabBarTab
-                                            key={tab.id}
-                                            value={tab.id}
-                                            className="octane-wired__vpicker-tab"
-                                            title={LocalizeText(tab.tooltip)}
-                                            style={{ width: widths[index], background: colors.border, borderBottom: `1px solid ${colors.shadow}` }}
-                                            onClick={() => selectTab(tab.id)}
-                                            onMouseEnter={() => setHoveredTab(tab.id)}
-                                            onMouseLeave={() => setHoveredTab(null)}
-                                        >
-                                            <img alt={LocalizeText(tab.tooltip)} src={tab.icon} style={{ opacity: colors.blend }} />
-                                        </TabBarTab>
-                                    );
-                                })}
-                            </TabBar>
-                            {/* Live AIR: the tab row is above the search field. */}
-                            <div className="octane-wired__vpicker-search">{input}</div>
-                            <div className="octane-wired__vpicker-content">
-                                {rootNodes.length && panelRect ? (
-                                    <WiredVariableNodeList
-                                        key={`${tabId}:${tabLoad}`}
-                                        isRoot
-                                        nodes={rootNodes}
-                                        width={panelRect.width - 2}
-                                        portalTarget={portalTarget}
-                                        onSelect={select}
-                                    />
-                                ) : (
-                                    <div className="octane-wired__vpicker-empty">{emptyText}</div>
-                                )}
-                            </div>
-                        </Popover.Popup>
-                    </Popover.Positioner>
-                </Popover.Portal>
-            </Popover.Root>
+            {isExpanded &&
+                panelRect &&
+                portalTarget &&
+                createPortal(
+                    <div className="octane-wired octane-wired__variable-picker-portal">
+                        <div
+                            ref={panelRef}
+                            className="octane-wired__vpicker-expanded"
+                            style={{ left: panelRect.left, top: panelRect.top, width: panelRect.width }}
+                        >
+                            {expandedView}
+                        </div>
+                    </div>,
+                    portalTarget
+                )}
         </div>
     );
 };

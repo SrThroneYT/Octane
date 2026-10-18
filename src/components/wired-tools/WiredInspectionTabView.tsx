@@ -1,4 +1,5 @@
 import { KeyboardEvent } from 'react';
+import { GetConfigurationValue, LocalizeText } from '../../api';
 import wiredGlobalPlaceholderImage from '../../assets/images/wiredtools/wired_global_placeholder.png';
 import { Button, LayoutAvatarImageView, LayoutPetImageView, LayoutRoomObjectImageView, Text } from '../../common';
 import { INSPECTION_ELEMENTS } from './WiredCreatorTools.constants';
@@ -58,6 +59,11 @@ export interface WiredInspectionTabViewProps {
     // remove variable
     canRemoveInspectionVariable: boolean;
     onRemoveInspectionVariable: () => void;
+
+    // AIR "highlight_wired_btn": the wired boxes that pick the inspected furni
+    canHighlightWireds?: boolean;
+    isHighlightingWireds?: boolean;
+    onToggleHighlightWireds?: () => void;
 }
 
 /**
@@ -88,7 +94,10 @@ export const WiredInspectionTabView = (props: WiredInspectionTabViewProps) => {
         canGiveInspectionVariable,
         onGiveInspectionVariable,
         canRemoveInspectionVariable,
-        onRemoveInspectionVariable
+        onRemoveInspectionVariable,
+        canHighlightWireds = false,
+        isHighlightingWireds = false,
+        onToggleHighlightWireds
     } = props;
 
     const inspectionType = useWiredCreatorToolsUiStore((s) => s.inspectionType);
@@ -151,6 +160,25 @@ export const WiredInspectionTabView = (props: WiredInspectionTabViewProps) => {
                             >
                                 {previewPlaceholder}
                             </div>
+                        )}
+                        {inspectionType === 'furni' && (
+                            <Hint content={LocalizeText('wiredmenu.inspection.highlight_wireds')}>
+                                <BaseButton
+                                    aria-label={LocalizeText('wiredmenu.inspection.highlight_wireds')}
+                                    aria-pressed={isHighlightingWireds}
+                                    className={`absolute top-[6px] right-[6px] w-[25px] h-[26px] rounded border flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,.7)] disabled:opacity-50 disabled:cursor-default ${isHighlightingWireds ? 'border-[#222] bg-[#d9d6cf]' : 'border-[#7f7f7f] bg-[#ece9e1]'}`}
+                                    disabled={!canHighlightWireds}
+                                    type="button"
+                                    onClick={onToggleHighlightWireds}
+                                >
+                                    <img
+                                        alt=""
+                                        className="[image-rendering:pixelated]"
+                                        draggable={false}
+                                        src={GetConfigurationValue<string>('catalog.asset.icon.url', '').replace('%name%', '80')}
+                                    />
+                                </BaseButton>
+                            </Hint>
                         )}
                     </div>
                 </div>
