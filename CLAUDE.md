@@ -45,8 +45,7 @@ read that before starting anything non-trivial.
 | Dev server | `yarn start` |
 | Production build | `yarn build` |
 | Serve production build | `yarn preview` (defaults to http://localhost:4173) |
-| Lint | `yarn lint` (Biome) |
-| Hook-order lint (CI gate) | `yarn lint:hooks` |
+| Lint | `yarn eslint` |
 | Type-check (TS 7 native, fast) | `yarn typecheck` |
 | Test (Vitest, once) | `yarn test` |
 | Test (watch) | `yarn test:watch` |
@@ -110,8 +109,8 @@ login/WebGL, so they're not usable for in-game verification.
 - TypeScript: TS 6 for build, **TS 7 native preview** (`@typescript/native-preview`,
   invoked via `tsgo`) for the `typecheck` script.
 - Vite 8 + `@vitejs/plugin-react` 6 + `babel-plugin-react-compiler` 1.0.
-- Biome for lint and format; ESLint 10 + `@typescript-eslint/parser` 8 + `eslint-plugin-react-hooks@7`
-  only for the Rules of Hooks gate (`yarn lint:hooks`).
+- ESLint 10 + `typescript-eslint` 8 + `eslint-plugin-react-hooks@7` +
+  `eslint-plugin-react-compiler`.
 - TanStack Query 5 (`@tanstack/react-query` + devtools).
 - Zustand 5.
 - Vitest 3 + jsdom + `@testing-library/react` + `@testing-library/jest-dom`.

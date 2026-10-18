@@ -216,8 +216,7 @@ file at a time; single files keep working.
 | Production build with fresh browser data | `yarn build:prod` |
 | Preview the production build | `yarn preview` |
 | Type-check | `yarn typecheck` |
-| Lint | `yarn lint` (Biome) |
-| Hook-order lint | `yarn lint:hooks` |
+| Lint | `yarn eslint` |
 | Tests | `yarn test` |
 
 During development, game assets are served from a sibling `Nitro-Files/` folder (`/nitro-assets` and `/swf`), so you
