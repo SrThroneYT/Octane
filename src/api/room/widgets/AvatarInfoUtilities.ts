@@ -18,7 +18,7 @@ import {
     RoomWidgetEnumItemExtradataParameter
 } from '@octane/renderer';
 import { GetRoomSession, IsAnyRoomController, IsOwnerOfFurniture } from '../../octane';
-import { LocalizeText } from '../../utils';
+import { IsBuildersClubFurniId, IsTemporaryFurniId, LocalizeText } from '../../utils';
 import { AvatarInfoFurni } from './AvatarInfoFurni';
 import { AvatarInfoName } from './AvatarInfoName';
 import { AvatarInfoPet } from './AvatarInfoPet';
@@ -86,6 +86,8 @@ export class AvatarInfoUtilities {
 
         furniInfo.id = objectId;
         furniInfo.category = category;
+        furniInfo.isTemporary = IsTemporaryFurniId(objectId);
+        furniInfo.isBuildersClub = IsBuildersClubFurniId(objectId);
 
         const model = roomObject.model;
 
@@ -223,7 +225,7 @@ export class AvatarInfoUtilities {
                 userInfo.canBeBanned = this.canBeBanned(userInfo);
             }
 
-            userInfo.isIgnored = GetSessionDataManager().isUserIgnored(userData.name);
+            userInfo.isIgnored = GetSessionDataManager().isUserIgnored(userData.webID);
             userInfo.respectLeft = GetSessionDataManager().respectsLeft;
 
             const isShuttingDown = GetSessionDataManager().isSystemShutdown;

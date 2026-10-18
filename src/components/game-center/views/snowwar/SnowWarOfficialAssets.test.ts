@@ -11,12 +11,12 @@ describe('SnowWar official arena artwork', () => {
     const css = readSource('src/css/game-center/GameCenterView.css');
     const projectiles = readSource('src/api/snowwar/SnowWarProjectileAssets.ts');
 
-    it('resolves the AIR Arctic Island backdrop and special machine layers from the configured image library', () => {
+    it('resolves the AIR arena backdrops and special machine layers from the configured image library', () => {
         expect(arena).toContain("GetConfigurationValue<string>('image.library.url'");
-        expect(arena).toContain("getOfficialSnowWarAssetUrl('snst_bg_1_a_big.png')");
+        expect(arena).toContain('getOfficialSnowWarAssetUrl(officialBackdrop.file)');
         expect(arena).toContain('s_snowball_machine_32_a_0_${snowballCount}.png');
         expect(arena).toContain('s_snowball_machine_32_b_0_${indicatorFrame}.png');
-        expect(css).toContain('.snowwar-official-arctic-backdrop');
+        expect(css).toContain('.snowwar-official-backdrop');
         expect(css).toContain('.snowwar-machine__official-body');
         expect(css).toContain('.snowwar-machine__official-indicator');
     });
@@ -60,13 +60,12 @@ describe('SnowWar official arena artwork', () => {
     });
 
     it('builds the weekly and all-time leaderboard from the official AIR artwork', () => {
-        expect(leaderboard).toContain("getAssetUrl('leaderboard_bg')");
-        expect(leaderboard).toContain("getAssetUrl('leaderboard_highlighter')");
-        expect(leaderboard).toContain("getAssetUrl('leaderboard_divider')");
-        expect(leaderboard).toContain("'left_blue' : 'left_black'");
-        expect(leaderboard).toContain("'right_blue' : 'right_black'");
-        expect(leaderboard).toContain('requestLeaderboard(true, leaderboard.friendsOnly');
-        expect(leaderboard).toContain('requestLeaderboard(false, leaderboard.friendsOnly');
+        // Bundled AIR bitmaps; the selected tab is the black one (AIR enableThisWeekButton / enableAllTimeButton).
+        expect(leaderboard).toContain("asset('leaderboard_bg')");
+        expect(leaderboard).toContain("asset('leaderboard_highlighter')");
+        expect(leaderboard).toContain("'left_black' : 'left_blue'");
+        expect(leaderboard).toContain("'right_black' : 'right_blue'");
+        expect(leaderboard).toContain('getLeaderboardTarget(action, leaderboard)');
         expect(gameTile).toContain("GetConfigurationValue<boolean>('games.highscores.enabled', true)");
     });
 });

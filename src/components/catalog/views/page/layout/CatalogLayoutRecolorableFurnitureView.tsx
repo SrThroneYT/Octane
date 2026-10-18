@@ -225,7 +225,7 @@ export const CatalogLayoutRecolorableFurnitureView: FC<CatalogLayoutProps> = (pr
                 {currentOffer && (
                     <>
                         <CatalogPreviewControls productType={currentOffer.product.productType} roomPreviewer={roomPreviewer} />
-                        <CatalogViewProductWidgetView height={190} />
+                        <CatalogViewProductWidgetView height={150} />
                         <Text bold className="octane-catalog-builders-blocks-name" truncate>
                             {currentOffer.localizationName}
                         </Text>

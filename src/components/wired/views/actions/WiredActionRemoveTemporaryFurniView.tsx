@@ -38,6 +38,7 @@ export const WiredActionRemoveTemporaryFurniView: FC<{}> = () =>
             hasSpecialInput={ true }
             requiresFurni={ furniSource === SOURCE_SELECTED ? WiredFurniType.STUFF_SELECTION_OPTION_BY_ID : WiredFurniType.STUFF_SELECTION_OPTION_NONE }
             save={ save }
+            footerCollapsible={false}
             footer={ <WiredSourcesSelector showFurni={ true } furniSource={ furniSource } onChangeFurni={ setFurniSource } /> }>
             <Text small>{ localizeWithFallback('wiredfurni.params.remove_furni.usage_info', 'Removes temporary furni placed by "place furni". Furni somebody owns is not removed.') }</Text>
         </WiredActionBaseView>

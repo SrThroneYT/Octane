@@ -4,6 +4,7 @@ import { DispatchUiEvent, GetConfigurationValue, GetRoomSession, GetUserProfile,
 import { Flex, LayoutItemCountView } from '../../common';
 import { GuideToolEvent } from '../../events';
 import { useDailyTasks, useRewardTracks } from '../../hooks';
+import { useGroupForumUnreadStore } from '../../state/groupForumUnreadStore';
 
 export const ToolbarMeView: FC<
     PropsWithChildren<{
@@ -16,6 +17,8 @@ export const ToolbarMeView: FC<
     const elementRef = useRef<HTMLDivElement>(null);
     const { unseenCount: unseenDailyTaskCount = 0 } = useDailyTasks();
     const { unseenCount: unseenRewardTrackCount = 0 } = useRewardTracks();
+    // GroupForumController.UNSEEN_FORUMS_COUNT: the reader's forums with unread messages.
+    const unreadForumsCount = useGroupForumUnreadStore((state) => state.unreadForumsCount);
 
     useEffect(() => {
         const roomSession = GetRoomSession();
@@ -97,7 +100,9 @@ export const ToolbarMeView: FC<
                 className="navigation-item relative octane-icon icon-me-forums cursor-pointer"
                 onClick={(event) => CreateLinkEvent('groupforum/toggle')}
                 title={LocalizeText('toolbar.icon.label.forums')}
-            />
+            >
+                {unreadForumsCount > 0 && <LayoutItemCountView count={unreadForumsCount} />}
+            </div>
             {children}
         </Flex>
     );

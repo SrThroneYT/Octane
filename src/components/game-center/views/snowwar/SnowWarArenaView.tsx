@@ -1,6 +1,18 @@
-import { FC, MouseEvent, PointerEvent as ReactPointerEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { GetConfigurationValue, GetSessionDataManager, LocalizeText } from '../../../../api';
+import { CSSProperties, FC, MouseEvent, PointerEvent as ReactPointerEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+    getCountdownFrame,
+    GetConfigurationValue,
+    getExplosionAssetName,
+    getLoopFrame,
+    getPingPongFrame,
+    getScoreFlashFrame,
+    GetSessionDataManager,
+    LocalizeText,
+    SNOWWAR_EXPLOSION_OFFSETS
+} from '../../../../api';
+import { SNOWWAR_AIR_ASSETS } from '../../../../assets/images/snowstorm/air';
+import {
+    findSnowWarOfficialBackdrop,
     INITIAL_SNOWBALL_COUNT,
     LONG_LOB_MAX_RANGE_WORLD,
     QUICK_THROW_MAX_RANGE_WORLD,
@@ -18,13 +30,15 @@ import {
     TRAJECTORY_LONG_LOB,
     TRAJECTORY_QUICK,
     TRAJECTORY_SHORT_LOB,
+    layoutSnowWarOfficialBackdrop,
     tileToWorld,
 } from '../../../../api/snowwar';
 import snowballPileImage from '../../../../assets/images/snowstorm/original/snst_ballpile.png';
 import { LayoutAvatarImageView, LayoutFurniImageView } from '../../../../common';
-import { useSnowWar } from '../../../../hooks';
+import { useNotification, useSnowWar } from '../../../../hooks';
 import { FloorplanEditorView } from '../../../floorplan-editor/FloorplanEditorView';
 import { SnowWarAvatarView } from './SnowWarAvatarView';
+import { SnowWarStrokeText } from './SnowWarStrokeText';
 import {
     canPlaceSnowWarEditorItem,
     getSnowWarEditorArea,
@@ -167,6 +181,10 @@ const getOfficialSnowWarAssetUrl = (fileName: string): string =>
     const baseUrl = imageLibraryUrl && !imageLibraryUrl.endsWith('/') ? `${imageLibraryUrl}/` : imageLibraryUrl;
     return `${baseUrl}snowstorm_client/official/${fileName}?v=air-room-2`;
 };
+
+// HUD bitmaps are bundled (AIR habbo-games-com); the image library copy is
+// only a fallback for a name that is not bundled.
+const getHudAssetUrl = (name: string): string => SNOWWAR_AIR_ASSETS[name] ?? getOfficialSnowWarAssetUrl(`${ name }.png`);
 
 const getOfficialSnowWarSprite = (name: string, rotation: number): OfficialSnowWarSprite | null =>
 {
@@ -323,19 +341,12 @@ const snowballRise = (height: number): number => height * SNOWWAR_WORLD_Z_TO_PX;
 const DESIGN_W = 1920;
 const DESIGN_H = 1080;
 
-// AIR Arctic Island room-ad backdrop (snst_bg_1_a_big). Drawn 2000 stage px
-// wide - the scale at which its painted tiles are exactly 32px, like the AIR
-// scale-32 floor here - whatever the resolution of the file the hotel serves
-// (hi-res copies exist), with the centre of its painted frozen moat pinned to
-// the centre of the heightmap's moat (tiles x 20..32, y 19..30 of the original
-// Arctic Island floor; its four planks then land on the four plank tiles).
-// The moat is off-centre in the artwork, so the stage is built around the
-// artwork instead of centring a 1920x1080 stage on the floor - that left
-// empty strips on the left and at the bottom.
-const ARCTIC_BACKDROP_WIDTH = 2000;
-const ARCTIC_BACKDROP_DEFAULT_RATIO = 1222 / 2000;
-const ARCTIC_BACKDROP_MOAT_CENTRE = { fx: 1011 / 2000, fy: 647 / 1222 };
-const ARCTIC_MOAT_CENTRE_TILE = { x: 26.5, y: 25 };
+// The official room-ad backdrops (Arctic Island, Dragon Top, Fight Night) are
+// fitted from SNOWWAR_OFFICIAL_BACKDROPS (api/snowwar/SnowWarBackdrops.ts): each
+// is drawn at the size whose painted tiles are 32px and pinned to its own tile
+// anchor. Their painted fields are off-centre in the artwork, so the stage is
+// built around the artwork instead of centring a 1920x1080 stage on the floor -
+// that left empty strips at the edges.
 
 // Camera dead zone: the avatar roams the central (1 - 2*DEADZONE) of the
 // viewport with the camera held still; only when it pushes into the outer
@@ -502,6 +513,7 @@ export const SnowWarArenaView: FC = () =>
         levelData,
         secondsLeft,
         preparingSeconds,
+        preparingEndsAt,
         chatMessages,
         simulation,
         editing,
@@ -516,6 +528,23 @@ export const SnowWarArenaView: FC = () =>
         sendChat,
         requestFullStatus,
     } = useSnowWar();
+    const { showConfirm = null } = useNotification();
+
+    // Official client asks before leaving a running match (losing it and the
+    // short block on new games are explained in the dialog).
+    const confirmExitGame = useCallback(() =>
+    {
+        if(!showConfirm) return exitGame();
+
+        showConfirm(
+            localizeWithFallback('snowwar.exit.confirmation', 'If you leave the game you lose and get no points.'),
+            () => exitGame(),
+            null,
+            localizeWithFallback('snowwar.exit.yes', 'Leave game'),
+            localizeWithFallback('snowwar.exit.no', 'Cancel'),
+            localizeWithFallback('snowwar.exit.title', 'Leave game?')
+        );
+    }, [ showConfirm, exitGame ]);
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
     // Classic props (trees/blocks/fences/floor tiles) draw on their own canvas
@@ -529,8 +558,34 @@ export const SnowWarArenaView: FC = () =>
     // Wall-clock of the last animation frame; doubles as the re-render tick.
     const [frameNow, setFrameNow] = useState(0);
     const [chatInput, setChatInput] = useState('');
+    const chatInputRef = useRef<HTMLInputElement>(null);
+
+    // Enter starts typing a chat line; other keys stay with the arena (movement).
+    useEffect(() =>
+    {
+        if (editing) return;
+
+        const onKeyDown = (event: KeyboardEvent) =>
+        {
+            if ((event.key !== 'Enter') && (event.key !== 'NumpadEnter')) return;
+
+            const target = event.target as HTMLElement | null;
+
+            if (target && (target.isContentEditable || (target.tagName === 'INPUT') || (target.tagName === 'TEXTAREA') || (target.tagName === 'SELECT'))) return;
+
+            event.preventDefault();
+            chatInputRef.current?.focus();
+        };
+
+        window.addEventListener('keydown', onKeyDown);
+
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [ editing ]);
     const zoom = ZOOM;
-    const [arcticBackdropRatio, setArcticBackdropRatio] = useState(ARCTIC_BACKDROP_DEFAULT_RATIO);
+    // Loaded height / width per official backdrop file, and the files whose
+    // image-library copy failed (those fall back to the URL the server sent).
+    const [backdropRatios, setBackdropRatios] = useState<Record<string, number>>({});
+    const [backdropLibraryFailed, setBackdropLibraryFailed] = useState<Record<string, boolean>>({});
     const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
     // Set when a throw is blocked for being out of range; shows a short hint.
     const [rangeWarningAt, setRangeWarningAt] = useState(0);
@@ -847,9 +902,18 @@ export const SnowWarArenaView: FC = () =>
         };
 
         rafId = requestAnimationFrame(loop);
+
+        // Back from a hidden tab: skip the backlog instead of replaying it.
+        const onVisibilityChange = () =>
+        {
+            if (!document.hidden) simulation.catchUp();
+        };
+        document.addEventListener('visibilitychange', onVisibilityChange);
+
         return () =>
         {
             running = false;
+            document.removeEventListener('visibilitychange', onVisibilityChange);
             cancelAnimationFrame(rafId);
         };
     }, [simulation]);
@@ -1206,6 +1270,26 @@ export const SnowWarArenaView: FC = () =>
     const ownAvatar = simulation.getAvatarByUserId(ownUserId);
     const alpha = simulation.interpolationAlpha;
 
+    // AIR SnowWarEngine.registerHit -> SnowWarUI.flashOwnScore: the own-stats
+    // panel flashes minus when this player is hit and plus when their ball
+    // hits someone (the only things that lower health / raise the score).
+    const ownHealth = ownAvatar?.health ?? null;
+    const ownScore = ownAvatar?.score ?? null;
+    const lastOwnStatsRef = useRef<{ health: number; score: number }>(null);
+    const [scoreFlash, setScoreFlash] = useState<{ plus: boolean; at: number }>(null);
+
+    useEffect(() =>
+    {
+        const last = lastOwnStatsRef.current;
+        lastOwnStatsRef.current = (ownHealth === null) ? null : { health: ownHealth, score: ownScore };
+
+        if (!last || (ownHealth === null) || (phase !== 'playing')) return;
+
+        const flash = (ownHealth < last.health) ? { plus: false, at: Date.now() } : (ownScore > last.score) ? { plus: true, at: Date.now() } : null;
+
+        if (flash) setTimeout(() => setScoreFlash(flash), 0);
+    }, [ ownHealth, ownScore, phase ]);
+
     // AIR supports arrows and the isometric QWE/AD/ZXC cluster. While a key is
     // held it sends a target two tiles away once per 300 ms game turn.
     useEffect(() =>
@@ -1316,8 +1400,10 @@ export const SnowWarArenaView: FC = () =>
     // top of the floor tiles (hiding them, but they stay walkable) while still
     // sitting under the furni and avatars. Edit-aware so it previews live.
     const arenaBackdrop = displayItems.find(item => item.imageUrl) ?? null;
-    const officialArcticBackdrop = !!arenaBackdrop?.imageUrl.includes('snst_bg_1_a_big');
-    const backdropOverlay = !!(arenaBackdrop && !officialArcticBackdrop && (arenaBackdrop.offsetZ ?? 0) > 0);
+    // An official backdrop (keyed on its file name) is fitted to the floor and is
+    // never an overlay, whatever offsetZ the server sends (AIR's depth push).
+    const officialBackdrop = findSnowWarOfficialBackdrop(arenaBackdrop?.imageUrl);
+    const backdropOverlay = !!(arenaBackdrop && !officialBackdrop && (arenaBackdrop.offsetZ ?? 0) > 0);
     const selectedItem = (editing && selectedIndex >= 0 && editItems[selectedIndex]) ? editItems[selectedIndex] : null;
     const placingFurni = (editing && paletteSel && paletteSel !== 'edit' && paletteSel !== 'walk')
         ? GetSessionDataManager()?.getFloorItemDataByName?.(paletteSel) : null;
@@ -1407,25 +1493,25 @@ export const SnowWarArenaView: FC = () =>
     let stageH = Math.max(DESIGN_H, floorH);
     let floorOffsetX = (stageW - floorW) / 2;
     let floorOffsetY = (stageH - floorH) / 2;
-    let arcticBackdropRect: { left: number; top: number; width: number; height: number } | null = null;
+    let officialBackdropRect: { left: number; top: number; width: number; height: number } | null = null;
 
-    if (officialArcticBackdrop)
+    if (officialBackdrop)
     {
         // Stage = artwork (plus the floor, should a map ever stick out of it),
         // so the camera can never pan onto an area the artwork doesn't paint.
-        const backdropW = ARCTIC_BACKDROP_WIDTH;
-        const backdropH = ARCTIC_BACKDROP_WIDTH * arcticBackdropRatio;
-        const moat = toScreen(ARCTIC_MOAT_CENTRE_TILE.x, ARCTIC_MOAT_CENTRE_TILE.y);
-        // Whole pixels, so neither the artwork nor the floor lands on a half pixel.
-        const backdropX = Math.round((moat.x * zoom) - (ARCTIC_BACKDROP_MOAT_CENTRE.fx * backdropW));
-        const backdropY = Math.round((moat.y * zoom) - (ARCTIC_BACKDROP_MOAT_CENTRE.fy * backdropH));
-        const minX = Math.min(0, backdropX);
-        const minY = Math.min(0, backdropY);
-        stageW = Math.max(floorW, backdropX + backdropW) - minX;
-        stageH = Math.max(floorH, backdropY + backdropH) - minY;
-        floorOffsetX = -minX;
-        floorOffsetY = -minY;
-        arcticBackdropRect = { left: backdropX - minX, top: backdropY - minY, width: backdropW, height: backdropH };
+        const anchor = toScreen(officialBackdrop.tile.x, officialBackdrop.tile.y);
+        const layout = layoutSnowWarOfficialBackdrop(
+            officialBackdrop,
+            backdropRatios[officialBackdrop.file] ?? officialBackdrop.defaultRatio,
+            { x: anchor.x * zoom, y: anchor.y * zoom },
+            floorW,
+            floorH,
+        );
+        stageW = layout.stageW;
+        stageH = layout.stageH;
+        floorOffsetX = layout.floorOffsetX;
+        floorOffsetY = layout.floorOffsetY;
+        officialBackdropRect = layout.rect;
     }
 
     // Camera as a GPU translate on the stage. Instead of hard-locking the
@@ -1519,6 +1605,8 @@ export const SnowWarArenaView: FC = () =>
     const redScore = teamScores.find(([teamId]) => teamId === 0)?.[1] ?? 0;
     const blueScore = teamScores.find(([teamId]) => teamId === 1)?.[1] ?? 0;
     const healthFrame = Math.max(0, Math.min(5, ownAvatar?.health ?? 0));
+    const scoreFlashFrame = scoreFlash ? getScoreFlashFrame(frameNow - scoreFlash.at) : 0;
+    const countdownFrame = getCountdownFrame(frameNow, preparingEndsAt);
     const visibleChatMessages = chatMessages
         .filter(message => (frameNow - message.receivedAt) < 10000)
         .slice(-8)
@@ -1541,7 +1629,7 @@ export const SnowWarArenaView: FC = () =>
     {
         return (
             <div className="snowwar-arena snowwar-arena--loading">
-                <div className="snowwar-banner">{localizeWithFallback('snowwar.loading', 'Loading arena...')}</div>
+                <div className="snowwar-banner">{localizeWithFallback('snowwar.loading_arena', 'Going to the arena...')}</div>
             </div>
         );
     }
@@ -1570,13 +1658,15 @@ export const SnowWarArenaView: FC = () =>
                 </div>
             ) : (
                 <div className="snowwar-official-hud">
+                    {/* AIR snowwar_exit: the ui_exit_up / ui_exit_down bitmap button, no caption. */}
                     <button
-                        type="button"
+                        aria-label={localizeWithFallback('snowwar.exit.title', 'Leave game?')}
                         className="snowwar-official-hud__quit"
-                        onClick={() => exitGame()}
-                    >
-                        {localizeWithFallback('snowwar.leave', 'Quit Menu')}
-                    </button>
+                        style={{ '--exit-up': `url(${getHudAssetUrl('ui_exit_up')})`, '--exit-down': `url(${getHudAssetUrl('ui_exit_down')})` } as CSSProperties}
+                        title={localizeWithFallback('snowwar.exit.title', 'Leave game?')}
+                        type="button"
+                        onClick={confirmExitGame}
+                    />
 
                     {ownAvatar && (
                         <>
@@ -1588,7 +1678,7 @@ export const SnowWarArenaView: FC = () =>
                                     alt=""
                                     className="snowwar-official-hud__ammo-bg"
                                     draggable={false}
-                                    src={getOfficialSnowWarAssetUrl('ui_ball_indicator_bg.png')}
+                                    src={getHudAssetUrl('ui_ball_indicator_bg')}
                                 />
                                 {Array.from({ length: INITIAL_SNOWBALL_COUNT }, (_, index) => (
                                     <img
@@ -1596,10 +1686,27 @@ export const SnowWarArenaView: FC = () =>
                                         alt=""
                                         className="snowwar-official-hud__ammo-ball"
                                         draggable={false}
-                                        src={getOfficialSnowWarAssetUrl('ui_ball.png')}
+                                        src={getHudAssetUrl('ui_ball')}
                                         style={{ top: 10 + (index * 37), visibility: index < ownAvatar.snowballCount ? 'visible' : 'hidden' }}
                                     />
                                 ))}
+                                {/* AIR SnowWarUI: ui_no_balls_ flashes while empty, load_ spins while making a ball. */}
+                                {(ownAvatar.snowballCount === 0) && (ownAvatar.activityState !== SNOWWAR_STATE_CREATING) && (
+                                    <img
+                                        alt=""
+                                        className="snowwar-official-hud__ammo-empty"
+                                        draggable={false}
+                                        src={getHudAssetUrl(`ui_no_balls_${getPingPongFrame(frameNow, 4, 75)}`)}
+                                    />
+                                )}
+                                {(ownAvatar.activityState === SNOWWAR_STATE_CREATING) && (
+                                    <img
+                                        alt=""
+                                        className="snowwar-official-hud__ammo-loading"
+                                        draggable={false}
+                                        src={getHudAssetUrl(`load_${getLoopFrame(frameNow, 8)}`)}
+                                    />
+                                )}
                                 <button
                                     type="button"
                                     className="snowwar-official-hud__make-ball"
@@ -1617,13 +1724,13 @@ export const SnowWarArenaView: FC = () =>
                                     alt=""
                                     className="snowwar-official-hud__personal-bg"
                                     draggable={false}
-                                    src={getOfficialSnowWarAssetUrl('ui_me_bg.png')}
+                                    src={getHudAssetUrl('ui_me_bg')}
                                 />
                                 <img
                                     alt=""
                                     className="snowwar-official-hud__health"
                                     draggable={false}
-                                    src={getOfficialSnowWarAssetUrl(`ui_me_health_${healthFrame}.png`)}
+                                    src={getHudAssetUrl(`ui_me_health_${healthFrame}`)}
                                 />
                                 <div className="snowwar-official-hud__head">
                                     <LayoutAvatarImageView
@@ -1636,6 +1743,14 @@ export const SnowWarArenaView: FC = () =>
                                         headOnly
                                     />
                                 </div>
+                                {(scoreFlashFrame > 0) && (
+                                    <img
+                                        alt=""
+                                        className="snowwar-official-hud__score-flash"
+                                        draggable={false}
+                                        src={getHudAssetUrl(`${scoreFlash.plus ? 'ui_me_plus_' : 'ui_me_minus_'}${scoreFlashFrame}`)}
+                                    />
+                                )}
                                 <div className="snowwar-official-hud__personal-score">{ownAvatar.score}</div>
                             </div>
                         </>
@@ -1646,11 +1761,12 @@ export const SnowWarArenaView: FC = () =>
                             alt=""
                             className="snowwar-official-hud__scores-bg"
                             draggable={false}
-                            src={getOfficialSnowWarAssetUrl('ui_timer_and_points.png')}
+                            src={getHudAssetUrl('ui_timer_and_points')}
                         />
-                        <div className="snowwar-official-hud__score snowwar-official-hud__score--blue">{blueScore}</div>
-                        <div className="snowwar-official-hud__score snowwar-official-hud__score--red">{redScore}</div>
-                        <div className="snowwar-official-hud__timer">{formatClock(secondsLeft)}</div>
+                        {/* AIR snowwar_team_scores / snowwar_timer: white over UbuntuThick strokes. */}
+                        <div className="snowwar-official-hud__score snowwar-official-hud__score--blue"><SnowWarStrokeText stroke="#1077ac" text={blueScore} /></div>
+                        <div className="snowwar-official-hud__score snowwar-official-hud__score--red"><SnowWarStrokeText stroke="#fd6859" text={redScore} /></div>
+                        <div className="snowwar-official-hud__timer"><SnowWarStrokeText stroke="#1077ac" text={formatClock(secondsLeft)} /></div>
                         <div className="snowwar-official-hud__time-label">{localizeWithFallback('snowwar.hud.time_left', 'Time left')}</div>
                     </div>
 
@@ -1842,9 +1958,20 @@ export const SnowWarArenaView: FC = () =>
                 </div>
             )}
 
-            {phase === 'preparing' && !editing && (
+            {phase === 'preparing' && !editing && (countdownFrame === 0) && (
                 <div className="snowwar-banner snowwar-banner--countdown">
-                    {localizeWithFallback('snowwar.get_ready', 'Get ready!')} {preparingSeconds > 0 ? preparingSeconds : ''}
+                    {localizeWithFallback('snowwar.loading.title', 'Get ready!')} {preparingSeconds > 0 ? preparingSeconds : ''}
+                </div>
+            )}
+            {/* AIR counter: digits 5..1, then the explosion as the match starts. */}
+            {!editing && (countdownFrame > 0) && (
+                <div className="snowwar-countdown" aria-hidden="true">
+                    <img
+                        alt=""
+                        draggable={false}
+                        src={getHudAssetUrl(getExplosionAssetName(countdownFrame))}
+                        style={{ left: -SNOWWAR_EXPLOSION_OFFSETS[countdownFrame][0], top: -SNOWWAR_EXPLOSION_OFFSETS[countdownFrame][1] }}
+                    />
                 </div>
             )}
             {(frameNow - rangeWarningAt) < 2000 && rangeWarningAt > 0 && (
@@ -1879,21 +2006,28 @@ export const SnowWarArenaView: FC = () =>
                     // between pixels and looks blurry / shimmers while the camera moves.
                     style={{ width: stageW, height: stageH, transform: `translate(${Math.round(cameraX)}px, ${Math.round(cameraY)}px)`, transformOrigin: '0 0' }}
                 >
-                    {officialArcticBackdrop && (
+                    {officialBackdrop && arenaBackdrop && (
                         <img
+                            key={officialBackdrop.file}
                             alt=""
-                            className="snowwar-official-arctic-backdrop"
+                            className="snowwar-official-backdrop"
                             draggable={false}
-                            src={getOfficialSnowWarAssetUrl('snst_bg_1_a_big.png')}
-                            style={arcticBackdropRect ?? undefined}
+                            src={backdropLibraryFailed[officialBackdrop.file] ? arenaBackdrop.imageUrl : getOfficialSnowWarAssetUrl(officialBackdrop.file)}
+                            style={officialBackdropRect ?? undefined}
                             onLoad={event =>
                             {
                                 const { naturalWidth, naturalHeight } = event.currentTarget;
-                                if (naturalWidth > 0 && naturalHeight > 0) setArcticBackdropRatio(naturalHeight / naturalWidth);
+                                const file = officialBackdrop.file;
+                                if (naturalWidth > 0 && naturalHeight > 0) setBackdropRatios(ratios => ({ ...ratios, [file]: naturalHeight / naturalWidth }));
+                            }}
+                            onError={() =>
+                            {
+                                const file = officialBackdrop.file;
+                                setBackdropLibraryFailed(failed => (failed[file] ? failed : { ...failed, [file]: true }));
                             }}
                         />
                     )}
-                    {arenaBackdrop && !officialArcticBackdrop && !backdropOverlay && (
+                    {arenaBackdrop && !officialBackdrop && !backdropOverlay && (
                         <img
                             alt=""
                             className="snowwar-arena-bg"
@@ -1909,10 +2043,10 @@ export const SnowWarArenaView: FC = () =>
                             ref={canvasRef}
                             width={canvasWidth}
                             height={canvasHeight}
-                            className={`snowwar-floor${officialArcticBackdrop ? ' snowwar-floor--official-arctic' : ''}`}
+                            className={`snowwar-floor${officialBackdrop ? ' snowwar-floor--official-backdrop' : ''}`}
                         />
 
-                    {arenaBackdrop && !officialArcticBackdrop && backdropOverlay && (
+                    {arenaBackdrop && !officialBackdrop && backdropOverlay && (
                         <img
                             alt=""
                             className="snowwar-arena-bg-overlay"
@@ -2011,7 +2145,7 @@ export const SnowWarArenaView: FC = () =>
                                 data-snowwar-y={item.y}
                                 data-snowwar-count={pile?.snowballCount}
                                 style={{ left: front.x, top: front.y + (TILE_HALF_H * 2) - altitudePx, zIndex }}
-                                title={pile ? localizeWithFallback('snowwar.pile.hint', `${pile.snowballCount} snowballs left`) : undefined}
+                                title={pile ? localizeWithFallback('snowwar.pile.hint', '%count% snowballs left').replace('%count%', pile.snowballCount.toString()) : undefined}
                                 onClick={pile ? event =>
                                 {
                                     event.stopPropagation();
@@ -2408,27 +2542,44 @@ export const SnowWarArenaView: FC = () =>
             ))}
 
             {!editing && (
-            <form
-                className="snowwar-chat"
-                onSubmit={event =>
-                {
-                    event.preventDefault();
-                    submitChat();
-                }}
-            >
-                <input
-                    type="text"
-                    className="snowwar-chat__input"
-                    value={chatInput}
-                    maxLength={100}
-                    aria-label={localizeWithFallback('widgets.chatinput.default', 'Click here to chat')}
-                    placeholder={localizeWithFallback('widgets.chatinput.default', 'Click here to chat')}
-                    onChange={event => setChatInput(event.target.value)}
-                />
-                <button type="submit" className="snowwar-chat__send">
-                    {localizeWithFallback('widgets.chatinput.say', 'Say')}
-                </button>
-            </form>
+                // AIR keeps the room chat input in a game session (RoomChatInputView,
+                // centred at desktop height - 104, no style menu) and sends its text as
+                // Game2GameChat. Same skin as the room chat bar; the style button is inert.
+                // Typing does not grab focus here, so the QWEADZXC movement keys keep working.
+                <div className="snowwar-chat-input">
+                    <div className="octane-chat-input-container swf-chat-input relative flex w-full items-center justify-start overflow-visible">
+                        <div aria-hidden="true" className="swf-chat-style-trigger flex items-center select-none">
+                            <svg className="swf-chat-style-arrow shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} />
+                            </svg>
+                            <div className="swf-chat-style-icon" />
+                        </div>
+                        <div className="flex-1 items-center input-sizer swf-chat-input-sizer" data-value={chatInput}>
+                            <input
+                                ref={chatInputRef}
+                                aria-label={localizeWithFallback('widgets.chatinput.default', 'Click here to chat')}
+                                className="swf-chat-input-field w-full border-none bg-transparent"
+                                maxLength={100}
+                                placeholder={localizeWithFallback('widgets.chatinput.default', 'Click here to chat')}
+                                type="text"
+                                value={chatInput}
+                                onChange={event => setChatInput(event.target.value)}
+                                onKeyDown={event =>
+                                {
+                                    if ((event.key === 'Enter') || (event.key === 'NumpadEnter'))
+                                    {
+                                        event.preventDefault();
+                                        submitChat();
+                                    }
+                                    else if (event.key === 'Escape')
+                                    {
+                                        event.currentTarget.blur();
+                                    }
+                                }}
+                            />
+                        </div>
+                    </div>
+                </div>
             )}
 
             <div className="snowwar-help">

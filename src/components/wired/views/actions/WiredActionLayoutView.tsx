@@ -54,6 +54,7 @@ import { WiredActionBotTeleportView } from './WiredActionBotTeleportView';
 import { WiredActionCallAnotherStackView } from './WiredActionCallAnotherStackView';
 import { WiredActionCancelTransactionView } from './WiredActionCancelTransactionView';
 import { WiredActionChangeOpacityView } from './WiredActionChangeOpacityView';
+import { WiredActionSetHighlightView } from './WiredActionSetHighlightView';
 import { WiredActionChangeVariableValueView } from './WiredActionChangeVariableValueView';
 import { WiredActionChaseView } from './WiredActionChaseView';
 import { WiredActionChatView } from './WiredActionChatView';
@@ -96,6 +97,8 @@ import { WiredActionRemoveTemporaryFurniView } from './WiredActionRemoveTemporar
 import { WiredActionRemoveVariableView } from './WiredActionRemoveVariableView';
 import { WiredActionResetRewardTrackView } from './WiredActionResetRewardTrackView';
 import { WiredActionResetView } from './WiredActionResetView';
+import { WiredActionSendLinkDataframeView } from './WiredActionSendLinkDataframeView';
+import { WiredActionSendLinkMessageView } from './WiredActionSendLinkMessageView';
 import { WiredActionSendSignalView } from './WiredActionSendSignalView';
 import { WiredActionSetAltitudeView } from './WiredActionSetAltitudeView';
 import { WiredActionSetFurniStateToView } from './WiredActionSetFurniStateToView';
@@ -263,6 +266,12 @@ export const WiredActionLayoutView = (code: number) => {
             return <WiredActionRemoveFurniView />;
         case WiredActionLayoutCode.CHANGE_OPACITY:
             return <WiredActionChangeOpacityView />;
+        case WiredActionLayoutCode.SET_FURNI_HIGHLIGHT:
+            return <WiredActionSetHighlightView />;
+        case WiredActionLayoutCode.SEND_LINK_MESSAGE:
+            return <WiredActionSendLinkMessageView />;
+        case WiredActionLayoutCode.SEND_LINK_DATAFRAME:
+            return <WiredActionSendLinkDataframeView />;
     }
 
     return null;

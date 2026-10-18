@@ -5,7 +5,6 @@ import {
     GroupInformationComposer,
     GroupInformationEvent,
     GroupInformationParser,
-    GroupRemoveMemberComposer,
     HabboGroupDeactivatedMessageEvent,
     RoomEntryInfoMessageEvent
 } from '@octane/renderer';
@@ -13,7 +12,7 @@ import { FC, useEffect, useRef, useState } from 'react';
 import { GetGroupInformation, GetGroupManager, GroupMembershipType, GroupType, LocalizeText, SendMessageComposer, TryJoinGroup } from '../../../api';
 import groupBaseIcon from '../../../assets/images/groups/swf/group_base_icon.png';
 import { Button, Flex, LayoutBadgeImageView, Text } from '../../../common';
-import { useMessageEvent, useNotification } from '../../../hooks';
+import { useGroupLeave, useMessageEvent } from '../../../hooks';
 
 export const GroupRoomInformationView: FC<{}> = (props) => {
     const expectedGroupIdRef = useRef<number>(0);
@@ -21,7 +20,6 @@ export const GroupRoomInformationView: FC<{}> = (props) => {
     const requestRetryTimeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
     const [groupInformation, setGroupInformation] = useState<GroupInformationParser>(null);
     const [isOpen, setIsOpen] = useState<boolean>(true);
-    const { showConfirm = null } = useNotification();
 
     const clearRequestRetryTimeout = () => {
         if (!requestRetryTimeoutRef.current) return;
@@ -108,15 +106,8 @@ export const GroupRoomInformationView: FC<{}> = (props) => {
 
     useEffect(() => () => clearRequestRetryTimeout(), []);
 
-    const leaveGroup = () => {
-        showConfirm(
-            LocalizeText('group.leaveconfirm.desc'),
-            () => {
-                SendMessageComposer(new GroupRemoveMemberComposer(groupInformation.id, GetSessionDataManager().userId));
-            },
-            null
-        );
-    };
+    // The official leave: ask the server what leaving costs, then confirm (shared with the group windows).
+    const leaveGroup = useGroupLeave(groupInformation?.id ?? 0);
 
     const isRealOwner = groupInformation && groupInformation.ownerName === GetSessionDataManager().userName;
 

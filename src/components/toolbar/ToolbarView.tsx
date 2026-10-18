@@ -9,10 +9,11 @@ import memenuBgImg from '../../assets/images/toolbar/air/memenu-bg.png';
 import memenuCircleImg from '../../assets/images/toolbar/air/memenu-circle.png';
 import { Flex, LayoutAvatarImageView, LayoutItemCountView } from '../../common';
 import { SoundboardRoomMessageEvent } from '../../events';
-import { useAchievements, useBuildHeight, useDailyTasks, useFriends, useHasPermission, useInventoryUnseenTracker, useMentionsSnapshot, useMessageEvent, useMessenger, useModTools, useOctaneEvent, useRewardTracks, useSessionInfo, useSoundboard, useUiEvent, useWiredTools } from '../../hooks';
+import { useAchievements, useBuildHeight, useDailyTasks, useFriends, useHasPermission, useInventoryUnseenTracker, useMentionsSnapshot, useMessageEvent, useMessenger, useOctaneEvent, useOpenIssueCount, useRewardTracks, useSessionInfo, useSoundboard, useUiEvent, useWiredTools } from '../../hooks';
 import { BottomDockLayout, resolveBottomDockLayout } from './bottomDockLayout';
 import { ToolbarItemView } from './ToolbarItemView';
 import { ToolbarMeView } from './ToolbarMeView';
+import { useGroupForumUnreadStore } from '../../state/groupForumUnreadStore';
 import { YouTubePlayerView } from './YouTubePlayerView';
 
 const containerVariants: Variants = {
@@ -71,7 +72,10 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
     const { unseenCount: unseenDailyTaskCount = 0 } = useDailyTasks();
     const { unseenCount: unseenRewardTrackCount = 0 } = useRewardTracks();
     // HabboToolbar.setUnseenItemCount("HTIE_ICON_PROGRESSION", unseenProgMenuCount): achievements + daily tasks + reward track rewards.
+    const unreadForumsCount = useGroupForumUnreadStore((state) => state.unreadForumsCount);
     const unseenProgMenuCount = getTotalUnseen + unseenDailyTaskCount + unseenRewardTrackCount;
+    // The Me icon also counts the forums with unread messages (shown on the Forums entry of the Me menu).
+    const meMenuCount = unseenProgMenuCount + unreadForumsCount;
     const { requests = [] } = useFriends();
     const { iconState = MessengerIconState.HIDDEN } = useMessenger();
     const { unreadCount: mentionsUnread = 0 } = useMentionsSnapshot();
@@ -84,11 +88,9 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
     const isMod = useHasPermission('acc_supporttool');
     const isHk = useHasPermission('acc_housekeeping');
     const hkEnabled = useMemo(() => isHousekeepingEnabled(), []);
-    const { tickets = [] } = useModTools();
-    const openTicketsCount = useMemo(
-        () => isMod ? tickets.filter(ticket => ticket && (ticket.state === 1)).length : 0,
-        [ isMod, tickets ]
-    );
+    // AIR: the moderator button opens the start panel (the init message already opened it once) and counts the open issues of the issue manager
+    const openIssueCount = useOpenIssueCount();
+    const openTicketsCount = isMod ? openIssueCount : 0;
     const visibilityVariant = 'visible';
     const touchLayout = isTouchLayout;
     const mobileOnlyClasses = touchLayout ? '' : 'hidden';
@@ -435,8 +437,8 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
                             <LayoutAvatarImageView airMeMenu={ true } direction={ 3 } figure={ userFigure } />
                         </motion.div>
                         <img src={ memenuCircleImg } alt="" className="tb-memenu-circle" />
-                        { (unseenProgMenuCount > 0) &&
-                            <LayoutItemCountView count={ unseenProgMenuCount } className="pointer-events-none absolute -right-1 -top-1 z-10" /> }
+                        { (meMenuCount > 0) &&
+                            <LayoutItemCountView count={ meMenuCount } className="pointer-events-none absolute -right-1 -top-1 z-10" /> }
                     </motion.div> }
                     { (!leftCollapsed && isInRoom && showToolbarButton) &&
                         <motion.div variants={ itemVariants } className="tb-slot tb-slot-tall">
@@ -466,7 +468,7 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
                         </motion.div> }
                     { isMod &&
                         <motion.div variants={ itemVariants } className="relative tb-slot">
-                            <ToolbarItemView icon="modtools" onClick={ () => CreateLinkEvent('mod-tools/toggle') } className="tb-icon" />
+                            <ToolbarItemView icon="modtools" onClick={ () => CreateLinkEvent('mod-tools/show') } className="tb-icon" />
                             { (openTicketsCount > 0) &&
                                 <LayoutItemCountView count={ openTicketsCount } className="pointer-events-none absolute -right-1 -top-1 z-10" /> }
                         </motion.div> }
@@ -562,8 +564,8 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
                             <LayoutAvatarImageView airMeMenu={ true } direction={ 3 } figure={ userFigure } />
                         </motion.div>
                         <img src={ memenuCircleImg } alt="" className="tb-memenu-circle" />
-                        { (unseenProgMenuCount > 0) &&
-                            <LayoutItemCountView count={ unseenProgMenuCount } className="pointer-events-none absolute -right-1 -top-1 z-10" /> }
+                        { (meMenuCount > 0) &&
+                            <LayoutItemCountView count={ meMenuCount } className="pointer-events-none absolute -right-1 -top-1 z-10" /> }
                     </motion.div>
                     { isInRoom &&
                         <motion.div variants={ itemVariants } className="relative">
@@ -630,7 +632,7 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
                     </motion.div> }
                 { isMod &&
                     <motion.div variants={ itemVariants } className="relative">
-                        <ToolbarItemView icon="modtools" onClick={ () => CreateLinkEvent('mod-tools/toggle') } className="tb-icon" />
+                        <ToolbarItemView icon="modtools" onClick={ () => CreateLinkEvent('mod-tools/show') } className="tb-icon" />
                         { (openTicketsCount > 0) &&
                             <LayoutItemCountView count={ openTicketsCount } className="pointer-events-none absolute -right-1 -top-1 z-10" /> }
                     </motion.div> }

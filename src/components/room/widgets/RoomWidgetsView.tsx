@@ -14,7 +14,7 @@ import {
 import { FC, useState } from 'react';
 import { DispatchUiEvent, LocalizeText, localizeWithFallback, NotificationAlertType, RoomWidgetUpdateRoomObjectEvent } from '../../../api';
 import { WidgetErrorBoundary } from '../../../common';
-import { useOctaneEvent, useNotification, usePollSubscriptions, useRoom } from '../../../hooks';
+import { useObjectRemoveConfirm, useOctaneEvent, useNotification, usePollSubscriptions, useRoom } from '../../../hooks';
 import { AvatarInfoWidgetView } from './avatar-info/AvatarInfoWidgetView';
 import { BuildHeightWidgetView } from './BuildHeightWidgetView';
 import { ChatWidgetView } from './chat/ChatWidgetView';
@@ -36,11 +36,15 @@ import { RoomFilterWordsWidgetView } from './room-filter-words/RoomFilterWordsWi
 import { RoomThumbnailWidgetView } from './room-thumbnail/RoomThumbnailWidgetView';
 import { RoomToolsWidgetView } from './room-tools/RoomToolsWidgetView';
 import { applyRoomZoom } from './room-tools/roomZoom.helpers';
+import { WiredContractWidgetView } from './wired-contract/WiredContractWidgetView';
+import { WiredLinkWidgetView } from './wired-link/WiredLinkWidgetView';
 import { WordQuizWidgetView } from './word-quiz/WordQuizWidgetView';
 
 const MAX_ZOOM_SHIFT = 3;
 
 export const RoomWidgetsView: FC<{}> = (props) => {
+    useObjectRemoveConfirm();
+
     const { roomSession = null } = useRoom();
     const { simpleAlert = null } = useNotification();
     const [adTooltip, setAdTooltip] = useState<{ objectId: number; text: string }>(null);
@@ -249,6 +253,12 @@ export const RoomWidgetsView: FC<{}> = (props) => {
             </WidgetErrorBoundary>
             <WidgetErrorBoundary name="DoorbellWidget">
                 <DoorbellWidgetView />
+            </WidgetErrorBoundary>
+            <WidgetErrorBoundary name="WiredLinkWidget">
+                <WiredLinkWidgetView />
+            </WidgetErrorBoundary>
+            <WidgetErrorBoundary name="WiredContractWidget">
+                <WiredContractWidgetView />
             </WidgetErrorBoundary>
             <WidgetErrorBoundary name="BuildHeightWidget">
                 <BuildHeightWidgetView />

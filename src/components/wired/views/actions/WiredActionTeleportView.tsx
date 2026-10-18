@@ -47,6 +47,8 @@ export const WiredActionTeleportView: FC<{}> = () => {
             hasSpecialInput={true}
             requiresFurni={WiredFurniType.STUFF_SELECTION_OPTION_BY_ID_BY_TYPE_OR_FROM_CONTEXT}
             save={save}
+            // Official: move furni to user and move user to furni keep the advanced section open.
+            footerCollapsible={!isFurniToUserEffect && !isUserToFurniEffect}
             footer={
                 <WiredSourcesSelector
                     showFurni={true}

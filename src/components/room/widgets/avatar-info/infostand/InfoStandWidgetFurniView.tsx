@@ -17,7 +17,6 @@ import {
     RoomWidgetFurniInfoUsagePolicyEnum,
     SetObjectDataMessageComposer,
     SongInfoReceivedEvent,
-    StringDataType,
     UpdateFurniturePositionComposer
 } from '@octane/renderer';
 import { FC, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
@@ -70,6 +69,7 @@ import statStateIcon from '../../../../../assets/images/infostand/stat-state.png
 import statXIcon from '../../../../../assets/images/infostand/stat-x.png';
 import statYIcon from '../../../../../assets/images/infostand/stat-y.png';
 import { ImagePositionEditorView } from './ImagePositionEditorView';
+import { infostandFurniOwnerText, infostandFurniPanelClass } from './infostandFurni.helpers';
 
 interface InfoStandWidgetFurniViewProps {
     avatarInfo: AvatarInfoFurni;
@@ -230,7 +230,9 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
     const plantClassnames = GetConfigurationValue<string[]>('furni.plant.classnames', []) ?? [];
     const [godMode, setGodMode] = useState(false);
     const [canSeeFurniId, setCanSeeFurniId] = useState(false);
+    // Official InfoStandFurniView: the group name and badge both come from the group details, not from the stuff data.
     const [groupName, setGroupName] = useState<string>(null);
+    const [groupBadge, setGroupBadge] = useState<string>(null);
     const [isJukeBox, setIsJukeBox] = useState<boolean>(false);
     const [isSongDisk, setIsSongDisk] = useState<boolean>(false);
     const [isBranded, setIsBranded] = useState<boolean>(false);
@@ -282,9 +284,8 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
         return () => clearInterval(interval);
     }, [avatarInfo, roomSession]);
     const showOwnerProfileIcon = useMemo(() => {
-        const ownerName = (avatarInfo?.ownerName || '').trim().toLowerCase();
-
-        return !!avatarInfo && avatarInfo.ownerId > 0 && ownerName !== 'builders club';
+        // A temporary (Wired) copy and a Builders Club furni show no owner: no profile link (official setOwnerInfo).
+        return !!avatarInfo && !avatarInfo.isTemporary && !avatarInfo.isBuildersClub && avatarInfo.ownerId > 0;
     }, [avatarInfo]);
 
     const sendUpdate = useCallback(
@@ -433,6 +434,16 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
         )
             canUse = true;
 
+        // AIR InfoStandFurniView: the room's free furni movements mode (ConfigurationItemStates) shows move,
+        // rotate (floor only) and use for any furni. Recolour keeps following real rights.
+        const canRecolorByRights = canMove;
+
+        if (GetRoomEngine().activeRoomHasFreeFurniMovementsMode) {
+            canMove = true;
+            canRotate = !avatarInfo.isWallItem;
+            canUse = true;
+        }
+
         if (avatarInfo.extraParam) {
             if (avatarInfo.extraParam === RoomWidgetEnumItemExtradataParameter.CRACKABLE_FURNI) {
                 const stuffData = avatarInfo.stuffData as CrackableDataType;
@@ -514,7 +525,7 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
         const recolorData = recolorTypeId > 0 ? GetSessionDataManager().getFloorItemData(recolorTypeId) : null;
         // Only placed recolourable furni (*_recolorable) can be recoloured; the old Builders Club colour
         // variants (bc_x*N) keep the colour they were placed in.
-        setCanRecolor(canMove && isRecolorableClass(recolorData?.className));
+        setCanRecolor(canRecolorByRights && isRecolorableClass(recolorData?.className));
         setCanUse(canUse);
         setCanRemoveBackground(removeBackgroundAllowed);
         setFurniKeys(furniKeyss);
@@ -531,6 +542,7 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
         setGodMode(godMode);
         setCanSeeFurniId(canSeeFurniId);
         setGroupName(null);
+        setGroupBadge(null);
         setIsJukeBox(furniIsJukebox);
         setIsSongDisk(furniIsSongDisk);
         setSongId(furniSongId);
@@ -542,10 +554,10 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
     useMessageEvent<GroupInformationEvent>(GroupInformationEvent, (event) => {
         const parser = event.getParser();
 
-        if (!avatarInfo || avatarInfo.groupId !== parser.id || parser.flag) return;
+        // Official onGroupDetails: any details of the furni's group fill its badge and name, also the ones a click asked for.
+        if (!avatarInfo || avatarInfo.groupId !== parser.id) return;
 
-        if (groupName) setGroupName(null);
-
+        setGroupBadge(parser.badge);
         setGroupName(parser.title);
     });
 
@@ -754,14 +766,6 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
         [avatarInfo, pickupMode, customKeys, customValues, getFurniSettingsAsString, pickupRoomObject]
     );
 
-    const getGroupBadgeCode = useCallback(() => {
-        const stringDataType = avatarInfo.stuffData as StringDataType;
-
-        if (!stringDataType || !(stringDataType instanceof StringDataType)) return null;
-
-        return stringDataType.getValue(2);
-    }, [avatarInfo]);
-
     if (!avatarInfo) return null;
 
     const furniTypeId = roomSession
@@ -776,7 +780,13 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
 
     return (
         <Column alignItems="end" gap={1}>
-            <Column className="relative min-w-[190px] max-w-[190px] z-30 pointer-events-auto bg-[rgba(28,28,32,.95)] [box-shadow:inset_0_5px_#22222799,inset_0_-4px_#12121599] rounded">
+            <Column
+                className={
+                    'relative min-w-[190px] max-w-[190px] z-30 pointer-events-auto [box-shadow:inset_0_5px_#22222799,inset_0_-4px_#12121599] rounded ' +
+                    // Official colours (InfoStandFurniView.update): Builders Club 0x331C00, temporary (Wired) 0x142B44, else dark.
+                    infostandFurniPanelClass(avatarInfo)
+                }
+            >
                 <Column className="h-full p-[8px] overflow-auto" gap={1} overflow="visible">
                     <div className="flex flex-col gap-1">
                         <Flex alignItems="center" gap={1} justifyContent="between">
@@ -844,8 +854,17 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
                     <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-1">
                             {showOwnerProfileIcon && <UserProfileIconView userId={avatarInfo.ownerId} />}
+                            {avatarInfo.isTemporary && (
+                                <img
+                                    alt=""
+                                    className="[image-rendering:pixelated]"
+                                    draggable={false}
+                                    src={GetConfigurationValue<string>('catalog.asset.icon.url', '').replace('%name%', '80')}
+                                />
+                            )}
+                            {avatarInfo.isBuildersClub && !avatarInfo.isTemporary && <i className="octane-icon icon-buildersclub shrink-0 scale-75" />}
                             <Text small wrap variant="white">
-                                {LocalizeText('furni.owner', ['name'], [avatarInfo.ownerName])}
+                                {infostandFurniOwnerText(avatarInfo)}
                             </Text>
                         </div>
                         {avatarInfo.purchaseOfferId > 0 && (
@@ -958,7 +977,7 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
                             <>
                                 <hr className="m-0 bg-[#0003] border-0 opacity-[.5] h-px" />
                                 <Flex pointer alignItems="center" gap={2} onClick={() => GetGroupInformation(avatarInfo.groupId)}>
-                                    <LayoutBadgeImageView badgeCode={getGroupBadgeCode()} isGroup={true} />
+                                    {!!groupBadge && <LayoutBadgeImageView badgeCode={groupBadge} isGroup={true} />}
                                     <Text underline variant="white">
                                         {groupName}
                                     </Text>

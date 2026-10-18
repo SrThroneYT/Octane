@@ -1,6 +1,6 @@
 import { GetRoomEngine, RoomEngineTriggerWidgetEvent } from '@octane/renderer';
 import { useState } from 'react';
-import { IsOwnerOfFurniture } from '../../../../api';
+import { canEditFootballGate, GetRoomSession, IsAnyRoomController } from '../../../../api';
 import { useOctaneEvent } from '../../../events';
 import { useFurniRemovedEvent } from '../../engine';
 
@@ -15,8 +15,10 @@ const useFurnitureFootballGateWidgetState = () => {
 
     useOctaneEvent<RoomEngineTriggerWidgetEvent>(RoomEngineTriggerWidgetEvent.REQUEST_CLOTHING_CHANGE, (event) => {
         const roomObject = GetRoomEngine().getRoomObject(event.roomId, event.objectId, event.category);
+        const roomSession = GetRoomSession();
 
-        if (!roomObject || !IsOwnerOfFurniture(roomObject)) return;
+        // AIR FurnitureClothingChangeWidgetHandler: room owner, any-room controller or rights in the room.
+        if (!roomObject || !canEditFootballGate(roomSession?.isRoomOwner, IsAnyRoomController(), roomSession?.controllerLevel)) return;
 
         setObjectId(event.objectId);
         setCategory(event.category);

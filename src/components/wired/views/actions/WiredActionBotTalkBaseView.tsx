@@ -8,6 +8,7 @@ import { WiredBubbleWidthSelect } from '../WiredBubbleWidthSelect';
 import { BOT_SOURCES, WiredSourcesSelector } from '../WiredSourcesSelector';
 import { slotUserSource } from '../WiredSourceSlots';
 import { WiredActionBaseView } from './WiredActionBaseView';
+import { WiredPlaceholderInsert } from '../WiredPlaceholderInsert';
 
 const MESSAGE_MAX_LENGTH = 400;
 
@@ -80,7 +81,7 @@ export const WiredActionBotTalkBaseView: FC<WiredActionBotTalkBaseViewProps> = (
                     {toAvatar && (
                         <>
                             <hr className="m-0 bg-dark" />
-                            <WiredSourcesSelector showUsers={true} userSource={userSource} onChangeUsers={setUserSource} />
+                            <WiredSourcesSelector showUsers={true} userSlot={1} userSource={userSource} onChangeUsers={setUserSource} />
                         </>
                     )}
                 </div>
@@ -101,6 +102,7 @@ export const WiredActionBotTalkBaseView: FC<WiredActionBotTalkBaseViewProps> = (
                     onChange={(event) => setMessage(event.target.value)}
                 />
                 <WiredTextCounter maxLength={MESSAGE_MAX_LENGTH} value={message} />
+                <WiredPlaceholderInsert trigger={trigger} onInsert={(token) => setMessage((current) => (current + token).slice(0, MESSAGE_MAX_LENGTH))} />
                 <WiredTextFormattingHelp />
                 {modes.map((mode) => (
                     <label key={mode.value} className="flex items-center gap-1">

@@ -2810,7 +2810,7 @@
     padding: 0 !important;
     border: 0 !important;
     border-radius: 0 !important;
-    border-image: none !important;
+    border-image-source: none !important;
     outline: 0;
     background-color: transparent !important;
     background-position: 0 0 !important;
@@ -2891,6 +2891,14 @@
     -webkit-mask-box-image: url("../../assets/images/catalog/air/gift/border-slot-e9e9e9.png") 3 fill / 3px / 0 stretch;
     image-rendering: var(--octane-pixel-art, pixelated);
     pointer-events: none;
+}
+
+/* Firefox has no mask-box-image, so the slot drew as a plain green square. These steps are the 3px
+   corner alpha of the 7px discount slot. */
+@supports not (-webkit-mask-box-image-source: none) {
+    .octane-catalog-standard-spinner-discount::before {
+        clip-path: polygon(2px 0, calc(100% - 2px) 0, calc(100% - 2px) 1px, calc(100% - 1px) 1px, calc(100% - 1px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 1px) calc(100% - 2px), calc(100% - 1px) calc(100% - 1px), calc(100% - 2px) calc(100% - 1px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 1px), 1px calc(100% - 1px), 1px calc(100% - 2px), 0 calc(100% - 2px), 0 2px, 1px 2px, 1px 1px, 2px 1px);
+    }
 }
 
 .octane-catalog-standard-spinner-discount-copy {
@@ -3148,7 +3156,7 @@
     min-height: 24px !important;
     padding: 0 !important;
     border: 0 !important;
-    border-image: none !important;
+    border-image-source: none !important;
     border-radius: 0 !important;
     background: transparent !important;
     background-image: none !important;

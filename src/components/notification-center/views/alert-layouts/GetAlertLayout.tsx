@@ -6,6 +6,7 @@ import { NotificationDefaultAlertView } from './NotificationDefaultAlertView';
 import { EVENT_ALERT_TYPES, NotificationEventAlertView } from './NotificationEventAlertView';
 import { isFurniDataAlert, NotificationFurniDataAlertView } from './NotificationFurniDataAlertView';
 import { NotificationSeachAlertView } from './NotificationSearchAlertView';
+import { NativeWindowAlert } from '../../../mod-tools/views/NativeAlertView';
 
 export const GetAlertLayout = (item: NotificationAlertItem, onClose: () => void) => {
     if (!item) return null;
@@ -24,6 +25,8 @@ export const GetAlertLayout = (item: NotificationAlertItem, onClose: () => void)
             return <NotificationAbusiveAlertView key={key} {...props} />;
         case NotificationAlertType.SEARCH:
             return <NotificationSeachAlertView key={key} {...props} />;
+        case NotificationAlertType.WINDOW:
+            return <NativeWindowAlert key={key} title={item.title} message={item.messages.join('\n')} onClose={onClose} />;
         default:
             if (isFurniDataAlert(item)) return <NotificationFurniDataAlertView key={key} {...props} />;
 

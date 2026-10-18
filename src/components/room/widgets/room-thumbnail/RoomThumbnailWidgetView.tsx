@@ -1,6 +1,6 @@
-import { GetGuestRoomMessageComposer, GetRoomEngine, OctaneRenderTexture, ThumbnailStatusMessageEvent } from '@octane/renderer';
+import { GetGuestRoomMessageComposer, GetRoomEngine, OctaneRectangle, OctaneRenderTexture, ThumbnailStatusMessageEvent } from '@octane/renderer';
 import { FC, useCallback, useEffect, useRef, useState } from 'react';
-import { LocalizeText, RefreshRoomThumbnail, SendMessageComposer } from '../../../../api';
+import { CaptureCameraRenderMessage, GetCameraRenderMode, LocalizeText, RefreshRoomThumbnail, SendMessageComposer } from '../../../../api';
 import { LayoutMiniCameraView } from '../../../../common';
 import { RoomWidgetThumbnailEvent } from '../../../../events';
 import { useMessageEvent, useNotification, useRoom, useUiEvent } from '../../../../hooks';
@@ -11,7 +11,7 @@ export const RoomThumbnailWidgetView: FC<{}> = (props) => {
     const [isVisible, setIsVisible] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const uploadTimeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
-    const { roomSession = null } = useRoom();
+    const { roomSession = null, roomBackgroundColor = 0 } = useRoom();
     const { simpleAlert = null } = useNotification();
 
     const clearUploadTimeout = useCallback(() => {
@@ -41,8 +41,17 @@ export const RoomThumbnailWidgetView: FC<{}> = (props) => {
         }
     });
 
-    const receiveTexture = async (texture: OctaneRenderTexture) => {
+    const receiveTexture = async (texture: OctaneRenderTexture, frame?: InstanceType<typeof OctaneRectangle>) => {
         if (isSaving) return;
+
+        // camera.render.mode "server": AIR RoomThumbnailCameraWidget sends the thumbnail scene at capture.
+        const thumbnailMessage = (GetCameraRenderMode() === 'server') ? CaptureCameraRenderMessage(frame, roomBackgroundColor, true) : null;
+
+        if ((GetCameraRenderMode() === 'server') && !thumbnailMessage) {
+            texture?.destroy?.(true);
+            simpleAlert(LocalizeText('camera.alert.too_much_stuff'));
+            return;
+        }
 
         setIsSaving(true);
         clearUploadTimeout();
@@ -53,7 +62,8 @@ export const RoomThumbnailWidgetView: FC<{}> = (props) => {
         }, THUMBNAIL_UPLOAD_TIMEOUT_MS);
 
         try {
-            await GetRoomEngine().saveTextureAsScreenshot(texture, true);
+            if (thumbnailMessage) SendMessageComposer(thumbnailMessage);
+            else await GetRoomEngine().saveTextureAsScreenshot(texture, true);
         } catch {
             clearUploadTimeout();
             setIsSaving(false);

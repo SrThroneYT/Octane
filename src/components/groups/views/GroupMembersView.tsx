@@ -5,7 +5,6 @@ import {
     GroupAdminGiveComposer,
     GroupAdminTakeComposer,
     GroupConfirmMemberRemoveEvent,
-    GroupConfirmRemoveMemberComposer,
     GroupMemberParser,
     GroupMembersComposer,
     GroupMembersEvent,
@@ -16,11 +15,12 @@ import {
     GroupMemberUpdateEvent,
     GroupRank,
     GroupRemoveMemberComposer,
+    HabboGroupDeactivatedMessageEvent,
     ILinkEventTracker,
     RemoveLinkEventTracker,
     UnblockGroupMemberMessageComposer
 } from '@octane/renderer';
-import { FC, useCallback, useEffect, useRef, useState } from 'react';
+import { FC, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { FaBan, FaChevronLeft, FaChevronRight, FaUndo } from 'react-icons/fa';
 import { GetConfigurationValue, GetUserProfile, LocalizeText, localizeWithFallback, SendMessageComposer } from '../../../api';
 import {
@@ -35,7 +35,7 @@ import {
     OctaneCardView,
     Text
 } from '../../../common';
-import { useMessageEvent, useNotification } from '../../../hooks';
+import { useGroupMemberRemoval, useMessageEvent, useNotification } from '../../../hooks';
 import { classNames } from '../../../layout';
 
 export const GroupMembersView: FC<{}> = (props) => {
@@ -45,12 +45,23 @@ export const GroupMembersView: FC<{}> = (props) => {
     const [pageId, setPageId] = useState<number>(-1);
     const [totalPages, setTotalPages] = useState<number>(0);
     const [searchQuery, setSearchQuery] = useState<string>('');
-    const [removingMemberName, setRemovingMemberName] = useState<string>(null);
     const { showConfirm = null } = useNotification();
     const pendingActionsRef = useRef<Set<string>>(new Set());
-    // The confirm reply only carries the user id, so remember whether it was a kick or a block.
-    const pendingRemovalRef = useRef<{ userId: number; block: boolean }>(null);
+    // The confirm reply only carries the user id, so remember who it was for and whether it was a kick or a block.
+    const pendingRemovalRef = useRef<{ groupId: number; userId: number; name: string; block: boolean }>(null);
+    // One outstanding GroupConfirmRemoveMember for every group window (Leave included), see useGroupMemberRemoval.
+    const { request: requestMemberRemoval, claimReply, isCurrentSession } = useGroupMemberRemoval();
+    const groupIdRef = useRef<number>(-1);
     const blockingEnabled = GetConfigurationValue<boolean>('group.blocking.enabled', true);
+
+    // Read by the removal confirmation callback; refreshed before it can run.
+    useLayoutEffect(() => {
+        groupIdRef.current = groupId;
+    });
+
+    const askRemoval = (member: GroupMemberParser, block: boolean) => {
+        if (requestMemberRemoval(membersData.groupId, member.id)) pendingRemovalRef.current = { groupId: membersData.groupId, userId: member.id, name: member.name, block };
+    };
 
     const getRankDescription = (member: GroupMemberParser) => {
         if (member.rank === GroupRank.OWNER) return 'group.members.owner';
@@ -106,9 +117,7 @@ export const GroupMembersView: FC<{}> = (props) => {
         if (member.rank !== GroupRank.MEMBER && member.rank !== GroupRank.ADMIN) return;
         if (!runOnce(`remove_${member.id}`)) return;
 
-        pendingRemovalRef.current = { userId: member.id, block: true };
-        setRemovingMemberName(member.name);
-        SendMessageComposer(new GroupConfirmRemoveMemberComposer(membersData.groupId, member.id));
+        askRemoval(member, true);
     };
 
     const unblockMember = (member: GroupMemberParser) => {
@@ -138,9 +147,7 @@ export const GroupMembersView: FC<{}> = (props) => {
             return;
         }
 
-        pendingRemovalRef.current = { userId: member.id, block: false };
-        setRemovingMemberName(member.name);
-        SendMessageComposer(new GroupConfirmRemoveMemberComposer(membersData.groupId, member.id));
+        askRemoval(member, false);
     };
 
     useMessageEvent<GroupMembersEvent>(GroupMembersEvent, (event) => {
@@ -167,12 +174,24 @@ export const GroupMembersView: FC<{}> = (props) => {
         refreshMembers();
     });
 
+    // A deleted group closes its members window.
+    useMessageEvent<HabboGroupDeactivatedMessageEvent>(HabboGroupDeactivatedMessageEvent, (event) => {
+        if (event.getParser().groupId === groupId) setGroupId(-1);
+    });
+
     useMessageEvent<GroupConfirmMemberRemoveEvent>(GroupConfirmMemberRemoveEvent, (event) => {
         const parser = event.getParser();
+        const owned = claimReply(parser.userId);
         const pending = pendingRemovalRef.current;
-        const block = !!pending && pending.userId === parser.userId && pending.block;
+
+        // Only the reply to this window's own request, for the group it still shows.
+        if (!owned || !pending || pending.groupId !== owned.groupId || pending.userId !== owned.userId || pending.groupId !== groupId) return;
+
+        pendingRemovalRef.current = null;
+
+        const block = pending.block;
         const amount = parser.furnitureCount.toString();
-        const name = removingMemberName ?? '';
+        const name = pending.name ?? '';
         let text = LocalizeText(
             parser.furnitureCount > 0 ? 'group.kickconfirm.desc' : 'group.kickconfirm_nofurni.desc',
             ['user', 'amount'],
@@ -185,16 +204,19 @@ export const GroupMembersView: FC<{}> = (props) => {
                 : localizeWithFallback('group.blockconfirm_nofurni.desc', `Block ${name} from the group? They can't request membership again until unblocked.`, ['user', 'amount'], [name, amount]);
         }
 
+        let isSent = false;
+
         showConfirm(
             text,
             () => {
-                SendMessageComposer(new GroupRemoveMemberComposer(membersData.groupId, parser.userId, block));
+                // Valid only while this window still shows that group for the same signed-in user.
+                if (isSent || pending.groupId !== groupIdRef.current || !isCurrentSession(owned)) return;
+
+                isSent = true;
+                SendMessageComposer(new GroupRemoveMemberComposer(pending.groupId, pending.userId, block));
             },
             null
         );
-
-        pendingRemovalRef.current = null;
-        setRemovingMemberName(null);
     });
 
     useEffect(() => {
@@ -235,7 +257,7 @@ export const GroupMembersView: FC<{}> = (props) => {
         setMembersData(null);
         setTotalPages(0);
         setSearchQuery('');
-        setRemovingMemberName(null);
+        pendingRemovalRef.current = null;
     }, [groupId]);
 
     if (groupId === -1 || !membersData) return null;

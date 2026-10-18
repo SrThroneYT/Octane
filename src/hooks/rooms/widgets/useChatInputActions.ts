@@ -15,7 +15,7 @@ import {
     TriggerHabbiconComposer
 } from '@octane/renderer';
 import { useCallback } from 'react';
-import { ChatMessageTypeEnum, GetClubMemberLevel, GetConfigurationValue, IsAnyRoomController, LocalizeText, SendMessageComposer } from '../../../api';
+import { CanOpenFurniChooser, CanOpenUserChooser,ChatMessageTypeEnum, GetClubMemberLevel, GetConfigurationValue, IsAnyRoomController, LocalizeText, SendMessageComposer } from '../../../api';
 import { useNotification } from '../../notification';
 import { useTranslation } from '../../translation';
 import { useRoom } from '../useRoom';
@@ -92,6 +92,14 @@ export const useChatInputActions = () => {
                     case ':kiss':
                         if (GetClubMemberLevel() === HabboClubLevelEnum.VIP) {
                             roomSession?.sendExpressionMessage(AvatarExpressionEnum.BLOW.ordinal);
+
+                            return null;
+                        }
+
+                        break;
+                    case ':67':
+                        if (GetConfigurationValue('avatar.expression.67.enabled', false) && GetClubMemberLevel() === HabboClubLevelEnum.VIP) {
+                            roomSession?.sendExpressionMessage(AvatarExpressionEnum.EXPRESSION_67.ordinal);
 
                             return null;
                         }
@@ -175,6 +183,25 @@ export const useChatInputActions = () => {
                         }
 
                         return null;
+                    case ':pickallbc':
+                        if (
+                            roomSession?.isRoomOwner ||
+                            IsAnyRoomController() ||
+                            (roomSession?.controllerLevel ?? 0) >= RoomControllerLevel.GUEST
+                        ) {
+                            showConfirm(
+                                LocalizeText('room.confirm.pick_all_bc'),
+                                () => {
+                                    GetSessionDataManager().sendSpecialCommandMessage(':pickallbc');
+                                },
+                                null,
+                                null,
+                                null,
+                                LocalizeText('generic.alert.title')
+                            );
+                        }
+
+                        return null;
                     case ':ejectall':
                         if (
                             roomSession?.isRoomOwner ||
@@ -194,15 +221,29 @@ export const useChatInputActions = () => {
                         }
                         return null;
                     case ':furni':
-                        CreateLinkEvent('furni-chooser/');
+                        // AIR: rights holders, security level 2+ and ambassadors only; anyone else is swallowed silently.
+                        if (CanOpenFurniChooser(roomSession)) CreateLinkEvent('furni-chooser/');
                         return null;
                     case ':chooser':
-                        CreateLinkEvent('user-chooser/');
+                        // AIR: swallowed silently for visitors below rights while the room's :chooser disabler is on.
+                        if (CanOpenUserChooser(roomSession)) CreateLinkEvent('user-chooser/');
                         return null;
                     case ':floor':
                     case ':bcfloor':
                         if ((roomSession?.controllerLevel ?? 0) >= RoomControllerLevel.ROOM_OWNER) CreateLinkEvent('floor-editor/show');
 
+                        return null;
+                    case ':wf':
+                    case ':wired':
+                        CreateLinkEvent('wiredmenu/open');
+                        return null;
+                    case ':var':
+                    case ':variables':
+                        CreateLinkEvent('wiredmenu/open/variable_overview');
+                        return null;
+                    case ':inspect':
+                    case ':inspection':
+                        CreateLinkEvent('wiredmenu/open/inspection');
                         return null;
                     case ':togglefps': {
                         if (GetTicker().maxFPS > 0) GetTicker().maxFPS = 0;

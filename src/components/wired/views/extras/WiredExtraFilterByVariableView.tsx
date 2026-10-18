@@ -8,6 +8,7 @@ import { Text } from '../../../../common';
 import { useWired, useWiredTools } from '../../../../hooks';
 import { OctaneInput } from '../../../../layout';
 import { WiredFurniSelectionSourceRow } from '../WiredFurniSelectionSourceRow';
+import { toEditorPickSource, toWirePickSource, VARIABLE_PICK_SOURCE } from '../WiredVariablePickSource';
 import { CLICKED_USER_SOURCE, sortWiredSourceOptions, USER_SOURCES, useAvailableUserSources, WiredSourceOption } from '../WiredSourcesSelector';
 import { WiredVariablePicker } from '../WiredVariablePicker';
 import {
@@ -40,7 +41,6 @@ const TARGET_GLOBAL = 3;
 const AMOUNT_CONSTANT = 0;
 const AMOUNT_VARIABLE = 1;
 const SOURCE_TRIGGER = 0;
-const SOURCE_SECONDARY_SELECTED = 101;
 
 const TARGET_BUTTONS: Array<{ key: VariableTargetType; icon: string; disabled?: boolean }> = [
     { key: 'furni', icon: furniVariableIcon },
@@ -54,7 +54,7 @@ const SORT_OPTIONS = [0, 1, 2, 3, 4, 5];
 const SECONDARY_FURNI_SOURCES: WiredSourceOption[] = sortWiredSourceOptions(
     [
         { value: SOURCE_TRIGGER, label: 'wiredfurni.params.sources.furni.0' },
-        { value: SOURCE_SECONDARY_SELECTED, label: 'wiredfurni.params.sources.furni.101' },
+        { value: VARIABLE_PICK_SOURCE, label: 'wiredfurni.params.sources.furni.100' },
         { value: 200, label: 'wiredfurni.params.sources.furni.200' },
         { value: 201, label: 'wiredfurni.params.sources.furni.201' }
     ],
@@ -175,7 +175,7 @@ export const WiredExtraFilterByVariableView: FC<WiredExtraFilterByVariableViewPr
         return fallbackEntry ? [fallbackEntry, ...referenceEntries] : referenceEntries;
     }, [referenceEntries, referenceTargetType, referenceVariableToken]);
 
-    const referenceSelectionEnabled = amountMode === 'variable' && referenceTargetType === 'furni' && referenceFurniSource === SOURCE_SECONDARY_SELECTED;
+    const referenceSelectionEnabled = amountMode === 'variable' && referenceTargetType === 'furni' && referenceFurniSource === VARIABLE_PICK_SOURCE;
     const selectionLimit = trigger?.maximumItemSelectionCount ?? 0;
     const requiresFurni = referenceSelectionEnabled ? WiredFurniType.STUFF_SELECTION_OPTION_BY_ID : WiredFurniType.STUFF_SELECTION_OPTION_NONE;
     const selectedReferenceSourceValue =
@@ -210,7 +210,7 @@ export const WiredExtraFilterByVariableView: FC<WiredExtraFilterByVariableViewPr
         setAmountMode((d[2] ?? AMOUNT_CONSTANT) === AMOUNT_VARIABLE ? 'variable' : 'constant');
         setReferenceTargetType(normalizeTargetType(d.length > 3 ? fromOfficialVariableTarget(d[3]) : TARGET_USER));
         setReferenceUserSource(trigger.userSourceTypes?.[0] ?? SOURCE_TRIGGER);
-        setReferenceFurniSource(trigger.furniSourceTypes?.[0] ?? (nextReferenceFurniIds.length ? SOURCE_SECONDARY_SELECTED : SOURCE_TRIGGER));
+        setReferenceFurniSource(toEditorPickSource(trigger.furniSourceTypes?.[0] ?? (nextReferenceFurniIds.length ? VARIABLE_PICK_SOURCE : SOURCE_TRIGGER)));
         setReferenceFurniIds(nextReferenceFurniIds);
         setFurniIds(nextReferenceFurniIds);
     }, [setFurniIds, trigger]);
@@ -238,7 +238,7 @@ export const WiredExtraFilterByVariableView: FC<WiredExtraFilterByVariableViewPr
             amountMode === 'variable' ? AMOUNT_VARIABLE : AMOUNT_CONSTANT,
             toOfficialVariableTarget(getTargetValue(referenceTargetType))
         ]);
-        setSourceTypes({ furni: [referenceFurniSource], users: [referenceUserSource] });
+        setSourceTypes({ furni: [toWirePickSource(trigger, referenceFurniSource)], users: [referenceUserSource] });
         setFurniIds(referenceSelectionEnabled ? nextReferenceFurniIds : []);
     };
 
@@ -342,14 +342,14 @@ export const WiredExtraFilterByVariableView: FC<WiredExtraFilterByVariableViewPr
                             selectionActive={true}
                             selectionCount={referenceSelectionEnabled ? furniIds.length : referenceFurniIds.length}
                             selectionLimit={selectionLimit}
-                            selectionEnabledValues={[SOURCE_SECONDARY_SELECTED]}
+                            selectionEnabledValues={[VARIABLE_PICK_SOURCE]}
                             showSelectionToggle={false}
                             onChange={(value) => {
                                 if (referenceTargetType === 'furni') {
-                                    if (referenceFurniSource === SOURCE_SECONDARY_SELECTED) setReferenceFurniIds([...furniIds]);
+                                    if (referenceFurniSource === VARIABLE_PICK_SOURCE) setReferenceFurniIds([...furniIds]);
 
                                     setReferenceFurniSource(value);
-                                    setFurniIds(value === SOURCE_SECONDARY_SELECTED ? [...referenceFurniIds] : []);
+                                    setFurniIds(value === VARIABLE_PICK_SOURCE ? [...referenceFurniIds] : []);
                                     return;
                                 }
 
