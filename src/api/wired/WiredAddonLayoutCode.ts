@@ -37,6 +37,7 @@ export class WiredAddonLayoutCode
     public static GLOBAL_PLACEHOLDER: number = 2000;
     public static ACHIEVEMENT_ENABLER: number = 2001;
     public static VARIABLES_WEB_API: number = 2002;
+    public static LINK_SPEAKER: number = 2003;
     public static CURRENCY_CHEST: number = 3002;
     public static FURNI_CHEST: number = 3003;
     public static CONTRACT_PAYMENT: number = 3004;

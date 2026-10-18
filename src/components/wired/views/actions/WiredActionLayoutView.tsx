@@ -97,6 +97,8 @@ import { WiredActionRemoveTemporaryFurniView } from './WiredActionRemoveTemporar
 import { WiredActionRemoveVariableView } from './WiredActionRemoveVariableView';
 import { WiredActionResetRewardTrackView } from './WiredActionResetRewardTrackView';
 import { WiredActionResetView } from './WiredActionResetView';
+import { WiredActionSendLinkDataframeView } from './WiredActionSendLinkDataframeView';
+import { WiredActionSendLinkMessageView } from './WiredActionSendLinkMessageView';
 import { WiredActionSendSignalView } from './WiredActionSendSignalView';
 import { WiredActionSetAltitudeView } from './WiredActionSetAltitudeView';
 import { WiredActionSetFurniStateToView } from './WiredActionSetFurniStateToView';
@@ -266,6 +268,10 @@ export const WiredActionLayoutView = (code: number) => {
             return <WiredActionChangeOpacityView />;
         case WiredActionLayoutCode.SET_FURNI_HIGHLIGHT:
             return <WiredActionSetHighlightView />;
+        case WiredActionLayoutCode.SEND_LINK_MESSAGE:
+            return <WiredActionSendLinkMessageView />;
+        case WiredActionLayoutCode.SEND_LINK_DATAFRAME:
+            return <WiredActionSendLinkDataframeView />;
     }
 
     return null;

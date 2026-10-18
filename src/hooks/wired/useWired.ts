@@ -35,6 +35,7 @@ import {
     GetRoomSession,
     IsOwnerOfFloorFurniture,
     LocalizeText,
+    localizeWiredError,
     localizeWithFallback,
     NotificationBubbleType,
     pasteTriggerableData,
@@ -52,32 +53,6 @@ import { useLiveState } from '../useLiveState';
 import { useWiredTools } from '../wired-tools/useWiredTools';
 
 /** English for server error keys a hotel's texts may not have yet. */
-const WIRED_ERROR_FALLBACKS: Record<string, string> = {
-    'wiredfurni.error.invalid_api_keys': 'Invalid Web API keys',
-    'wiredfurni.error.variable_leaderboard.invalid_configuration': 'Invalid leaderboard configuration.',
-    'wiredfurni.error.variable_leaderboard.missing_context': 'Leaderboard information is unavailable. Close and reopen this Wired box.',
-    'wiredfurni.error.variable_leaderboard.title_required': 'Enter a leaderboard title.',
-    'wiredfurni.error.variable_leaderboard.column_name_length': 'Column names must contain at least two characters.',
-    'wiredfurni.error.variable_leaderboard.filter_required': 'Select a filtering variable.',
-    'wiredfurni.error.variable_leaderboard.global_operand_required': 'Select a global comparison variable.'
-};
-
-/**
- * Placeholders of server refusal keys that arrive without values: the limits the server applies (Users By Name refuses
- * more than 20 names or 1000 characters).
- */
-const WIRED_ERROR_PARAMETERS: Record<string, [string[], string[]]> = {
-    'wiredfurni.error.usernames_count': [['max_usernames'], ['20']],
-    'wiredfurni.error.too_much_text': [['limit'], ['1000']]
-};
-
-/** The text for a server refusal key, with its known placeholders filled. */
-export const localizeWiredError = (key: string) => {
-    const [parameters, replacements] = WIRED_ERROR_PARAMETERS[key] ?? [null, null];
-
-    return localizeWithFallback(key, WIRED_ERROR_FALLBACKS[key] ?? key, parameters, replacements);
-};
-
 /** Whether a clicked floor furni may be picked, from its room object and furnidata. */
 export type WiredFurniPickCheck = (roomObject: IRoomObject, furniData: IFurnitureData) => boolean;
 
@@ -524,7 +499,7 @@ const useWiredState = () => {
         const parser = event.getParser();
 
         if (parser.info && parser.info.length) {
-            const message = /^[a-z0-9_.]+$/i.test(parser.info) ? localizeWiredError(parser.info) : parser.info;
+            const message = /^[a-z0-9_.]+$/i.test(parser.info) ? localizeWiredError(parser.info, parser.parameters ?? []) : parser.info;
 
             simpleAlert(message, null, null, null, LocalizeText('wiredfurni.title'));
         }

@@ -5,6 +5,7 @@ export * from './AvatarEditorPartSorter';
 export * from './AvatarEditorThumbnailsHelper';
 export * from './BuildPurchasableClothingFigure';
 export * from './dedupeBadges';
+export * from './FootballGateLook';
 export * from './IAvatarEditorCategory';
 export * from './IAvatarEditorCategoryPartItem';
 export * from './IsNftAvatarPartSet';

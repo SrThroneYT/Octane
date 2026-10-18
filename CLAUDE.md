@@ -162,8 +162,8 @@ backed by `useSyncExternalStore`:
 ```ts
 const userData = useUserDataSnapshot();           // SessionData
 const room    = useActiveRoomSessionSnapshot();   // RoomSession
-const ignored = useIgnoredUsersSnapshot();        // ReadonlyArray<string>
-const isIgn   = useIsUserIgnored(name);           // boolean, memoized
+const ignored = useIgnoredUsersSnapshot();        // ReadonlyArray<number> (user ids)
+const isIgn   = useIsUserIgnored(userId);         // boolean, memoized
 const badges  = useGroupBadgesSnapshot();         // ReadonlyMap<number,string>
 const badge   = useGroupBadge(groupId);           // string, memoized
 const vols    = useVolumesSnapshot();             // sound volumes
