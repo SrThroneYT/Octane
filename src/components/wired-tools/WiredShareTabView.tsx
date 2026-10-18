@@ -25,6 +25,8 @@ import {
 } from '../../api';
 import { Button, Text } from '../../common';
 import { useMessageEvent, useNotification, useRoom, useWiredTools } from '../../hooks';
+import { Checkbox } from '../../common/Checkbox';
+import { Radio } from '../../common/Radio';
 
 const furniName = (type: string): string => GetSessionDataManager()?.getFloorItemDataByName?.(type)?.name || type;
 
@@ -208,41 +210,24 @@ export const WiredShareTabView: FC<{}> = () => {
                 <div className="flex flex-col gap-1 text-[12px] text-[#222]">
                     <span>{localizeWithFallback('wiredmenu.share.import.anchor', 'Position:')}</span>
                     <label className="flex items-center gap-2">
-                        <input
-                            checked={anchorMode === WIRED_SHARE_ANCHOR_AVATAR}
-                            className="form-check-input mt-0"
-                            name="wired-share-anchor"
-                            type="radio"
-                            onChange={() => {
+                        <Radio checked={anchorMode === WIRED_SHARE_ANCHOR_AVATAR} name="wired-share-anchor" onCheckedChange={ () => {
                                 setAnchorMode(WIRED_SHARE_ANCHOR_AVATAR);
                                 setReport(null);
-                            }}
-                        />
+                            } } />
                         <span>{localizeWithFallback('wiredmenu.share.import.anchor.avatar', 'From the tile I am standing on')}</span>
                     </label>
                     <label className="flex items-center gap-2">
-                        <input
-                            checked={anchorMode === WIRED_SHARE_ANCHOR_ORIGINAL}
-                            className="form-check-input mt-0"
-                            name="wired-share-anchor"
-                            type="radio"
-                            onChange={() => {
+                        <Radio checked={anchorMode === WIRED_SHARE_ANCHOR_ORIGINAL} name="wired-share-anchor" onCheckedChange={ () => {
                                 setAnchorMode(WIRED_SHARE_ANCHOR_ORIGINAL);
                                 setReport(null);
-                            }}
-                        />
+                            } } />
                         <span>{localizeWithFallback('wiredmenu.share.import.anchor.original', 'On the same tiles as in the original room')}</span>
                     </label>
                     <label className="flex items-center gap-2">
-                        <input
-                            checked={placeFromInventory}
-                            className="form-check-input mt-0"
-                            type="checkbox"
-                            onChange={(event) => {
-                                setPlaceFromInventory(event.target.checked);
+                        <Checkbox checked={placeFromInventory} onCheckedChange={ nextChecked => {
+                                setPlaceFromInventory(nextChecked);
                                 setReport(null);
-                            }}
-                        />
+                            } } />
                         <span>{localizeWithFallback('wiredmenu.share.import.place_from_inventory', 'Place missing boxes from my inventory')}</span>
                     </label>
                 </div>
