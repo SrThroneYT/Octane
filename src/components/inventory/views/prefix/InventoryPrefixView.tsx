@@ -206,7 +206,7 @@ export const InventoryPrefixView: FC<{}> = () => {
                                             type="button"
                                             onClick={() => setSelectedNickIcon(icon)}
                                         >
-                                            <img alt={icon.displayName || icon.iconKey} className="octane-inventory-identity-icon" src={GetNickIconUrl(icon.iconKey)} />
+                                            {GetNickIconUrl(icon.iconKey) && <img alt={icon.displayName || icon.iconKey} className="octane-inventory-identity-icon" src={GetNickIconUrl(icon.iconKey)} />}
                                         </button>
                                     ))}
                                 </div>
@@ -215,7 +215,7 @@ export const InventoryPrefixView: FC<{}> = () => {
                         <div className="octane-inventory-animal-preview">
                             <div className="octane-inventory-animal-name">{selectedNickIcon ? selectedNickIcon.displayName || selectedNickIcon.iconKey : ''}</div>
                             <div className="octane-inventory-animal-image">
-                                {selectedNickIcon && (
+                                {selectedNickIcon && selectedIconUrl && (
                                     <img alt={selectedNickIcon.displayName || selectedNickIcon.iconKey} className="octane-inventory-identity-icon is-large" src={selectedIconUrl} />
                                 )}
                             </div>
