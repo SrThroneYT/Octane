@@ -21,7 +21,7 @@ import {
     PrepareRenderer
 } from '@octane/renderer';
 import { FC, useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
-import { ClearRememberLogin, createBootSteps, exchangeSsoTicketForAccessToken, GetRememberLogin, GetUIVersion, persistAccessTokenFromPayload, SetRememberLogin, StoreRememberLoginFromPayload } from './api';
+import { clearAccessToken, ClearRememberLogin, createBootSteps, exchangeSsoTicketForAccessToken, GetRememberLogin, GetUIVersion, persistAccessTokenFromPayload, SetRememberLogin, StoreRememberLoginFromPayload } from './api';
 import { Base } from './common';
 import { LoadingView } from './components/loading/LoadingView';
 import { LoginView } from './components/login/LoginView';
@@ -114,6 +114,7 @@ export const App: FC<{}> = (props) => {
     const clearStoredCredentials = useCallback(() => {
         ClearStoredChatHistory();
         ClearRememberLogin();
+        clearAccessToken();
         try {
             delete (window as any).OctaneConfig?.['sso.ticket'];
         } catch {}
