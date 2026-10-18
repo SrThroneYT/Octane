@@ -136,7 +136,9 @@ describe('Messenger avatar heads', () => {
 
         expect(avatar).not.toBeNull();
         expect(avatar).toHaveClass('compact-head');
-        expect(avatar).toHaveStyle({ backgroundSize: '35px 35px', backgroundPosition: 'center' });
+        expect(avatar).toHaveStyle({ backgroundSize: '35px 35px' });
+        // jsdom 30.1.3 reports `center` as `50% 50%`; both mean the same position.
+        expect(['center', 'center center', '50% 50%']).toContain((avatar as HTMLElement).style.backgroundPosition);
     });
 
     it('uses the AIR avatar crop on the right side of incoming messages', () => {
