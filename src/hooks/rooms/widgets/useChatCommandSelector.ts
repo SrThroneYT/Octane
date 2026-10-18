@@ -28,6 +28,7 @@ const CLIENT_COMMANDS: { key: string; descriptionKey: string }[] = [
     { key: 'floor', descriptionKey: 'chatcmd.client.floor' },
     { key: 'bcfloor', descriptionKey: 'chatcmd.client.floor' },
     { key: 'pickall', descriptionKey: 'chatcmd.client.pickall' },
+    { key: 'pickallbc', descriptionKey: 'chatcmd.client.pickallbc' },
     { key: 'ejectall', descriptionKey: 'chatcmd.client.ejectall' },
     { key: 'settings', descriptionKey: 'chatcmd.client.settings' },
     // Info

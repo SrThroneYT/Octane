@@ -9,7 +9,9 @@ export const TABS: Array<{ key: WiredToolsTab; label: string }> = [
     { key: 'variables', label: 'Variables' },
     { key: 'inspection', label: 'Inspection' },
     { key: 'chests', label: 'Chests' },
-    { key: 'settings', label: 'Settings' }
+    { key: 'settings', label: 'Settings' },
+    // Ours: AIR has no wired sharing.
+    { key: 'share', label: 'Share' }
 ];
 
 export const MONITOR_LOG_ORDER: string[] = ['EXECUTION_CAP', 'DELAYED_EVENTS_CAP', 'EXECUTOR_OVERLOAD', 'MARKED_AS_HEAVY', 'KILLED', 'RECURSION_TIMEOUT', 'NO_TARGETS', 'UNREACHABLE', 'WIRED_LOG'];

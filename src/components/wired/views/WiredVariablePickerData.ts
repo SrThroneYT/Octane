@@ -118,6 +118,8 @@ const INTERNAL_VARIABLES: Record<'user' | 'furni' | 'global' | 'context', IInter
         createInternalMeta('@dimensions.x', false, true),
         createInternalMeta('@dimensions.y', false, true),
         createInternalMeta('@owner_id', false, true),
+        // A presence flag with no value (Give / Remove Variable on floor furni); only Has Variable reads it.
+        createInternalMeta('@can_move_freely', false, false),
         createInternalMeta('@projectile.animation.position.x', false, true),
         createInternalMeta('@projectile.animation.position.y', false, true),
         createInternalMeta('@projectile.animation.position.altitude', false, true),

@@ -183,6 +183,25 @@ export const useChatInputActions = () => {
                         }
 
                         return null;
+                    case ':pickallbc':
+                        if (
+                            roomSession?.isRoomOwner ||
+                            IsAnyRoomController() ||
+                            (roomSession?.controllerLevel ?? 0) >= RoomControllerLevel.GUEST
+                        ) {
+                            showConfirm(
+                                LocalizeText('room.confirm.pick_all_bc'),
+                                () => {
+                                    GetSessionDataManager().sendSpecialCommandMessage(':pickallbc');
+                                },
+                                null,
+                                null,
+                                null,
+                                LocalizeText('generic.alert.title')
+                            );
+                        }
+
+                        return null;
                     case ':ejectall':
                         if (
                             roomSession?.isRoomOwner ||

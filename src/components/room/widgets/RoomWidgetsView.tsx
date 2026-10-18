@@ -36,6 +36,7 @@ import { RoomFilterWordsWidgetView } from './room-filter-words/RoomFilterWordsWi
 import { RoomThumbnailWidgetView } from './room-thumbnail/RoomThumbnailWidgetView';
 import { RoomToolsWidgetView } from './room-tools/RoomToolsWidgetView';
 import { applyRoomZoom } from './room-tools/roomZoom.helpers';
+import { WiredLinkWidgetView } from './wired-link/WiredLinkWidgetView';
 import { WordQuizWidgetView } from './word-quiz/WordQuizWidgetView';
 
 const MAX_ZOOM_SHIFT = 3;
@@ -251,6 +252,9 @@ export const RoomWidgetsView: FC<{}> = (props) => {
             </WidgetErrorBoundary>
             <WidgetErrorBoundary name="DoorbellWidget">
                 <DoorbellWidgetView />
+            </WidgetErrorBoundary>
+            <WidgetErrorBoundary name="WiredLinkWidget">
+                <WiredLinkWidgetView />
             </WidgetErrorBoundary>
             <WidgetErrorBoundary name="BuildHeightWidget">
                 <BuildHeightWidgetView />

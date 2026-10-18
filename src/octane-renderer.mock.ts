@@ -975,6 +975,32 @@ export class WiredRoomLogsPageComposer extends RecordingComposer {}
 export class WiredArrayInspectionRequestComposer extends RecordingComposer {}
 export class WiredArrayInspectionUpdateComposer extends RecordingComposer {}
 export class WiredArrayInspectionDataEvent extends StubClass {}
+export class WiredSetupExportComposer extends RecordingComposer {}
+export class WiredSetupImportComposer extends RecordingComposer {}
+export class WiredSetupExportResultEvent extends StubClass {}
+export class WiredSetupImportResultEvent extends StubClass {}
+export interface IWiredSetupImportEntry {
+    index: number;
+    type: string;
+    holder: string;
+    x: number;
+    y: number;
+    status: number;
+    itemId: number;
+    reason: string;
+}
+export interface IWiredSetupImportReport {
+    confirmed: boolean;
+    status: number;
+    anchorX: number;
+    anchorY: number;
+    total: number;
+    configured: number;
+    placed: number;
+    missing: number;
+    refused: number;
+    entries: IWiredSetupImportEntry[];
+}
 export interface IWiredArrayInspectionData {
     definition: {
         arrayFormat: 'simple' | 'record';
@@ -1101,6 +1127,7 @@ export class SelectClubGiftComposer extends RecordingComposer {}
 // Catalog store, queries and effects hook: the events they subscribe to and
 // the composers they send.
 export class BuildersClubFurniCountMessageEvent extends MessageEvent {}
+export class BuildersClubPlacementWarningMessageEvent extends MessageEvent {}
 export class BuildersClubPlaceRoomItemMessageComposer extends StubClass {}
 export class BuildersClubPlaceWallItemMessageComposer extends StubClass {}
 export class BuildersClubQueryFurniCountMessageComposer extends StubClass {}
