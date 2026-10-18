@@ -63,7 +63,6 @@ export interface CatalogUiState {
     secondsLeftWithGrace: number;
     builderPlacementBlockedByVisitors: boolean;
     builderPlacementAllowedInCurrentRoom: boolean;
-    builderTrialRoomHideConfirmed: boolean;
 }
 
 export interface CatalogActions {
@@ -100,7 +99,6 @@ export interface CatalogActions {
         placementBlockedByVisitors: boolean;
         placementAllowedInCurrentRoom: boolean;
     }) => void;
-    setBuilderTrialRoomHideConfirmed: (flag: boolean) => void;
     getBuilderFurniPlaceableStatus: (offer: IPurchasableOffer) => BuilderFurniPlaceableStatus;
     isDraggable: (offer: IPurchasableOffer) => boolean;
     requestOfferToMover: (offer: IPurchasableOffer) => void;
@@ -145,8 +143,7 @@ export const INITIAL_CATALOG_UI_STATE: CatalogUiState = {
     updateTime: 0,
     secondsLeftWithGrace: 0,
     builderPlacementBlockedByVisitors: false,
-    builderPlacementAllowedInCurrentRoom: false,
-    builderTrialRoomHideConfirmed: false
+    builderPlacementAllowedInCurrentRoom: false
 };
 
 const pathToRoot = (target: ICatalogNode): ICatalogNode[] => {
@@ -415,10 +412,8 @@ export const useCatalogStore = createOctaneStore<CatalogStoreState>((set, get) =
             updateTime: status.updateTime,
             secondsLeftWithGrace: status.secondsLeftWithGrace,
             builderPlacementBlockedByVisitors: status.placementBlockedByVisitors,
-            builderPlacementAllowedInCurrentRoom: status.placementAllowedInCurrentRoom,
-            builderTrialRoomHideConfirmed: status.secondsLeft > 0 ? false : get().builderTrialRoomHideConfirmed
+            builderPlacementAllowedInCurrentRoom: status.placementAllowedInCurrentRoom
         }),
-    setBuilderTrialRoomHideConfirmed: (builderTrialRoomHideConfirmed) => set({ builderTrialRoomHideConfirmed }),
 
     getBuilderFurniPlaceableStatus: (offer) => {
         const { secondsLeft, furniCount, furniLimit, builderPlacementAllowedInCurrentRoom, builderPlacementBlockedByVisitors } = get();
