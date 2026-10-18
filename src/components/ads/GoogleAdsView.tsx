@@ -51,6 +51,8 @@ export const GoogleAdsView: FC<{}> = () => {
     }, [adsEnabled]);
 
     useEffect(() => {
+        if (!adsEnabled) return;
+
         let cancelled = false;
 
         (async () => {
@@ -81,7 +83,7 @@ export const GoogleAdsView: FC<{}> = () => {
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [adsEnabled]);
 
     useEffect(() => {
         if (!isOpen) {
