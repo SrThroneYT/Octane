@@ -42,12 +42,23 @@ const TARGET_BUTTONS: Array<{ key: VariableTargetType; icon: string }> = [
     { key: 'global', icon: globalVariableIcon }
 ];
 
+// The built-ins Habbo lets Variable Changed watch: a projectile's counts while it flies (furni).
+const WATCHABLE_INTERNAL_TOKENS = new Set([
+    'internal:@projectile.animation.tiles_traveled',
+    'internal:@projectile.animation.user_collisions',
+    'internal:@projectile.animation.furni_collisions',
+    'internal:@projectile.animation.is_traveling'
+]);
+
+const isWatchableEntry = (entry: IWiredVariablePickerEntry) =>
+    entry.kind === 'custom' || (entry.kind === 'internal' && WATCHABLE_INTERNAL_TOKENS.has(entry.token));
+
 const filterCustomEntries = (entries: IWiredVariablePickerEntry[]): IWiredVariablePickerEntry[] => {
     return entries
-        .filter((entry) => entry.kind === 'custom')
+        .filter(isWatchableEntry)
         .map((entry) => ({
             ...entry,
-            children: entry.children?.filter((child) => child.kind === 'custom')
+            children: entry.children?.filter(isWatchableEntry)
         }));
 };
 

@@ -18,6 +18,7 @@ import { WiredExtraGlobalPlaceholderView } from './WiredExtraGlobalPlaceholderVi
 import { WiredExtraMoveCarryUsersView } from './WiredExtraMoveCarryUsersView';
 import { WiredExtraMoveNoAnimationView } from './WiredExtraMoveNoAnimationView';
 import { WiredExtraMovePhysicsView } from './WiredExtraMovePhysicsView';
+import { WiredExtraLinkSpeakerView } from './WiredExtraLinkSpeakerView';
 import { WiredExtraMovementCurveView } from './WiredExtraMovementCurveView';
 import { WiredExtraOrEvalView } from './WiredExtraOrEvalView';
 import { WiredExtraProjectileView } from './WiredExtraProjectileView';
@@ -103,6 +104,8 @@ export const WiredAddonLayoutView = (code: number) =>
             return <WiredExtraAchievementEnablerView />;
         case WiredAddonLayoutCode.VARIABLES_WEB_API:
             return <WiredExtraVariableWebApiView />;
+        case WiredAddonLayoutCode.LINK_SPEAKER:
+            return <WiredExtraLinkSpeakerView />;
         case WiredAddonLayoutCode.MOVEMENT_CURVE:
             return <WiredExtraMovementCurveView />;
         case WiredAddonLayoutCode.CURRENCY_CHEST:

@@ -67,6 +67,7 @@ import {
 } from '../../common';
 import { useInventoryTrade, useMessageEvent, useNotification, useObjectSelectedEvent, useRoom, useWiredTools } from '../../hooks';
 import { WiredChestsTabView } from './WiredChestsTabView';
+import { WiredShareTabView } from './WiredShareTabView';
 import { isRecolorableFurniKey, parseRecolorableFurniValue, recolorableFurniVariables } from './WiredRecolorableFurni.helpers';
 import {
     DIRECTION_NAMES,
@@ -3316,6 +3317,7 @@ export const WiredCreatorToolsView: FC<{}> = () => {
                     )}
                     {activeTab === 'settings' && <WiredToolsSettingsTabView onOpenSelfDonation={() => setIsSelfDonationOpen(true)} />}
                     {activeTab === 'chests' && <WiredChestsTabView />}
+                    {activeTab === 'share' && <WiredShareTabView />}
                 </OctaneCardContentView>
             </OctaneCardView>
             {isMonitorHistoryOpen && (

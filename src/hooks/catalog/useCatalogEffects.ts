@@ -1,6 +1,7 @@
 import {
     BuildersClubFurniCountMessageEvent,
     BuildersClubPlaceRoomItemMessageComposer,
+    BuildersClubPlacementWarningMessageEvent,
     BuildersClubPlaceWallItemMessageComposer,
     BuildersClubQueryFurniCountMessageComposer,
     BuildersClubSubscriptionStatusMessageEvent,
@@ -71,6 +72,9 @@ import {
     isOfferAllowedInCatalogType
 } from './useCatalogQueries';
 import { useCatalogSkipPurchaseConfirmation } from './useCatalogSkipPurchaseConfirmation';
+
+/** BuildersClubPlacementWarning type of a floor placement; anything else is a wall placement. */
+const BUILDERS_CLUB_PLACEMENT_FLOOR = 0;
 
 const scheduleWhenIdle = (run: () => void): void => {
     const idle = (globalThis as { requestIdleCallback?: (cb: () => void, options?: { timeout: number }) => number }).requestIdleCallback;
@@ -311,6 +315,21 @@ export const useCatalogEffects = (): void => {
         useCatalogStore.getState().setBuildersClubFurniCount(event.getParser().furniCount);
     });
 
+    // Habbo asks before a Builders Club placement takes a trial owner's room out of the navigator: the server
+    // echoes the placement and only places it once it comes back confirmed.
+    useMessageEvent<BuildersClubPlacementWarningMessageEvent>(BuildersClubPlacementWarningMessageEvent, (event) => {
+        const parser = event.getParser();
+
+        if (!parser || !showConfirm) return;
+
+        const composer =
+            parser.typeCode === BUILDERS_CLUB_PLACEMENT_FLOOR
+                ? new BuildersClubPlaceRoomItemMessageComposer(parser.pageId, parser.offerId, parser.extraParam, parser.x, parser.y, parser.direction, true)
+                : new BuildersClubPlaceWallItemMessageComposer(parser.pageId, parser.offerId, parser.extraParam, parser.wallLocation, true);
+
+        showConfirm(LocalizeText('room.confirm.hide_room'), () => SendMessageComposer(composer), null, null, null, LocalizeText('generic.alert.title'));
+    });
+
     useMessageEvent<BuildersClubSubscriptionStatusMessageEvent>(BuildersClubSubscriptionStatusMessageEvent, (event) => {
         const parser = event.getParser();
 
@@ -444,18 +463,8 @@ export const useCatalogEffects = (): void => {
                     if (latest.catalogPlaceMultipleObjects && latest.furniCount + 1 < latest.furniLimit) latest.requestOfferToMover(purchasableOffer);
                 };
 
-                if (state.secondsLeft <= 0 && state.furniCount <= 0 && !state.builderTrialRoomHideConfirmed && showConfirm) {
-                    showConfirm(
-                        LocalizeText('room.confirm.hide_room'),
-                        () => {
-                            useCatalogStore.getState().setBuilderTrialRoomHideConfirmed(true);
-                            placeBuilderItem();
-                        },
-                        () => useCatalogStore.getState().resetPlacedOfferData()
-                    );
-                } else {
-                    placeBuilderItem();
-                }
+                // The server answers a placement that would hide the room with a warning to confirm.
+                placeBuilderItem();
                 break;
             }
         }

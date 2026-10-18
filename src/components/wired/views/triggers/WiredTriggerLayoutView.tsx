@@ -24,6 +24,8 @@ import { WiredTriggerReceiveSignalView } from './WiredTriggerReceiveSignalView';
 import { WiredTriggeScoreAchievedView } from './WiredTriggerScoreAchievedView';
 import { WiredTriggerToggleFurniView } from './WiredTriggerToggleFurniView';
 import { WiredTriggerTransactionCompleteView } from './WiredTriggerTransactionCompleteView';
+import { WiredTriggerReceiveLinkDataframeView } from './WiredTriggerReceiveLinkDataframeView';
+import { WiredTriggerReceiveLinkMessageView } from './WiredTriggerReceiveLinkMessageView';
 import { WiredTriggerRoomInitializedView } from './WiredTriggerRoomInitializedView';
 import { WiredTriggerTransactionFailView } from './WiredTriggerTransactionFailView';
 import { WiredTriggerUserGetsHandItemView } from './WiredTriggerUserGetsHandItemView';
@@ -95,6 +97,10 @@ export const WiredTriggerLayoutView = (code: number) => {
             return <WiredTriggerTransactionCompleteView />;
         case WiredTriggerLayout.ROOM_INITIALIZED:
             return <WiredTriggerRoomInitializedView />;
+        case WiredTriggerLayout.RECEIVE_LINK_MESSAGE:
+            return <WiredTriggerReceiveLinkMessageView />;
+        case WiredTriggerLayout.RECEIVE_LINK_DATAFRAME:
+            return <WiredTriggerReceiveLinkDataframeView />;
         case WiredTriggerLayout.TRANSACTION_FAIL:
             return <WiredTriggerTransactionFailView />;
     }
