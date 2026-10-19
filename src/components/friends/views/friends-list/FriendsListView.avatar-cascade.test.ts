@@ -41,7 +41,8 @@ describe('Friends list compact avatar cascade', () => {
         expect(computed.width).toBe('20px');
         expect(computed.height).toBe('20px');
         expect(computed.backgroundSize).toBe('20px 20px');
-        expect(computed.backgroundPosition).toBe('center center');
+        // jsdom 30.1.3 reports `center` as `50% 50%`; both mean the same position.
+        expect(['center center', '50% 50%']).toContain(computed.backgroundPosition);
         expect(computed.imageRendering).toBe('auto');
     });
 });
