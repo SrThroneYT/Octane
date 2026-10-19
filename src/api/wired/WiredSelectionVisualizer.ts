@@ -1,14 +1,27 @@
 import { GetRoomEngine, IRoomObject, IRoomObjectSpriteVisualization, RoomObjectCategory, WiredFilter } from '@octane/renderer';
 
+/*
+ * The official picked-furni look (RoomObjectHighLighter): a colour matrix that keeps a quarter of the furni's colour
+ * and adds 115.5 / 141 / 141, then the furnitureFilter shader turns what was black (the outline) white. As a mix that
+ * is 75 % towards 154 / 188 / 188.
+ */
+const PICKED_LOOK = { lineColor: [1, 1, 1] as [number, number, number], color: [154 / 255, 188 / 255, 188 / 255] as [number, number, number], mix: 0.75 };
+
 export class WiredSelectionVisualizer {
-    private static _selectionShader: WiredFilter = new WiredFilter({
-        lineColor: [0.45, 0.95, 0.55],
-        color: [0.18, 0.78, 0.3]
+    private static _selectionShader: WiredFilter = new WiredFilter(PICKED_LOOK);
+    // Official dual picking, second set: the picked look, then blue x 1.15 + 40.
+    private static _secondarySelectionShader: WiredFilter = new WiredFilter({ ...PICKED_LOOK, scale: [1, 1, 1.15], offset: [0, 0, 40 / 255] });
+    // Official highlightActiveWired(): the open box gets red x 0.9, green + 40, blue + 80 at 80 % alpha.
+    private static _activeWiredShader: WiredFilter = new WiredFilter({
+        lineColor: [0, 0, 0],
+        color: [0, 0, 0],
+        mix: 0,
+        replaceLine: false,
+        scale: [0.9, 1, 1],
+        offset: [0, 40 / 255, 80 / 255],
+        alpha: 0.8
     });
-    private static _secondarySelectionShader: WiredFilter = new WiredFilter({
-        lineColor: [0.45, 0.78, 1],
-        color: [0.2, 0.52, 0.95]
-    });
+    private static _activeWiredId: number = null;
     private static _variableHighlightShader: WiredFilter = new WiredFilter({
         lineColor: [0.52, 0.92, 1],
         color: [0.2, 0.7, 1]
@@ -39,8 +52,31 @@ export class WiredSelectionVisualizer {
         if (!filters.size) WiredSelectionVisualizer._intended.delete(key);
     }
 
+    /** Official highlightActiveWired(): marks the box whose editor is open; one at a time. */
+    public static highlightActiveWired(furniId: number): void {
+        if (WiredSelectionVisualizer._activeWiredId !== null && WiredSelectionVisualizer._activeWiredId !== furniId) {
+            WiredSelectionVisualizer.unhighlightActiveWired(WiredSelectionVisualizer._activeWiredId);
+        }
+
+        WiredSelectionVisualizer._activeWiredId = furniId;
+        WiredSelectionVisualizer.applySelectionShader(WiredSelectionVisualizer.getRoomObject(furniId), WiredSelectionVisualizer._activeWiredShader);
+    }
+
+    public static unhighlightActiveWired(furniId: number): void {
+        if (WiredSelectionVisualizer._activeWiredId === furniId) WiredSelectionVisualizer._activeWiredId = null;
+
+        WiredSelectionVisualizer.clearSelectionShader(WiredSelectionVisualizer.getRoomObject(furniId), WiredSelectionVisualizer._activeWiredShader);
+    }
+
     /** Puts every intended highlight back on the furni's current sprites. */
     public static refresh(): void {
+        if (WiredSelectionVisualizer._activeWiredId !== null) {
+            WiredSelectionVisualizer.applySelectionShader(
+                WiredSelectionVisualizer.getRoomObject(WiredSelectionVisualizer._activeWiredId),
+                WiredSelectionVisualizer._activeWiredShader
+            );
+        }
+
         for (const [key, filters] of WiredSelectionVisualizer._intended) {
             const [category, objectId] = key.split(':').map(Number);
             const roomObject = WiredSelectionVisualizer.getRoomObjectByCategory(objectId, category);
