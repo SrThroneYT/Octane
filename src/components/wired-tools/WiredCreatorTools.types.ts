@@ -73,6 +73,27 @@ export interface MonitorLog {
     latestSourceLabel: string;
 }
 
+/** AIR WiredRoomStatsData room counters: each count with its limit, from the server's room stats packet (1891). */
+export interface MonitorRoomStats {
+    floorCount: number;
+    floorLimit: number;
+    wallCount: number;
+    wallLimit: number;
+    permanentFurniVariables: number;
+    permanentFurniVariablesLimit: number;
+    permanentUserVariables: number;
+    permanentUserVariablesLimit: number;
+    permanentGlobalVariables: number;
+    permanentGlobalVariablesLimit: number;
+}
+
+/** The whole AIR room stats packet: the room counters plus the wired usage against its limit and the heavy flag. */
+export interface MonitorRoomStatsData extends MonitorRoomStats {
+    usage: number;
+    usageLimit: number;
+    isHeavy: boolean;
+}
+
 export interface MonitorSnapshot {
     usageCurrentWindow: number;
     usageLimitPerWindow: number;
@@ -108,6 +129,8 @@ export interface MonitorSnapshot {
         severity: string;
         type: string;
     }>;
+    /** The server's room stats (AIR's own packet, 1891); null until the server answers one. */
+    roomStats: MonitorRoomStatsData | null;
 }
 
 export interface MonitorLogDetails {

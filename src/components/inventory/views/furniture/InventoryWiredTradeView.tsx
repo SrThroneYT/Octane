@@ -11,7 +11,7 @@ import {
     WIRED_TRADE_RULES_AUTO,
     WIRED_TRADE_RULES_MULTIPLIER,
 } from '@octane/renderer';
-import { FC, Fragment, useMemo, useState } from 'react';
+import { FC, Fragment, useEffect, useMemo, useState } from 'react';
 import { GroupItem, localizeWithFallback, ProductImageUtility } from '../../../../api';
 import { AutoGrid, BaseButton, Button, Column, Flex, Grid, LayoutGridItem, Text } from '../../../../common';
 import { useInventoryFurni, useWiredTrading } from '../../../../hooks';
@@ -19,6 +19,9 @@ import { WIRED_TRADING_STATE_ADDING_ITEMS, WIRED_TRADING_STATE_CONFIRMED, WIRED_
 
 /** The window has room for nine, the same as the trade it is modelled on. */
 const MAX_ITEMS_ON_TABLE = 9;
+
+/** AIR highlights the requirements of a trade that replaced the open one for half a second. */
+const REQUIREMENTS_HIGHLIGHT_MS = 500;
 
 /** AIR OfferingRequirementsView anyCoinsText / anyFurniText / anyAllText for the plain requirement types. */
 const ANY_REQUIREMENT_TEXTS: Record<number, [string, string]> = {
@@ -47,6 +50,7 @@ export const InventoryWiredTradeView: FC<{}> = () => {
         multiplier,
         showRequirements,
         setShowRequirements,
+        requirementsHighlight,
         state,
         canAccept,
         extra,
@@ -90,6 +94,15 @@ export const InventoryWiredTradeView: FC<{}> = () => {
             ? localizeWithFallback('inventory.wired_trading.requirements.indicator.met', 'Requirements met')
             : localizeWithFallback('inventory.wired_trading.requirements.indicator.not_met', 'Requirements not met');
     })();
+
+    // AIR WiredTradeRequirementsView.highlight(): a 500 ms border flash when a replacing trade swaps the requirements.
+    const [highlighted, setHighlighted] = useState(false);
+    useEffect(() => {
+        if (!requirementsHighlight) return;
+        setHighlighted(true);
+        const handle = window.setTimeout(() => setHighlighted(false), REQUIREMENTS_HIGHLIGHT_MS);
+        return () => window.clearTimeout(handle);
+    }, [requirementsHighlight]);
 
     const clock = useMemo(() => {
         const minutes = Math.floor(secondsLeft / 60);
@@ -181,7 +194,12 @@ export const InventoryWiredTradeView: FC<{}> = () => {
                             {localizeWithFallback('inventory.wired_trading.seconds_left', 'Time left %time%', ['time'], [clock])}
                         </span>
                     )}
-                    <Button variant="secondary" onClick={() => setShowRequirements(!showRequirements)}>
+                    <Button
+                        variant="secondary"
+                        className={highlighted ? 'outline outline-2 outline-[#f5c400] transition-[outline-color] duration-500' : undefined}
+                        data-highlighted={highlighted ? 'true' : undefined}
+                        onClick={() => setShowRequirements(!showRequirements)}
+                    >
                         {localizeWithFallback('inventory.wired_trading.requirements.title', 'Requirements')}
                     </Button>
                 </div>

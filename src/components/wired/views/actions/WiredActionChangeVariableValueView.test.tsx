@@ -30,7 +30,9 @@ vi.mock('../../../../api', () => ({
         applySelectionShaderToFurni: vi.fn(),
         applySecondarySelectionShaderToFurni: vi.fn(),
         clearSelectionShaderFromFurni: vi.fn(),
-        clearSecondarySelectionShaderFromFurni: vi.fn()
+        clearSecondarySelectionShaderFromFurni: vi.fn(),
+        setEditingPickList: vi.fn(),
+        showPickLists: vi.fn(() => [])
     }
 }));
 vi.mock('../../../../common', () => ({

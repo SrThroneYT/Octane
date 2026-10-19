@@ -1,4 +1,4 @@
-import type { HotelDateTimeParts, MonitorSnapshot, VariableTextValue } from './WiredCreatorTools.types';
+import type { HotelDateTimeParts, MonitorRoomStats, MonitorSnapshot, VariableTextValue } from './WiredCreatorTools.types';
 
 const HOTEL_TIME_FORMATTERS: Map<string, Intl.DateTimeFormat> = new Map();
 
@@ -21,7 +21,8 @@ export const createEmptyMonitorSnapshot = (): MonitorSnapshot => ({
     overloadConsecutiveWindowsThreshold: 0,
     heavyDelayedThresholdPercent: 0,
     logs: [],
-    history: []
+    history: [],
+    roomStats: null
 });
 
 /** AIR WiredMenuMonitorTab: statistic colours, and the share of the limit where each one starts. */
@@ -40,6 +41,40 @@ export const wiredMonitorColor = (amount: number, limit: number, thresholds: rea
     if (share < thresholds[1]) return WIRED_MONITOR_COLOR.ORANGE;
 
     return WIRED_MONITOR_COLOR.RED;
+};
+
+/** The permanent furni variable cap of a Habbo room, used until the server sends its own. */
+export const WIRED_MONITOR_DEFAULT_PERMANENT_FURNI_VARIABLES_LIMIT = 23;
+
+/** AIR WiredMenuMonitorTab.CLEAR_LOGS_TIMEOUT: "Clear all" stays disabled this long after a clear. */
+export const WIRED_MONITOR_CLEAR_LOGS_TIMEOUT_MS = 4000;
+
+/**
+ * The room counters the monitor shows: the server's room stats packet (AIR 1891) once one arrived (`hasVariableTotals` then also allows
+ * the permanent user and global lines), otherwise what the room engine holds, against the room item limit.
+ * Floor and wall furni are counted apart, as AIR does.
+ */
+export const resolveMonitorRoomCounters = (
+    roomStats: MonitorRoomStats | null,
+    local: { floorCount: number; wallCount: number; itemLimit: number; permanentFurniVariables: number }
+): MonitorRoomStats & { hasVariableTotals: boolean } => {
+    if (roomStats) return { ...roomStats, hasVariableTotals: true };
+
+    const itemLimit = Math.max(0, local.itemLimit || 0);
+
+    return {
+        floorCount: local.floorCount,
+        floorLimit: itemLimit,
+        wallCount: local.wallCount,
+        wallLimit: itemLimit,
+        permanentFurniVariables: local.permanentFurniVariables,
+        permanentFurniVariablesLimit: WIRED_MONITOR_DEFAULT_PERMANENT_FURNI_VARIABLES_LIMIT,
+        permanentUserVariables: 0,
+        permanentUserVariablesLimit: 0,
+        permanentGlobalVariables: 0,
+        permanentGlobalVariablesLimit: 0,
+        hasVariableTotals: false
+    };
 };
 
 /**

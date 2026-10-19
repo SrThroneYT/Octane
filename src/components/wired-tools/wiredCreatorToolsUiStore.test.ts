@@ -210,6 +210,34 @@ describe('useWiredCreatorToolsUiStore', () => {
             expect(cleared.history).toEqual([]);
         });
 
+        it('AIR room stats (1891) arrive on their own and survive the next monitor packet', () => {
+            const roomStats = {
+                usage: 120,
+                usageLimit: 500,
+                isHeavy: false,
+                floorCount: 12,
+                floorLimit: 2500,
+                wallCount: 3,
+                wallLimit: 4000,
+                permanentFurniVariables: 1,
+                permanentFurniVariablesLimit: 23,
+                permanentUserVariables: 2,
+                permanentUserVariablesLimit: 93,
+                permanentGlobalVariables: 3,
+                permanentGlobalVariablesLimit: 70
+            };
+
+            useWiredCreatorToolsUiStore.getState().setMonitorRoomStats(roomStats);
+            useWiredCreatorToolsUiStore.getState().setMonitorSnapshot({ ...createEmptyMonitorSnapshot(), usageCurrentWindow: 9 });
+
+            expect(useWiredCreatorToolsUiStore.getState().monitorSnapshot.usageCurrentWindow).toBe(9);
+            expect(useWiredCreatorToolsUiStore.getState().monitorSnapshot.roomStats).toEqual(roomStats);
+
+            useWiredCreatorToolsUiStore.getState().resetMonitorSnapshot();
+
+            expect(useWiredCreatorToolsUiStore.getState().monitorSnapshot.roomStats).toBeNull();
+        });
+
         it('the snapshot persists across the panel close/reopen lifecycle (UI flag flip)', () => {
             // Server pushed a non-empty snapshot while the panel was open.
             const payload = { ...createEmptyMonitorSnapshot(), usageCurrentWindow: 3 };

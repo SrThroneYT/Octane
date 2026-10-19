@@ -42,6 +42,8 @@ interface EarningCategory {
     img: string;
     // Placeholder currency icons used only before the server entry arrives.
     fallbackCurrencies: number[];
+    // Only shown once the server sends the row enabled (AIR hides the agency row unless the hotel runs it).
+    onlyWhenEnabled?: boolean;
 }
 
 // Fixed display order + icons/labels. Amounts, claimable state and the actual
@@ -59,8 +61,14 @@ const CATEGORIES: EarningCategory[] = [
     { key: 'donations', textKey: 'earnings.donations.label', label: 'Donazioni', img: imgDonations, fallbackCurrencies: [0] },
     { key: 'bonus_bag', textKey: 'earnings.bonusbag.label', label: 'Sacco Bonus', img: imgBonusbag, fallbackCurrencies: [0] },
     { key: 'mystery_boxes', textKey: 'earnings.surpriseboxes.label', label: 'Scatole Sorprese', img: imgSurprise, fallbackCurrencies: [5, 0] },
-    { key: 'club_job', textKey: 'earnings.clubwork.label', label: 'Club e Lavoro', img: imgGeneric, fallbackCurrencies: [0] }
+    { key: 'club_job', textKey: 'earnings.clubwork.label', label: 'Club e Lavoro', img: imgGeneric, fallbackCurrencies: [0] },
+    // AIR earnings category 13: the credits wired gives with that earnings category wait here (games is category 11).
+    { key: 'agency', textKey: 'earnings.agency.label', label: 'Agenzia', img: imgGeneric, fallbackCurrencies: [-1], onlyWhenEnabled: true }
 ];
+
+/** The rows the window shows: every fixed row, and a conditional row only once the server enabled it. */
+const visibleEarningCategories =(entries: ReadonlyMap<string, IEarningsEntry>): EarningCategory[] =>
+    CATEGORIES.filter((category) => !category.onlyWhenEnabled || !!entries.get(category.key)?.enabled);
 
 // Map a server reward type to a LayoutCurrencyIcon `type`. Returns null for
 // rewards that aren't a currency (badge / item) — those show just the amount.
@@ -178,7 +186,7 @@ export const VaultView: FC<{}> = (props) => {
         >
             <OctaneCardHeaderView headerText={localizeWithFallback('earnings.title', 'Guadagni')} onCloseClick={() => setIsVisible(false)} />
             <OctaneCardContentView className="octane-vault-content flex flex-col gap-[3px] text-black">
-                {CATEGORIES.map((category) => {
+                {visibleEarningCategories(entriesByKey).map((category) => {
                     const entry = entriesByKey.get(category.key) ?? null;
                     const canClaim = !!entry && entry.enabled && entry.claimable;
                     const rewards = entry?.rewards ?? [];

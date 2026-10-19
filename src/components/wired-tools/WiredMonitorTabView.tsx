@@ -7,16 +7,16 @@ import { BaseButton } from '../../common/BaseButton';
 export interface WiredMonitorTabViewProps {
     monitorStats: MonitorStat[];
     monitorLogs: MonitorLog[];
-    /**
-     * Used only as a disabled-state predicate for the "Clear all" button:
-     * if both this is empty and every log has amount '0', there is nothing
-     * to clear. The view does not render the history itself.
-     */
+    /** Enables the History button; the view does not render the history itself. */
     monitorHistoryRows: { id: string }[];
     onOpenMonitorInfo: () => void;
     onOpenMonitorHistory: () => void;
     /** Opens the room's paged wired log window. */
     onOpenRoomLogs: () => void;
+    /** AIR CLEAR_LOGS_TIMEOUT: "Clear all" stays disabled for a few seconds after a clear. */
+    isClearCoolingDown?: boolean;
+    /** AIR hasWritePermission: only users who may modify the room's wired can clear the logs. */
+    canClearLogs?: boolean;
     onClearMonitorLogs: () => void;
     onOpenMonitorLogDetails: (type: string, details: Pick<MonitorLogDetails, 'severity' | 'amount' | 'latest' | 'reason' | 'sourceLabel' | 'sourceId'>) => void;
 }
@@ -29,7 +29,7 @@ export interface WiredMonitorTabViewProps {
  * Info, Error Info) are mounted outside the OctaneCardView by the parent.
  */
 export const WiredMonitorTabView = (props: WiredMonitorTabViewProps) => {
-    const { monitorStats, monitorLogs, monitorHistoryRows, onOpenMonitorInfo, onOpenMonitorHistory, onOpenRoomLogs, onClearMonitorLogs, onOpenMonitorLogDetails } = props;
+    const { monitorStats, monitorLogs, monitorHistoryRows, onOpenMonitorInfo, onOpenMonitorHistory, onOpenRoomLogs, isClearCoolingDown = false, canClearLogs = true, onClearMonitorLogs, onOpenMonitorLogDetails } = props;
 
     return (
         <div className="p-3 flex flex-col gap-3 relative">
@@ -96,7 +96,7 @@ export const WiredMonitorTabView = (props: WiredMonitorTabViewProps) => {
                 </div>
                 <div className="flex justify-between gap-2">
                     <Button
-                        disabled={!monitorHistoryRows.length && !monitorLogs.some((log) => log.amount !== '0')}
+                        disabled={isClearCoolingDown || !canClearLogs}
                         variant="danger"
                         onClick={onClearMonitorLogs}
                     >

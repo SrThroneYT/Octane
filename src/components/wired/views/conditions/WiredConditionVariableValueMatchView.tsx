@@ -241,19 +241,10 @@ export const WiredConditionVariableValueMatchView: FC<{}> = () => {
         return resolveSourceOptions(orderedUserSources, referenceSelectedSourceValue, userSourceFallbackOptions);
     }, [orderedUserSources, referenceSelectedSourceValue, referenceTargetType, userSourceFallbackOptions]);
 
+    // AIR tints by pick list: the checked picks (stuffIds) the first tint, the reference picks (the second
+    // picks, source 101) the blue one.
     const syncHighlights = useCallback((nextDestinationIds: number[], nextReferenceIds: number[]) => {
-        if (highlightedIds.current.length) {
-            WiredSelectionVisualizer.clearSelectionShaderFromFurni(highlightedIds.current);
-            WiredSelectionVisualizer.clearSecondarySelectionShaderFromFurni(highlightedIds.current);
-        }
-
-        const secondarySet = new Set(nextReferenceIds);
-        const primaryOnlyIds = nextDestinationIds.filter((id) => !secondarySet.has(id));
-
-        if (primaryOnlyIds.length) WiredSelectionVisualizer.applySelectionShaderToFurni(primaryOnlyIds);
-        if (nextReferenceIds.length) WiredSelectionVisualizer.applySecondarySelectionShaderToFurni(nextReferenceIds);
-
-        highlightedIds.current = Array.from(new Set([...nextDestinationIds, ...nextReferenceIds]));
+        highlightedIds.current = WiredSelectionVisualizer.showPickLists(highlightedIds.current, nextDestinationIds, nextReferenceIds);
     }, []);
 
     const switchSelection = useCallback(
@@ -307,6 +298,8 @@ export const WiredConditionVariableValueMatchView: FC<{}> = () => {
 
     useEffect(() => syncHighlights(destinationFurniIds, referenceFurniIds), [destinationFurniIds, referenceFurniIds, syncHighlights]);
 
+    useEffect(() => WiredSelectionVisualizer.setEditingPickList(selectionMode === 'reference' ? 2 : 1), [selectionMode]);
+
     useEffect(() => {
         if (selectionMode === 'destination' && !destinationSelectionEnabled && referenceSelectionEnabled) {
             switchSelection('reference');
@@ -325,6 +318,8 @@ export const WiredConditionVariableValueMatchView: FC<{}> = () => {
 
     useEffect(() => {
         return () => {
+            WiredSelectionVisualizer.setEditingPickList(1);
+
             if (!highlightedIds.current.length) return;
 
             WiredSelectionVisualizer.clearSelectionShaderFromFurni(highlightedIds.current);

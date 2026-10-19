@@ -44,6 +44,7 @@ import {
     WiredClipboardEntry,
     wiredClipboardKeyOf,
     WiredFurniType,
+    isDualFurniPickingMode,
     WiredSelectionVisualizer,
     withServerDefaultIntParams
 } from '../../api';
@@ -315,7 +316,7 @@ const useWiredState = () => {
                     const toRemove = prevValue.filter((id) => isSameGroup(id));
                     const remaining = prevValue.filter((id) => !toRemove.includes(id));
 
-                    WiredSelectionVisualizer.clearSelectionShaderFromFurni(toRemove);
+                    for (const id of toRemove) WiredSelectionVisualizer.hide(id);
 
                     return remaining;
                 }
@@ -341,7 +342,8 @@ const useWiredState = () => {
                 }
 
                 const addedIds = newIds.filter((id) => !prevValue.includes(id));
-                if (addedIds.length) WiredSelectionVisualizer.applySelectionShaderToFurni(addedIds);
+                // Tinted as the list being edited, as a single click is.
+                for (const id of addedIds) WiredSelectionVisualizer.show(id);
 
                 return newIds;
             });
@@ -549,10 +551,15 @@ const useWiredState = () => {
     useEffect(() => {
         if (!trigger) return;
 
+        // Official RoomObjectHighLighter: a box with dual furni picking tints its first picks apart from the second.
+        WiredSelectionVisualizer.setDualPickingMode(isDualFurniPickingMode(trigger.inputSourcesConf));
+
         const interval = setInterval(() => WiredSelectionVisualizer.refresh(), 250);
 
         return () => {
             clearInterval(interval);
+            WiredSelectionVisualizer.setDualPickingMode(false);
+            WiredSelectionVisualizer.setEditingPickList(1);
             setTimeout(() => {
                 if (!triggerRef.current) WiredSelectionVisualizer.clearAllSelectionShaders();
             }, 300);

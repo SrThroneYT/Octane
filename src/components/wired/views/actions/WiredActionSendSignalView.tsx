@@ -69,30 +69,24 @@ export const WiredActionSendSignalView: FC<{}> = () =>
         else setForwardFurniIds(furniIds);
     }, [ furniIds, selectionMode ]);
 
-    const syncHighlights = useCallback((nextAntennaIds: number[], nextForwardFurniIds: number[], nextSelectionMode: SelectionMode, nextFurniSource: number) =>
+    // AIR tints by pick list, not by the list being edited: the antennas (stuffIds) the first tint, the furni to
+    // forward (stuffIds2) the blue one.
+    const syncHighlights = useCallback((nextAntennaIds: number[], nextForwardFurniIds: number[], nextFurniSource: number) =>
     {
-        if(highlightedIds.current.length)
-        {
-            WiredSelectionVisualizer.clearSelectionShaderFromFurni(highlightedIds.current);
-            WiredSelectionVisualizer.clearSecondarySelectionShaderFromFurni(highlightedIds.current);
-        }
-
         const visibleForwardIds = (nextFurniSource === SOURCE_SELECTED) ? nextForwardFurniIds : [];
-        const activeIds = (nextSelectionMode === 'antenna') ? nextAntennaIds : visibleForwardIds;
-        const passiveIds = (nextSelectionMode === 'antenna') ? visibleForwardIds : nextAntennaIds;
-        const activeSet = new Set(activeIds);
-        const passiveOnlyIds = passiveIds.filter(id => !activeSet.has(id));
 
-        if(activeIds.length) WiredSelectionVisualizer.applySelectionShaderToFurni(activeIds);
-        if(passiveOnlyIds.length) WiredSelectionVisualizer.applySecondarySelectionShaderToFurni(passiveOnlyIds);
-
-        highlightedIds.current = Array.from(new Set([ ...activeIds, ...passiveOnlyIds ]));
+        highlightedIds.current = WiredSelectionVisualizer.showPickLists(highlightedIds.current, nextAntennaIds, visibleForwardIds);
     }, []);
 
     useEffect(() =>
     {
-        syncHighlights(antennaIds, forwardFurniIds, selectionMode, furniSource);
-    }, [ antennaIds, forwardFurniIds, selectionMode, furniSource, syncHighlights ]);
+        syncHighlights(antennaIds, forwardFurniIds, furniSource);
+    }, [ antennaIds, forwardFurniIds, furniSource, syncHighlights ]);
+
+    useEffect(() =>
+    {
+        WiredSelectionVisualizer.setEditingPickList((selectionMode === 'furni') ? 2 : 1);
+    }, [ selectionMode ]);
 
     const switchSelection = useCallback((mode: SelectionMode) =>
     {
@@ -166,6 +160,8 @@ export const WiredActionSendSignalView: FC<{}> = () =>
     {
         return () =>
         {
+            WiredSelectionVisualizer.setEditingPickList(1);
+
             if(!highlightedIds.current.length) return;
 
             WiredSelectionVisualizer.clearSelectionShaderFromFurni(highlightedIds.current);

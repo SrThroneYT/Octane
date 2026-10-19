@@ -497,11 +497,14 @@ See `docs/ARCHITECTURE.md` "Recently fixed" for fix shapes.
   `src/components/wired/views/extras/WiredExtraVariableFxView.tsx` (prop `category`) on the pure tables and
   param/token codecs in `src/api/wired/WiredVariableFx.ts`, which mirror the server's `WiredVariableFxStyles` /
   `WiredExtraVariableFx`. The four server packets (`WiredVariableFxConfigs/ConfigsRemoved/Status/StatusRemoved`)
-  feed `src/hooks/wired/wiredVariableFxStore.ts` through `useWiredVariableFxEvents`; the room draws them as DOM
-  overlays from `src/components/room/widgets/wired-fx/WiredVariableFxOverlayView.tsx` (mounted in `RoomView`,
-  ticker-positioned over avatars/furni like `ObjectLocationView`, boss bars fixed at the top; css in
-  `src/css/room/WiredVariableFx.css`). Only `custom:<id>` variable tokens are offered for overrides/audience,
-  since that is what the server resolves.
+  feed `src/hooks/wired/wiredVariableFxStore.ts` through `useWiredVariableFxEvents`; `WiredVariableFxView`
+  (`src/components/room/widgets/wired-fx/`, mounted in `RoomView`, renders nothing) drives
+  `useWiredVariableFxRoomDrawing` / `wiredVariableFxRoomDrawing.ts`, which decide visibility and hand each holder its
+  stack through `IRoomEngine.setRoomObjectVariableFx`. The renderer draws it as AIR does, a sprite in the avatar / pet /
+  furni visualization (`Octane-Renderer/packages/room/src/object/visualization/variablefx/`, 150 ms fade in, 350 ms
+  out); each value is painted on a canvas by `src/api/wired/WiredVariableFxVisualizer.ts` over the pure layout in
+  `WiredVariableFxDrawing.ts`. `src/css/room/WiredVariableFx.css` only holds the editor rule. Only `custom:<id>`
+  variable tokens are offered for overrides/audience, since that is what the server resolves.
 - Wired setup quick menu (`src/components/wired/views/WiredBaseView.tsx`, the ≡ button): copy / paste /
   paste-into / clear picks / reset / save-without-closing, backed by `useWired` (`clipboardEntry`,
   `copyWiredToClipboard`, `pasteWiredFromClipboard`, `resetWiredToDefault`, `clearWiredPicks`,

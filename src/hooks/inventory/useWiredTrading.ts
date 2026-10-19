@@ -47,6 +47,7 @@ const useWiredTradingState = () => {
     const [multiplier, setMultiplier] = useState(1);
     const [autoMultiplierMax, setAutoMultiplierMax] = useState(0);
     const [showRequirements, setShowRequirements] = useState(false);
+    const [requirementsHighlight, setRequirementsHighlight] = useState(0);
 
     const [state, setState] = useState(WIRED_TRADING_STATE_CLOSED);
     const [canAccept, setCanAccept] = useState(false);
@@ -84,6 +85,10 @@ const useWiredTradingState = () => {
 
         // A second trade only replaces an open one when the server says so.
         if (isOpen && !parser.overridePreviousTrade) return;
+
+        // AIR WiredTradingModel.onWiredTradeInitiate: a trade that replaces the open one (Initiate Transaction stacked on
+        // Cancel Transaction) swaps the requirements in the same window and highlights them.
+        if (isOpen) setRequirementsHighlight((value) => value + 1);
 
         setRequirementType(parser.requirementType);
         setYouGetText(parser.youGetText);
@@ -219,6 +224,7 @@ const useWiredTradingState = () => {
         autoMultiplierMax,
         showRequirements,
         setShowRequirements,
+        requirementsHighlight,
         state,
         canAccept,
         extra,

@@ -7,7 +7,9 @@ import {
     formatVariableTimestamp,
     isStackOnlyVariable,
     normalizeMonitorReason,
+    resolveMonitorRoomCounters,
     splitMonitorStatLine,
+    WIRED_MONITOR_DEFAULT_PERMANENT_FURNI_VARIABLES_LIMIT,
     WIRED_MONITOR_THRESHOLDS,
     wiredMonitorColor
 } from './WiredCreatorTools.helpers';
@@ -23,6 +25,7 @@ describe('WiredCreatorTools helpers', () => {
             expect(snap.killedRemainingSeconds).toBe(0);
             expect(snap.logs).toEqual([]);
             expect(snap.history).toEqual([]);
+            expect(snap.roomStats).toBeNull();
         });
 
         it('returns fresh arrays each call (no shared state)', () => {
@@ -149,6 +152,39 @@ describe('WiredCreatorTools helpers', () => {
         it('splits a localized line into its label and the coloured value', () => {
             expect(splitMonitorStatLine('Floor furni: <font color="#008000">12/2500</font>')).toEqual({ label: 'Floor furni', value: '12/2500' });
             expect(splitMonitorStatLine('Plain text')).toEqual({ label: 'Plain text', value: '' });
+        });
+    });
+
+    describe('resolveMonitorRoomCounters', () => {
+        const local = { floorCount: 12, wallCount: 3, itemLimit: 2500, permanentFurniVariables: 4 };
+
+        it('uses the server room counters, user and global lines included', () => {
+            const roomStats = {
+                floorCount: 40,
+                floorLimit: 4000,
+                wallCount: 5,
+                wallLimit: 4000,
+                permanentFurniVariables: 2,
+                permanentFurniVariablesLimit: 23,
+                permanentUserVariables: 50,
+                permanentUserVariablesLimit: 93,
+                permanentGlobalVariables: 60,
+                permanentGlobalVariablesLimit: 70
+            };
+
+            expect(resolveMonitorRoomCounters(roomStats, local)).toEqual({ ...roomStats, hasVariableTotals: true });
+        });
+
+        it('falls back to the room engine counts, floor and wall apart, without the variable totals', () => {
+            const counters = resolveMonitorRoomCounters(null, local);
+
+            expect(counters.floorCount).toBe(12);
+            expect(counters.wallCount).toBe(3);
+            expect(counters.floorLimit).toBe(2500);
+            expect(counters.wallLimit).toBe(2500);
+            expect(counters.permanentFurniVariables).toBe(4);
+            expect(counters.permanentFurniVariablesLimit).toBe(WIRED_MONITOR_DEFAULT_PERMANENT_FURNI_VARIABLES_LIMIT);
+            expect(counters.hasVariableTotals).toBe(false);
         });
     });
 });

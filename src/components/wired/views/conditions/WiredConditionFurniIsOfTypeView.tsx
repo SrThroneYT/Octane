@@ -59,19 +59,11 @@ export const WiredConditionFurniIsOfTypeView: FC<WiredConditionFurniIsOfTypeView
     // official source slot; ours follow: [type source, quantifier] and the furni checked as picks in the string.
     const { trigger = null, furniIds = [], setFurniIds, setIntParams, setStringParam, setAllowsFurni, setSourceTypes } = useWired();
 
+    // AIR tints by pick list: the first slot's picks (source 100, AIR stuffIds) the first tint, the second slot's
+    // (source 101, AIR stuffIds2) the blue one. Ours carry the 101 types in stuffIds and the 100 picks in the
+    // string, so the tint follows the source, not our wire list.
     const syncHighlights = useCallback((nextPrimaryIds: number[], nextSecondaryIds: number[]) => {
-        if (highlightedIds.current.length) {
-            WiredSelectionVisualizer.clearSelectionShaderFromFurni(highlightedIds.current);
-            WiredSelectionVisualizer.clearSecondarySelectionShaderFromFurni(highlightedIds.current);
-        }
-
-        const secondarySet = new Set(nextSecondaryIds);
-        const primaryOnlyIds = nextPrimaryIds.filter((id) => !secondarySet.has(id));
-
-        if (primaryOnlyIds.length) WiredSelectionVisualizer.applySelectionShaderToFurni(primaryOnlyIds);
-        if (nextSecondaryIds.length) WiredSelectionVisualizer.applySecondarySelectionShaderToFurni(nextSecondaryIds);
-
-        highlightedIds.current = Array.from(new Set([...nextPrimaryIds, ...nextSecondaryIds]));
+        highlightedIds.current = WiredSelectionVisualizer.showPickLists(highlightedIds.current, nextPrimaryIds, nextSecondaryIds);
     }, []);
 
     const switchSelection = useCallback(
@@ -121,6 +113,10 @@ export const WiredConditionFurniIsOfTypeView: FC<WiredConditionFurniIsOfTypeView
     }, [primaryFurniIds, secondaryFurniIds, syncHighlights]);
 
     useEffect(() => {
+        WiredSelectionVisualizer.setEditingPickList(selectionMode === 'secondary' ? 2 : 1);
+    }, [selectionMode]);
+
+    useEffect(() => {
         const canEditPrimary = matchSource === SOURCE_SELECTED || compareSource === SOURCE_SELECTED;
         const canEditSecondary = matchSource === SOURCE_SECONDARY_SELECTED || compareSource === SOURCE_SECONDARY_SELECTED;
 
@@ -141,6 +137,8 @@ export const WiredConditionFurniIsOfTypeView: FC<WiredConditionFurniIsOfTypeView
 
     useEffect(() => {
         return () => {
+            WiredSelectionVisualizer.setEditingPickList(1);
+
             if (!highlightedIds.current.length) return;
 
             WiredSelectionVisualizer.clearSelectionShaderFromFurni(highlightedIds.current);

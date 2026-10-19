@@ -8,7 +8,7 @@ import { RoomSpectatorView } from './spectator/RoomSpectatorView';
 import { RoomWidgetsView } from './widgets/RoomWidgetsView';
 import { WiredLabelOverlayView } from './widgets/wired-label/WiredLabelOverlayView';
 import { WiredLeaderboardOverlayView } from './widgets/wired-leaderboard/WiredLeaderboardOverlayView';
-import { WiredVariableFxOverlayView } from './widgets/wired-fx/WiredVariableFxOverlayView';
+import { WiredVariableFxView } from './widgets/wired-fx/WiredVariableFxView';
 
 /** One wheel step per this many ms: a trackpad sends dozens of wheel events per swipe. */
 const ROOM_WHEEL_STEP_MS = 120;
@@ -145,7 +145,7 @@ export const RoomView: FC<{}> = (props) => {
                     <div ref={elementRef} className="w-full h-full">
                         <WiredLeaderboardOverlayView />
                         <WiredLabelOverlayView />
-                        <WiredVariableFxOverlayView />
+                        <WiredVariableFxView />
                         {roomSession instanceof RoomSession && (
                             <>
                                 <RoomWidgetsView />

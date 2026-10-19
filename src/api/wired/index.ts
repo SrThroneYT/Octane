@@ -26,6 +26,8 @@ export * from './WiredTriggerLayoutCode';
 export * from './WiredUserVariableHolders';
 export * from './WiredClipboard';
 export * from './WiredVariableFx';
+export * from './WiredVariableFxDrawing';
+export * from './WiredVariableFxVisualizer';
 export * from './WiredTeleportToRoom';
 export * from './WiredWebApi';
 export * from './variablesWebApi';

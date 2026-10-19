@@ -5,3 +5,5 @@ export * from './useWiredLeaderboardEvents';
 export * from './wiredLeaderboardStore';
 export * from './useWiredLabelEvents';
 export * from './wiredLabelStore';
+export * from './useWiredVariableFxRoomDrawing';
+export * from './wiredVariableFxRoomDrawing';

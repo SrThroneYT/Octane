@@ -19,6 +19,8 @@ export const MONITOR_LOG_ORDER: string[] = ['EXECUTION_CAP', 'DELAYED_EVENTS_CAP
 export const WIRED_MONITOR_ACTION_FETCH = 0;
 export const WIRED_MONITOR_ACTION_CLEAR_LOGS = 1;
 export const WIRED_MONITOR_POLL_MS = 250;
+/** AIR WiredMenuMonitorTab.POLL_MONITOR_MS: the room stats request (1957) goes out this often while the tab is open. */
+export const WIRED_MONITOR_ROOM_STATS_POLL_MS = 500;
 export const WIRED_VARIABLES_POLL_MS = 250;
 export const WIRED_VARIABLES_IDLE_POLL_MS = 2000;
 // The inspection tab reads its object on its own (AIR `WiredGetVariablesForObject`), so only the overview needs the live room snapshot.

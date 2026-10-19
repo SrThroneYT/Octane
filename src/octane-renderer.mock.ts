@@ -396,6 +396,8 @@ export const RoomEnterEffect = {
 export class RoomEngineObjectEvent extends StubClass {
     static readonly MOUSE_ENTER = 'REOE_MOUSE_ENTER';
     static readonly MOUSE_LEAVE = 'REOE_MOUSE_LEAVE';
+    static readonly ADDED = 'REOE_ADDED';
+    static readonly REMOVED = 'REOE_REMOVED';
 }
 export const CreateLinkEvent = vi.fn();
 // EventDispatcher — real listener storage. UI_EVENT_DISPATCHER (`../../api`)
