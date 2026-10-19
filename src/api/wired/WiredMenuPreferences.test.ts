@@ -14,6 +14,8 @@ describe('decodeWiredMenuPreferences', () => {
 
     it('has nothing before the user saved once, and keeps unknown styles to the default', () => {
         expect(decodeWiredMenuPreferences('')).toBeNull();
-        expect(decodeWiredMenuPreferences('1,1,0,0,neon')?.wiredStyle).toBe('default');
+        expect(decodeWiredMenuPreferences('1,1,0,0,neon')?.wiredStyle).toBe('');
+        // The official default is stored as an empty style.
+        expect(decodeWiredMenuPreferences('1,1,0,0,')?.wiredStyle).toBe('');
     });
 });
