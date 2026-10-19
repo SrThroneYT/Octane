@@ -45,7 +45,8 @@ read that before starting anything non-trivial.
 | Dev server | `yarn start` |
 | Production build | `yarn build` |
 | Serve production build | `yarn preview` (defaults to http://localhost:4173) |
-| Lint | `yarn eslint` |
+| Lint | `yarn lint` (Biome) |
+| Hook-order lint (CI gate) | `yarn lint:hooks` |
 | Type-check (TS 7 native, fast) | `yarn typecheck` |
 | Test (Vitest, once) | `yarn test` |
 | Test (watch) | `yarn test:watch` |
@@ -137,8 +138,8 @@ login/WebGL, so they're not usable for in-game verification.
   `src/test-utils/selectOption.ts`, and use `getByRole('checkbox'|'radio', { name })` rather
   than `getByLabelText` for wrapped boxes (the label also matches the hidden input).
 - Vite 8 + `@vitejs/plugin-react` 6 + `babel-plugin-react-compiler` 1.0.
-- ESLint 10 + `typescript-eslint` 8 + `eslint-plugin-react-hooks@7` +
-  `eslint-plugin-react-compiler`.
+- Biome for lint and format; ESLint 10 + `@typescript-eslint/parser` 8 + `eslint-plugin-react-hooks@7`
+  only for the Rules of Hooks gate (`yarn lint:hooks`).
 - TanStack Query 5 (`@tanstack/react-query` + devtools).
 - Zustand 5.
 - Vitest 3 + jsdom + `@testing-library/react` + `@testing-library/jest-dom`.
@@ -389,7 +390,7 @@ into `configurePreviewServer` so `yarn preview` keeps working.
 | Renderer snapshot consumer hooks (`useSessionSnapshots`) | `useSessionInfo` (userFigure / userRespectRemaining / petRespectRemaining via `useUserDataSnapshot`), `useChatWidget.ownUserId` (via `useUserDataSnapshot`), `AvatarInfoWidgetAvatarView` Ignore/Unignore (via `useIsUserIgnored`), `ModToolsView` selected-user presence dot (via `useRoomUserListSnapshot` — green when still in the active room, gray when they've left). The 8 hooks (userData / activeRoomSession / ignoredUsers / groupBadges / soundVolumes / roomUserList / isUserIgnored / groupBadge) keep their typeof-guard defensive fallbacks for stale-renderer paths. |
 | Reactive event-driven local state (companion to snapshots — when there is no manager-snapshot to read from yet) | `AvatarInfoWidgetAvatarView` Give/Remove Rights — local `controllerLevel` initialized from `avatarInfo.targetRoomControllerLevel`, kept reactive via `useMessageEvent<FlatControllerAddedEvent>` / `FlatControllerRemovedEvent` filtered by `parser.data.userId === avatarInfo.webID`, plus optimistic bump on click so the moderate submenu flips immediately. Same shape as `useIsUserIgnored` but the source is the renderer event bus, not a snapshot getter — use this when adding a manager-side snapshot for the same data isn't justified. |
 | `useOctaneEventState` + companions (Reducer, ExternalSnapshot) | `OfferView`, `useAvatarInfoWidget` (figure/badges/group reducer), `useInventoryFurni` (pure reducers + fragments useRef) |
-| `useOctaneQuery` + `useOctaneEventInvalidator` | `OfferView`, `CatalogLayoutRoomAdsView`, `ModToolsChatlogView`, `CfhChatlogView`, `useGiftConfiguration`, `useUserGroups`, `useClubOffers(windowId)`, `useSellablePetPalette(breed)`, `useMarketplaceConfiguration`, `useClubGifts` (with invalidator) |
+| `useOctaneQuery` + `useOctaneEventInvalidator` | `CatalogLayoutRoomAdsView`, `ModToolsChatlogView`, `CfhChatlogView`, `useGiftConfiguration`, `useUserGroups`, `useClubOffers(windowId)`, `useSellablePetPalette(breed)`, `useMarketplaceConfiguration`, `useClubGifts` (with invalidator) |
 | Zustand | `NavigatorRoomCreatorView` (`useRoomCreatorStore`), `WiredCreatorToolsView` (`useWiredCreatorToolsUiStore` — every panel-lifecycle-relevant flag, snapshot, selection, highlight, inline editor, picker chain hoisted; what's left in the component as `useState` is genuinely transient: keepSelected, globalClock, roomEnteredAt, selectedMonitorErrorType, selectedMonitorLogDetails) |
 | God-hook split (state + actions + shim) | `doorbell`, `poll`, `furni-chooser`, `user-chooser`, `friend-request`, `chat-input` |
 | God-hook split (Zustand-backed shared source + state filter + actions filter + shim) | `wired-tools`, `translation`, `notification`, `friends`, `catalog` (three-way: `useCatalogData` / `useCatalogUiState` / `useCatalogActions` — all 48 consumers migrated, deprecated `useCatalog` shim removed) |

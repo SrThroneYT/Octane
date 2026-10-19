@@ -21,7 +21,7 @@ import {
     PrepareRenderer
 } from '@octane/renderer';
 import { FC, useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
-import { ClearRememberLogin, createBootSteps, exchangeSsoTicketForAccessToken, GetRememberLogin, GetUIVersion, persistAccessTokenFromPayload, SetRememberLogin, StoreRememberLoginFromPayload } from './api';
+import { clearAccessToken, ClearRememberLogin, createBootSteps, exchangeSsoTicketForAccessToken, GetRememberLogin, GetUIVersion, persistAccessTokenFromPayload, SetRememberLogin, StoreRememberLoginFromPayload, takeLoginTokenFromUrl } from './api';
 import { Base } from './common';
 import { LoadingView } from './components/loading/LoadingView';
 import { LoginView } from './components/login/LoginView';
@@ -114,6 +114,7 @@ export const App: FC<{}> = (props) => {
     const clearStoredCredentials = useCallback(() => {
         ClearStoredChatHistory();
         ClearRememberLogin();
+        clearAccessToken();
         try {
             delete (window as any).OctaneConfig?.['sso.ticket'];
         } catch {}
@@ -439,14 +440,8 @@ export const App: FC<{}> = (props) => {
                 if (ssoTicket) GetConfiguration().setValue('sso.ticket', ssoTicket);
 
                 try {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const tokenParam = urlParams.get('token');
-                    const tokenExpParam = urlParams.get('token_exp');
-                    if (tokenParam && !GetRememberLogin()) {
-                        const parsedExpiry = Number(tokenExpParam || 0);
-                        const expiresAt = Number.isFinite(parsedExpiry) && parsedExpiry > 0 ? parsedExpiry : Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
-                        SetRememberLogin({ token: tokenParam, expiresAt });
-                    }
+                    const urlToken = takeLoginTokenFromUrl();
+                    if (urlToken && !GetRememberLogin()) SetRememberLogin(urlToken);
                 } catch (e) {
                     console.warn('[App] failed to persist remember token from URL', e);
                 }
