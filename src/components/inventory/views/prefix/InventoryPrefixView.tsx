@@ -1,3 +1,4 @@
+import { CreateLinkEvent } from '@octane/renderer';
 import { FC, useEffect, useMemo, useState } from 'react';
 import { getPrefixEffectStyle, getPrefixFontStyle, IPrefixItem, localizeWithFallback, LocalizeText, parsePrefixColors } from '../../../../api';
 import { GetNickIconUrl } from '../../../../assets/images/user_custom/nick_icons';
@@ -191,7 +192,9 @@ export const InventoryPrefixView: FC<{}> = () => {
             {activeTab === 'icons' &&
                 (nickIcons.length === 0 ? (
                     <InventoryCategoryEmptyView
-                        desc={localizeWithFallback('inventory.empty.nickicons.desc', 'Icons you buy show up here.')}
+                        actionLabel={localizeWithFallback('inventory.empty.nickicons.action', 'Customize identity')}
+                        desc={localizeWithFallback('inventory.empty.nickicons.desc', 'Icons are bought in the identity customizer.')}
+                        onAction={() => CreateLinkEvent('customize/show')}
                         title={localizeWithFallback('inventory.empty.nickicons.title', 'You have no icons')}
                     />
                 ) : (
@@ -206,7 +209,7 @@ export const InventoryPrefixView: FC<{}> = () => {
                                             type="button"
                                             onClick={() => setSelectedNickIcon(icon)}
                                         >
-                                            <img alt={icon.displayName || icon.iconKey} className="octane-inventory-identity-icon" src={GetNickIconUrl(icon.iconKey)} />
+                                            {GetNickIconUrl(icon.iconKey) && <img alt={icon.displayName || icon.iconKey} className="octane-inventory-identity-icon" src={GetNickIconUrl(icon.iconKey)} />}
                                         </button>
                                     ))}
                                 </div>
@@ -215,7 +218,7 @@ export const InventoryPrefixView: FC<{}> = () => {
                         <div className="octane-inventory-animal-preview">
                             <div className="octane-inventory-animal-name">{selectedNickIcon ? selectedNickIcon.displayName || selectedNickIcon.iconKey : ''}</div>
                             <div className="octane-inventory-animal-image">
-                                {selectedNickIcon && (
+                                {selectedNickIcon && selectedIconUrl && (
                                     <img alt={selectedNickIcon.displayName || selectedNickIcon.iconKey} className="octane-inventory-identity-icon is-large" src={selectedIconUrl} />
                                 )}
                             </div>
