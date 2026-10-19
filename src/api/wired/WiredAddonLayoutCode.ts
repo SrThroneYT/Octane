@@ -27,6 +27,8 @@ export class WiredAddonLayoutCode
     public static VARIABLE_TEXT_CONVERTER: number = 1000;
     public static VARIABLE_LEVEL_UP: number = 1001;
     public static VARIABLE_TIME_UTIL: number = 1002;
+    public static VARIABLE_ADDON_SHARE: number = 1003;
+    public static VARIABLE_ADDON_IMPORT: number = 1004;
     public static VARIABLE_LEADERBOARD: number = 1005;
     public static VARIABLE_FX_HEALTH_POINTS: number = 1200;
     public static VARIABLE_FX_PROGRESS_BAR: number = 1201;

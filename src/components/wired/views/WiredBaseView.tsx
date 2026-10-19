@@ -433,7 +433,10 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
                                         <button className="octane-wired__advanced-toggle" type="button" onClick={() => setShowFooter((value) => !value)}>
                                             {LocalizeText(showFooter ? 'wiredfurni.params.sources.collapse' : 'wiredfurni.params.sources.expand')}
                                         </button>
-                                        {showFooter && <div className="octane-wired__advanced-body">{footer}</div>}
+                                        {/* Folding hides the rows instead of unmounting them, so what was typed in them survives. */}
+                                        <div className="octane-wired__advanced-body" hidden={!showFooter}>
+                                            {footer}
+                                        </div>
                                     </>
                                 ) : (
                                     footer

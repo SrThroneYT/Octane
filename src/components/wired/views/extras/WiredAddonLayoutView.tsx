@@ -29,6 +29,7 @@ import { WiredExtraTextOutputUsernameView } from './WiredExtraTextOutputUsername
 import { WiredExtraTextOutputVariableView } from './WiredExtraTextOutputVariableView';
 import { WiredExtraTimeUtilitiesView } from './WiredExtraTimeUtilitiesView';
 import { WiredExtraUnseenView } from './WiredExtraUnseenView';
+import { WiredExtraVariableAddonImportView, WiredExtraVariableAddonShareView } from './WiredExtraVariableAddonSharingView';
 import { WiredExtraVariableFxView } from './WiredExtraVariableFxView';
 import { WiredExtraVariableLeaderboardView } from './WiredExtraVariableLeaderboardView';
 import { WiredExtraVariableLevelUpSystemView } from './WiredExtraVariableLevelUpSystemView';
@@ -84,6 +85,10 @@ export const WiredAddonLayoutView = (code: number) =>
             return <WiredExtraVariableLevelUpSystemView />;
         case WiredAddonLayoutCode.VARIABLE_TIME_UTIL:
             return <WiredExtraTimeUtilitiesView />;
+        case WiredAddonLayoutCode.VARIABLE_ADDON_SHARE:
+            return <WiredExtraVariableAddonShareView />;
+        case WiredAddonLayoutCode.VARIABLE_ADDON_IMPORT:
+            return <WiredExtraVariableAddonImportView />;
         case WiredAddonLayoutCode.VARIABLE_LEADERBOARD:
             return <WiredExtraVariableLeaderboardView />;
         case WiredAddonLayoutCode.VARIABLE_FX_HEALTH_POINTS:
