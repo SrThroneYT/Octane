@@ -461,6 +461,10 @@
         gap: 4px;
     }
 
+    .octane-wired__advanced-body[hidden] {
+        display: none;
+    }
+
     .octane-wired__source-row {
         display: flex;
         flex-direction: column;

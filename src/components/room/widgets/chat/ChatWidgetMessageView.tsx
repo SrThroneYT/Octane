@@ -196,21 +196,23 @@ export const ChatWidgetMessageView: FC<ChatWidgetMessageViewProps> = ({
                     )}
                 </div>
                 <div className="chat-content py-[5px] px-[6px] ml-[27px] leading-none min-h-[25px]">
-                    <UserIdentityView
-                        className="mr-1 align-middle"
-                        displayOrder={chat.displayOrder}
-                        iconClassName="inline-block w-auto h-auto align-[-1px]"
-                        nameClassName="username font-bold"
-                        nickIcon={chat.nickIcon}
-                        prefixClassName=""
-                        prefixColor={chat.prefixColor}
-                        prefixEffect={chat.prefixEffect}
-                        prefixFont={chat.prefixFont}
-                        prefixIcon={chat.prefixIcon}
-                        prefixText={chat.prefixText}
-                        showColon={true}
-                        username={chat.username}
-                    />
+                    {!chat.hideUsername && (
+                        <UserIdentityView
+                            className="mr-1 align-middle"
+                            displayOrder={chat.displayOrder}
+                            iconClassName="inline-block w-auto h-auto align-[-1px]"
+                            nameClassName="username font-bold"
+                            nickIcon={chat.nickIcon}
+                            prefixClassName=""
+                            prefixColor={chat.prefixColor}
+                            prefixEffect={chat.prefixEffect}
+                            prefixFont={chat.prefixFont}
+                            prefixIcon={chat.prefixIcon}
+                            prefixText={chat.prefixText}
+                            showColon={true}
+                            username={chat.username}
+                        />
+                    )}
                     {!chat.showTranslation && (
                         <span className={`${messageClassName} align-middle`} dangerouslySetInnerHTML={{ __html: formattedText }} onClick={onClickChat} />
                     )}

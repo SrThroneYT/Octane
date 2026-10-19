@@ -234,7 +234,7 @@ describe('WiredBaseView advanced section', () => {
     it('folds the advanced section of any other element', () => {
         renderWith(1);
 
-        expect(screen.queryByText('source rows')).toBeNull();
+        expect(screen.getByText('source rows')).not.toBeVisible();
         expect(screen.getByRole('button', { name: 'wiredfurni.params.sources.expand' })).toBeInTheDocument();
     });
 });

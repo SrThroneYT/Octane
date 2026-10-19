@@ -218,6 +218,9 @@ export const WiredRoomLogsView = ({ onClose }: WiredRoomLogsViewProps) => {
                             onChange={(event) => {
                                 const next = Number(event.target.value);
 
+                                // AIR refuses the menu selection while the limiter holds requests back.
+                                if (!requests.canRequestNewPage(false)) return;
+
                                 setSource(next);
                                 updateFilters({ source: next });
                             }}
@@ -237,6 +240,9 @@ export const WiredRoomLogsView = ({ onClose }: WiredRoomLogsViewProps) => {
                             value={level}
                             onChange={(event) => {
                                 const next = Number(event.target.value);
+
+                                // AIR refuses the menu selection while the limiter holds requests back.
+                                if (!requests.canRequestNewPage(false)) return;
 
                                 setLevel(next);
                                 updateFilters({ level: next });
@@ -261,6 +267,7 @@ export const WiredRoomLogsView = ({ onClose }: WiredRoomLogsViewProps) => {
                     lastPage={lastPage}
                     requests={requests}
                     emptyText={localizeWithFallback('wiredmenu.logs_overview.empty', 'No log lines match the current filters')}
+                    pagingTextKey="wiredmenu.logs_overview.bottom_text"
                     scrollResetKey={scrollKey}
                     bodyClassName="h-[320px]"
                 />
