@@ -8,6 +8,7 @@ import { WiredCustomContractView } from './WiredCustomContractView';
 import { WiredExtraAchievementEnablerView } from './WiredExtraAchievementEnablerView';
 import { WiredExtraAnimationTimeView } from './WiredExtraAnimationTimeView';
 import { WiredExtraArrayCaptureView } from './WiredExtraArrayCaptureView';
+import { WiredExtraChestItemTypeScannerView } from './WiredExtraChestItemTypeScannerView';
 import { WiredExtraExecuteInOrderView } from './WiredExtraExecuteInOrderView';
 import { WiredExtraExecutionLimitView } from './WiredExtraExecutionLimitView';
 import { WiredExtraFilterFurniByVariableView } from './WiredExtraFilterFurniByVariableView';
@@ -29,6 +30,7 @@ import { WiredExtraTextOutputUsernameView } from './WiredExtraTextOutputUsername
 import { WiredExtraTextOutputVariableView } from './WiredExtraTextOutputVariableView';
 import { WiredExtraTimeUtilitiesView } from './WiredExtraTimeUtilitiesView';
 import { WiredExtraUnseenView } from './WiredExtraUnseenView';
+import { WiredExtraVariableAddonImportView, WiredExtraVariableAddonShareView } from './WiredExtraVariableAddonSharingView';
 import { WiredExtraVariableFxView } from './WiredExtraVariableFxView';
 import { WiredExtraVariableLeaderboardView } from './WiredExtraVariableLeaderboardView';
 import { WiredExtraVariableLevelUpSystemView } from './WiredExtraVariableLevelUpSystemView';
@@ -72,6 +74,8 @@ export const WiredAddonLayoutView = (code: number) =>
             return <WiredExtraTextInputVariableView />;
         case WiredAddonLayoutCode.EXECUTE_IN_ORDER:
             return <WiredExtraExecuteInOrderView />;
+        case WiredAddonLayoutCode.CHEST_ITEM_TYPE_SCANNER:
+            return <WiredExtraChestItemTypeScannerView />;
         case WiredAddonLayoutCode.FURNI_NAME_PLACEHOLDER:
             return <WiredExtraTextOutputFurniNameView />;
         case WiredAddonLayoutCode.CUSTOM_CONTRACT:
@@ -84,6 +88,10 @@ export const WiredAddonLayoutView = (code: number) =>
             return <WiredExtraVariableLevelUpSystemView />;
         case WiredAddonLayoutCode.VARIABLE_TIME_UTIL:
             return <WiredExtraTimeUtilitiesView />;
+        case WiredAddonLayoutCode.VARIABLE_ADDON_SHARE:
+            return <WiredExtraVariableAddonShareView />;
+        case WiredAddonLayoutCode.VARIABLE_ADDON_IMPORT:
+            return <WiredExtraVariableAddonImportView />;
         case WiredAddonLayoutCode.VARIABLE_LEADERBOARD:
             return <WiredExtraVariableLeaderboardView />;
         case WiredAddonLayoutCode.VARIABLE_FX_HEALTH_POINTS:

@@ -1,6 +1,6 @@
 /**
  * Official selector codes (AIR SelectorCodes, build WIN63-202610131318). Selectors have their own
- * holder and code space; codes from 1000 up are our own selectors.
+ * holder and code space.
  */
 export class WiredSelectorLayoutCode
 {
@@ -24,7 +24,4 @@ export class WiredSelectorLayoutCode
     public static FURNI_WITH_VARIABLE: number = 17;
     public static USERS_WITH_VARIABLE: number = 18;
     public static REMOTE_SELECTOR: number = 19;
-
-    /** Custom: officially the chest item type scanner addon; still a selector here. */
-    public static SCAN_CHEST_FURNI_BY_TYPE: number = 1000;
 }

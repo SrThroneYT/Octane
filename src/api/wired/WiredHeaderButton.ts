@@ -1,6 +1,7 @@
 import { WiredActionLayoutCode } from './WiredActionLayoutCode';
 import { WiredAddonLayoutCode } from './WiredAddonLayoutCode';
 import { WiredConditionlayout } from './WiredConditionLayoutCode';
+import { WiredTriggerLayout } from './WiredTriggerLayoutCode';
 
 export type WiredHolderKind = 'trigger' | 'action' | 'condition' | 'addon' | 'selector' | 'variable';
 
@@ -15,19 +16,19 @@ export const WIRED_HEADER_BUTTON_KEYS: Record<WiredHeaderButtonMode, { key: stri
 };
 
 /**
- * Which header button an element shows, as the official client decides: the snapshot boxes apply
- * their saved state, variables open the variable overview, the log action opens the logs and the
- * web API add-on opens its docs.
+ * Which header button an element shows, as the official client decides: the snapshot boxes (match
+ * to snapshot, "furni state is changed" and place furni) apply their saved state, variables open the
+ * variable overview, the log action opens the logs and the web API add-on opens its docs.
  */
 export const resolveWiredHeaderButton = (holder: WiredHolderKind, code: number): WiredHeaderButtonMode | null => {
     switch (holder) {
         case 'condition':
             return code === WiredConditionlayout.STATES_MATCH || code === WiredConditionlayout.NOT_STATES_MATCH ? 'apply_snapshot' : null;
-        // Official also offers it on "furni state is changed" and place furni; our server applies
-        // snapshots only for the match-to-snapshot boxes, so those two get no dead button.
+        case 'trigger':
+            return code === WiredTriggerLayout.STATE_CHANGE ? 'apply_snapshot' : null;
         case 'action':
-            if (code === WiredActionLayoutCode.SET_FURNI_STATE) return 'apply_snapshot';
-            return code === WiredActionLayoutCode.WRITE_TO_LOGS ? 'view_logs' : null;
+            if (code === WiredActionLayoutCode.SET_FURNI_STATE || code === WiredActionLayoutCode.PLACE_FURNI) return 'apply_snapshot';
+            return code === WiredActionLayoutCode.WRITE_TO_LOGS || code === WiredActionLayoutCode.WRITE_TO_LOGS_NEGATIVE ? 'view_logs' : null;
         case 'addon':
             return code === WiredAddonLayoutCode.VARIABLES_WEB_API ? 'web_api_docs' : null;
         case 'variable':
