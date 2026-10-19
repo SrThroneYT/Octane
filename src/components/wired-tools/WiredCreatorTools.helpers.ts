@@ -24,6 +24,38 @@ export const createEmptyMonitorSnapshot = (): MonitorSnapshot => ({
     history: []
 });
 
+/** AIR WiredMenuMonitorTab: statistic colours, and the share of the limit where each one starts. */
+export const WIRED_MONITOR_COLOR = { GREEN: '008000', ORANGE: 'BD7800', RED: 'ff5733' } as const;
+export const WIRED_MONITOR_THRESHOLDS = {
+    usage: [0.3, 0.7],
+    furni: [0.6, 0.85],
+    variables: [0.5, 0.8]
+} as const;
+
+/** Official colorize(): green below the first share of the limit, orange below the second, red from there (and at 0/0). */
+export const wiredMonitorColor = (amount: number, limit: number, thresholds: readonly [number, number]): string => {
+    const share = amount / limit;
+
+    if (share < thresholds[0]) return WIRED_MONITOR_COLOR.GREEN;
+    if (share < thresholds[1]) return WIRED_MONITOR_COLOR.ORANGE;
+
+    return WIRED_MONITOR_COLOR.RED;
+};
+
+/**
+ * An official statistics line ("Floor furni: <font color=\"#008000\">12/2500</font>") split into its label and the
+ * value the font tag colours, so the line renders without its HTML.
+ */
+export const splitMonitorStatLine = (line: string): { label: string; value: string } => {
+    const text = line ?? '';
+    const strip = (value: string) => value.replace(/<[^>]*>/g, '').trim();
+    const index = text.search(/<font\b/i);
+
+    if (index < 0) return { label: strip(text).replace(/:$/, ''), value: '' };
+
+    return { label: strip(text.slice(0, index)).replace(/:$/, '').trim(), value: strip(text.slice(index)) };
+};
+
 export const getHotelTimeFormatter = (timeZone: string): Intl.DateTimeFormat => {
     const formatterTimeZone = timeZone || 'UTC';
     const existingFormatter = HOTEL_TIME_FORMATTERS.get(formatterTimeZone);
@@ -135,6 +167,9 @@ export const normalizeMonitorReason = (reason: string): string => {
 };
 
 /** The server's text-connector table as the variables tab lists it; undefined when there is none. */
+/** A pointer (AIR requiresExecutionContext) only exists while a stack runs: nobody holds it, so it cannot be highlighted or managed. */
+export const isStackOnlyVariable = (definition?: { requiresExecutionContext?: boolean } | null): boolean => !!definition?.requiresExecutionContext;
+
 export const toVariableTextValues = (textConnector?: Array<{ key: number; value: string }>): VariableTextValue[] | undefined => {
     if (!textConnector?.length) return undefined;
 

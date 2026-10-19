@@ -40,7 +40,7 @@ export const WiredActionBotFollowAvatarView: FC<{}> = (props) => {
             save={save}
             footer={
                 <div className="flex flex-col gap-2">
-                    <WiredSourcesSelector showUsers={true} userSource={userSource} onChangeUsers={setUserSource} />
+                    <WiredSourcesSelector showUsers={true} userSlot={1} userSource={userSource} onChangeUsers={setUserSource} />
                     <hr className="m-0 bg-dark" />
                     <WiredSourcesSelector
                         showUsers={true}

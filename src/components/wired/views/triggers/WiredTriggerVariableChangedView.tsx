@@ -11,7 +11,8 @@ import {
     createFallbackVariableEntry,
     flattenWiredVariablePickerEntries,
     IWiredVariablePickerEntry,
-    normalizeVariableTokenFromWire
+    normalizeVariableTokenFromWire,
+    withoutExecutionContextVariables
 } from '../WiredVariablePickerData';
 import { WiredTriggerBaseView } from './WiredTriggerBaseView';
 
@@ -39,12 +40,23 @@ const TARGET_BUTTONS: Array<{ key: VariableTargetType; icon: string }> = [
     { key: 'global', icon: globalVariableIcon }
 ];
 
+// The built-ins Habbo lets Variable Changed watch: a projectile's counts while it flies (furni).
+const WATCHABLE_INTERNAL_TOKENS = new Set([
+    'internal:@projectile.animation.tiles_traveled',
+    'internal:@projectile.animation.user_collisions',
+    'internal:@projectile.animation.furni_collisions',
+    'internal:@projectile.animation.is_traveling'
+]);
+
+const isWatchableEntry = (entry: IWiredVariablePickerEntry) =>
+    entry.kind === 'custom' || (entry.kind === 'internal' && WATCHABLE_INTERNAL_TOKENS.has(entry.token));
+
 const filterCustomEntries = (entries: IWiredVariablePickerEntry[]): IWiredVariablePickerEntry[] => {
     return entries
-        .filter((entry) => entry.kind === 'custom')
+        .filter(isWatchableEntry)
         .map((entry) => ({
             ...entry,
-            children: entry.children?.filter((child) => child.kind === 'custom')
+            children: entry.children?.filter(isWatchableEntry)
         }));
 };
 
@@ -72,7 +84,11 @@ const getTargetValue = (value: VariableTargetType) => {
 
 export const WiredTriggerVariableChangedView: FC<{}> = () => {
     const { trigger = null, setIntParams = null, setStringParam = null } = useWired();
-    const { userVariableDefinitions = [], furniVariableDefinitions = [], roomVariableDefinitions = [] } = useWiredTools();
+    const tools = useWiredTools();
+    // A pointer only exists while a stack runs, so nothing can watch it change (AIR VariableUpdate filter).
+    const userVariableDefinitions = useMemo(() => withoutExecutionContextVariables(tools.userVariableDefinitions), [tools.userVariableDefinitions]);
+    const furniVariableDefinitions = useMemo(() => withoutExecutionContextVariables(tools.furniVariableDefinitions), [tools.furniVariableDefinitions]);
+    const roomVariableDefinitions = useMemo(() => withoutExecutionContextVariables(tools.roomVariableDefinitions), [tools.roomVariableDefinitions]);
     const [targetType, setTargetType] = useState<VariableTargetType>('user');
     const [variableToken, setVariableToken] = useState('');
     const [createdEnabled, setCreatedEnabled] = useState(true);

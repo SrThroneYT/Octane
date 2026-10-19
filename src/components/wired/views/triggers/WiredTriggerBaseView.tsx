@@ -6,6 +6,7 @@ export interface WiredTriggerBaseViewProps {
     hasSpecialInput: boolean;
     requiresFurni: number;
     save: () => void;
+    validate?: () => boolean;
     footer?: ReactNode;
     footerCollapsible?: boolean;
     selectionPreview?: ReactNode;
@@ -17,6 +18,7 @@ export const WiredTriggerBaseView: FC<PropsWithChildren<WiredTriggerBaseViewProp
     const {
         requiresFurni = WiredFurniType.STUFF_SELECTION_OPTION_NONE,
         save = null,
+        validate = null,
         hasSpecialInput = false,
         children = null,
         footer = null,
@@ -32,6 +34,7 @@ export const WiredTriggerBaseView: FC<PropsWithChildren<WiredTriggerBaseViewProp
             hasSpecialInput={hasSpecialInput}
             requiresFurni={requiresFurni}
             save={onSave}
+            validate={validate}
             wiredType="trigger"
             footer={footer}
             footerCollapsible={footerCollapsible}

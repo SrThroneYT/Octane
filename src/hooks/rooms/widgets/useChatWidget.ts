@@ -246,6 +246,7 @@ const useChatWidgetState = () => {
         // lands the published event has no such field, so it is read as optional.
         chatMessage.textSize = getStoredChatTextSize();
         chatMessage.bubbleWidthOverride = (event as RoomSessionChatEvent & { bubbleWidthOverride?: number }).bubbleWidthOverride ?? -1;
+        chatMessage.hideUsername = event.hideUsername === true;
 
         if (outgoingTranslation) {
             applyTranslationToBubble(
@@ -288,6 +289,7 @@ const useChatWidgetState = () => {
                       name: username,
                       look: userData.figure,
                       imageUrl,
+                      textSize: chatMessage.textSize,
                       style: styleId,
                       chatType: chatType,
                       entityType: userData.type,

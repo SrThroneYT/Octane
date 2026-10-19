@@ -42,7 +42,7 @@ describe('badge tooltip', () => {
         });
 
         const bubble = screen.getByRole('tooltip');
-        expect(bubble.classList.contains('octane-tooltip')).toBe(true);
+        expect(bubble.classList.contains('octane-badge-details')).toBe(true);
         expect(bubble).toHaveTextContent('Name of ACH_BasicClub1');
         expect(bubble).toHaveTextContent('Description of ACH_BasicClub1');
 

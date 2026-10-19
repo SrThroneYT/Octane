@@ -1,9 +1,10 @@
-import { GetRenderer, GetRoomEngine, OctaneTexture, TextureUtils } from '@octane/renderer';
+import { CreateLinkEvent, GetRenderer, GetRoomEngine, OctaneTexture, TextureUtils } from '@octane/renderer';
 import { FC, useEffect, useRef } from 'react';
-import { blitRoomCanvasToViewfinder, CameraPicture, GetRoomSession, getViewfinderRoomFrame, LocalizeText, PlaySound, SoundNames } from '../../../api';
-import { Button, Column, DraggableWindow } from '../../../common';
-import { useCamera, useNotification } from '../../../hooks';
+import { blitRoomCanvasToViewfinder, CameraPicture, CaptureCameraRenderMessage, GetCameraRenderMode, GetRoomSession, getViewfinderRoomFrame, LocalizeText, NotificationAlertType, PlaySound, SoundNames } from '../../../api';
+import { Column, DraggableWindow } from '../../../common';
+import { useCamera, useNotification, useRoom } from '../../../hooks';
 import { getNextEmptyCameraSlot, willFillLastCameraSlot } from '../CameraAirUtilities';
+import { CameraCenteredText, CameraNativeText } from './CameraNativeText';
 
 export interface CameraWidgetCaptureViewProps {
     onClose: () => void;
@@ -27,6 +28,7 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
         setActivePictureSlotIndex = null
     } = useCamera();
     const { simpleAlert = null } = useNotification();
+    const { roomBackgroundColor = 0 } = useRoom();
     const elementRef = useRef<HTMLCanvasElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const flashRef = useRef<HTMLDivElement>(null);
@@ -138,7 +140,7 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
 
         if (pendingShouldShowFullAlertRef.current && !hasShownFullRollAlert) {
             hasShownFullRollAlert = true;
-            simpleAlert(LocalizeText('camera.full.body'), null, null, null, LocalizeText('camera.full.header'));
+            simpleAlert(LocalizeText('camera.full.body'), NotificationAlertType.WINDOW, null, null, LocalizeText('camera.full.header'));
         }
 
         pendingShouldShowFullAlertRef.current = false;
@@ -154,7 +156,10 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
 
         const frame = getViewfinderRoomFrame(elementRef.current, 320, 320);
 
-        if (!frame) return;
+        if (!frame) {
+            simpleAlert(LocalizeText('camera.error.creation'), NotificationAlertType.WINDOW, null, null, LocalizeText('generic.alert.title'));
+            return;
+        }
 
         isTakingPictureRef.current = true;
 
@@ -165,6 +170,21 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
             texture = GetRoomEngine().createTextureFromRoom(GetRoomSession().roomId, 1, frame);
 
             if (!texture) return;
+
+            // camera.render.mode "server": AIR captures the scene for the server at the shutter, from the same
+            // viewfinder frame; no scene means camera.alert.too_much_stuff and no photo.
+            let renderRoomMessage = null;
+
+            if (GetCameraRenderMode() === 'server') {
+                renderRoomMessage = CaptureCameraRenderMessage(frame, roomBackgroundColor);
+
+                if (!renderRoomMessage) {
+                    texture.destroy?.(true);
+                    texture = null;
+                    simpleAlert(LocalizeText('camera.alert.too_much_stuff'), NotificationAlertType.WINDOW, null, null, LocalizeText('generic.alert.title'));
+                    return;
+                }
+            }
 
             PlaySound(SoundNames.CAMERA_SHUTTER);
             flashRef.current?.classList.remove('octane-camera-capture__flash--active');
@@ -179,7 +199,7 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
                 texture = null;
 
                 if (isMountedRef.current) {
-                    simpleAlert(LocalizeText('camera.alert.too_much_stuff'), null, null, null, LocalizeText('generic.alert.title'));
+                    simpleAlert(LocalizeText('camera.alert.too_much_stuff'), NotificationAlertType.WINDOW, null, null, LocalizeText('generic.alert.title'));
                 }
 
                 return;
@@ -189,7 +209,7 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
 
             const nextRoll = Array.from({ length: CAMERA_ROLL_LIMIT }, (_, index) => cameraRoll[index] ?? null);
 
-            nextRoll[targetSlot] = new CameraPicture(texture, imageUrl);
+            nextRoll[targetSlot] = new CameraPicture(texture, imageUrl, renderRoomMessage);
             pendingCapturedSlotRef.current = targetSlot;
             pendingShouldShowFullAlertRef.current = !hasShownFullRollAlert && willFillLastCameraSlot(cameraRoll, targetSlot);
             texture = null;
@@ -198,7 +218,7 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
             texture?.destroy?.(true);
 
             if (isMountedRef.current) {
-                simpleAlert(LocalizeText('camera.alert.too_much_stuff'), null, null, null, LocalizeText('generic.alert.title'));
+                simpleAlert(LocalizeText('camera.alert.too_much_stuff'), NotificationAlertType.WINDOW, null, null, LocalizeText('generic.alert.title'));
             }
         } finally {
             isTakingPictureRef.current = false;
@@ -212,7 +232,16 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
         <DraggableWindow>
             <Column center className="octane-camera-capture" gap={0}>
                 <div className="octane-camera-capture__body drag-handler">
-                    <div className="octane-camera-capture__title">{LocalizeText('camera.interface.title')}</div>
+                    <div className="octane-camera-capture__title">
+                        <CameraCenteredText
+                            background={0x000000}
+                            color={0xffffff}
+                            text={LocalizeText('camera.interface.title')}
+                            textStyle="u_frame_title"
+                            width={340}
+                        />
+                    </div>
+                    <button type="button" className="octane-camera-capture__help" aria-label={LocalizeText('generic.help')} onClick={() => CreateLinkEvent('habbopages/camera')} />
                     <button type="button" className="octane-camera-capture__close" aria-label={LocalizeText('generic.close')} onClick={onClose} />
                     <div className="octane-camera-viewfinder">
                         {!selectedPicture && (
@@ -227,14 +256,21 @@ export const CameraWidgetCaptureView: FC<CameraWidgetCaptureViewProps> = (props)
                     <div ref={flashRef} className="octane-camera-capture__flash" aria-hidden="true" />
                     {selectedPicture && (
                         <div className="octane-camera-capture__preview-actions">
-                            <Button
-                                className="octane-camera-capture__editor-button"
+                            {/* A real <button>: the drag handle lets only native controls take the mouse. */}
+                            <button
+                                className="habbo-btn-primary octane-camera-capture__editor-button"
                                 title={LocalizeText('camera.editor.button.tooltip')}
-                                variant="success"
+                                type="button"
                                 onClick={onEdit}
                             >
-                                {LocalizeText('camera.editor.button.text')}
-                            </Button>
+                                <CameraNativeText
+                                    background={0x000000}
+                                    color={0xffffff}
+                                    style={{ mixBlendMode: 'screen' }}
+                                    text={LocalizeText('camera.editor.button.text')}
+                                    textStyle="button_shiny_bold"
+                                />
+                            </button>
                         </div>
                     )}
                     <button

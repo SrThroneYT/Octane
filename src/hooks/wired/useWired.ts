@@ -35,6 +35,7 @@ import {
     GetRoomSession,
     IsOwnerOfFloorFurniture,
     LocalizeText,
+    localizeWiredError,
     localizeWithFallback,
     NotificationBubbleType,
     pasteTriggerableData,
@@ -43,7 +44,8 @@ import {
     WiredClipboardEntry,
     wiredClipboardKeyOf,
     WiredFurniType,
-    WiredSelectionVisualizer
+    WiredSelectionVisualizer,
+    withServerDefaultIntParams
 } from '../../api';
 import { useMessageEvent } from '../events';
 import { useNotification } from '../notification';
@@ -51,16 +53,6 @@ import { useLiveState } from '../useLiveState';
 import { useWiredTools } from '../wired-tools/useWiredTools';
 
 /** English for server error keys a hotel's texts may not have yet. */
-const WIRED_ERROR_FALLBACKS: Record<string, string> = {
-    'wiredfurni.error.invalid_api_keys': 'Invalid Web API keys',
-    'wiredfurni.error.variable_leaderboard.invalid_configuration': 'Invalid leaderboard configuration.',
-    'wiredfurni.error.variable_leaderboard.missing_context': 'Leaderboard information is unavailable. Close and reopen this Wired box.',
-    'wiredfurni.error.variable_leaderboard.title_required': 'Enter a leaderboard title.',
-    'wiredfurni.error.variable_leaderboard.column_name_length': 'Column names must contain at least two characters.',
-    'wiredfurni.error.variable_leaderboard.filter_required': 'Select a filtering variable.',
-    'wiredfurni.error.variable_leaderboard.global_operand_required': 'Select a global comparison variable.'
-};
-
 /** Whether a clicked floor furni may be picked, from its room object and furnidata. */
 export type WiredFurniPickCheck = (roomObject: IRoomObject, furniData: IFurnitureData) => boolean;
 
@@ -176,8 +168,25 @@ const useWiredState = () => {
 
         const trigger = triggerRef.current;
 
-        // Official: editing someone else's wired asks once per session.
-        if (!nonOwnerConfirmedRef.current && !IsOwnerOfFloorFurniture(target ? target.id : trigger.id)) {
+        const isSelector = trigger instanceof WiredSelectorDefinition;
+        const invert = selectorOptionsRef.current?.invert ?? (isSelector ? trigger.isInvert : false) ?? false;
+        const filter = selectorOptionsRef.current?.filter ?? (isSelector ? trigger.isFilter : false) ?? false;
+
+        // Official: a selector saved with Invert but without Filter asks first. Accepting any of these
+        // confirmations also counts as the non-owner confirmation.
+        if (isSelector && invert && !filter) {
+            showConfirm(
+                LocalizeText('wiredfurni.danger.1.change.confirm.body'),
+                () => {
+                    nonOwnerConfirmedRef.current = true;
+                    save(trigger);
+                },
+                null,
+                null,
+                null,
+                LocalizeText('wiredfurni.danger.1.change.confirm.title')
+            );
+        } else if (!nonOwnerConfirmedRef.current && !IsOwnerOfFloorFurniture(target ? target.id : trigger.id)) {
             showConfirm(
                 LocalizeText('wiredfurni.nonowner.change.confirm.body'),
                 () => {
@@ -201,6 +210,13 @@ const useWiredState = () => {
         if (pasteIntoModeRef.current) return;
 
         if (objectId <= 0) return;
+
+        // Official: wall items are picked only when the box allows wall furni. A box the server sends no input
+        // sources conf for keeps accepting them.
+        const inputSources = trigger.inputSourcesConf;
+        const hasInputSourcesConf = !!(inputSources?.furniAllowed?.length || inputSources?.userAllowed?.length);
+
+        if (category === RoomObjectCategory.WALL && hasInputSourcesConf && !trigger.allowWallFurni) return;
 
         const getInteractionTypeName = (furniData: any): string => {
             if (!furniData) return null;
@@ -483,9 +499,7 @@ const useWiredState = () => {
         const parser = event.getParser();
 
         if (parser.info && parser.info.length) {
-            const message = /^[a-z0-9_.]+$/i.test(parser.info)
-                ? localizeWithFallback(parser.info, WIRED_ERROR_FALLBACKS[parser.info] ?? parser.info)
-                : parser.info;
+            const message = /^[a-z0-9_.]+$/i.test(parser.info) ? localizeWiredError(parser.info, parser.parameters ?? []) : parser.info;
 
             simpleAlert(message, null, null, null, LocalizeText('wiredfurni.title'));
         }
@@ -515,7 +529,7 @@ const useWiredState = () => {
 
         // Official: every newly opened box starts with paste-into off.
         setPasteIntoMode(false);
-        setTrigger(definition);
+        setTrigger(withServerDefaultIntParams(definition));
     };
 
     useMessageEvent<WiredFurniAddonEvent>(WiredFurniAddonEvent, (event) => openDefinition(event.getParser().definition));

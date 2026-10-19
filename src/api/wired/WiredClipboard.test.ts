@@ -5,7 +5,27 @@ vi.mock('@octane/renderer', () => {
         _intParams: number[] = [];
         _stringParam = '';
         _stuffIds: number[] = [];
+        _stuffIds2: number[] = [];
+        _furniSourceTypes: number[] = [];
+        _userSourceTypes: number[] = [];
+        _defaultIntParams: number[] = [];
+        _inputSourcesConf: unknown = null;
         _id = 0;
+        get defaultIntParams() {
+            return this._defaultIntParams;
+        }
+        get inputSourcesConf() {
+            return this._inputSourcesConf;
+        }
+        get furniSourceTypes() {
+            return this._furniSourceTypes;
+        }
+        get userSourceTypes() {
+            return this._userSourceTypes;
+        }
+        get selectedItems2() {
+            return this._stuffIds2;
+        }
         get id() {
             return this._id;
         }
@@ -40,8 +60,12 @@ vi.mock('@octane/renderer', () => {
     }
     class ConditionDefinition extends Triggerable {
         _type = 0;
+        _quantifierCode = 0;
         get code() {
             return this._type;
+        }
+        get quantifierCode() {
+            return this._quantifierCode;
         }
     }
 
@@ -53,7 +77,7 @@ vi.mock('@octane/renderer', () => {
 });
 
 import { ConditionDefinition, TriggerDefinition, WiredActionDefinition } from '@octane/renderer';
-import { pasteTriggerableData, resetTriggerableData, wiredClipboardKeyOf, withTriggerableData } from './WiredClipboard';
+import { pasteTriggerableData, resetTriggerableData, wiredClipboardKeyOf, withServerDefaultIntParams, withTriggerableData } from './WiredClipboard';
 
 const action = (code: number) => {
     const box = new (WiredActionDefinition as any)() as any;
@@ -102,6 +126,40 @@ describe('WiredClipboard', () => {
         expect(fresh.stringData).toBe('');
         expect(fresh.selectedItems).toEqual([]);
         expect(fresh.delayInPulses).toBe(0);
+    });
+
+    it('resets to the server defaults: int params, sources, no second picks, quantifier all', () => {
+        const box = new (ConditionDefinition as any)() as any;
+        box._intParams = [5];
+        box._stuffIds2 = [3];
+        box._furniSourceTypes = [201, 201];
+        box._userSourceTypes = [11];
+        box._quantifierCode = 1;
+        box._defaultIntParams = [10, 0, 1];
+        box._inputSourcesConf = { furniAllowed: [[0, 100], [0, 100]], userAllowed: [[0]], furniDefaults: [0, 100], userDefaults: [0] };
+
+        const fresh = resetTriggerableData(box) as any;
+
+        expect(fresh.intData).toEqual([10, 0, 1]);
+        expect(fresh.selectedItems2).toEqual([]);
+        expect(fresh.furniSourceTypes).toEqual([0, 100]);
+        expect(fresh.userSourceTypes).toEqual([0]);
+        expect(fresh.quantifierCode).toBe(0);
+        // the server's defaults are copied, not shared
+        expect(fresh.intData).not.toBe(box._defaultIntParams);
+    });
+
+    it('opens a box without int params on the server defaults', () => {
+        const box = action(7) as any;
+        box._intParams = [];
+        box._defaultIntParams = [0, -1, 0];
+
+        expect(withServerDefaultIntParams(box).intData).toEqual([0, -1, 0]);
+
+        const saved = action(7) as any;
+        saved._defaultIntParams = [0, -1, 0];
+
+        expect(withServerDefaultIntParams(saved)).toBe(saved);
     });
 
     it('paste takes everything, paste-into keeps the picks and the delay', () => {

@@ -128,6 +128,15 @@ export const RoomWidgetEnumItemExtradataParameter = makeEnumProxy('RoomWidgetEnu
 // Numeric enums — values mirror the real renderer SDK so comparisons
 // (`controllerLevel >= GUILD_ADMIN`, category branching) keep working.
 
+// Mirrors `packages/communication/src/messages/parser/roomsettings/RoomChatSettings.ts`.
+export class RoomChatSettings {
+    static readonly CHAT_MODE_FREE_FLOW = 0;
+    static readonly CHAT_MODE_LINE_BY_LINE = 1;
+    static readonly CHAT_BUBBLE_WIDTH_WIDE = 0;
+    static readonly CHAT_BUBBLE_WIDTH_NORMAL = 1;
+    static readonly CHAT_BUBBLE_WIDTH_THIN = 2;
+}
+
 export class RoomControllerLevel {
     static readonly NONE = 0;
     static readonly GUEST = 1;
@@ -349,6 +358,9 @@ export class AchievementNotificationMessageEvent extends MessageEvent {}
 export class ActivityPointNotificationMessageEvent extends MessageEvent {}
 export class BadgeReceivedEvent extends MessageEvent {}
 export class ChestNotificationEvent extends MessageEvent {}
+export class WiredTransactionFailEvent extends MessageEvent {}
+export class WiredTradeErrorEvent extends MessageEvent {}
+export class WiredTransactionSuccessEvent extends MessageEvent {}
 export class ClubGiftNotificationEvent extends MessageEvent {}
 export class ClubGiftSelectedEvent extends MessageEvent {}
 export class ConnectionErrorEvent extends MessageEvent {}
@@ -380,7 +392,10 @@ export const RoomEnterEffect = {
     totalRunningTime: 0
 };
 
-export class RoomEngineObjectEvent extends StubClass {}
+export class RoomEngineObjectEvent extends StubClass {
+    static readonly MOUSE_ENTER = 'REOE_MOUSE_ENTER';
+    static readonly MOUSE_LEAVE = 'REOE_MOUSE_LEAVE';
+}
 export const CreateLinkEvent = vi.fn();
 // EventDispatcher — real listener storage. UI_EVENT_DISPATCHER (`../../api`)
 // is a module-level `new EventDispatcher()` singleton, so hooks that dispatch
@@ -463,6 +478,9 @@ export class HabboWebTools extends StubClass {
 
 // Composers — symbol-only constructors; only their identity matters in the
 // codebase ("did the SUT call SendMessageComposer(new FooComposer(args))").
+export class JoinQueueMessageComposer extends StubClass {}
+export class PurchaseSnowWarGameTokensOfferComposer extends StubClass {}
+export class Game2GetAccountGameStatusMessageComposer extends StubClass {}
 export class AddFavouriteRoomMessageComposer extends StubClass {}
 export class AvatarEffectActivatedComposer extends StubClass {}
 export class AvatarEffectSelectedComposer extends StubClass {}
@@ -969,6 +987,34 @@ export class WiredRoomLogsPageComposer extends RecordingComposer {}
 export class WiredArrayInspectionRequestComposer extends RecordingComposer {}
 export class WiredArrayInspectionUpdateComposer extends RecordingComposer {}
 export class WiredArrayInspectionDataEvent extends StubClass {}
+export class WiredGetVariablesForObjectComposer extends RecordingComposer {}
+export class WiredVariablesForObjectEvent extends StubClass {}
+export class WiredSetupExportComposer extends RecordingComposer {}
+export class WiredSetupImportComposer extends RecordingComposer {}
+export class WiredSetupExportResultEvent extends StubClass {}
+export class WiredSetupImportResultEvent extends StubClass {}
+export interface IWiredSetupImportEntry {
+    index: number;
+    type: string;
+    holder: string;
+    x: number;
+    y: number;
+    status: number;
+    itemId: number;
+    reason: string;
+}
+export interface IWiredSetupImportReport {
+    confirmed: boolean;
+    status: number;
+    anchorX: number;
+    anchorY: number;
+    total: number;
+    configured: number;
+    placed: number;
+    missing: number;
+    refused: number;
+    entries: IWiredSetupImportEntry[];
+}
 export interface IWiredArrayInspectionData {
     definition: {
         arrayFormat: 'simple' | 'record';
@@ -992,6 +1038,7 @@ export class WiredVariableHoldersPageComposer extends RecordingComposer {}
 export class WiredLogPageEvent extends StubClass {}
 export class WiredVariableHoldersPageEvent extends StubClass {}
 export class WiredGenerateWebApiKeyComposer extends RecordingComposer {}
+export class WiredAddonShareSynchronizeComposer extends RecordingComposer {}
 export class WiredWebApiKeyResultEvent extends StubClass {}
 export class WiredClickSettingsEvent extends StubClass {}
 export class WiredVariableFxConfigsEvent extends StubClass {}
@@ -1095,6 +1142,7 @@ export class SelectClubGiftComposer extends RecordingComposer {}
 // Catalog store, queries and effects hook: the events they subscribe to and
 // the composers they send.
 export class BuildersClubFurniCountMessageEvent extends MessageEvent {}
+export class BuildersClubPlacementWarningMessageEvent extends MessageEvent {}
 export class BuildersClubPlaceRoomItemMessageComposer extends StubClass {}
 export class BuildersClubPlaceWallItemMessageComposer extends StubClass {}
 export class BuildersClubQueryFurniCountMessageComposer extends StubClass {}
@@ -1126,4 +1174,15 @@ export class ProductOfferEvent extends MessageEvent {}
 export class PurchaseFromCatalogComposer extends StubClass {}
 export class RoomEngineObjectPlacedEvent extends StubClass {
     static PLACED = 'REOPE_PLACED';
+}
+
+/** The real RoomId (packages/utils/src/RoomId.ts): preview rooms live at 0x7FFF0000 and up. */
+export class RoomId {
+    public static makeRoomPreviewerId(roomId: number): number {
+        return (roomId & 0xffff) + 0x7fff0000;
+    }
+
+    public static isRoomPreviewerId(roomId: number): boolean {
+        return roomId >= 0x7fff0000;
+    }
 }

@@ -1,4 +1,4 @@
-import { CreateLinkEvent, GetSessionDataManager, GroupInformationParser, GroupRemoveMemberComposer } from '@octane/renderer';
+import { CreateLinkEvent, GetSessionDataManager, GroupDeleteComposer, GroupInformationParser } from '@octane/renderer';
 import { FC } from 'react';
 import {
     CatalogPageName,
@@ -12,7 +12,7 @@ import {
     TryVisitRoom
 } from '../../../api';
 import { Button, LayoutBadgeImageView, Text } from '../../../common';
-import { useNotification } from '../../../hooks';
+import { useGroupLeave, useNotification } from '../../../hooks';
 
 const STATES: string[] = ['regular', 'exclusive', 'private'];
 
@@ -29,15 +29,27 @@ export const GroupInformationView: FC<GroupInformationViewProps> = (props) => {
 
     const joinGroup = () => groupInformation && TryJoinGroup(groupInformation.id);
 
-    const leaveGroup = () => {
-        showConfirm(
-            LocalizeText('group.leaveconfirm.desc'),
-            () => {
-                SendMessageComposer(new GroupRemoveMemberComposer(groupInformation.id, GetSessionDataManager().userId));
+    // The official leave: the server names the furni left behind first (shared removal transaction), then a confirmation sends the removal.
+    const leaveGroup = useGroupLeave(groupInformation?.id ?? 0, onClose);
+    // GroupDetailsCtrl: the owner, or staff with security level 5, may delete the group from its information.
+    const canDelete = !!groupInformation && (groupInformation.isOwner || GetSessionDataManager().hasSecurity(5));
 
-                if (onClose) onClose();
+    const deleteGroup = () => {
+        const groupId = groupInformation.id;
+        let isSent = false;
+
+        showConfirm(
+            LocalizeText('group.deleteconfirm.desc'),
+            () => {
+                if (isSent) return;
+
+                isSent = true;
+                SendMessageComposer(new GroupDeleteComposer(groupId));
             },
-            null
+            null,
+            null,
+            null,
+            LocalizeText('group.deleteconfirm.title')
         );
     };
 
@@ -186,6 +198,11 @@ export const GroupInformationView: FC<GroupInformationViewProps> = (props) => {
                     {groupInformation.isOwner && (
                         <Text pointer small underline onClick={() => handleAction('manage')}>
                             {LocalizeText('group.manage')}
+                        </Text>
+                    )}
+                    {canDelete && (
+                        <Text pointer small underline onClick={deleteGroup}>
+                            {LocalizeText('group.delete')}
                         </Text>
                     )}
                 </div>

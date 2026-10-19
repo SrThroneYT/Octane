@@ -51,6 +51,8 @@ export class WiredActionLayoutCode {
     public static INIT_TRANSACTION: number = 47;
     public static CANCEL_TRANSACTION: number = 48;
     public static WRITE_TO_LOGS: number = 49;
+    /** AIR's negative code of Write to Logs; AIR ActionTypes.getByCode opens the same editor for it. */
+    public static WRITE_TO_LOGS_NEGATIVE: number = 50;
     public static PROGRESS_ACHIEVEMENT: number = 51;
     /** Official give effect (wf_act_give_effect). */
     public static EFFECT_ID: number = 52;
@@ -62,6 +64,10 @@ export class WiredActionLayoutCode {
     public static PROGRESS_REWARD_TRACK: number = 58;
     public static RESET_REWARD_TRACK: number = 59;
     public static CHANGE_OPACITY: number = 61;
+    public static SET_FURNI_HIGHLIGHT: number = 62;
+    /** Official WIRED Link actions. */
+    public static SEND_LINK_MESSAGE: number = 63;
+    public static SEND_LINK_DATAFRAME: number = 64;
 
     // Ours.
     public static SET_ROLLER_SPEED: number = 1088;

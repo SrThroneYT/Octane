@@ -47,4 +47,7 @@ export class WiredTriggerLayout {
     public static STATE_CHANGE: number = 20;
     /** Official: fires once when the room loads, before any other trigger. */
     public static ROOM_INITIALIZED: number = 28;
+    /** Official WIRED Link triggers: a picked Link received a message / a dataframe. */
+    public static RECEIVE_LINK_MESSAGE: number = 29;
+    public static RECEIVE_LINK_DATAFRAME: number = 30;
 }

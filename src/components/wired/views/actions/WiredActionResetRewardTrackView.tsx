@@ -33,6 +33,7 @@ export const WiredActionResetRewardTrackView: FC<{}> = () => {
 
     return (
         <WiredActionBaseView
+            footerCollapsible={false}
             footer={<WiredSourcesSelector showUsers={true} userSource={userSource} onChangeUsers={setUserSource} />}
             hasSpecialInput={true}
             requiresFurni={WiredFurniType.STUFF_SELECTION_OPTION_NONE}

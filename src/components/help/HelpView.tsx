@@ -1,6 +1,6 @@
 import { AddLinkEventTracker, ILinkEventTracker, RemoveLinkEventTracker } from '@octane/renderer';
 import { FC, useEffect, useState } from 'react';
-import { LocalizeText, ReportState } from '../../api';
+import { LocalizeText, ReportState, ReportType } from '../../api';
 import { Column, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView } from '../../common';
 import { useHelp } from '../../hooks';
 import { DescribeReportView } from './views/DescribeReportView';
@@ -43,10 +43,11 @@ export const HelpView: FC<{}> = (props) => {
                         // todo: launch tour
                         return;
                     case 'report':
+                        // help/report/room/<id>/<name>: a room report, as from the room info.
                         if (parts.length >= 5 && parts[2] === 'room') {
-                            const roomId = parseInt(parts[3]);
-                            const unknown = unescape(parts.splice(4).join('/'));
-                            //this.reportRoom(roomId, unknown, "");
+                            const roomId = parseInt(parts[3], 10);
+
+                            if (Number.isFinite(roomId) && roomId > 0) report?.(ReportType.ROOM, { roomId, roomName: unescape(parts.slice(4).join('/')) });
                         }
                         return;
                 }
@@ -57,7 +58,7 @@ export const HelpView: FC<{}> = (props) => {
         AddLinkEventTracker(linkTracker);
 
         return () => RemoveLinkEventTracker(linkTracker);
-    }, []);
+    }, [report]);
 
     useEffect(() => {
         if (!activeReport) return;

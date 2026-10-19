@@ -7,20 +7,18 @@ import {
     RoomObjectCategory,
     RoomObjectType
 } from '@octane/renderer';
-import { FC, useEffect, useState } from 'react';
+import { FC } from 'react';
 import {
     AvatarInfoRentableBot,
     BotSkillsEnum,
     DispatchUiEvent,
-    GetConfigurationValue,
     LocalizeText,
     localizeWithFallback,
     RoomWidgetUpdateRentableBotChatEvent,
+    RoomWidgetUpdateRentableBotTextSkillEvent,
     SendMessageComposer
 } from '../../../../../api';
-import { Button, Column, Text } from '../../../../../common';
 import { useMessageEvent } from '../../../../../hooks';
-import { OctaneInput } from '../../../../../layout';
 import { ContextMenuHeaderView } from '../../context-menu/ContextMenuHeaderView';
 import { ContextMenuListItemView } from '../../context-menu/ContextMenuListItemView';
 import { ContextMenuView } from '../../context-menu/ContextMenuView';
@@ -30,15 +28,8 @@ interface AvatarInfoWidgetRentableBotViewProps {
     onClose: () => void;
 }
 
-const MODE_NORMAL = 0;
-const MODE_CHANGE_NAME = 1;
-const MODE_CHANGE_MOTTO = 2;
-
 export const AvatarInfoWidgetRentableBotView: FC<AvatarInfoWidgetRentableBotViewProps> = (props) => {
     const { avatarInfo = null, onClose = null } = props;
-    const [mode, setMode] = useState(MODE_NORMAL);
-    const [newName, setNewName] = useState('');
-    const [newMotto, setNewMotto] = useState('');
 
     useMessageEvent<BotCommandConfigurationEvent>(BotCommandConfigurationEvent, (event) => {
         const parser = event.getParser();
@@ -47,12 +38,12 @@ export const AvatarInfoWidgetRentableBotView: FC<AvatarInfoWidgetRentableBotView
 
         switch (parser.commandId) {
             case BotSkillsEnum.CHANGE_BOT_NAME:
-                setNewName(parser.data);
-                setMode(MODE_CHANGE_NAME);
-                return;
             case BotSkillsEnum.CHANGE_BOT_MOTTO:
-                setNewMotto(parser.data);
-                setMode(MODE_CHANGE_MOTTO);
+                DispatchUiEvent(
+                    new RoomWidgetUpdateRentableBotTextSkillEvent(avatarInfo.roomIndex, RoomObjectCategory.UNIT, avatarInfo.webID, parser.commandId, parser.data)
+                );
+
+                onClose();
                 return;
             case BotSkillsEnum.SETUP_CHAT: {
                 const data = parser.data;
@@ -98,15 +89,9 @@ export const AvatarInfoWidgetRentableBotView: FC<AvatarInfoWidgetRentableBotView
                     requestBotCommandConfiguration(BotSkillsEnum.CHANGE_BOT_NAME);
                     hideMenu = false;
                     break;
-                case 'save_bot_name':
-                    SendMessageComposer(new BotSkillSaveComposer(avatarInfo.webID, BotSkillsEnum.CHANGE_BOT_NAME, newName));
-                    break;
                 case 'change_bot_motto':
                     requestBotCommandConfiguration(BotSkillsEnum.CHANGE_BOT_MOTTO);
                     hideMenu = false;
-                    break;
-                case 'save_bot_motto':
-                    SendMessageComposer(new BotSkillSaveComposer(avatarInfo.webID, BotSkillsEnum.CHANGE_BOT_MOTTO, newMotto));
                     break;
                 case 'dress_up':
                     SendMessageComposer(new BotSkillSaveComposer(avatarInfo.webID, BotSkillsEnum.DRESS_UP, ''));
@@ -140,16 +125,12 @@ export const AvatarInfoWidgetRentableBotView: FC<AvatarInfoWidgetRentableBotView
         if (hideMenu) onClose();
     };
 
-    useEffect(() => {
-        setMode(MODE_NORMAL);
-    }, [avatarInfo]);
-
     const canControl = avatarInfo.amIOwner || avatarInfo.amIAnyRoomController;
 
     return (
         <ContextMenuView
             category={RoomObjectCategory.UNIT}
-            classNames={['octane-avatar-action-menu', 'octane-avatar-action-menu--own']}
+            classNames={['octane-avatar-action-menu', 'octane-avatar-action-menu--own', 'octane-avatar-action-menu--widget']}
             collapsable={true}
             freezePositionOnHover={true}
             objectId={avatarInfo.roomIndex}
@@ -159,7 +140,7 @@ export const AvatarInfoWidgetRentableBotView: FC<AvatarInfoWidgetRentableBotView
         >
             <ContextMenuHeaderView>{avatarInfo.name}</ContextMenuHeaderView>
             <div className="air-avatar-menu-buttons">
-                {mode === MODE_NORMAL && canControl && (
+                {canControl && (
                     <>
                         {avatarInfo.botSkills.indexOf(BotSkillsEnum.DONATE_TO_ALL) >= 0 && (
                             <ContextMenuListItemView onClick={(event) => processAction('donate_to_all')}>
@@ -208,44 +189,6 @@ export const AvatarInfoWidgetRentableBotView: FC<AvatarInfoWidgetRentableBotView
                             <ContextMenuListItemView onClick={(event) => processAction('pick')}>{LocalizeText('avatar.widget.pick_up')}</ContextMenuListItemView>
                         )}
                     </>
-                )}
-                {mode === MODE_CHANGE_NAME && (
-                    <Column className="menu-item" gap={1} onClick={null}>
-                        <Text variant="white">{LocalizeText('bot.skill.name.configuration.new.name')}</Text>
-                        <OctaneInput
-                            maxLength={GetConfigurationValue<number>('bot.name.max.length', 15)}
-                            type="text"
-                            value={newName}
-                            onChange={(event) => setNewName(event.target.value)}
-                        />
-                        <div className="flex items-center justify-between gap-1">
-                            <Button fullWidth variant="secondary" onClick={(event) => processAction(null)}>
-                                {LocalizeText('cancel')}
-                            </Button>
-                            <Button fullWidth variant="success" onClick={(event) => processAction('save_bot_name')}>
-                                {LocalizeText('save')}
-                            </Button>
-                        </div>
-                    </Column>
-                )}
-                {mode === MODE_CHANGE_MOTTO && (
-                    <Column className="menu-item" gap={1} onClick={null}>
-                        <Text variant="white">{localizeWithFallback('bot.skill.name.configuration.new.motto', 'Choose a motto:')}</Text>
-                        <OctaneInput
-                            maxLength={GetConfigurationValue<number>('motto.max.length', 38)}
-                            type="text"
-                            value={newMotto}
-                            onChange={(event) => setNewMotto(event.target.value)}
-                        />
-                        <div className="flex items-center justify-between gap-1">
-                            <Button fullWidth variant="secondary" onClick={(event) => processAction(null)}>
-                                {LocalizeText('cancel')}
-                            </Button>
-                            <Button fullWidth variant="success" onClick={(event) => processAction('save_bot_motto')}>
-                                {LocalizeText('save')}
-                            </Button>
-                        </div>
-                    </Column>
                 )}
             </div>
         </ContextMenuView>

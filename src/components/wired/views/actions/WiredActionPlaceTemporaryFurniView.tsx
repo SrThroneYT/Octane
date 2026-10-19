@@ -8,7 +8,7 @@ import { WiredFurniSelectionSourceRow } from '../WiredFurniSelectionSourceRow';
 import { sortWiredSourceOptions, useAvailableUserSources } from '../WiredSourcesSelector';
 import { WiredVariablePicker } from '../WiredVariablePicker';
 import { flattenWiredVariablePickerEntries, getCustomVariableItemId } from '../WiredVariablePickerData';
-import { customVariablePickerEntries, normalizeWiredValueTarget, variableTokenFromId, WiredValueOrVariableSection } from '../WiredValueOrVariableSection';
+import { customVariablePickerEntries, normalizeWiredValueTarget, variableTokenFromId, WiredValueOrVariableField } from '../WiredValueOrVariableField';
 import { WiredActionBaseView } from './WiredActionBaseView';
 
 const SOURCE_TRIGGER = 0;
@@ -55,6 +55,9 @@ export const WiredActionPlaceTemporaryFurniView: FC<{}> = () =>
     const [ offsetY, setOffsetY ] = useState(0);
     const [ offsetAltitude, setOffsetAltitude ] = useState(0);
     const [ showOffsets, setShowOffsets ] = useState(false);
+    // Furni slot 0 holds the picks the copies are made from: the server opens it on their snapshot (110), as Habbo
+    // does, and our older saves hold 100. The editor has no row for it, so it goes back as the box sent it.
+    const [ templateSource, setTemplateSource ] = useState(SOURCE_PICKED);
     const [ targetFurniSource, setTargetFurniSource ] = useState(SOURCE_TRIGGER);
     const [ targetUserSource, setTargetUserSource ] = useState(SOURCE_TRIGGER);
     const [ spawnWithVariable, setSpawnWithVariable ] = useState(false);
@@ -65,6 +68,7 @@ export const WiredActionPlaceTemporaryFurniView: FC<{}> = () =>
     const [ valueToken, setValueToken ] = useState('');
     const [ valueFurniSource, setValueFurniSource ] = useState(SOURCE_TRIGGER);
     const [ valueUserSource, setValueUserSource ] = useState(SOURCE_TRIGGER);
+    const [ valueValid, setValueValid ] = useState(true);
     const availableUserSources = useAvailableUserSources(trigger, TARGET_USER_SOURCES);
     const { furniVariableDefinitions = [] } = useWiredTools();
     const spawnEntries = useMemo(
@@ -72,7 +76,9 @@ export const WiredActionPlaceTemporaryFurniView: FC<{}> = () =>
         [ furniVariableDefinitions, spawnToken ]
     );
     const spawnEntry = flattenWiredVariablePickerEntries(spawnEntries).find(entry => entry.token === spawnToken) ?? null;
-    const spawnHasValue = spawnEntry?.hasValue ?? true;
+    // AIR ?_-9T?.updateSpawnValueState: the value is for a spawn variable with a value only (a saved one that is gone counts).
+    const spawnHasValue = spawnToken ? (spawnEntry?.hasValue ?? true) : false;
+    const valueDisabled = !spawnWithVariable || !spawnHasValue;
 
     useEffect(() =>
     {
@@ -87,6 +93,7 @@ export const WiredActionPlaceTemporaryFurniView: FC<{}> = () =>
         setOffsetY(clamp(params[4] ?? 0, MAX_OFFSET));
         setOffsetAltitude(clamp(params[5] ?? 0, MAX_OFFSET_ALTITUDE));
         setShowOffsets(!!(params[3] || params[4] || params[5]));
+        setTemplateSource(trigger.furniSourceTypes?.[0] ?? trigger.inputSourcesConf?.furniDefaults?.[0] ?? SOURCE_PICKED);
         setTargetFurniSource(trigger.furniSourceTypes?.[1] ?? SOURCE_TRIGGER);
         setTargetUserSource(trigger.userSourceTypes?.[0] ?? SOURCE_TRIGGER);
 
@@ -110,7 +117,7 @@ export const WiredActionPlaceTemporaryFurniView: FC<{}> = () =>
         setIntParams([ targetIsUser ? 1 : 0, location, altitude, offsetX, offsetY, offsetAltitude, ...spawn ]);
         setStringParam(`${ getCustomVariableItemId(spawnToken) }\t${ getCustomVariableItemId(valueToken) }`);
         setSourceTypes({
-            furni: [ SOURCE_PICKED, targetFurniSource, valueFurniSource ],
+            furni: [ templateSource, targetFurniSource, valueFurniSource ],
             users: [ targetUserSource, valueUserSource ]
         });
     };
@@ -120,7 +127,9 @@ export const WiredActionPlaceTemporaryFurniView: FC<{}> = () =>
         if(!spawnWithVariable) return true;
         if(getCustomVariableItemId(spawnToken) <= 0) return false;
 
-        return !(spawnHasValue && valueIsVariable && getCustomVariableItemId(valueToken) <= 0);
+        if(valueDisabled) return true;
+
+        return valueValid && !(valueIsVariable && getCustomVariableItemId(valueToken) <= 0);
     };
 
     const sourceButtons = (isUser: boolean, onChange: (isUser: boolean) => void) => (
@@ -194,21 +203,27 @@ export const WiredActionPlaceTemporaryFurniView: FC<{}> = () =>
                         <>
                             <WiredVariablePicker entries={ spawnEntries } recentScope="variable-effects" selectedToken={ spawnToken } onSelect={ entry => setSpawnToken(entry.token) } />
                             { !furniVariableDefinitions.length && <Text small>No wf_var_furni variables found in this room.</Text> }
-                            { spawnHasValue &&
-                                <WiredValueOrVariableSection
-                                    name="placeValueMode"
-                                    isVariable={ valueIsVariable }
-                                    value={ value }
-                                    target={ valueTarget }
-                                    token={ valueToken }
-                                    furniSource={ valueFurniSource }
-                                    userSource={ valueUserSource }
-                                    onIsVariableChange={ setValueIsVariable }
-                                    onValueChange={ setValue }
-                                    onTargetChange={ setValueTarget }
-                                    onTokenChange={ setValueToken }
-                                    onFurniSourceChange={ setValueFurniSource }
-                                    onUserSourceChange={ setValueUserSource } /> }
+                            { /* AIR ?_-9T?: createValueOrVariableSection(1, mergedSourceOptions(1), spawn_with_value, int min, int max)
+                                next to the spawn variable; the claimed merged slot 1 is the value's holder in the popup. */ }
+                            <Text bold>{ localizeWithFallback('wiredfurni.params.place_furni.spawn_with_value', 'Spawn with value:') }</Text>
+                            <WiredValueOrVariableField
+                                disabled={ valueDisabled }
+                                holderSource={ {
+                                    furniSource: valueFurniSource,
+                                    userSource: valueUserSource,
+                                    onFurniSourceChange: setValueFurniSource,
+                                    onUserSourceChange: setValueUserSource
+                                } }
+                                isVariable={ valueIsVariable }
+                                label={ localizeWithFallback('wiredfurni.params.place_furni.spawn_with_value', 'Spawn with value:') }
+                                literal={ value }
+                                target={ valueTarget }
+                                token={ valueToken }
+                                onIsVariableChange={ setValueIsVariable }
+                                onLiteralChange={ setValue }
+                                onTargetChange={ setValueTarget }
+                                onTokenChange={ setValueToken }
+                                onValidityChange={ setValueValid } />
                         </> }
                 </div>
 

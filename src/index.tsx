@@ -38,6 +38,7 @@ import './css/mentions/MentionsPanel.css';
 import './css/soundboard/Soundboard.css';
 
 import './css/common/Buttons.css';
+import './css/common/UbuntuDropmenu.css';
 import './css/habbo/HabboSkin.css';
 import './css/common/PrefixEffects.css';
 
@@ -46,6 +47,8 @@ import './css/forms/form_select.css';
 import './css/friends/FriendsView.css';
 import './css/fortune-wheel/FortuneWheelView.css';
 import './css/groups/GroupView.css';
+import './css/groups/GroupManagement.css';
+import './css/groups/GroupForum.css';
 
 import './css/game-center/GameCenterView.css';
 
@@ -86,6 +89,7 @@ import './css/room/Chooser.css';
 import './css/room/WiredVariableFx.css';
 import './css/room/WiredLeaderboard.css';
 import './css/room/WiredLabel.css';
+import './css/room/WiredContract.css';
 
 import './css/slider.css';
 
@@ -103,7 +107,9 @@ import './css/common/ClassicScrollbar.css';
 
 document.documentElement.classList.add('has-classic-scrollbar');
 
-createRoot(document.getElementById('root')).render(
+// Mounted by bootstrap once the configuration is in; importing this module only loads the UI.
+export const mountApp = (): void => {
+    createRoot(document.getElementById('root')).render(
     <StrictMode>
         <QueryClientProvider client={queryClient}>
             <ErrorBoundary
@@ -120,3 +126,4 @@ createRoot(document.getElementById('root')).render(
         </QueryClientProvider>
     </StrictMode>
 );
+};

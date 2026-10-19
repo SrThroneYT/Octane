@@ -1,13 +1,13 @@
 import { IWiredVariableFxConfig } from '@octane/renderer';
-import { WIRED_FX_CATEGORY } from '../../../../api';
-import { IWiredVariableFxStatusEntry } from '../../../../hooks';
+import { wiredVariableFxStackOrder } from '../../../../api';
+import { IWiredVariableFxStatusEntry, wiredVariableFxHolderKey } from '../../../../hooks';
 
 export interface IWiredVariableFxDrawn {
     entry: IWiredVariableFxStatusEntry;
     config: IWiredVariableFxConfig;
 }
 
-/** Every fx drawn over one avatar or furni, stacked in config order so the pile is stable. */
+/** Every fx drawn over one avatar or furni, in stack order: the first sits lowest, nearest the holder. */
 export interface IWiredVariableFxEntityGroup {
     entityKey: string;
     userEntity: boolean;
@@ -15,36 +15,33 @@ export interface IWiredVariableFxEntityGroup {
     drawn: IWiredVariableFxDrawn[];
 }
 
-export interface IWiredVariableFxGroups {
-    entities: IWiredVariableFxEntityGroup[];
-    bosses: IWiredVariableFxDrawn[];
-}
+/**
+ * AIR's stack order (StackedAdditionStack): a higher stack order sits lower, then the older fx
+ * (first shown on the holder), then the config id and the variable.
+ */
+export const compareWiredVariableFxStack = (left: IWiredVariableFxDrawn, right: IWiredVariableFxDrawn): number =>
+    wiredVariableFxStackOrder(right.config) - wiredVariableFxStackOrder(left.config) ||
+    left.entry.createdAt - right.entry.createdAt ||
+    left.config.configId - right.config.configId ||
+    left.entry.status.variableId.localeCompare(right.entry.status.variableId);
 
 /**
- * Pairs each status with its config and sorts them by where they draw: boss bars go to the top
- * of the screen, everything else piles up over its avatar or furni. A status whose config has
- * not arrived yet is skipped rather than drawn wrong.
+ * Pairs each status with its config and piles them up over their avatar or furni, every category
+ * alike (AIR draws boss bars in the holder's stack too). A status whose config has not arrived yet
+ * is skipped rather than drawn wrong.
  */
 export const groupWiredVariableFxStatuses = (
     configs: Record<number, IWiredVariableFxConfig>,
     statuses: Record<string, IWiredVariableFxStatusEntry>
-): IWiredVariableFxGroups => {
+): IWiredVariableFxEntityGroup[] => {
     const entities = new Map<string, IWiredVariableFxEntityGroup>();
-    const bosses: IWiredVariableFxDrawn[] = [];
 
     for (const entry of Object.values(statuses)) {
         const config = configs[entry.status.configId];
 
         if (!config) continue;
 
-        const drawn: IWiredVariableFxDrawn = { entry, config };
-
-        if (config.category === WIRED_FX_CATEGORY.BOSS_BAR) {
-            bosses.push(drawn);
-            continue;
-        }
-
-        const entityKey = `${entry.status.userEntity ? 'u' : 'f'}:${entry.status.entityId}`;
+        const entityKey = wiredVariableFxHolderKey(entry.status.userEntity, entry.status.entityId);
         let group = entities.get(entityKey);
 
         if (!group) {
@@ -52,20 +49,12 @@ export const groupWiredVariableFxStatuses = (
             entities.set(entityKey, group);
         }
 
-        group.drawn.push(drawn);
+        group.drawn.push({ entry, config });
     }
 
-    const byConfig = (left: IWiredVariableFxDrawn, right: IWiredVariableFxDrawn) =>
-        left.config.configId - right.config.configId || left.entry.status.variableId.localeCompare(right.entry.status.variableId);
+    for (const group of entities.values()) group.drawn.sort(compareWiredVariableFxStack);
 
-    for (const group of entities.values()) group.drawn.sort(byConfig);
-
-    bosses.sort((left, right) => byConfig(left, right) || left.entry.status.entityId - right.entry.status.entityId);
-
-    return {
-        entities: [...entities.values()].sort((left, right) => left.entityKey.localeCompare(right.entityKey)),
-        bosses
-    };
+    return [...entities.values()].sort((left, right) => left.entityKey.localeCompare(right.entityKey));
 };
 
 /** How full each of `count` segments is for a bar at `progress`; the last lit one is partial. */

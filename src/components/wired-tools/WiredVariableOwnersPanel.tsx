@@ -159,15 +159,17 @@ export const WiredVariableOwnersPanel = (props: WiredVariableOwnersPanelProps) =
             <OctaneCardContentView className="text-black bg-[#f4efe3] p-3 flex flex-col gap-3" overflow="hidden">
                 <div className="rounded border border-[#c8c2b2] bg-white p-3 flex items-center justify-between gap-3">
                     <div className="grow flex flex-col items-center text-center">
-                        <Text>
-                            {infoText ??
+                        <Text className="whitespace-pre-line">
+                            {(
+                                infoText ??
                                 localizeWithFallback(
                                     'wiredmenu.variable_management.info',
                                     'This is a tool to manage everyone and everything that holds this variable, in the room or not.'
-                                )}
+                                )
+                            ).replace(/\\n/g, '\n')}
                         </Text>
                         <Text>
-                            <b>{localizeWithFallback('wiredmenu.variable_management.variable_name', 'Variable name')}:</b> {variableName}
+                            <b>{localizeWithFallback('wiredmenu.variable_management.variable_name', 'Variable name:')}</b> {variableName}
                         </Text>
                     </div>
                     <Button variant="secondary" onClick={() => requests.refresh()}>
@@ -177,7 +179,7 @@ export const WiredVariableOwnersPanel = (props: WiredVariableOwnersPanelProps) =
                 <div className="flex flex-wrap items-center gap-4 text-[12px]">
                     {filters.map((filter) => (
                         <label key={filter.id} className="flex items-center gap-2">
-                            <Text>{filter.label}:</Text>
+                            <Text>{filter.label}</Text>
                             <select
                                 className="rounded border border-[#b8b2a4] bg-white px-2 py-[2px] text-[12px]"
                                 value={filter.value}
@@ -202,6 +204,7 @@ export const WiredVariableOwnersPanel = (props: WiredVariableOwnersPanelProps) =
                     totalEntries={totalEntries}
                     lastPage={lastPage}
                     requests={requests}
+                    pagingTextKey="wiredmenu.variable_management.bottom_text"
                     emptyText={localizeWithFallback('wiredmenu.variable_management.empty', 'Nobody holds this variable with the current filters')}
                     scrollResetKey={scrollResetKey}
                     bodyClassName="h-[360px]"

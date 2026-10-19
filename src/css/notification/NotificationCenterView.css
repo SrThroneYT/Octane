@@ -35,19 +35,6 @@
         }
     }
 
-    &.octane-alert-system {
-        width: auto;
-        min-width: 260px;
-        max-width: 90vw;
-        min-height: auto;
-        max-height: none;
-        height: auto;
-
-        .notification-text {
-            min-width: auto;
-        }
-    }
-
     /* Hotel event announcement. The box is a fixed 530x300 so that a one word
        message and a long one produce exactly the same window: the message is the
        only part that scrolls, and the button never moves. */
@@ -782,14 +769,6 @@
     border-image-source: var(--habbo-skin-button-hover) !important;
 }
 
-.alertView_octane-coolui-logo {
-	width: 150px;
-	height: 73px;
-	position: relative;
-	background-image: url("@/assets/images/notifications/octane_v3.png");
-	background-repeat: no-repeat;
-}
-
 .octane-friendonline-notification {
     position: relative;
     min-width: 86px;
@@ -1176,7 +1155,7 @@
     min-height: 0;
     padding: 0;
     border: 0 !important;
-    border-image: none !important;
+    border-image-source: none !important;
     background: transparent !important;
     color: #ffffff !important;
     font-family: Ubuntu, sans-serif;

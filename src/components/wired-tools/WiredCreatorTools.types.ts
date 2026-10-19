@@ -1,6 +1,6 @@
 import type { AvatarInfoFurni } from '../../api';
 
-export type WiredToolsTab = 'monitor' | 'variables' | 'inspection' | 'chests' | 'settings';
+export type WiredToolsTab = 'monitor' | 'variables' | 'inspection' | 'chests' | 'settings' | 'share';
 export type InspectionElementType = 'furni' | 'user' | 'global';
 export type VariablesElementType = InspectionElementType | 'context';
 
@@ -59,6 +59,8 @@ export interface InspectionUserLiveState {
 export interface MonitorStat {
     label: string;
     value: string;
+    /** The official statistics colour of the value (WIRED_MONITOR_COLOR), as a CSS colour. */
+    color?: string;
 }
 
 export interface MonitorLog {
@@ -122,6 +124,8 @@ export interface MonitorLogDetails {
 export interface InspectionVariable {
     key: string;
     value: string;
+    /** A text connector label shown after the value as "value (label)"; editing keeps the bare value. */
+    label?: string;
     editable?: boolean;
     valueClassName?: string;
 }
@@ -143,6 +147,8 @@ export interface VariableDefinition {
     isAlwaysAvailable?: boolean;
     /** The value-to-text table of a text connected custom variable, as the server sent it. */
     textConnector?: VariableTextValue[];
+    /** AIR requiresExecutionContext: a pointer, which only exists while a stack runs, so it has no holders to show. */
+    requiresExecutionContext?: boolean;
 }
 
 export interface VariableTextValue {

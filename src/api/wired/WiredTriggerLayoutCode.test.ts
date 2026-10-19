@@ -29,7 +29,9 @@ const OFFICIAL: Record<string, number> = {
     CLICK_USER: 24,
     TRANSACTION_COMPLETE: 25,
     TRANSACTION_FAIL: 26,
-    ROOM_INITIALIZED: 28
+    ROOM_INITIALIZED: 28,
+    RECEIVE_LINK_MESSAGE: 29,
+    RECEIVE_LINK_DATAFRAME: 30
 };
 
 describe('wired trigger codes', () =>

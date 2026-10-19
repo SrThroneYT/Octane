@@ -32,7 +32,7 @@ export interface IWiredAccountPreferences {
     showInspectButton: boolean;
     showSystemNotifications: boolean;
     showToolbarButton: boolean;
-    /** The look of the wired box windows; one of WIRED_STYLE_OPTIONS. */
+    /** The look of the wired box windows: "" (default, illumina) or one of WIRED_STYLE_OPTIONS. */
     wiredStyle: WiredStyleName;
 }
 
@@ -57,6 +57,8 @@ export interface IWiredUserVariableDefinition {
     name: string;
     /** The value-to-text table of a text connected definition, when the server sent one. */
     textConnector?: Array<{ key: number; value: string }>;
+    /** AIR WiredVariable.requiresExecutionContext: a pointer, which only exists while a stack runs. */
+    requiresExecutionContext?: boolean;
 }
 
 export interface IWiredUserVariableAssignment {
@@ -76,6 +78,8 @@ export interface IWiredFurniVariableDefinition {
     name: string;
     /** The value-to-text table of a text connected definition, when the server sent one. */
     textConnector?: Array<{ key: number; value: string }>;
+    /** AIR WiredVariable.requiresExecutionContext: a pointer, which only exists while a stack runs. */
+    requiresExecutionContext?: boolean;
 }
 
 export interface IWiredFurniVariableAssignment {
@@ -95,6 +99,8 @@ export interface IWiredRoomVariableDefinition {
     name: string;
     /** The value-to-text table of a text connected definition, when the server sent one. */
     textConnector?: Array<{ key: number; value: string }>;
+    /** AIR WiredVariable.requiresExecutionContext: a pointer, which only exists while a stack runs. */
+    requiresExecutionContext?: boolean;
 }
 
 export interface IWiredRoomVariableAssignment {
@@ -114,6 +120,8 @@ export interface IWiredContextVariableDefinition {
     name: string;
     /** The value-to-text table of a text connected definition, when the server sent one. */
     textConnector?: Array<{ key: number; value: string }>;
+    /** AIR WiredVariable.requiresExecutionContext: a pointer, which only exists while a stack runs. */
+    requiresExecutionContext?: boolean;
 }
 
 const WIRED_VARIABLE_TARGET_USER = 0;
@@ -699,7 +707,7 @@ export const useWiredToolsStore = () => {
     const showInvalidRoomAlert = useCallback(() => {
         if (!simpleAlert) return;
 
-        simpleAlert(LocalizeText('wiredmenu.invalid_room.desc'), NotificationAlertType.ALERT, null, null, LocalizeText('generic.alert.title'));
+        simpleAlert(LocalizeText('wiredmenu.invalid_room.desc'), NotificationAlertType.ALERT, null, null, LocalizeText('wiredmenu.invalid_room.title'));
     }, [simpleAlert]);
 
     const openMonitor = useCallback(() => {
