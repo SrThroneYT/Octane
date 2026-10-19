@@ -1,7 +1,7 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { localizeWithFallback } from '../../api';
 import { WiredPageRequests } from '../../hooks/wired-tools/useWiredPageRequests';
-import { clampInputPage, NO_PAGE, parseInputPage, restrictPageInput } from './WiredPaging.helpers';
+import { clampInputPage, DEFAULT_PAGING_TEXT, NO_PAGE, parseInputPage, restrictPageInput, splitPagingText } from './WiredPaging.helpers';
 
 export interface WiredTableColumn {
     id: string;
@@ -33,6 +33,8 @@ export interface WiredPagedTableProps<T> {
     scrollResetKey?: number;
     /** Height class of the scrolling body. */
     bodyClassName?: string;
+    /** The window's footer text, e.g. `wiredmenu.logs_overview.bottom_text`, with `%page%` where the page field sits. */
+    pagingTextKey?: string;
 }
 
 const PAGE_BUTTON_CLASS = 'min-w-[36px] rounded border border-[#b8b2a4] bg-white px-2 py-1 text-[12px] disabled:opacity-40';
@@ -43,7 +45,7 @@ const PAGE_BUTTON_CLASS = 'min-w-[36px] rounded border border-[#b8b2a4] bg-white
  * rate limited requests, so the header's own refresh button and filters share the limiter.
  */
 export const WiredPagedTable = <T,>(props: WiredPagedTableProps<T>) => {
-    const { columns, rows, getRowId, getCell, currentPage, totalEntries, lastPage, requests, emptyText, scrollResetKey = 0, bodyClassName = 'max-h-[300px]' } = props;
+    const { columns, rows, getRowId, getCell, currentPage, totalEntries, lastPage, requests, emptyText, scrollResetKey = 0, bodyClassName = 'max-h-[300px]', pagingTextKey = '' } = props;
     const [pageInput, setPageInput] = useState(currentPage === NO_PAGE ? '1' : String(currentPage));
     const [bodyElement, setBodyElement] = useState<HTMLDivElement | null>(null);
 
@@ -57,6 +59,7 @@ export const WiredPagedTable = <T,>(props: WiredPagedTableProps<T>) => {
 
     const isFirst = currentPage !== NO_PAGE && currentPage <= 1;
     const isLast = currentPage !== NO_PAGE && lastPage !== NO_PAGE && currentPage >= lastPage;
+    const pagingText = currentPage === NO_PAGE ? null : splitPagingText(localizeWithFallback(pagingTextKey, DEFAULT_PAGING_TEXT), totalEntries, Math.max(1, lastPage));
 
     const navigateToInputPage = () => {
         const typed = parseInputPage(pageInput);
@@ -119,16 +122,7 @@ export const WiredPagedTable = <T,>(props: WiredPagedTableProps<T>) => {
                     </button>
                 </div>
                 <div className="flex items-center gap-2 text-[12px] text-[#555]">
-                    {currentPage !== NO_PAGE && (
-                        <span>
-                            {localizeWithFallback(
-                                'wiredmenu.paged_table.found',
-                                '%entries_count% found. Showing page',
-                                ['entries_count'],
-                                [String(totalEntries)]
-                            )}
-                        </span>
-                    )}
+                    {pagingText && <span>{pagingText.start}</span>}
                     <input
                         aria-label="Page"
                         className="w-[42px] rounded border border-[#b8b2a4] bg-white px-1 py-[2px] text-center text-[12px]"
@@ -144,9 +138,7 @@ export const WiredPagedTable = <T,>(props: WiredPagedTableProps<T>) => {
                             navigateToInputPage();
                         }}
                     />
-                    {currentPage !== NO_PAGE && (
-                        <span>{localizeWithFallback('wiredmenu.paged_table.of', 'of %page_count%', ['page_count'], [String(Math.max(1, lastPage))])}</span>
-                    )}
+                    {pagingText && <span>{pagingText.end}</span>}
                 </div>
                 <div className="flex gap-2">
                     <button className={PAGE_BUTTON_CLASS} disabled={isLast} type="button" title="Next page" onClick={() => requests.requestNextPage()}>
