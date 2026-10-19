@@ -27,7 +27,7 @@ export const resolveWiredHeaderButton = (holder: WiredHolderKind, code: number):
         // snapshots only for the match-to-snapshot boxes, so those two get no dead button.
         case 'action':
             if (code === WiredActionLayoutCode.SET_FURNI_STATE) return 'apply_snapshot';
-            return code === WiredActionLayoutCode.WRITE_TO_LOGS ? 'view_logs' : null;
+            return code === WiredActionLayoutCode.WRITE_TO_LOGS || code === WiredActionLayoutCode.WRITE_TO_LOGS_NEGATIVE ? 'view_logs' : null;
         case 'addon':
             return code === WiredAddonLayoutCode.VARIABLES_WEB_API ? 'web_api_docs' : null;
         case 'variable':
