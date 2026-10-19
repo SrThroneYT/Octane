@@ -16,7 +16,8 @@ const QUANTIFIER_ANY = 1;
  * comparison, no variable. A variable stored by older saves is dropped on the next save; the server no longer reads it.
  */
 export const WiredConditionUserLevelView: FC<{}> = () => {
-    const { trigger = null, setIntParams = null, setStringParam = null } = useWired();
+    // Official layout: [level, comparison, our quantifier], the users in the official source slot.
+    const { trigger = null, setIntParams = null, setStringParam = null, setSourceTypes = null } = useWired();
     const [level, setLevel] = useState(MIN_LEVEL);
     const [comparison, setComparison] = useState(1);
     const [userSource, setUserSource] = useState(0);
@@ -27,12 +28,13 @@ export const WiredConditionUserLevelView: FC<{}> = () => {
 
         setLevel(trigger.intData?.length > 0 ? trigger.intData[0] : MIN_LEVEL);
         setComparison(trigger.intData?.length > 1 ? trigger.intData[1] : 1);
-        setUserSource(trigger.intData?.length > 2 ? trigger.intData[2] : 0);
-        setQuantifier(trigger.intData?.length > 3 && trigger.intData[3] === QUANTIFIER_ANY ? QUANTIFIER_ANY : QUANTIFIER_ALL);
+        setUserSource(trigger.userSourceTypes?.[0] ?? 0);
+        setQuantifier(trigger.intData?.length > 2 && trigger.intData[2] === QUANTIFIER_ANY ? QUANTIFIER_ANY : QUANTIFIER_ALL);
     }, [trigger]);
 
     const save = () => {
-        setIntParams([level, comparison, userSource, quantifier]);
+        setIntParams([level, comparison, quantifier]);
+        setSourceTypes({ furni: [], users: [userSource] });
         setStringParam('');
     };
 
