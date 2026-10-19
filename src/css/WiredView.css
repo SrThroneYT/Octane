@@ -2,7 +2,8 @@
     width: min(300px, calc(100vw - 16px));
     min-width: 0;
     max-width: calc(100vw - 16px);
-    background: #efefef;
+    /* The style's colours come in as variables (api/wired/WiredStyle.ts); the fallbacks are Illumina. */
+    background: var(--wired-frame, #e2e2e2);
     border: 1px solid #8d8d8d !important;
     border-radius: 6px !important;
     box-shadow: inset 0 0 0 1px #fff !important;
@@ -78,7 +79,7 @@
 
     .octane-wired__content {
         position: relative;
-        background: #efefef !important;
+        background: var(--wired-frame, #e2e2e2) !important;
         border: 0 !important;
         box-shadow: none !important;
         padding: 0 !important;
@@ -228,9 +229,10 @@
         gap: 1px;
     }
 
+    /* IlluminaHeaderPreset: the kind in 11 px bold, the name in headerNameFontSize bold, 0x494949. */
     .octane-wired__summary-kind {
         color: #000;
-        font-size: 10px;
+        font-size: 11px;
         font-weight: 700;
         letter-spacing: 0.08em;
         line-height: 1;
@@ -255,8 +257,8 @@
     }
 
     .octane-wired__summary-title {
-        color: #4a4a4a !important;
-        font-size: 15px !important;
+        color: #494949 !important;
+        font-size: var(--wired-header-name-size, 12px) !important;
         font-weight: 700 !important;
         line-height: 1.02;
         text-align: left !important;
@@ -288,13 +290,25 @@
         font-size: 12px;
     }
 
+    /* Illumina ruler: a 0xAAAAAA line over a white highlight at alpha 0xAF. */
     .octane-wired__divider,
     hr {
         height: 1px;
         border: 0;
-        background: #bababa;
-        box-shadow: 0 1px 0 #fff;
+        background: var(--wired-splitter, #aaaaaa);
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.69);
         margin: 0 !important;
+    }
+
+    .octane-wired__sections {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 0;
+    }
+
+    .octane-wired__sections:empty {
+        display: none;
     }
 
     .form-check-input,
@@ -444,6 +458,13 @@
         display: flex;
         flex-direction: column;
         gap: 4px;
+    }
+
+    /* AdvancedSettingsWrapperPreset: the advanced rows sit on the style's advanced background. */
+    .octane-wired__advanced-body {
+        margin-top: 4px;
+        padding: var(--wired-section-spacing, 5px) var(--wired-section-margin, 5px);
+        background: var(--wired-advanced-background, #cccccc);
     }
 
     .octane-wired__advanced-body[hidden] {
@@ -1321,42 +1342,91 @@
 
 
 /*
- * Official wired window skins, colour for colour from the AIR client's wired_style_*.xml layouts:
- * volter (dark), ubuntu (light warm) and volter_blue (the yellow one; that is its name). "default"
- * carries no override and is the look above. Each block only restates what the layout defines:
- * window background, ruler (divider) colour, text colour, input background, the source-button box
- * and the menu items; the rest keeps the base rules.
+ * Official wired window styles (AIR uibuilder/styles and their wired_style_*.xml templates). The
+ * colours arrive as variables from api/wired/WiredStyle.ts; these blocks restate what each template
+ * draws differently. Illumina is the base look above. Volter is the dark one; volter_yellow,
+ * volter_blue and volter_green are forced for three prototype furni and draw the sections inside a
+ * rounded inner border (border style 13) on the background colour, with the header and the buttons
+ * on the frame colour.
  */
+.octane-wired.octane-wired--volter {
+    font-family: Volter, monospace;
+
+    /* The Volter templates draw every text in the 9 px Volter font (13 px lines). */
+    .octane-wired__body,
+    .octane-wired__section .font-bold:not(.octane-wired__summary-title),
+    .octane-wired__summary-description,
+    .octane-wired__furni-selector-description,
+    .octane-wired__picker-label,
+    .octane-wired__source-row,
+    .octane-wired__advanced-toggle,
+    .octane-wired__header-button,
+    .octane-wired__button,
+    .form-control,
+    .form-select,
+    input[type='text'],
+    input[type='number'],
+    textarea {
+        font-size: 9px !important;
+        line-height: 13px;
+    }
+
+    .octane-wired__summary {
+        min-height: 0;
+        padding: 26px 5px 5px;
+        background: transparent;
+        color: var(--wired-text);
+    }
+
+    .octane-wired__summary-line {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    .octane-wired__summary-icon {
+        flex: 0 0 auto;
+        width: 13px;
+        height: 14px;
+        image-rendering: pixelated;
+    }
+
+    .octane-wired__summary-title {
+        font-family: Volter, monospace;
+        font-weight: 700 !important;
+        font-size: var(--wired-header-name-size, 9px) !important;
+        line-height: 13px;
+        color: var(--wired-text) !important;
+        text-shadow: none;
+    }
+
+    .octane-wired__divider,
+    hr {
+        box-shadow: none;
+    }
+}
+
 .octane-wired.octane-wired--style-volter {
     /* container colour 0x3d3d3d, ruler 0x232323, text white, source box 0x181818, mini button 0x333333, menu item 0x626262 */
-    background: #3d3d3d;
     border-color: #232323 !important;
     box-shadow: inset 0 0 0 1px #4a4a4a !important;
     color: #fff;
 
-    .octane-wired__header .nitro-card-title {
+    .octane-wired__header .octane-card-title {
         color: #fff !important;
         text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
     }
 
-    .octane-wired__header .nitro-card-close-button {
+    .octane-wired__header .octane-card-close-button {
         border-color: #181818;
         background: linear-gradient(180deg, #626262 0%, #333333 100%);
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
     }
 
-    .octane-wired__header .nitro-card-close-button::before,
-    .octane-wired__header .nitro-card-close-button::after {
+    .octane-wired__header .octane-card-close-button::before,
+    .octane-wired__header .octane-card-close-button::after {
         background: #e8e8e8;
-    }
-
-    .octane-wired__content {
-        background: #3d3d3d !important;
-    }
-
-    .octane-wired__summary {
-        background: linear-gradient(180deg, #333333 0%, #2a2a2a 100%);
-        color: #fff;
     }
 
     .octane-wired__summary-kind,
@@ -1369,12 +1439,6 @@
     .text-black\/60 {
         color: #fff !important;
         text-shadow: none;
-    }
-
-    .octane-wired__divider,
-    hr {
-        background: #232323;
-        box-shadow: 0 1px 0 #4a4a4a;
     }
 
     .form-check-input,
@@ -1411,7 +1475,7 @@
     input[type='text'],
     input[type='number'],
     textarea {
-        border-color: #181818 !important;
+        border-color: #ffffff !important;
         background: #2b2b2b !important;
         color: #fff !important;
         box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.4);
@@ -1426,89 +1490,49 @@
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
         color: #fff !important;
     }
-}
 
-.octane-wired.octane-wired--style-ubuntu {
-    /* container colour 0xe9e9e1, ruler 0xb5b5b5, text 0x222222, menu item 0xb2b2b2, 10px il_regular text */
-    background: #e9e9e1;
-    border-color: #b5b5b5 !important;
-    box-shadow: inset 0 0 0 1px #f6f6f2 !important;
-    color: #222;
-
-    .octane-wired__header .nitro-card-title,
-    .octane-wired__summary-kind,
-    .octane-wired__summary-title,
-    .octane-wired__advanced-toggle {
-        color: #222 !important;
+    .octane-wired__menu-list {
+        background: #626262;
     }
 
-    .octane-wired__content {
-        background: #e9e9e1 !important;
-    }
-
-    .octane-wired__summary {
-        background: linear-gradient(180deg, #e2e2da 0%, #d6d6cc 100%);
-        color: #222;
-    }
-
-    .octane-wired__divider,
-    hr {
-        background: #b5b5b5;
-        box-shadow: 0 1px 0 #f6f6f2;
-    }
-
-    .form-control,
-    .form-select,
-    input[type='text'],
-    input[type='number'],
-    textarea {
-        border-color: #b5b5b5 !important;
-        background: #ffffff !important;
-        color: #222 !important;
-    }
-
-    .octane-wired__button,
-    .octane-wired__picker-button,
-    .octane-slider-button {
-        border-color: #b2b2b2 !important;
-        background: linear-gradient(180deg, #fbfbf8 0%, #e9e9e1 46%, #d9d9d1 47%, #ecece4 100%) !important;
-        color: #222 !important;
+    .octane-wired__menu-item {
+        color: #fff;
     }
 }
 
-.octane-wired.octane-wired--style-volter_blue {
-    /* container colour 0xf4d763, ruler 0x222222, text 0x222222, input white, source box 0xffeda5, mini button 0xffeda5, menu item 0xdddddd */
-    background: #f4d763;
+.octane-wired.octane-wired--inner-border {
+    /* Text and ruler 0x222222, inputs white with a 0x222222 border, source boxes and mini buttons 0xffeda5, menu items 0xdddddd. */
     border-color: #222222 !important;
-    box-shadow: inset 0 0 0 1px #ffeda5 !important;
+    box-shadow: none !important;
     color: #222;
 
-    .octane-wired__header .nitro-card-title,
+    .octane-wired__header .octane-card-title {
+        color: #fff !important;
+        text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+    }
+
+    .octane-wired__sections {
+        padding: 8px 9px;
+        border: 1px solid #000;
+        border-radius: 7px;
+        background: var(--wired-background);
+        box-shadow: -1px -1px 0 1px rgba(0, 0, 0, 0.22);
+    }
+
+    /* InnerBorderFramePreset: no ruler above the first section, none above the buttons. */
+    .octane-wired__sections > .octane-wired__divider:first-child,
+    .octane-wired__divider--actions {
+        display: none;
+    }
+
     .octane-wired__summary-kind,
     .octane-wired__summary-title,
-    .octane-wired__advanced-toggle {
+    .octane-wired__advanced-toggle,
+    .octane-wired__picker-label,
+    .form-check-label,
+    label {
         color: #222 !important;
-        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
-    }
-
-    .octane-wired__header .nitro-card-close-button {
-        border-color: #222222;
-        background: linear-gradient(180deg, #ffeda5 0%, #f4d763 100%);
-    }
-
-    .octane-wired__content {
-        background: #f4d763 !important;
-    }
-
-    .octane-wired__summary {
-        background: linear-gradient(180deg, #f8e28a 0%, #f0cf55 100%);
-        color: #222;
-    }
-
-    .octane-wired__divider,
-    hr {
-        background: #222222;
-        box-shadow: 0 1px 0 #ffeda5;
+        text-shadow: none;
     }
 
     .form-check-input,
@@ -1516,6 +1540,7 @@
     input[type='radio'] {
         border-color: #222222;
         background: #ffffff;
+        box-shadow: none;
     }
 
     .form-check-input[type='radio']:checked,
@@ -1538,6 +1563,7 @@
         border-color: #222222 !important;
         background: #ffffff !important;
         color: #222 !important;
+        box-shadow: none;
     }
 
     .octane-wired__button,
@@ -1545,9 +1571,20 @@
     .octane-wired__selection-toggle,
     .octane-slider-button {
         border-color: #222222 !important;
-        background: linear-gradient(180deg, #ffeda5 0%, #f8e28a 46%, #f0cf55 47%, #f4d763 100%) !important;
+        background: #ffeda5 !important;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
         color: #222 !important;
     }
+
+    .octane-wired__menu-list {
+        background: #dddddd;
+    }
+}
+
+/* The yellow frame (style 2) is light: its title stays dark. */
+.octane-wired.octane-wired--style-volter_yellow .octane-wired__header .octane-card-title {
+    color: #222 !important;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 /* Delay section: title, seconds field and the Standard / Precise mode button (AIR ActionDelaySection). */

@@ -255,10 +255,11 @@ export const WiredToolsSettingsTabView: FC<WiredToolsSettingsTabViewProps> = ({ 
                             value={accountPreferences.wiredStyle}
                             onChange={(event) => updateAccountPreferences({ wiredStyle: normalizeWiredStyle(event.target.value) })}
                         >
-                            {WIRED_STYLE_OPTIONS.map((style) => (
-                                <option key={style} value={style}>
+                            {/* Official: "Default (Illumina)" first, stored as "", then the selectable styles. */}
+                            {[WIRED_STYLE_DEFAULT, ...WIRED_STYLE_OPTIONS].map((style) => (
+                                <option key={style || 'default'} value={style}>
                                     {style === WIRED_STYLE_DEFAULT
-                                        ? localizeWithFallback('wiredmenu.settings.preferences.wired_style.default', 'Default (%name%)', ['name'], ['Octane'])
+                                        ? localizeWithFallback('wiredmenu.settings.preferences.wired_style.default', 'Default (%name%)', ['name'], [wiredStyleTitle('illumina')])
                                         : wiredStyleTitle(style)}
                                 </option>
                             ))}
