@@ -117,7 +117,7 @@ information when forced into a single selector.
   activation does not replace the application with a Suspense fallback.
   Regression guards live in `src/hooks/session/useSessionSnapshots.test.tsx`
   and `src/state/useSharedHook.test.tsx`. CI gate:
-  `yarn lint:hooks` (`eslint.hooks.config.mjs` →
+  `yarn lint:hooks` (`eslint.config.mjs` →
   `react-hooks/rules-of-hooks: error`) wired into
   `.github/workflows/ci.yml`.
 
@@ -334,8 +334,8 @@ The current branch (**`feat/react19-modernization`**, PR #2) has applied:
 ### Toolchain
 - React 19.2 / `react-dom` 19.2 / `@types/react` 19.2.
 - TS 6 for the ESLint parser + **TS 7** (`typescript7` alias) for `yarn typecheck`.
-- ESLint 10 + `typescript-eslint` 8 + `eslint-plugin-react-hooks@7` +
-  `eslint-plugin-react-compiler`.
+- Biome for lint and format; ESLint 10 + `@typescript-eslint/parser` 8 + `eslint-plugin-react-hooks@7`
+  only for the Rules of Hooks gate.
 - Vite 8 + React Compiler 1.0 (`babel-plugin-react-compiler`).
 - `<StrictMode>` mounted; `App.tsx` made idempotent for the double-mount.
 
