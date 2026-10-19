@@ -32,7 +32,7 @@ export interface IWiredAccountPreferences {
     showInspectButton: boolean;
     showSystemNotifications: boolean;
     showToolbarButton: boolean;
-    /** The look of the wired box windows; one of WIRED_STYLE_OPTIONS. */
+    /** The look of the wired box windows: "" (default, illumina) or one of WIRED_STYLE_OPTIONS. */
     wiredStyle: WiredStyleName;
 }
 
