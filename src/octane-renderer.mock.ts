@@ -392,7 +392,10 @@ export const RoomEnterEffect = {
     totalRunningTime: 0
 };
 
-export class RoomEngineObjectEvent extends StubClass {}
+export class RoomEngineObjectEvent extends StubClass {
+    static readonly MOUSE_ENTER = 'REOE_MOUSE_ENTER';
+    static readonly MOUSE_LEAVE = 'REOE_MOUSE_LEAVE';
+}
 export const CreateLinkEvent = vi.fn();
 // EventDispatcher — real listener storage. UI_EVENT_DISPATCHER (`../../api`)
 // is a module-level `new EventDispatcher()` singleton, so hooks that dispatch
@@ -1035,6 +1038,7 @@ export class WiredVariableHoldersPageComposer extends RecordingComposer {}
 export class WiredLogPageEvent extends StubClass {}
 export class WiredVariableHoldersPageEvent extends StubClass {}
 export class WiredGenerateWebApiKeyComposer extends RecordingComposer {}
+export class WiredAddonShareSynchronizeComposer extends RecordingComposer {}
 export class WiredWebApiKeyResultEvent extends StubClass {}
 export class WiredClickSettingsEvent extends StubClass {}
 export class WiredVariableFxConfigsEvent extends StubClass {}

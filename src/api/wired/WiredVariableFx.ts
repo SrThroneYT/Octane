@@ -24,7 +24,14 @@ export const WIRED_FX_VISIBILITY = {
     HAS_VARIABLE_WITH_VALUE: 4
 } as const;
 
+/** AIR's three modes; "never" is labelled "visible on cursor hover" in the official texts. */
 export const WIRED_FX_SHOW_MODE = { ALWAYS: 0, WHEN_CHANGES: 1, NEVER: 2 } as const;
+
+/** The update mask bits: which kind of value update opens the "when it changes" window (AIR's change mask). */
+export const WIRED_FX_UPDATE = { CREATED: 1, INCREASED: 2, DECREASED: 4, UNCHANGED: 8 } as const;
+
+/** Any real change; what a new box starts with. */
+export const WIRED_FX_UPDATE_MASK_DEFAULT = WIRED_FX_UPDATE.CREATED | WIRED_FX_UPDATE.INCREASED | WIRED_FX_UPDATE.DECREASED;
 
 export const WIRED_FX_OVERRIDE_TARGET = { HOLDER: 0, GLOBAL: 1 } as const;
 
@@ -39,15 +46,16 @@ export const WIRED_FX_SEGMENTS_MAX = 100;
 export const WIRED_FX_DEFAULT_MAX_VALUE = 100;
 export const WIRED_FX_PARAM_COUNT = 23;
 
+/** AIR's server renderer ids (VariableFxRendererType); the config's renderer id picks how a value is drawn. */
 export const WIRED_FX_RENDERER = {
     PLAIN: 0,
     CLASSIC_MINI: 1,
     BLOCK: 2,
     STRIPED: 3,
     ARROW: 4,
-    HEARTS: 10,
-    HEALTH_BAR: 11,
-    HEALTH_CROSS: 12,
+    HEALTH_BAR: 10,
+    SINGLE_HEART: 11,
+    STACKED_HEARTS: 12,
     THERMOMETER: 13,
     LEVEL_WITH_PROGRESS: 20,
     LEVEL_DETAILS: 21,
@@ -72,7 +80,8 @@ export const WIRED_FX_CONFIG_EXTRA = {
     COLOR: 'color',
     METALLIC: 'metallic',
     SUB_RENDERER: 'sub_renderer',
-    SEGMENTS: 'segments'
+    SEGMENTS: 'segments',
+    STACK_ORDER: 'stack_order'
 } as const;
 
 export interface IWiredVariableFxStyle {
@@ -112,10 +121,10 @@ export const WIRED_FX_STATUS_BAR_THEMES: { icon: string; color: string | null; m
 
 const STYLES: Record<number, IWiredVariableFxStyle[]> = {
     [WIRED_FX_CATEGORY.HEALTH_POINTS]: [
-        style(0, 'wiredfurni.params.variablefx.style.hearts', 'Hearts', WIRED_FX_RENDERER.HEARTS),
-        style(1, 'wiredfurni.params.variablefx.style.health_cross', 'Health cross', WIRED_FX_RENDERER.HEALTH_CROSS),
-        style(2, 'wiredfurni.params.variablefx.style.thermometer', 'Thermometer', WIRED_FX_RENDERER.THERMOMETER),
-        style(3, 'wiredfurni.params.variablefx.style.health_bar', 'Health bar', WIRED_FX_RENDERER.HEALTH_BAR)
+        style(0, 'wiredfurni.params.variablefx.style.health_points.0', 'Health bar', WIRED_FX_RENDERER.HEALTH_BAR),
+        style(1, 'wiredfurni.params.variablefx.style.health_points.1', 'Stacked hearts', WIRED_FX_RENDERER.STACKED_HEARTS),
+        style(2, 'wiredfurni.params.variablefx.style.health_points.2', 'Thermometer', WIRED_FX_RENDERER.THERMOMETER),
+        style(3, 'wiredfurni.params.variablefx.style.health_points.3', 'Single heart', WIRED_FX_RENDERER.SINGLE_HEART)
     ],
     [WIRED_FX_CATEGORY.PROGRESS_BAR]: [
         style(0, 'wiredfurni.params.variablefx.style.plain', 'Plain', WIRED_FX_RENDERER.PLAIN),
@@ -208,15 +217,15 @@ export interface IWiredVariableFxParams {
     source: number;
     visibility: number;
     showMode: number;
-    /** Official only, kept as it came: which changes refresh the fx. */
+    /** Which updates open the "when it changes" window (WIRED_FX_UPDATE bits). */
     updateMask?: number;
-    /** Official only, kept as it came. */
+    /** Also shown while the cursor is over the holder. */
     showOnHover?: boolean;
     showDurationMs: number;
     styleId: number;
     colorId: number;
     widthId: number;
-    /** Official only, kept as it came; the server picks the renderer from the style. */
+    /** The renderer, when the style offers more than one (status bars); the style's own otherwise. */
     rendererId?: number;
     segments: number;
     defaultMin: number;
@@ -227,7 +236,7 @@ export interface IWiredVariableFxParams {
     overrideMaxTarget: number;
     audienceValue: number;
     categoryExtra: number;
-    /** Official only, kept as it came: the order in the object's fx stack. */
+    /** The place in the holder's fx stack: higher sits lower, nearer the holder. */
     stackOrder?: number;
 }
 
@@ -271,12 +280,23 @@ export const wiredVariableFxStyle = (category: number, styleId: number): IWiredV
 /** Levels and plain numbers have no editable range. */
 export const wiredVariableFxUsesRange = (category: number) => category !== WIRED_FX_CATEGORY.LEVELLING_PROGRESS && category !== WIRED_FX_CATEGORY.NUMBER_DISPLAY;
 
+/** The renderers a style can draw with, its default first: status bars offer three bars, the rest one. */
+export const wiredVariableFxRendererOptions = (category: number, styleId: number): number[] =>
+    category === WIRED_FX_CATEGORY.STATUS_BAR ? [...WIRED_FX_LEVEL_BARS] : [wiredVariableFxStyle(category, styleId).rendererId];
+
+/** The renderer asked for when the style offers it, the style's default otherwise (AIR's sanitize). */
+export const resolveWiredVariableFxRenderer = (category: number, styleId: number, rendererId: number): number => {
+    const options = wiredVariableFxRendererOptions(category, styleId);
+
+    return options.includes(rendererId) ? rendererId : options[0];
+};
+
 export const wiredVariableFxRendererSupportsSegments = (rendererId: number) =>
     rendererId === WIRED_FX_RENDERER.BLOCK || rendererId === WIRED_FX_RENDERER.ARROW || rendererId === WIRED_FX_RENDERER.THERMOMETER;
 
-/** The renderer a segment count applies to: the style's own, or the bar a level badge draws. */
-export const wiredVariableFxSegmentRenderer = (category: number, styleId: number, categoryExtra: number): number => {
-    const rendererId = wiredVariableFxStyle(category, styleId).rendererId;
+/** The renderer a segment count applies to: the picked one, or the bar a level badge draws. */
+export const wiredVariableFxSegmentRenderer = (category: number, styleId: number, categoryExtra: number, picked = -1): number => {
+    const rendererId = resolveWiredVariableFxRenderer(category, styleId, picked);
 
     if (category === WIRED_FX_CATEGORY.LEVELLING_PROGRESS) {
         if (rendererId !== WIRED_FX_RENDERER.LEVEL_WITH_PROGRESS) return WIRED_FX_RENDERER.CLASSIC_MINI;
@@ -308,7 +328,7 @@ export const defaultWiredVariableFxParams = (): IWiredVariableFxParams => ({
     overrideMaxTarget: WIRED_FX_OVERRIDE_TARGET.HOLDER,
     audienceValue: 0,
     categoryExtra: 0,
-    updateMask: 0,
+    updateMask: WIRED_FX_UPDATE_MASK_DEFAULT,
     showOnHover: false,
     rendererId: 0,
     stackOrder: 0
@@ -344,7 +364,7 @@ export const readWiredVariableFxParams = (intData: number[], category: number): 
         source: int(intData, 0, OFFICIAL_TARGET_USER) === OFFICIAL_TARGET_FURNI ? WIRED_FX_SOURCE.FURNI : WIRED_FX_SOURCE.USER,
         visibility: clamp(int(intData, 1, defaults.visibility), WIRED_FX_VISIBILITY.ONLY_USER, WIRED_FX_VISIBILITY.HAS_VARIABLE_WITH_VALUE),
         showMode: clamp(int(intData, 2, defaults.showMode), WIRED_FX_SHOW_MODE.ALWAYS, WIRED_FX_SHOW_MODE.NEVER),
-        updateMask: clamp(int(intData, 3, 0), 0, 15),
+        updateMask: clamp(int(intData, 3, defaults.updateMask), 0, 15),
         showOnHover: int(intData, 4, 0) === 1,
         showDurationMs: clamp(int(intData, 5, defaults.showDurationMs), WIRED_FX_SHOW_DURATION_MIN_MS, WIRED_FX_SHOW_DURATION_MAX_MS),
         styleId: clamp(int(intData, 6, 0), 0, Math.max(0, styleCount - 1)),
@@ -421,6 +441,7 @@ export interface IWiredVariableFxConfigLike {
     rendererId: number;
     showMode: number;
     showDurationMs: number;
+    showOnMouseHover?: boolean;
     defaultMinValue: number;
     defaultMaxValue: number;
     extra: Record<string, string>;
@@ -519,19 +540,40 @@ export const formatWiredVariableFxValue = (value: number): string => {
 };
 
 /**
- * Whether a value is on screen right now: always, never, or only for the show duration after it
- * last changed. Returns the moment it hides, or null when that never happens on its own.
+ * Which kind of update a value got, as AIR's client sorts it: the first value for a holder, up,
+ * down, or set to what it already was.
  */
-export const wiredVariableFxVisibleUntil = (config: IWiredVariableFxConfigLike, changedAt: number, now: number): { visible: boolean; until: number | null } => {
-    switch (config.showMode) {
-        case WIRED_FX_SHOW_MODE.NEVER:
-            return { visible: false, until: null };
-        case WIRED_FX_SHOW_MODE.WHEN_CHANGES: {
-            const until = changedAt + Math.max(WIRED_FX_SHOW_DURATION_MIN_MS, config.showDurationMs || 0);
+export const wiredVariableFxUpdateKind = (previousValue: number | null, value: number): number => {
+    if (previousValue === null) return WIRED_FX_UPDATE.CREATED;
+    if (value > previousValue) return WIRED_FX_UPDATE.INCREASED;
+    if (value < previousValue) return WIRED_FX_UPDATE.DECREASED;
 
-            return { visible: now < until, until };
-        }
-        default:
-            return { visible: true, until: null };
+    return WIRED_FX_UPDATE.UNCHANGED;
+};
+
+/** The fx's place in its holder's stack, from the config extra the server sends; 0 when it sent none. */
+export const wiredVariableFxStackOrder = (config: IWiredVariableFxConfigLike): number => {
+    const value = parseInt(config.extra?.[WIRED_FX_CONFIG_EXTRA.STACK_ORDER] ?? '', 10);
+
+    return Number.isFinite(value) ? value : 0;
+};
+
+/**
+ * Whether a value is on screen right now, as AIR decides it: always; while the cursor is over its
+ * holder when the config shows on hover; or for the show duration after an update the update mask
+ * picked (`shownAt`, null when none did). Returns the moment it hides, or null when that does not
+ * happen on its own.
+ */
+export const wiredVariableFxVisibleUntil = (config: IWiredVariableFxConfigLike, shownAt: number | null, hovered: boolean, now: number): { visible: boolean; until: number | null } => {
+    if (config.showMode === WIRED_FX_SHOW_MODE.ALWAYS) return { visible: true, until: null };
+
+    if (config.showOnMouseHover && hovered) return { visible: true, until: null };
+
+    if (config.showMode === WIRED_FX_SHOW_MODE.WHEN_CHANGES && shownAt !== null) {
+        const until = shownAt + Math.max(WIRED_FX_SHOW_DURATION_MIN_MS, config.showDurationMs || 0);
+
+        return { visible: now < until, until };
     }
+
+    return { visible: false, until: null };
 };

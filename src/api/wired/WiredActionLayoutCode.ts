@@ -51,6 +51,8 @@ export class WiredActionLayoutCode {
     public static INIT_TRANSACTION: number = 47;
     public static CANCEL_TRANSACTION: number = 48;
     public static WRITE_TO_LOGS: number = 49;
+    /** AIR's negative code of Write to Logs; AIR ActionTypes.getByCode opens the same editor for it. */
+    public static WRITE_TO_LOGS_NEGATIVE: number = 50;
     public static PROGRESS_ACHIEVEMENT: number = 51;
     /** Official give effect (wf_act_give_effect). */
     public static EFFECT_ID: number = 52;

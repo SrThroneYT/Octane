@@ -1,17 +1,27 @@
 import { IWiredVariableFxConfig, IWiredVariableFxStatus, IWiredVariableFxStatusKey, wiredVariableFxStatusKey } from '@octane/renderer';
+import { wiredVariableFxUpdateKind } from '../../api/wired/WiredVariableFx';
 import { createOctaneStore } from '../../state/createOctaneStore';
 
-/** A drawn value with when it last changed, which the "show when changing" mode counts from. */
+/**
+ * A drawn value. `createdAt` is when the holder first showed it (AIR stacks by it), `shownAt` when
+ * an update the config's update mask picks last arrived: the "when it changes" mode counts from it.
+ */
 export interface IWiredVariableFxStatusEntry {
     key: string;
     status: IWiredVariableFxStatus;
-    changedAt: number;
+    createdAt: number;
+    shownAt: number | null;
     previousValue: number | null;
 }
+
+/** The holder an fx stack belongs to: `u:<room unit id>` or `f:<floor item id>`. */
+export const wiredVariableFxHolderKey = (userEntity: boolean, entityId: number) => `${userEntity ? 'u' : 'f'}:${entityId}`;
 
 export type WiredVariableFxState = {
     configs: Record<number, IWiredVariableFxConfig>;
     statuses: Record<string, IWiredVariableFxStatusEntry>;
+    /** The holder under the cursor, for the fx that also show on hover. */
+    hoveredHolder: string | null;
 };
 
 export type WiredVariableFxActions = {
@@ -19,6 +29,7 @@ export type WiredVariableFxActions = {
     removeConfigs(configIds: number[]): void;
     applyStatuses(initializeAll: boolean, statuses: IWiredVariableFxStatus[], now?: number): void;
     removeStatuses(keys: IWiredVariableFxStatusKey[]): void;
+    setHovered(holder: string, hovered: boolean): void;
     clear(): void;
 };
 
@@ -29,6 +40,7 @@ export type WiredVariableFxActions = {
 export const useWiredVariableFxStore = createOctaneStore<WiredVariableFxState & WiredVariableFxActions>()((set) => ({
     configs: {},
     statuses: {},
+    hoveredHolder: null,
 
     applyConfigs: (configs) =>
         set((state) => {
@@ -68,14 +80,18 @@ export const useWiredVariableFxStore = createOctaneStore<WiredVariableFxState & 
             for (const status of statuses ?? []) {
                 const key = wiredVariableFxStatusKey(status);
                 const previous = initializeAll ? null : state.statuses[key];
-                const changed = !previous || previous.status.value !== status.value;
+                const previousValue = previous ? previous.status.value : null;
+                // A config that has not arrived yet counts every update, as nothing is drawn without it.
+                const updateMask = state.configs[status.configId]?.updateMask ?? 15;
+                // "Initialize" is drawn as it is, not as an update: it opens no window (as in AIR).
+                const opens = !status.initialize && (updateMask & wiredVariableFxUpdateKind(previousValue, status.value)) !== 0;
 
                 next[key] = {
                     key,
                     status,
-                    // "Initialize" is drawn as it is, not as a change: it keeps the old timestamp.
-                    changedAt: status.initialize && previous ? previous.changedAt : changed ? now : previous.changedAt,
-                    previousValue: previous ? previous.status.value : null
+                    createdAt: previous ? previous.createdAt : now,
+                    shownAt: opens ? now : previous ? previous.shownAt : null,
+                    previousValue
                 };
             }
 
@@ -93,5 +109,12 @@ export const useWiredVariableFxStore = createOctaneStore<WiredVariableFxState & 
             return { statuses };
         }),
 
-    clear: () => set({ configs: {}, statuses: {} })
+    setHovered: (holder, hovered) =>
+        set((state) => {
+            if (hovered) return state.hoveredHolder === holder ? state : { hoveredHolder: holder };
+
+            return state.hoveredHolder === holder ? { hoveredHolder: null } : state;
+        }),
+
+    clear: () => set({ configs: {}, statuses: {}, hoveredHolder: null })
 }));
