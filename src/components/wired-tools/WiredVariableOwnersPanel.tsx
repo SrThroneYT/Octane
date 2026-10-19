@@ -204,6 +204,7 @@ export const WiredVariableOwnersPanel = (props: WiredVariableOwnersPanelProps) =
                     totalEntries={totalEntries}
                     lastPage={lastPage}
                     requests={requests}
+                    pagingTextKey="wiredmenu.variable_management.bottom_text"
                     emptyText={localizeWithFallback('wiredmenu.variable_management.empty', 'Nobody holds this variable with the current filters')}
                     scrollResetKey={scrollResetKey}
                     bodyClassName="h-[360px]"

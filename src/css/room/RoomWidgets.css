@@ -1356,6 +1356,53 @@
     background-image: url('../../assets/images/avatar-menu/air/arrow-up-hover.png');
 }
 
+/* WIN63 avatar_menu_widget (AvatarMenuView, RentableBotMenuView): the same bubble as own_avatar_menu_xml, 36px wider. */
+.octane-avatar-action-menu--own.octane-avatar-action-menu--widget:not(.menu-hidden) {
+    width: 151px;
+    min-width: 151px;
+    max-width: 151px;
+}
+
+.octane-avatar-action-menu--widget .octane-context-menu-header {
+    width: 143px;
+    min-width: 143px;
+    padding: 0 32px 0 31px;
+}
+
+.octane-avatar-action-menu--widget .octane-context-menu-header::after {
+    width: 139px;
+}
+
+.octane-avatar-action-menu--widget .air-avatar-menu-buttons {
+    width: 139px;
+    margin-left: 6px;
+}
+
+.octane-avatar-action-menu--widget .air-avatar-menu-buttons > .octane-context-menu-item {
+    width: 137px;
+    min-width: 137px;
+    max-width: 137px;
+    white-space: nowrap;
+}
+
+.octane-avatar-action-menu--widget .air-avatar-menu-buttons > .octane-context-menu-item::before {
+    width: 143px;
+}
+
+.octane-avatar-action-menu--widget .air-avatar-menu-extra-label {
+    max-width: 131px;
+}
+
+.octane-avatar-action-menu--widget .octane-context-menu-footer {
+    width: 136px;
+    min-width: 136px;
+    margin-left: 7px;
+}
+
+.octane-avatar-action-menu--widget .octane-context-menu-footer::before {
+    left: 62px;
+}
+
 .octane-context-menu.name-only {
     width: auto;
     min-width: 72px;
@@ -1426,4 +1473,287 @@
     width: 100px;
     height: 90px;
     image-rendering: var(--octane-pixel-art, pixelated);
+}
+
+/* chatter_configuration_xml (278x369) and name_configuration_xml (209x119): a style-0 bubble (drawn 6px in),
+   a black 20px title strip (layout width - 18px) and right-aligned 60-120px button_thick pairs. */
+.air-bot-skill-window {
+    position: relative;
+    isolation: isolate;
+    box-sizing: border-box;
+    padding: 6px 0 0 6px;
+    color: #ffffff;
+    font-family: AirAvatarMenuUbuntu, UbuntuRegular, sans-serif;
+    font-size: 10px;
+    line-height: 15px;
+    text-shadow: none;
+    pointer-events: auto;
+    -webkit-font-smoothing: antialiased;
+}
+
+.air-bot-skill-window--chatter {
+    width: 278px;
+    min-height: 369px;
+}
+
+.air-bot-skill-window--name {
+    width: 209px;
+    min-height: 119px;
+}
+
+.air-bot-skill-window::before {
+    position: absolute;
+    inset: 6px;
+    z-index: -2;
+    box-sizing: border-box;
+    content: '';
+    border: solid transparent;
+    border-width: 5px 5px 6px;
+    border-image-source: url('../../assets/images/avatar-menu/air/bubble.png');
+    border-image-slice: 20 20 24 20 fill;
+    border-image-width: 5px 5px 6px;
+    border-image-repeat: stretch;
+    pointer-events: none;
+    image-rendering: var(--octane-pixel-art, pixelated);
+}
+
+.air-bot-skill-window::after {
+    position: absolute;
+    bottom: 0;
+    left: calc(50% - 6px);
+    width: 13px;
+    height: 9px;
+    content: '';
+    background: url('../../assets/images/avatar-menu/air/bubble-pointer-down.png') no-repeat;
+    pointer-events: none;
+}
+
+.air-bot-skill-window-title {
+    display: flex;
+    box-sizing: border-box;
+    /* Inside the bubble's 5px frame, so the frame's top edge stays visible above the strip. */
+    width: calc(100% - 16px);
+    height: 20px;
+    margin: 5px 0 0 5px;
+    padding: 2px 1px 1px;
+    align-items: center;
+    justify-content: center;
+    background: #000000;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 17px;
+    cursor: move;
+    user-select: none;
+}
+
+.air-bot-skill-window-title > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.air-bot-skill-window-items {
+    display: flex;
+    box-sizing: border-box;
+    margin: 0 0 0 7px;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.air-bot-skill-window--chatter .air-bot-skill-window-items {
+    width: 247px;
+}
+
+.air-bot-skill-window--name .air-bot-skill-window-items {
+    width: 183px;
+}
+
+.air-bot-skill-label {
+    display: block;
+    min-width: 0;
+    height: 15px;
+    overflow: hidden;
+    color: #ffffff;
+    font-size: 10px;
+    line-height: 15px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.air-bot-skill-label--name {
+    color: #eeeeee;
+}
+
+.air-bot-skill-input {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0 2px;
+    border: 1px solid #ffffff;
+    border-radius: 0;
+    outline: none;
+    background: transparent;
+    color: #ffffff;
+    font-family: AirAvatarMenuUbuntu, UbuntuRegular, sans-serif;
+    font-weight: 400;
+}
+
+.air-bot-skill-input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.air-bot-skill-name-input {
+    width: 180px;
+    height: 18px;
+    font-size: 12px;
+    line-height: 16px;
+}
+
+.air-bot-skill-chat-text {
+    display: block;
+    width: 246px;
+    height: 178px;
+    padding: 1px 2px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    font-size: 10px;
+    line-height: 12px;
+    resize: none;
+}
+
+.air-bot-skill-row {
+    position: relative;
+    display: block;
+    box-sizing: border-box;
+    width: 248px;
+    height: 22px;
+    padding: 4px 0 0;
+    cursor: pointer;
+}
+
+.air-bot-skill-row > .air-bot-skill-label {
+    width: 207px;
+}
+
+.air-bot-skill-checkbox {
+    position: absolute;
+    top: 1px;
+    left: 209px;
+    width: 19px;
+    height: 20px;
+    margin: 0;
+    appearance: none;
+    background: var(--habbo-skin-checkbox) 0 0 / 19px 20px no-repeat;
+    cursor: pointer;
+    image-rendering: var(--octane-pixel-art, pixelated);
+}
+
+.air-bot-skill-checkbox:checked {
+    background-image: var(--habbo-skin-checkbox-checked);
+}
+
+.air-bot-skill-chat-delay {
+    position: absolute;
+    top: 3px;
+    left: 215px;
+    width: 31px;
+    height: 15px;
+    padding: 0 1px;
+    font-size: 10px;
+    line-height: 13px;
+    text-align: right;
+}
+
+.air-bot-skill-help-link {
+    display: block;
+    width: 250px;
+    max-width: 100%;
+    height: 16px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    background: transparent;
+    color: #bfbfff;
+    font-family: AirAvatarMenuUbuntu, UbuntuRegular, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: left;
+    text-decoration: underline;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.air-bot-skill-help-link:disabled {
+    visibility: hidden;
+}
+
+.air-bot-skill-buttons {
+    display: flex;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    height: 28px;
+    margin: 7px 0 1px;
+    justify-content: flex-end;
+    gap: 4px;
+}
+
+.air-bot-skill-button {
+    display: flex;
+    box-sizing: border-box;
+    min-width: 60px;
+    max-width: 120px;
+    height: 28px;
+    margin: 0;
+    padding: 0 3px;
+    overflow: hidden;
+    flex: 0 1 auto;
+    align-items: center;
+    justify-content: center;
+    border: 5px solid transparent;
+    border-image-source: var(--habbo-skin-shiny-thick);
+    border-image-slice: 5 fill;
+    border-image-width: 5px;
+    border-image-repeat: stretch;
+    border-radius: 0;
+    background: transparent;
+    color: #000000;
+    font-family: AirAvatarMenuUbuntu, UbuntuRegular, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 16px;
+    text-shadow: none;
+    cursor: pointer;
+    image-rendering: var(--octane-pixel-art, pixelated);
+}
+
+.air-bot-skill-button > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.air-bot-skill-button:hover {
+    border-image-source: var(--habbo-skin-shiny-thick-hover);
+}
+
+.air-bot-skill-button:active {
+    border-image-source: var(--habbo-skin-shiny-thick-pressed);
+}
+
+.air-bot-skill-button--save {
+    border-image-source: var(--habbo-skin-shiny-thick-green);
+    color: #ffffff;
+}
+
+.air-bot-skill-button--save:hover {
+    border-image-source: var(--habbo-skin-shiny-thick-green-hover);
+}
+
+.air-bot-skill-button--save:active {
+    border-image-source: var(--habbo-skin-shiny-thick-green-pressed);
 }

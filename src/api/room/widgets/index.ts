@@ -15,6 +15,7 @@ export * from './ChooserSelectionVisualizer';
 export * from './CommandDefinition';
 export * from './DimmerFurnitureWidgetPresetItem';
 export * from './DoChatsOverlap';
+export * from './GetBotSkillWindowPosition';
 export * from './FurnitureDimmerUtilities';
 export * from './GetDiskColor';
 export * from './IAvatarInfo';
