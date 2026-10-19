@@ -16,12 +16,14 @@ import {
     AvatarInfoRentableBot,
     AvatarInfoUser,
     GetConfigurationValue,
-    RoomWidgetUpdateRentableBotChatEvent
+    RoomWidgetUpdateRentableBotChatEvent,
+    RoomWidgetUpdateRentableBotTextSkillEvent
 } from '../../../../api';
 import { Column, LayoutFurniIconImageView } from '../../../../common';
 import { useAvatarInfoWidget, useFurniPickupGuard, useOctaneEvent, useRoom, useUiEvent } from '../../../../hooks';
 import { AvatarInfoPetTrainingPanelView } from './AvatarInfoPetTrainingPanelView';
 import { AvatarInfoRentableBotChatView } from './AvatarInfoRentableBotChatView';
+import { AvatarInfoRentableBotTextSkillView } from './AvatarInfoRentableBotTextSkillView';
 import { AvatarInfoUseProductConfirmView } from './AvatarInfoUseProductConfirmView';
 import { AvatarInfoUseProductView } from './AvatarInfoUseProductView';
 import { InfoStandWidgetBotView } from './infostand/InfoStandWidgetBotView';
@@ -48,6 +50,7 @@ export const AvatarInfoWidgetView: FC<{}> = (props) => {
     const [mobileFurniDetailsOpen, setMobileFurniDetailsOpen] = useState(false);
     const [mobileUserDetailsOpen, setMobileUserDetailsOpen] = useState(false);
     const [rentableBotChatEvent, setRentableBotChatEvent] = useState<RoomWidgetUpdateRentableBotChatEvent>(null);
+    const [rentableBotTextSkillEvent, setRentableBotTextSkillEvent] = useState<RoomWidgetUpdateRentableBotTextSkillEvent>(null);
     const {
         avatarInfo = null,
         setAvatarInfo = null,
@@ -102,6 +105,10 @@ export const AvatarInfoWidgetView: FC<{}> = (props) => {
     });
 
     useUiEvent<RoomWidgetUpdateRentableBotChatEvent>(RoomWidgetUpdateRentableBotChatEvent.UPDATE_CHAT, (event) => setRentableBotChatEvent(event));
+
+    useUiEvent<RoomWidgetUpdateRentableBotTextSkillEvent>(RoomWidgetUpdateRentableBotTextSkillEvent.UPDATE_TEXT_SKILL, (event) =>
+        setRentableBotTextSkillEvent(event)
+    );
 
     useOctaneEvent<RoomEngineObjectEvent>(RoomEngineObjectEvent.REQUEST_PICKUP, (event) => pickupRoomObject(event.objectId, event.category));
 
@@ -269,6 +276,13 @@ export const AvatarInfoWidgetView: FC<{}> = (props) => {
                     );
                 })}
             {rentableBotChatEvent && <AvatarInfoRentableBotChatView chatEvent={rentableBotChatEvent} onClose={() => setRentableBotChatEvent(null)} />}
+            {rentableBotTextSkillEvent && (
+                <AvatarInfoRentableBotTextSkillView
+                    key={`${rentableBotTextSkillEvent.botId}:${rentableBotTextSkillEvent.skillType}:${rentableBotTextSkillEvent.text}`}
+                    skillEvent={rentableBotTextSkillEvent}
+                    onClose={() => setRentableBotTextSkillEvent(null)}
+                />
+            )}
             {confirmingProduct && <AvatarInfoUseProductConfirmView item={confirmingProduct} onClose={() => updateConfirmingProduct(null)} />}
             <AvatarInfoPetTrainingPanelView />
         </>

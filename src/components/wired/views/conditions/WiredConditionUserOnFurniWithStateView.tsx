@@ -7,37 +7,21 @@ import { WiredConditionBaseView } from './WiredConditionBaseView';
 
 export const WiredConditionUserOnFurniWithStateView: FC<{}> = () =>
 {
-    const { trigger = null, setIntParams = null, setStringParam = null } = useWired();
-    const [ furniSource, setFurniSource ] = useState<number>(() =>
-    {
-        if(trigger?.intData?.length > 0) return trigger.intData[0];
-        return (trigger?.selectedItems?.length ?? 0) > 0 ? 100 : 0;
-    });
-    const [ userSource, setUserSource ] = useState<number>(() =>
-    {
-        if(trigger?.intData?.length > 1) return trigger.intData[1];
-        return 0;
-    });
-    const [ quantifier, setQuantifier ] = useState<number>(() =>
-    {
-        if(trigger?.intData?.length > 2) return trigger.intData[2];
-        return 0;
-    });
+    // As user on furni: the furni and users in the official source slots, our quantifier (0 all, 1 any) is
+    // param 0; the required state in the string.
+    const { trigger = null, setIntParams = null, setStringParam = null, setSourceTypes = null } = useWired();
+    const [ furniSource, setFurniSource ] = useState<number>(() => trigger?.furniSourceTypes?.[0] ?? ((trigger?.selectedItems?.length ?? 0) > 0 ? 100 : 0));
+    const [ userSource, setUserSource ] = useState<number>(() => trigger?.userSourceTypes?.[0] ?? 0);
+    const [ quantifier, setQuantifier ] = useState<number>(() => (trigger?.intData?.[0] === 1 ? 1 : 0));
     const [ requiredState, setRequiredState ] = useState<string>(() => trigger?.stringData ?? '');
 
     useEffect(() =>
     {
         if(!trigger) return;
 
-        if(trigger.intData.length > 0) setFurniSource(trigger.intData[0]);
-        else setFurniSource((trigger.selectedItems?.length ?? 0) > 0 ? 100 : 0);
-
-        if(trigger.intData.length > 1) setUserSource(trigger.intData[1]);
-        else setUserSource(0);
-
-        if(trigger.intData.length > 2) setQuantifier(trigger.intData[2] === 1 ? 1 : 0);
-        else setQuantifier(0);
-
+        setFurniSource(trigger.furniSourceTypes?.[0] ?? ((trigger.selectedItems?.length ?? 0) > 0 ? 100 : 0));
+        setUserSource(trigger.userSourceTypes?.[0] ?? 0);
+        setQuantifier(trigger.intData?.[0] === 1 ? 1 : 0);
         setRequiredState(trigger.stringData ?? '');
     }, [ trigger ]);
 
@@ -45,7 +29,8 @@ export const WiredConditionUserOnFurniWithStateView: FC<{}> = () =>
 
     const save = () =>
     {
-        setIntParams([ furniSource, userSource, quantifier ]);
+        setIntParams([ quantifier ]);
+        setSourceTypes({ furni: [ furniSource ], users: [ userSource ] });
         setStringParam(requiredState ?? '');
     };
 
