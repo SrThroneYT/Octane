@@ -19,6 +19,8 @@ import { Hint } from '../../../../common/Tooltip';
 export interface WiredVariableFxStatusViewProps {
     config: IWiredVariableFxConfig;
     entry: IWiredVariableFxStatusEntry;
+    /** The cursor is over the holder. */
+    hovered?: boolean;
 }
 
 const Icon: FC<{ icon: string }> = ({ icon }) => {
@@ -46,7 +48,7 @@ const Bar: FC<{ rendererId: number; progress: number; segments: number; color: s
                   ? 'mini'
                   : rendererId === WIRED_FX_RENDERER.THERMOMETER
                     ? 'thermometer'
-                    : rendererId === WIRED_FX_RENDERER.HEALTH_BAR || rendererId === WIRED_FX_RENDERER.HEALTH_CROSS
+                    : rendererId === WIRED_FX_RENDERER.HEALTH_BAR
                       ? 'health'
                       : 'plain';
     const style = { width: widthPx, ['--fx-color' as string]: color ?? undefined } as CSSProperties;
@@ -70,11 +72,11 @@ const Bar: FC<{ rendererId: number; progress: number; segments: number; color: s
 
 /** One drawn value; picks the markup by the config's renderer. */
 export const WiredVariableFxStatusView: FC<WiredVariableFxStatusViewProps> = (props) => {
-    const { config, entry } = props;
+    const { config, entry, hovered = false } = props;
     const [, setTick] = useState(0);
-    const visibility = wiredVariableFxVisibleUntil(config, entry.changedAt, Date.now());
+    const visibility = wiredVariableFxVisibleUntil(config, entry.shownAt, hovered, Date.now());
 
-    // "Show while changing": re-render once the show duration since the last change has passed.
+    // "When it changes": re-render once the show duration since the last picked update has passed.
     useEffect(() => {
         if (visibility.until === null || !visibility.visible) return;
 
@@ -97,7 +99,7 @@ export const WiredVariableFxStatusView: FC<WiredVariableFxStatusViewProps> = (pr
     const rootClass = classNames('octane-wired-fx', `octane-wired-fx--renderer-${config.rendererId}`, changed ? 'octane-wired-fx--changed' : '');
 
     switch (config.rendererId) {
-        case WIRED_FX_RENDERER.HEARTS: {
+        case WIRED_FX_RENDERER.STACKED_HEARTS: {
             const hearts = segments > 0 ? segments : 5;
 
             return (
@@ -110,11 +112,12 @@ export const WiredVariableFxStatusView: FC<WiredVariableFxStatusViewProps> = (pr
                 </div>
             );
         }
-        case WIRED_FX_RENDERER.HEALTH_CROSS:
+        case WIRED_FX_RENDERER.SINGLE_HEART:
             return (
-                <div className={rootClass} data-testid="fx-status">
-                    <span className="octane-wired-fx__cross">✚</span>
-                    <Bar rendererId={config.rendererId} progress={progress} segments={segments} color={color ?? '#e04b4b'} widthPx={widthPx} />
+                <div className={rootClass} style={{ ['--fx-color' as string]: color ?? undefined } as CSSProperties} data-testid="fx-status">
+                    <span className="octane-wired-fx__heart octane-wired-fx__heart--single" style={{ ['--fx-fill' as string]: progress } as CSSProperties}>
+                        ♥
+                    </span>
                 </div>
             );
         case WIRED_FX_RENDERER.LEVEL_WITH_PROGRESS: {

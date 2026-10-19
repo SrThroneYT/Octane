@@ -26,12 +26,21 @@ import {
     WiredFurniType,
     WiredHeaderButtonMode,
     WiredHolderKind,
+    resolveWiredStyle,
+    WIRED_STYLE_TOKENS,
     WiredSelectionVisualizer,
-    wiredStyleClassName
+    wiredStyleClassName,
+    wiredStyleVariables
 } from '../../../api';
 import { isAdvancedAlwaysVisible, isUsingAdvancedSettings } from '../../../api/wired/WiredAdvancedSettings';
 import wiredBgLeft from '../../../assets/images/wired/wired_bg_left.png';
 import wiredBgRight from '../../../assets/images/wired/wired_bg_right.png';
+import wiredTypeIconAction from '../../../assets/images/wired/type/icon_action.png';
+import wiredTypeIconAddon from '../../../assets/images/wired/type/icon_addon.png';
+import wiredTypeIconCondition from '../../../assets/images/wired/type/icon_condition.png';
+import wiredTypeIconSelector from '../../../assets/images/wired/type/icon_selector.png';
+import wiredTypeIconTrigger from '../../../assets/images/wired/type/icon_trigger.png';
+import wiredTypeIconVariable from '../../../assets/images/wired/type/icon_variable.png';
 import { Button, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Text } from '../../../common';
 import { useNotification, useWired, useWiredTools } from '../../../hooks';
 import { WiredFurniSelectorView } from './WiredFurniSelectorView';
@@ -58,8 +67,18 @@ export interface WiredBaseViewProps {
     confirmSave?: () => { title: string; body: string } | null;
 }
 
-/** The official frame width (Illumina and Volter templates). */
+/** The official frame width (Illumina and Volter templates; the proto styles are 256). */
 export const WIRED_FRAME_WIDTH = 240;
+
+/** The Volter header's type icon (wired_type_icons_icon_<holder>). */
+const WIRED_TYPE_ICONS: Record<WiredHolderKind, string> = {
+    trigger: wiredTypeIconTrigger,
+    condition: wiredTypeIconCondition,
+    action: wiredTypeIconAction,
+    addon: wiredTypeIconAddon,
+    selector: wiredTypeIconSelector,
+    variable: wiredTypeIconVariable
+};
 
 const holderKind = (trigger: Triggerable): WiredHolderKind | null => {
     if (trigger instanceof WiredVariableDefinition) return 'variable';
@@ -88,8 +107,8 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
         delaySection = null,
         confirmSave = null
     } = props;
-    const WIRED_CARD_WIDTH = Math.round(WIRED_FRAME_WIDTH * (widthModifier > 0 ? widthModifier : 1));
     const [wiredName, setWiredName] = useState<string>(null);
+    const [furniClassName, setFurniClassName] = useState<string>(null);
     const [needsSave, setNeedsSave] = useState<boolean>(false);
     const [keepOpenOnSave, setKeepOpenOnSave] = useState<boolean>(false);
     const [showFooter, setShowFooter] = useState(false);
@@ -116,6 +135,10 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
     } = useWired();
     const { roomSettings, accountPreferences } = useWiredTools();
     const { showSingleBubble = null, showConfirm = null } = useNotification();
+    // Official determineActiveWiredStyle(): the proto furni force their own look, the rest wear the user's pick.
+    const wiredStyle = resolveWiredStyle(accountPreferences?.wiredStyle, furniClassName);
+    const styleTokens = WIRED_STYLE_TOKENS[wiredStyle];
+    const WIRED_CARD_WIDTH = Math.round(styleTokens.frameWidth * (widthModifier > 0 ? widthModifier : 1));
     const notify = (key: string, fallback: string) => showSingleBubble?.(localizeWithFallback(key, fallback), NotificationBubbleType.INFO);
     const headerButton: WiredHeaderButtonMode | null = (() => {
         const holder = trigger ? holderKind(trigger) : null;
@@ -295,6 +318,8 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
             setWiredName(furniData.name);
         }
 
+        setFurniClassName(furniData?.className ?? null);
+
         if (hasSpecialInput) {
             setIntParams(trigger.intData);
             setStringParam(trigger.stringData);
@@ -323,6 +348,17 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
         return () => clearRoomAreaSelection();
     }, []);
 
+    // Official highlightActiveWired(): the box being edited is tinted while its window is open.
+    const activeWiredId = trigger?.id ?? null;
+
+    useEffect(() => {
+        if (activeWiredId === null) return;
+
+        WiredSelectionVisualizer.highlightActiveWired(activeWiredId);
+
+        return () => WiredSelectionVisualizer.unhighlightActiveWired(activeWiredId);
+    }, [activeWiredId]);
+
     useEffect(() => {
         if (!trigger) return;
 
@@ -332,7 +368,7 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
     // Official advancedAlwaysVisible(): these elements show their advanced section open, without the toggle.
     const footerFolds = footerCollapsible && !(trigger && isAdvancedAlwaysVisible(holderKind(trigger), trigger.code));
 
-    const resolvedCardStyle: CSSProperties = { ...cardStyle };
+    const resolvedCardStyle: CSSProperties = { ...(wiredStyleVariables(wiredStyle) as CSSProperties), ...cardStyle };
 
     resolvedCardStyle.width = WIRED_CARD_WIDTH;
     resolvedCardStyle.minWidth = WIRED_CARD_WIDTH;
@@ -341,7 +377,7 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
 
     return (
         <OctaneCardView
-            className={`octane-wired ${wiredStyleClassName(accountPreferences?.wiredStyle)} max-h-[calc(100vh-16px)]`}
+            className={`octane-wired ${wiredStyleClassName(wiredStyle)} max-h-[calc(100vh-16px)]`}
             theme="primary-slim"
             uniqueKey="octane-wired"
             isResizable={false}
@@ -404,13 +440,30 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
             </OctaneCardHeaderView>
             <OctaneCardContentView classNames={['octane-wired__content']} gap={0}>
                 <div className="octane-wired__section octane-wired__summary">
-                    <img className="octane-wired__summary-bg octane-wired__summary-bg--left" src={wiredBgLeft} alt="" />
-                    <img className="octane-wired__summary-bg octane-wired__summary-bg--right" src={wiredBgRight} alt="" />
+                    {/* Only the Illumina wired frame carries the banner (illumina_light_frame_wired's wired_header_bg). */}
+                    {!styleTokens.isVolter && (
+                        <>
+                            <img className="octane-wired__summary-bg octane-wired__summary-bg--left" src={wiredBgLeft} alt="" />
+                            <img className="octane-wired__summary-bg octane-wired__summary-bg--right" src={wiredBgRight} alt="" />
+                        </>
+                    )}
                     <div className="octane-wired__summary-copy">
-                        {!!splitWiredName(wiredName).kind && <span className="octane-wired__summary-kind">{splitWiredName(wiredName).kind}</span>}
-                        <Text bold className="octane-wired__summary-title">
-                            {splitWiredName(wiredName).title}
-                        </Text>
+                        {styleTokens.isVolter ? (
+                            // VolterHeaderPreset: the type icon and the whole name on one line.
+                            <div className="octane-wired__summary-line">
+                                {trigger && holderKind(trigger) && <img className="octane-wired__summary-icon" src={WIRED_TYPE_ICONS[holderKind(trigger)]} alt="" />}
+                                <Text bold className="octane-wired__summary-title">
+                                    {wiredName}
+                                </Text>
+                            </div>
+                        ) : (
+                            <>
+                                {!!splitWiredName(wiredName).kind && <span className="octane-wired__summary-kind">{splitWiredName(wiredName).kind}</span>}
+                                <Text bold className="octane-wired__summary-title">
+                                    {splitWiredName(wiredName).title}
+                                </Text>
+                            </>
+                        )}
                         {headerButton && (
                             <BaseButton className="octane-wired__header-button" type="button" onClick={onHeaderButton}>
                                 {localizeWithFallback(WIRED_HEADER_BUTTON_KEYS[headerButton].key, WIRED_HEADER_BUTTON_KEYS[headerButton].fallback)}
@@ -419,41 +472,44 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
                     </div>
                 </div>
                 <div className="octane-wired__body">
-                    {!!children && <div className="octane-wired__divider" />}
-                    {!!children && <div className="octane-wired__section octane-wired__section--body">{children}</div>}
-                    {showSelection && requiresFurni > WiredFurniType.STUFF_SELECTION_OPTION_NONE && (
-                        <>
-                            <div className="octane-wired__divider" />
-                            <div className="octane-wired__section octane-wired__section--selector">{selectionPreview || <WiredFurniSelectorView />}</div>
-                        </>
-                    )}
-                    {delaySection && (
-                        <>
-                            <div className="octane-wired__divider" />
-                            {delaySection}
-                        </>
-                    )}
-                    {footer && (
-                        <>
-                            <div className="octane-wired__divider" />
-                            <div className="octane-wired__section octane-wired__section--footer">
-                                {footerFolds ? (
-                                    <>
-                                        <BaseButton className="octane-wired__advanced-toggle" type="button" onClick={() => setShowFooter((value) => !value)}>
-                                            {LocalizeText(showFooter ? 'wiredfurni.params.sources.collapse' : 'wiredfurni.params.sources.expand')}
-                                        </BaseButton>
-                                        {/* Folding hides the rows instead of unmounting them, so what was typed in them survives. */}
-                                        <div className="octane-wired__advanced-body" hidden={!showFooter}>
-                                            {footer}
-                                        </div>
-                                    </>
-                                ) : (
-                                    footer
-                                )}
-                            </div>
-                        </>
-                    )}
-                    <div className="octane-wired__divider" />
+                    {/* The sections; the proto styles draw them inside an inner border (InnerBorderFramePreset). */}
+                    <div className="octane-wired__sections">
+                        {!!children && <div className="octane-wired__divider" />}
+                        {!!children && <div className="octane-wired__section octane-wired__section--body">{children}</div>}
+                        {showSelection && requiresFurni > WiredFurniType.STUFF_SELECTION_OPTION_NONE && (
+                            <>
+                                <div className="octane-wired__divider" />
+                                <div className="octane-wired__section octane-wired__section--selector">{selectionPreview || <WiredFurniSelectorView />}</div>
+                            </>
+                        )}
+                        {delaySection && (
+                            <>
+                                <div className="octane-wired__divider" />
+                                {delaySection}
+                            </>
+                        )}
+                        {footer && (
+                            <>
+                                <div className="octane-wired__divider" />
+                                <div className="octane-wired__section octane-wired__section--footer">
+                                    {footerFolds ? (
+                                        <>
+                                            <BaseButton className="octane-wired__advanced-toggle" type="button" onClick={() => setShowFooter((value) => !value)}>
+                                                {LocalizeText(showFooter ? 'wiredfurni.params.sources.collapse' : 'wiredfurni.params.sources.expand')}
+                                            </BaseButton>
+                                            {/* Folding hides the rows instead of unmounting them, so what was typed in them survives. */}
+                                            <div className="octane-wired__advanced-body" hidden={!showFooter}>
+                                                {footer}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        footer
+                                    )}
+                                </div>
+                            </>
+                        )}
+                    </div>
+                    <div className="octane-wired__divider octane-wired__divider--actions" />
                     <div className="flex items-center gap-3 octane-wired__actions">
                         <Button
                             disabled={!roomSettings.canModify}

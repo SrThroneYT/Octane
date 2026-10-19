@@ -12,10 +12,10 @@ const SOURCE_SELECTED = 100;
 
 const clampOpacity = (value: number) => (Number.isNaN(value) ? MAX_OPACITY : Math.max(MIN_OPACITY, Math.min(MAX_OPACITY, Math.floor(value))));
 
-// Server contract (WiredConditionFurniOpacityIs): intData = [opacity, comparison, furniSource] plus the
-// picked furni. Every resolved furni has to compare as asked; the negative box passes when none does.
+// Server contract (WiredConditionFurniOpacityIs): intData = [opacity, comparison], the furni in the official
+// source slot, plus the picked furni. Every resolved furni has to compare as asked; the negative box passes when none does.
 export const WiredConditionFurniOpacityView: FC<{}> = () => {
-    const { trigger = null, setIntParams = null } = useWired();
+    const { trigger = null, setIntParams = null, setSourceTypes = null } = useWired();
     const [opacity, setOpacity] = useState(MAX_OPACITY);
     const [comparison, setComparison] = useState(WIRED_CMP_EQUAL);
     const [furniSource, setFurniSource] = useState(SOURCE_SELECTED);
@@ -26,10 +26,13 @@ export const WiredConditionFurniOpacityView: FC<{}> = () => {
         const data = trigger.intData ?? [];
         setOpacity(data.length > 0 ? clampOpacity(data[0]) : MAX_OPACITY);
         setComparison(data.length > 1 ? normalizeWiredComparison(data[1]) : WIRED_CMP_EQUAL);
-        setFurniSource(data.length > 2 ? data[2] : SOURCE_SELECTED);
+        setFurniSource(trigger.furniSourceTypes?.[0] ?? SOURCE_SELECTED);
     }, [trigger]);
 
-    const save = () => setIntParams([clampOpacity(opacity), comparison, furniSource]);
+    const save = () => {
+        setIntParams([clampOpacity(opacity), comparison]);
+        setSourceTypes({ furni: [furniSource], users: [] });
+    };
 
     return (
         <WiredConditionBaseView

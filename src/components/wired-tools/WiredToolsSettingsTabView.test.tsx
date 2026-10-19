@@ -30,8 +30,8 @@ vi.mock('../../api', () => ({
     LocalizeText: (key: string) => key,
     localizeWithFallback: (key: string, fallback: string) => fallback,
     normalizeWiredStyle: (value: string) => value,
-    WIRED_STYLE_DEFAULT: 'default',
-    WIRED_STYLE_OPTIONS: ['default'],
+    WIRED_STYLE_DEFAULT: '',
+    WIRED_STYLE_OPTIONS: ['illumina', 'volter'],
     wiredStyleTitle: (value: string) => value
 }));
 
@@ -48,7 +48,7 @@ vi.mock('../../hooks', () => ({
     useRoom: () => ({ roomSession: { hotelTimeZone: 'UTC' } }),
     useNotification: () => ({ showConfirm: mocks.showConfirm }),
     useWiredTools: () => ({
-        accountPreferences: { showToolbarButton: false, showInspectButton: false, showSystemNotifications: false, wiredStyle: 'default' },
+        accountPreferences: { showToolbarButton: false, showInspectButton: false, showSystemNotifications: false, wiredStyle: '' },
         roomSettings: mocks.roomSettings,
         saveRoomSettings: mocks.saveRoomSettings,
         saveRoomTimezone: mocks.saveRoomTimezone,

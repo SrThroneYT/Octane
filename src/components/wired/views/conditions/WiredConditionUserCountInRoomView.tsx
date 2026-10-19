@@ -8,13 +8,14 @@ import { WiredConditionBaseView } from './WiredConditionBaseView';
 export const WiredConditionUserCountInRoomView: FC<{}> = (props) => {
     const [min, setMin] = useState(1);
     const [max, setMax] = useState(0);
-    const { trigger = null, setIntParams = null } = useWired();
-    const [userSource, setUserSource] = useState<number>(() => {
-        if (trigger?.intData?.length > 2) return trigger.intData[2];
-        return 0;
-    });
+    // Official layout: [min, max], the users in the official source slot.
+    const { trigger = null, setIntParams = null, setSourceTypes = null } = useWired();
+    const [userSource, setUserSource] = useState<number>(() => trigger?.userSourceTypes?.[0] ?? 0);
 
-    const save = () => setIntParams([min, max, userSource]);
+    const save = () => {
+        setIntParams([min, max]);
+        setSourceTypes({ furni: [], users: [userSource] });
+    };
 
     useEffect(() => {
         if (trigger.intData.length >= 2) {
@@ -24,8 +25,7 @@ export const WiredConditionUserCountInRoomView: FC<{}> = (props) => {
             setMin(1);
             setMax(0);
         }
-        if (trigger.intData.length > 2) setUserSource(trigger.intData[2]);
-        else setUserSource(0);
+        setUserSource(trigger.userSourceTypes?.[0] ?? 0);
     }, [trigger]);
 
     return (

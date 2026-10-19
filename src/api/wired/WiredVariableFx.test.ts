@@ -7,17 +7,22 @@ import {
     readWiredVariableFxTokens,
     resolveWiredVariableFxColor,
     resolveWiredVariableFxRange,
+    resolveWiredVariableFxRenderer,
     WIRED_FX_CATEGORY,
     WIRED_FX_COLOR_DYNAMIC_LEVELLING,
     WIRED_FX_COLOR_DYNAMIC_TEAM,
     WIRED_FX_RENDERER,
     WIRED_FX_SHOW_MODE,
     WIRED_FX_STATUS_BAR_THEMES,
+    WIRED_FX_UPDATE,
     wiredVariableFxCategoryOfCode,
     wiredVariableFxLevel,
     wiredVariableFxProgress,
+    wiredVariableFxRendererOptions,
     wiredVariableFxSegmentRenderer,
+    wiredVariableFxStackOrder,
     wiredVariableFxStyles,
+    wiredVariableFxUpdateKind,
     wiredVariableFxVisibleUntil,
     writeWiredVariableFxParams,
     writeWiredVariableFxTokens
@@ -95,6 +100,29 @@ describe('WiredVariableFx helpers', () => {
         expect(wiredVariableFxSegmentRenderer(WIRED_FX_CATEGORY.LEVELLING_PROGRESS, 0, 77)).toBe(WIRED_FX_RENDERER.BLOCK);
         expect(wiredVariableFxSegmentRenderer(WIRED_FX_CATEGORY.LEVELLING_PROGRESS, 1, WIRED_FX_RENDERER.ARROW)).toBe(WIRED_FX_RENDERER.CLASSIC_MINI);
         expect(wiredVariableFxSegmentRenderer(WIRED_FX_CATEGORY.PROGRESS_BAR, 1, 0)).toBe(WIRED_FX_RENDERER.BLOCK);
+        expect(wiredVariableFxSegmentRenderer(WIRED_FX_CATEGORY.STATUS_BAR, 0, 0, WIRED_FX_RENDERER.STRIPED)).toBe(WIRED_FX_RENDERER.STRIPED);
+    });
+
+    it("draws health points with AIR's renderers and lets status bars pick one of three bars", () => {
+        expect(wiredVariableFxStyles(WIRED_FX_CATEGORY.HEALTH_POINTS).map((style) => style.rendererId)).toEqual([
+            WIRED_FX_RENDERER.HEALTH_BAR,
+            WIRED_FX_RENDERER.STACKED_HEARTS,
+            WIRED_FX_RENDERER.THERMOMETER,
+            WIRED_FX_RENDERER.SINGLE_HEART
+        ]);
+        expect(wiredVariableFxRendererOptions(WIRED_FX_CATEGORY.STATUS_BAR, 3)).toEqual([WIRED_FX_RENDERER.BLOCK, WIRED_FX_RENDERER.STRIPED, WIRED_FX_RENDERER.ARROW]);
+        expect(resolveWiredVariableFxRenderer(WIRED_FX_CATEGORY.STATUS_BAR, 3, WIRED_FX_RENDERER.ARROW)).toBe(WIRED_FX_RENDERER.ARROW);
+        expect(resolveWiredVariableFxRenderer(WIRED_FX_CATEGORY.STATUS_BAR, 3, 0)).toBe(WIRED_FX_RENDERER.BLOCK);
+        expect(resolveWiredVariableFxRenderer(WIRED_FX_CATEGORY.PROGRESS_BAR, 2, WIRED_FX_RENDERER.ARROW)).toBe(WIRED_FX_RENDERER.STRIPED);
+    });
+
+    it('sorts updates by kind and reads the stack order from the config extra', () => {
+        expect(wiredVariableFxUpdateKind(null, 5)).toBe(WIRED_FX_UPDATE.CREATED);
+        expect(wiredVariableFxUpdateKind(4, 5)).toBe(WIRED_FX_UPDATE.INCREASED);
+        expect(wiredVariableFxUpdateKind(6, 5)).toBe(WIRED_FX_UPDATE.DECREASED);
+        expect(wiredVariableFxUpdateKind(5, 5)).toBe(WIRED_FX_UPDATE.UNCHANGED);
+        expect(wiredVariableFxStackOrder(config({ extra: { stack_order: '-4' } }))).toBe(-4);
+        expect(wiredVariableFxStackOrder(config())).toBe(0);
     });
 
     it('draws against the status range when the server sent one and repairs an empty one', () => {
@@ -130,13 +158,16 @@ describe('WiredVariableFx helpers', () => {
         expect(formatWiredVariableFxValue(NaN)).toBe('0');
     });
 
-    it('shows a value always, never, or for the show duration after it changed', () => {
-        expect(wiredVariableFxVisibleUntil(config(), 0, 999999)).toEqual({ visible: true, until: null });
-        expect(wiredVariableFxVisibleUntil(config({ showMode: WIRED_FX_SHOW_MODE.NEVER }), 0, 0)).toEqual({ visible: false, until: null });
+    it('shows a value always, on hover, or for the show duration after a picked update', () => {
+        expect(wiredVariableFxVisibleUntil(config(), null, false, 999999)).toEqual({ visible: true, until: null });
+        expect(wiredVariableFxVisibleUntil(config({ showMode: WIRED_FX_SHOW_MODE.NEVER }), null, false, 0)).toEqual({ visible: false, until: null });
+        expect(wiredVariableFxVisibleUntil(config({ showMode: WIRED_FX_SHOW_MODE.NEVER, showOnMouseHover: true }), null, true, 0)).toEqual({ visible: true, until: null });
 
         const changing = config({ showMode: WIRED_FX_SHOW_MODE.WHEN_CHANGES, showDurationMs: 2000 });
 
-        expect(wiredVariableFxVisibleUntil(changing, 1000, 2500)).toEqual({ visible: true, until: 3000 });
-        expect(wiredVariableFxVisibleUntil(changing, 1000, 3000)).toEqual({ visible: false, until: 3000 });
+        expect(wiredVariableFxVisibleUntil(changing, null, true, 0)).toEqual({ visible: false, until: null });
+        expect(wiredVariableFxVisibleUntil(changing, 1000, false, 2500)).toEqual({ visible: true, until: 3000 });
+        expect(wiredVariableFxVisibleUntil(changing, 1000, false, 3000)).toEqual({ visible: false, until: 3000 });
+        expect(wiredVariableFxVisibleUntil({ ...changing, showOnMouseHover: true }, 1000, true, 9000)).toEqual({ visible: true, until: null });
     });
 });

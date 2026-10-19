@@ -21,10 +21,11 @@ const config = (overrides: Record<string, unknown> = {}) => ({
     ...overrides
 });
 
-const entry = (value: number, overrides: Record<string, unknown> = {}, changedAt = 0) => ({
+const entry = (value: number, overrides: Record<string, unknown> = {}, shownAt: number | null = null) => ({
     key: '7|user:20|u|100',
     status: { configId: 7, variableId: 'user:20', initialize: false, userEntity: true, entityId: 100, value, overrideMinValue: null, overrideMaxValue: null, extra: {} as Record<string, string>, ...overrides },
-    changedAt,
+    createdAt: 0,
+    shownAt,
     previousValue: null as number | null
 });
 
@@ -47,10 +48,21 @@ describe('WiredVariableFxStatusView', () => {
         expect(screen.getByTestId('fx-bar').children).toHaveLength(4);
     });
 
-    it('draws hearts for the health style and a level badge for the level style', () => {
-        const { unmount } = render(<WiredVariableFxStatusView config={config({ category: WIRED_FX_CATEGORY.HEALTH_POINTS, rendererId: WIRED_FX_RENDERER.HEARTS })} entry={entry(50)} />);
+    it('draws stacked hearts, one heart and a health bar for the health styles, and a level badge for the level style', () => {
+        let view = render(<WiredVariableFxStatusView config={config({ category: WIRED_FX_CATEGORY.HEALTH_POINTS, rendererId: WIRED_FX_RENDERER.STACKED_HEARTS })} entry={entry(50)} />);
         expect(screen.getByTestId('fx-status').children).toHaveLength(5);
-        unmount();
+        view.unmount();
+
+        view = render(<WiredVariableFxStatusView config={config({ category: WIRED_FX_CATEGORY.HEALTH_POINTS, rendererId: WIRED_FX_RENDERER.SINGLE_HEART })} entry={entry(50)} />);
+        expect(screen.getByTestId('fx-status').children).toHaveLength(1);
+        view.unmount();
+
+        view = render(
+            <WiredVariableFxStatusView config={config({ category: WIRED_FX_CATEGORY.HEALTH_POINTS, rendererId: WIRED_FX_RENDERER.HEALTH_BAR, extra: { icon: 'misc_heart' } })} entry={entry(50)} />
+        );
+        expect(screen.getByLabelText('misc heart')).toBeTruthy();
+        expect(screen.getByTestId('fx-bar')).toBeTruthy();
+        view.unmount();
 
         render(
             <WiredVariableFxStatusView
@@ -74,12 +86,15 @@ describe('WiredVariableFxStatusView', () => {
         expect(screen.getByText('123k')).toBeTruthy();
     });
 
-    it('hides a never-shown value and a changing one once its show duration is over', () => {
+    it('shows a hover-only value under the cursor and hides a changing one once its show duration is over', () => {
         vi.useFakeTimers();
         vi.setSystemTime(10000);
 
-        const { unmount } = render(<WiredVariableFxStatusView config={config({ showMode: WIRED_FX_SHOW_MODE.NEVER })} entry={entry(50)} />);
+        const hoverOnly = config({ showMode: WIRED_FX_SHOW_MODE.NEVER, showOnMouseHover: true });
+        const { rerender, unmount } = render(<WiredVariableFxStatusView config={hoverOnly} entry={entry(50)} />);
         expect(screen.queryByTestId('fx-status')).toBeNull();
+        rerender(<WiredVariableFxStatusView config={hoverOnly} entry={entry(50)} hovered={true} />);
+        expect(screen.getByTestId('fx-status')).toBeTruthy();
         unmount();
 
         render(<WiredVariableFxStatusView config={config({ showMode: WIRED_FX_SHOW_MODE.WHEN_CHANGES, showDurationMs: 2000 })} entry={entry(50, {}, 9000)} />);

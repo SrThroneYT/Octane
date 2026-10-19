@@ -15,10 +15,10 @@ const QUANTIFIER_ANY = 1;
 
 const clampRank = (value: number) => (Number.isNaN(value) ? MIN_RANK : Math.max(MIN_RANK, Math.min(MAX_RANK, Math.floor(value))));
 
-// Server contract (WiredConditionHabboHasRank): intData = [rank, comparison, userSource, quantifier].
-// The negative box shares the dialog and turns the per-user check around on the server.
+// Server contract (WiredConditionHabboHasRank): intData = [rank, comparison, quantifier], the users in the
+// official source slot. The negative box shares the dialog and turns the per-user check around on the server.
 export const WiredConditionUserRankView: FC<{}> = () => {
-    const { trigger = null, setIntParams = null } = useWired();
+    const { trigger = null, setIntParams = null, setSourceTypes = null } = useWired();
     const [rank, setRank] = useState(MIN_RANK);
     const [comparison, setComparison] = useState(WIRED_CMP_GREATER_EQUAL);
     const [userSource, setUserSource] = useState(0);
@@ -30,11 +30,14 @@ export const WiredConditionUserRankView: FC<{}> = () => {
         const data = trigger.intData ?? [];
         setRank(data.length > 0 ? clampRank(data[0]) : MIN_RANK);
         setComparison(data.length > 1 ? normalizeWiredComparison(data[1]) : WIRED_CMP_GREATER_EQUAL);
-        setUserSource(data.length > 2 ? data[2] : 0);
-        setQuantifier(data.length > 3 && data[3] === QUANTIFIER_ANY ? QUANTIFIER_ANY : QUANTIFIER_ALL);
+        setUserSource(trigger.userSourceTypes?.[0] ?? 0);
+        setQuantifier(data.length > 2 && data[2] === QUANTIFIER_ANY ? QUANTIFIER_ANY : QUANTIFIER_ALL);
     }, [trigger]);
 
-    const save = () => setIntParams([clampRank(rank), comparison, userSource, quantifier]);
+    const save = () => {
+        setIntParams([clampRank(rank), comparison, quantifier]);
+        setSourceTypes({ furni: [], users: [userSource] });
+    };
 
     return (
         <WiredConditionBaseView

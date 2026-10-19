@@ -108,7 +108,11 @@ import {
     getHotelTimeFormatter,
     isStackOnlyVariable,
     normalizeMonitorReason,
-    toVariableTextValues
+    splitMonitorStatLine,
+    toVariableTextValues,
+    WIRED_MONITOR_COLOR,
+    WIRED_MONITOR_THRESHOLDS,
+    wiredMonitorColor
 } from './WiredCreatorTools.helpers';
 import {
     HotelDateTimeParts,
@@ -1189,43 +1193,60 @@ export const WiredCreatorToolsView: FC<{}> = () => {
         }
     }, [inspectionType]);
     const monitorStats = useMemo<MonitorStat[]>(() => {
+        // Official statistics lines: localized HTML with the colour, amount and limit (WiredMenuMonitorTab).
+        const officialLine = (key: string, fallbackLabel: string, color: string, value: string, parameters: string[], replacements: string[]): MonitorStat => {
+            const line = localizeWithFallback(key, `${fallbackLabel}: <font color="#${color}">${value}</font>`, ['color', ...parameters], [color, ...replacements]);
+            const { label, value: shown } = splitMonitorStatLine(line);
+
+            return { label, value: shown || value, color: `#${color}` };
+        };
+        const amountLine = (key: string, fallbackLabel: string, amount: number, limit: number, thresholds: readonly [number, number]) =>
+            officialLine(key, fallbackLabel, wiredMonitorColor(amount, limit, thresholds), `${amount}/${limit}`, ['amount', 'limit'], [String(amount), String(limit)]);
+        const yesNo = (value: boolean) => (value ? localizeWithFallback('wiredmenu.bool.yes', 'Yes') : localizeWithFallback('wiredmenu.bool.no', 'No'));
+        const official = (usage: number, usageLimit: number, isHeavy: boolean, floor: number, wall: number, itemLimit: number, furniVars: number) => [
+            amountLine('wiredmenu.monitor.statistics.usage', 'Wired usage', usage, usageLimit, WIRED_MONITOR_THRESHOLDS.usage),
+            officialLine(
+                'wiredmenu.monitor.statistics.is_heavy',
+                'Is heavy',
+                isHeavy ? WIRED_MONITOR_COLOR.ORANGE : WIRED_MONITOR_COLOR.GREEN,
+                yesNo(isHeavy),
+                ['bool'],
+                [yesNo(isHeavy)]
+            ),
+            amountLine('wiredmenu.monitor.statistics.floorfurni', 'Floor furni', floor, itemLimit, WIRED_MONITOR_THRESHOLDS.furni),
+            amountLine('wiredmenu.monitor.statistics.wallfurni', 'Wall furni', wall, itemLimit, WIRED_MONITOR_THRESHOLDS.furni),
+            amountLine('wiredmenu.monitor.statistics.perm_furni_vars', 'Permanent furni vars', furniVars, 60, WIRED_MONITOR_THRESHOLDS.variables)
+        ];
+
         if (!roomSession) {
             return [
-                { label: 'Wired usage', value: '0/0' },
-                { label: 'Is heavy', value: 'No' },
-                { label: 'Room furni', value: '0/0' },
-                { label: 'Wall furni', value: '0/0' },
+                ...official(0, 0, false, 0, 0, 0, 0),
                 { label: 'Delayed events', value: '0/0' },
                 { label: 'Average execution', value: '0ms' },
                 { label: 'Peak execution', value: '0ms' },
                 { label: 'Recursion', value: '0/0' },
-                { label: 'Killed remaining', value: '0s' },
-                { label: 'Permanent furni vars', value: '0/60' }
+                { label: 'Killed remaining', value: '0s' }
             ];
         }
 
-        const roomFurniValue =
-            monitorRoomStats.roomItemLimit > 0
-                ? `${monitorRoomStats.roomFurniCount}/${monitorRoomStats.roomItemLimit}`
-                : String(monitorRoomStats.roomFurniCount);
-        const wallFurniValue =
-            monitorRoomStats.roomItemLimit > 0
-                ? `${monitorRoomStats.wallFurniCount}/${monitorRoomStats.roomItemLimit}`
-                : String(monitorRoomStats.wallFurniCount);
-        const usageValue = `${monitorSnapshot.usageCurrentWindow}/${Math.max(0, monitorSnapshot.usageLimitPerWindow)}`;
         const delayedValue = `${monitorSnapshot.delayedEventsPending}/${Math.max(0, monitorSnapshot.delayedEventsLimit)}`;
 
+        // The official lines first; the rows after them are ours (the official tab has no such rows).
         return [
-            { label: 'Wired usage', value: usageValue },
-            { label: 'Is heavy', value: monitorSnapshot.isHeavy ? 'Yes' : 'No' },
-            { label: 'Room furni', value: roomFurniValue },
-            { label: 'Wall furni', value: wallFurniValue },
+            ...official(
+                monitorSnapshot.usageCurrentWindow,
+                Math.max(0, monitorSnapshot.usageLimitPerWindow),
+                monitorSnapshot.isHeavy,
+                monitorRoomStats.roomFurniCount,
+                monitorRoomStats.wallFurniCount,
+                Math.max(0, monitorRoomStats.roomItemLimit),
+                monitorRoomStats.permanentFurniVariables
+            ),
             { label: 'Delayed events', value: delayedValue },
             { label: 'Average execution', value: `${monitorSnapshot.averageExecutionMs}ms` },
             { label: 'Peak execution', value: `${monitorSnapshot.peakExecutionMs}ms` },
             { label: 'Recursion', value: `${monitorSnapshot.recursionDepthCurrent}/${Math.max(0, monitorSnapshot.recursionDepthLimit)}` },
-            { label: 'Killed remaining', value: `${Math.max(0, monitorSnapshot.killedRemainingSeconds)}s` },
-            { label: 'Permanent furni vars', value: `${monitorRoomStats.permanentFurniVariables}/60` }
+            { label: 'Killed remaining', value: `${Math.max(0, monitorSnapshot.killedRemainingSeconds)}s` }
         ];
     }, [roomSession, monitorRoomStats, monitorSnapshot]);
     const monitorLogs = useMemo<MonitorLog[]>(() => {
