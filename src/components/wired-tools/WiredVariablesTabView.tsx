@@ -4,6 +4,8 @@ import { Button, Text } from '../../common';
 import { VARIABLES_ELEMENTS } from './WiredCreatorTools.constants';
 import { VariableDefinition, VariablesElementButton, VariablesElementType, VariableTextValue } from './WiredCreatorTools.types';
 import { useWiredCreatorToolsUiStore } from './wiredCreatorToolsUiStore';
+import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 export interface WiredVariablesTabViewProps {
     variablePickerDefinitions: VariableDefinition[];
@@ -69,16 +71,14 @@ export const WiredVariablesTabView: FC<WiredVariablesTabViewProps> = ({
                     <Text bold>Variable type:</Text>
                     <div className="flex gap-1">
                         {variableElements.map((element) => (
-                            <button
-                                key={element.key}
+                            <Hint key={element.key} content={element.label}><BaseButton aria-label={element.label}
                                 type="button"
                                 className={`w-[42px] h-[38px] rounded border flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,.7)] ${element.disabled ? 'border-[#b7b7b7] bg-[#e7e3da] opacity-60 cursor-not-allowed' : variablesType === element.key ? 'border-[#222] bg-[#d9d6cf]' : 'border-[#7f7f7f] bg-[#ece9e1]'}`}
                                 disabled={element.disabled}
                                 onClick={() => !element.disabled && setVariablesType(element.key)}
-                                title={element.label}
                             >
                                 <img alt={element.label} className="w-auto h-auto max-w-[22px] max-h-[22px] object-contain" src={element.icon} />
-                            </button>
+                            </BaseButton></Hint>
                         ))}
                     </div>
                 </div>

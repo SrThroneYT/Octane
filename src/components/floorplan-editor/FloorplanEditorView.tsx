@@ -18,6 +18,7 @@ import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { GetLocalStorage, LocalizeText, SendMessageComposer, SetLocalStorage } from '../../api';
 import { Base, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView } from '../../common';
 import { useMessageEvent, useOctaneEvent } from '../../hooks';
+import { isTextEntryTarget } from '../../hooks/rooms/useRoomKeyboardMovement';
 import { useFloorplanLiveSync } from '../../hooks/rooms/widgets/useFloorplanLiveSync';
 import { useFloorplanReducer } from './hooks/useFloorplanReducer';
 import { MAX_WALL_HEIGHT, MIN_WALL_HEIGHT } from './state/constants';
@@ -33,6 +34,8 @@ import { FloorplanOptionsPanel } from './views/FloorplanOptionsPanel';
 import { FloorplanPreviewSVG } from './views/FloorplanPreviewSVG';
 import { FloorplanToolbar } from './views/FloorplanToolbar';
 import { FloorplanWallHeightSlider } from './views/FloorplanWallHeightSlider';
+import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 export type FloorplanEditorExternalSession = {
     tilemap: string;
@@ -195,9 +198,7 @@ export const FloorplanEditorView: FC<Props> = ({ externalSession }) => {
         if (!isVisible) return;
         const handler = (e: KeyboardEvent) => {
             if (!(e.ctrlKey || e.metaKey)) return;
-            const target = e.target as HTMLElement | null;
-            const tag = target?.tagName;
-            if (tag === 'INPUT' || tag === 'TEXTAREA' || target?.isContentEditable) return;
+            if (isTextEntryTarget(e.target)) return;
             const key = e.key.toLowerCase();
             if (key === 'z' && !e.shiftKey) {
                 e.preventDefault();
@@ -307,9 +308,11 @@ export const FloorplanEditorView: FC<Props> = ({ externalSession }) => {
                             <div className="fp-panels">
                                 <div className="fp-panel" data-testid="floorplan-plan-panel">
                                     <div className="fp-panel-head">
-                                        <div className="fp-badge is-brush" data-testid="brush-height-badge" title="Brush height">
-                                            {state.brush.h}
-                                        </div>
+                                        <Hint content="Brush height">
+                                            <div aria-label={`Brush height ${state.brush.h}`} className="fp-badge is-brush" data-testid="brush-height-badge" role="img">
+                                                {state.brush.h}
+                                            </div>
+                                        </Hint>
                                         <span className="fp-panel-title">{localizeOr('floor.plan.editor.tile.height', 'Set height')}</span>
                                         <span className="fp-panel-info" data-testid="floorplan-area">
                                             {localizeOr('floor.plan.editor.area', `Area: ${area.total} (${area.walkable} tiles)`, ['total', 'walkable'], [String(area.total), String(area.walkable)])}
@@ -322,31 +325,31 @@ export const FloorplanEditorView: FC<Props> = ({ externalSession }) => {
                                 </div>
                                 <div className="fp-panel" data-testid="floorplan-preview-panel">
                                     <div className="fp-panel-head">
-                                        <div className="fp-badge" data-testid="wall-height-badge" title="Wall height">
-                                            {state.wallHeight}
-                                        </div>
+                                        <Hint content="Wall height">
+                                            <div aria-label={`Wall height ${state.wallHeight}`} className="fp-badge" data-testid="wall-height-badge" role="img">
+                                                {state.wallHeight}
+                                            </div>
+                                        </Hint>
                                         <span className="fp-panel-title">{LocalizeText('floor.editor.wall.height')}</span>
                                         <div className="fp-view-switch" data-testid="floorplan-view-switch" role="group" aria-label={localizeOr('floor.plan.editor.preview.mode', 'Preview')}>
-                                            <button
+                                            <Hint content={localizeOr('floor.plan.editor.preview.2d.title', 'Flat preview (light, works on every device)')}><BaseButton
                                                 type="button"
                                                 data-testid="floorplan-view-2d"
                                                 data-active={preview3d ? 'false' : 'true'}
                                                 className={`fp-pill ${preview3d ? '' : 'is-on'}`}
-                                                title={localizeOr('floor.plan.editor.preview.2d.title', 'Flat preview (light, works on every device)')}
                                                 onClick={() => choosePreview(false)}
                                             >
                                                 2D
-                                            </button>
-                                            <button
+                                            </BaseButton></Hint>
+                                            <Hint content={localizeOr('floor.plan.editor.preview.3d.title', '3D preview (WebGL, editable, heavier)')}><BaseButton
                                                 type="button"
                                                 data-testid="floorplan-view-3d"
                                                 data-active={preview3d ? 'true' : 'false'}
                                                 className={`fp-pill ${preview3d ? 'is-on' : ''}`}
-                                                title={localizeOr('floor.plan.editor.preview.3d.title', '3D preview (WebGL, editable, heavier)')}
                                                 onClick={() => choosePreview(true)}
                                             >
                                                 3D
-                                            </button>
+                                            </BaseButton></Hint>
                                         </div>
                                     </div>
                                     <div className="fp-panel-body">
@@ -362,12 +365,12 @@ export const FloorplanEditorView: FC<Props> = ({ externalSession }) => {
                                 </div>
                             </div>
                             <div className="fp-footer">
-                                <Base pointer className="fp-btn is-red" data-testid="floorplan-revert" onClick={revertChanges}>
+                                <Base component={BaseButton} type="button" pointer className="fp-btn is-red" data-testid="floorplan-revert" onClick={revertChanges}>
                                     {LocalizeText('floor.plan.editor.reload')}
                                 </Base>
                                 {!isExternal && (
                                     <div className="fp-footer-middle">
-                                        <Base
+                                        <Base component={BaseButton} type="button"
                                             pointer
                                             data-testid="floorplan-live-sync"
                                             data-active={liveSync ? 'true' : 'false'}
@@ -378,7 +381,7 @@ export const FloorplanEditorView: FC<Props> = ({ externalSession }) => {
                                             <span className="fp-toggle-dot" />
                                             {liveSync ? 'Live preview ON' : 'Live preview OFF'}
                                         </Base>
-                                        <Base
+                                        <Base component={BaseButton} type="button"
                                             pointer
                                             data-testid="floorplan-auto-pickup"
                                             data-active={autoPickup ? 'true' : 'false'}
@@ -392,10 +395,10 @@ export const FloorplanEditorView: FC<Props> = ({ externalSession }) => {
                                     </div>
                                 )}
                                 <div className={`fp-footer-right ${isExternal ? 'ml-auto' : ''}`}>
-                                    <Base pointer className="fp-btn is-grey" data-testid="floorplan-import-export" onClick={() => setImportExportVisible(true)}>
+                                    <Base component={BaseButton} type="button" pointer className="fp-btn is-grey" data-testid="floorplan-import-export" onClick={() => setImportExportVisible(true)}>
                                         {LocalizeText('floor.plan.editor.import.export')}
                                     </Base>
-                                    <Base pointer className="fp-btn is-blue" data-testid="floorplan-save" onClick={saveFloorChanges}>
+                                    <Base component={BaseButton} type="button" pointer className="fp-btn is-blue" data-testid="floorplan-save" onClick={saveFloorChanges}>
                                         {LocalizeText('floor.plan.editor.save')}
                                     </Base>
                                 </div>

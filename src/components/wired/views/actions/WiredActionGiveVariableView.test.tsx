@@ -87,12 +87,12 @@ describe('WiredActionGiveVariableView initial value (AIR GiveVariable + ValueOrV
 
         // No claimed holder here: the type selector has a section of its own.
         expect(within(popup).getByText('wiredfurni.params.variables.reference_value.target')).toBeTruthy();
-        expect(within(popup).getByRole('checkbox')).toBeDisabled();
+        expect(within(popup).getByRole('checkbox')).toHaveAttribute('aria-disabled', 'true');
         baseProps.save();
         expect(setIntParams).toHaveBeenLastCalledWith([1, 0, 0, 0, 1, -10, 0]);
 
-        fireEvent.click(within(popup).getByTitle('wiredfurni.params.sourcetype.users'));
-        fireEvent.click(within(screen.getByRole('dialog')).getByTitle('wiredfurni.variable_picker.tab.all'));
+        fireEvent.click(within(popup).getByRole('button', { name: 'wiredfurni.params.sourcetype.users' }));
+        fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'wiredfurni.variable_picker.tab.all' }));
         fireEvent.click(screen.getAllByRole('option').find((option) => option.textContent === 'coins'));
         baseProps.save();
         expect(setStringParam).toHaveBeenLastCalledWith('5\t6');

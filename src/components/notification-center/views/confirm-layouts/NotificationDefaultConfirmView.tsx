@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import { NotificationAlertType, NotificationConfirmItem } from '../../../../api';
 import { Button, Flex, LayoutNotificationAlertView, LayoutNotificationAlertViewProps, Text } from '../../../../common';
+import { BaseButton } from '../../../../common/BaseButton';
 
 export interface NotificationDefaultConfirmViewProps extends LayoutNotificationAlertViewProps {
     item: NotificationConfirmItem;
@@ -30,9 +31,9 @@ export const NotificationDefaultConfirmView: FC<NotificationDefaultConfirmViewPr
                 <Text className="whitespace-pre-line">{message}</Text>
             </Flex>
             <div className="octane-confirm-actions">
-                <button className="octane-confirm-actions__cancel" type="button" onClick={cancel}>
+                <BaseButton className="octane-confirm-actions__cancel" type="button" onClick={cancel}>
                     {cancelText}
-                </button>
+                </BaseButton>
                 <Button onClick={confirm}>{confirmText}</Button>
             </div>
         </LayoutNotificationAlertView>

@@ -78,7 +78,7 @@ describe('WiredInspectionTabView', () => {
     it('shows the highlight button on the furni preview, disabled while no box picks the furni', () => {
         renderTab();
 
-        expect(screen.getByTitle(HIGHLIGHT)).toBeDisabled();
+        expect(screen.getByRole('button', { name: HIGHLIGHT })).toBeDisabled();
     });
 
     it('toggles the highlight of the boxes that pick the furni', () => {
@@ -86,7 +86,7 @@ describe('WiredInspectionTabView', () => {
 
         renderTab({ canHighlightWireds: true, isHighlightingWireds: true, onToggleHighlightWireds });
 
-        const button = screen.getByTitle(HIGHLIGHT);
+        const button = screen.getByRole('button', { name: HIGHLIGHT });
 
         expect(button).toHaveAttribute('aria-pressed', 'true');
         fireEvent.click(button);
@@ -97,6 +97,6 @@ describe('WiredInspectionTabView', () => {
         uiState.inspectionType = 'user';
         renderTab({ canHighlightWireds: true });
 
-        expect(screen.queryByTitle(HIGHLIGHT)).toBeNull();
+        expect(screen.queryByRole('button', { name: HIGHLIGHT })).toBeNull();
     });
 });

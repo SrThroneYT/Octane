@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { PropsWithChildren } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { selectOption } from '../../../../test-utils/selectOption';
 
 const setIntParams = vi.fn();
 const setStringParam = vi.fn();
@@ -78,9 +79,9 @@ describe('WiredActionProgressAchievementView', () => {
         trigger = { stringData: 'ACH_Game\t0', intData: [1, 0, 3, 0], userSourceTypes: [200, 0], furniSourceTypes: [0] };
         render(<WiredActionProgressAchievementView />);
 
-        const select = screen.getByRole('combobox') as HTMLSelectElement;
-        expect(select.value).toBe('ACH_Game');
-        fireEvent.change(select, { target: { value: 'ACH_Race' } });
+        const select = screen.getByRole('combobox');
+        expect(select).toHaveTextContent('ACH_Game');
+        selectOption(select, 'ACH_Race');
         fireEvent.click(screen.getAllByRole('radio')[1]);
         fireEvent.change(screen.getByRole('textbox', { name: 'Amount' }), { target: { value: '5000000' } });
         baseProps.save();
@@ -107,7 +108,7 @@ describe('WiredActionProgressAchievementView', () => {
         trigger = { stringData: 'ACH_Old', intData: [1, 0, 1, 0] };
         render(<WiredActionProgressAchievementView />);
 
-        expect((screen.getByRole('combobox') as HTMLSelectElement).value).toBe('ACH_Old');
+        expect(screen.getByRole('combobox')).toHaveTextContent('ACH_Old');
         expect(baseProps.validate()).toBe(true);
     });
 
@@ -124,7 +125,7 @@ describe('WiredActionProgressAchievementView', () => {
 
         expect(within(popup).getByText('wiredfurni.params.sources.merged.title.variables')).toBeTruthy();
         expect(within(popup).getByText('wiredfurni.params.sources.users.200')).toBeTruthy();
-        expect(within(popup).getAllByRole('button', { name: /^(global|context|furni|user)$/ })).toHaveLength(4);
+        expect(within(popup).getAllByRole('button', { name: /^wiredfurni\.params\.sourcetype\.(global|context|furni|users)$/ })).toHaveLength(4);
         expect(within(popup).queryByRole('checkbox')).toBeNull();
         baseProps.save();
         expect(setIntParams).toHaveBeenLastCalledWith([1, 1, 1, 1]);

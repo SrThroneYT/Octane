@@ -9,6 +9,7 @@ import {
     SanitizeHtml
 } from '../../../../api';
 import { Button, Column, Flex, LayoutNotificationAlertView, LayoutNotificationAlertViewProps } from '../../../../common';
+import { BaseButton } from '../../../../common/BaseButton';
 
 interface NotificationDefaultAlertViewProps extends LayoutNotificationAlertViewProps {
     item: NotificationAlertItem;
@@ -165,7 +166,7 @@ export const NotificationDefaultAlertView: FC<NotificationDefaultAlertViewProps>
                             <CommandFilterInput value={commandFilter} onChange={setCommandFilter} />
                             {!visibleCommands.length && <div className="notification-command-copy">{LocalizeText('generic.no_results_found')}</div>}
                             {visibleCommands.map((entry, index) => (
-                                <button
+                                <BaseButton
                                     key={`${entry.command}-${index}`}
                                     className="notification-command-row"
                                     type="button"
@@ -176,7 +177,7 @@ export const NotificationDefaultAlertView: FC<NotificationDefaultAlertViewProps>
                                         {entry.args && <span className="notification-command-args">{entry.args}</span>}
                                         {entry.description && <span className="notification-command-description">{entry.description}</span>}
                                     </span>
-                                </button>
+                                </BaseButton>
                             ))}
                         </div>
                     )}
@@ -203,9 +204,9 @@ export const NotificationDefaultAlertView: FC<NotificationDefaultAlertViewProps>
                         <hr className="my-2 w-full" />
                         <Button onClick={onClose}>{LocalizeText('generic.close')}</Button>
                         {item.clickUrl && item.clickUrl.length > 0 && (
-                            <button className="octane-alert-link" type="button" onClick={visitUrl}>
+                            <BaseButton className="octane-alert-link" type="button" onClick={visitUrl}>
                                 {LocalizeText(item.clickUrlText)}
-                            </button>
+                            </BaseButton>
                         )}
                     </Column>
                 </>

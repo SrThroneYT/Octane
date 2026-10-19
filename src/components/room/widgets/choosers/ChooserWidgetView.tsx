@@ -5,6 +5,9 @@ import { IsBuildersClubFurniId, IsTemporaryFurniId } from '../../../../api/utils
 import { Button, InfiniteScroll, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView } from '../../../../common';
 import { useFurniPickupGuard } from '../../../../hooks';
 import { classNames, OctaneInput } from '../../../../layout';
+import { BaseButton } from '../../../../common/BaseButton';
+import { Checkbox } from '../../../../common/Checkbox';
+import { Select } from '../../../../common/Select';
 
 const LIMIT_FURNI_PICKALL = 100;
 
@@ -140,17 +143,17 @@ export const ChooserWidgetView: FC<ChooserWidgetViewProps> = (props) => {
                             onChange={(event) => setSearchValue(event.target.value)}
                         />
                         {searchValue.length > 0 && (
-                            <button
+                            <BaseButton
                                 aria-label={localizeWithFallback('generic.clear', 'Clear')}
                                 className="octane-chooser-clear"
                                 type="button"
                                 onClick={() => setSearchValue('')}
                             >
                                 ×
-                            </button>
+                            </BaseButton>
                         )}
                     </div>
-                    <select
+                    <Select
                         aria-label={isUsers ? localizeWithFallback('new_user_chooser.col.type', 'Type') : localizeWithFallback('new_furni_chooser.col.owner', 'Owner')}
                         className={classNames('octane-chooser-filter', !isUsers && 'octane-chooser-filter-wide')}
                         value={selectedFilter}
@@ -164,18 +167,12 @@ export const ChooserWidgetView: FC<ChooserWidgetViewProps> = (props) => {
                                 {option.label}
                             </option>
                         ))}
-                    </select>
+                    </Select>
                 </div>
                 <div className="octane-chooser-table">
                     <div className="octane-chooser-row octane-chooser-head">
                         {pickallFurni && (
-                            <input
-                                aria-label={localizeWithFallback('widget.chooser.checkall', 'Select all')}
-                                checked={allChecked}
-                                className="octane-chooser-check form-check-input"
-                                type="checkbox"
-                                onChange={() => updateChecked(allChecked ? [] : checkableItems.map(chooserItemKey))}
-                            />
+                            <Checkbox checked={allChecked} aria-label={localizeWithFallback('widget.chooser.checkall', 'Select all')} onCheckedChange={ () => updateChecked(allChecked ? [] : checkableItems.map(chooserItemKey)) } />
                         )}
                         <span className="octane-chooser-cell grow">{isUsers ? localizeWithFallback('new_user_chooser.col.name', 'Name') : localizeWithFallback('new_furni_chooser.col.name', 'Name')}</span>
                         <span className={classNames('octane-chooser-cell', isUsers ? 'w-[90px]' : 'w-[120px]')}>
@@ -194,13 +191,7 @@ export const ChooserWidgetView: FC<ChooserWidgetViewProps> = (props) => {
                                     onClick={() => choose(row)}
                                 >
                                     {pickallFurni && (
-                                        <input
-                                            checked={checkedKeys.includes(chooserItemKey(row))}
-                                            className="octane-chooser-check form-check-input"
-                                            type="checkbox"
-                                            onChange={() => toggleChecked(row)}
-                                            onClick={(event) => event.stopPropagation()}
-                                        />
+                                        <Checkbox checked={checkedKeys.includes(chooserItemKey(row))} onClick={(event) => event.stopPropagation()} onCheckedChange={ () => toggleChecked(row) } />
                                     )}
                                     <span className="octane-chooser-cell grow truncate">{row.name}</span>
                                     <span className={classNames('octane-chooser-cell truncate', isUsers ? 'w-[90px]' : 'w-[120px]')}>

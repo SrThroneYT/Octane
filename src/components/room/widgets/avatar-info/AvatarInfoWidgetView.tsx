@@ -39,6 +39,7 @@ import { AvatarInfoWidgetOwnAvatarView } from './menu/AvatarInfoWidgetOwnAvatarV
 import { AvatarInfoWidgetOwnPetView } from './menu/AvatarInfoWidgetOwnPetView';
 import { AvatarInfoWidgetPetView } from './menu/AvatarInfoWidgetPetView';
 import { AvatarInfoWidgetRentableBotView } from './menu/AvatarInfoWidgetRentableBotView';
+import { BaseButton } from '../../../../common/BaseButton';
 
 export const AvatarInfoWidgetView: FC<{}> = (props) => {
     const BLOCK_MENU_WINDOW_MS = 500;
@@ -226,9 +227,9 @@ export const AvatarInfoWidgetView: FC<{}> = (props) => {
 
                     if (!mobileFurniDetailsOpen) {
                         return (
-                            <button className="octane-mobile-furni-infostand-trigger" type="button" onClick={() => setMobileFurniDetailsOpen(true)}>
+                            <BaseButton className="octane-mobile-furni-infostand-trigger" type="button" onClick={() => setMobileFurniDetailsOpen(true)}>
                                 <LayoutFurniIconImageView productType={info.productType} productClassId={info.spriteId} />
-                            </button>
+                            </BaseButton>
                         );
                     }
                 }

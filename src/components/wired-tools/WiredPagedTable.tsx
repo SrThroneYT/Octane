@@ -2,6 +2,8 @@ import { ReactNode, useEffect, useState } from 'react';
 import { localizeWithFallback } from '../../api';
 import { WiredPageRequests } from '../../hooks/wired-tools/useWiredPageRequests';
 import { clampInputPage, DEFAULT_PAGING_TEXT, NO_PAGE, parseInputPage, restrictPageInput, splitPagingText } from './WiredPaging.helpers';
+import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 export interface WiredTableColumn {
     id: string;
@@ -114,12 +116,16 @@ export const WiredPagedTable = <T,>(props: WiredPagedTableProps<T>) => {
             </div>
             <div className="flex items-center justify-between gap-3">
                 <div className="flex gap-2">
-                    <button className={PAGE_BUTTON_CLASS} disabled={isFirst} type="button" title="First page" onClick={() => requests.requestFirstPage()}>
-                        &laquo;
-                    </button>
-                    <button className={PAGE_BUTTON_CLASS} disabled={isFirst} type="button" title="Previous page" onClick={() => requests.requestPreviousPage()}>
-                        &lsaquo;
-                    </button>
+                    <Hint content="First page">
+                        <BaseButton aria-label="First page" className={PAGE_BUTTON_CLASS} disabled={isFirst} type="button" onClick={() => requests.requestFirstPage()}>
+                            &laquo;
+                        </BaseButton>
+                    </Hint>
+                    <Hint content="Previous page">
+                        <BaseButton aria-label="Previous page" className={PAGE_BUTTON_CLASS} disabled={isFirst} type="button" onClick={() => requests.requestPreviousPage()}>
+                            &lsaquo;
+                        </BaseButton>
+                    </Hint>
                 </div>
                 <div className="flex items-center gap-2 text-[12px] text-[#555]">
                     {pagingText && <span>{pagingText.start}</span>}
@@ -141,12 +147,16 @@ export const WiredPagedTable = <T,>(props: WiredPagedTableProps<T>) => {
                     {pagingText && <span>{pagingText.end}</span>}
                 </div>
                 <div className="flex gap-2">
-                    <button className={PAGE_BUTTON_CLASS} disabled={isLast} type="button" title="Next page" onClick={() => requests.requestNextPage()}>
-                        &rsaquo;
-                    </button>
-                    <button className={PAGE_BUTTON_CLASS} disabled={isLast} type="button" title="Last page" onClick={() => requests.requestLastPage()}>
-                        &raquo;
-                    </button>
+                    <Hint content="Next page">
+                        <BaseButton aria-label="Next page" className={PAGE_BUTTON_CLASS} disabled={isLast} type="button" onClick={() => requests.requestNextPage()}>
+                            &rsaquo;
+                        </BaseButton>
+                    </Hint>
+                    <Hint content="Last page">
+                        <BaseButton aria-label="Last page" className={PAGE_BUTTON_CLASS} disabled={isLast} type="button" onClick={() => requests.requestLastPage()}>
+                            &raquo;
+                        </BaseButton>
+                    </Hint>
                 </div>
             </div>
         </div>

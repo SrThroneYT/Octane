@@ -3,6 +3,7 @@ import { FC, KeyboardEvent, MouseEvent, useEffect, useMemo, useRef, useState } f
 import { CatalogType, GetConfigurationValue, GetProductIconUrl, IPurchasableOffer, Offer, ProductTypeEnum } from '../../../../../api';
 import { LayoutAvatarImageView, LayoutGridItem, LayoutGridItemProps, LayoutHabbiconImageView } from '../../../../../common';
 import { isAirBaseCatalogOffer } from './catalogAirGrid.helpers';
+import { Hint } from '../../../../../common/Tooltip';
 
 export interface CatalogOfferTileViewProps extends LayoutGridItemProps {
     offer: IPurchasableOffer;
@@ -113,6 +114,7 @@ export const CatalogOfferTileView: FC<CatalogOfferTileViewProps> = (props) => {
             onKeyDown={onKeyDown}
         >
             <LayoutGridItem
+                component="div"
                 className={`group/tile relative ${itemActive ? 'is-active' : ''} ${priceTemplateClassName}`.trim()}
                 gap={1}
                 itemCount={offer.pricingModel === Offer.PRICING_MODEL_MULTI ? product.productCount : 1}
@@ -140,9 +142,11 @@ export const CatalogOfferTileView: FC<CatalogOfferTileViewProps> = (props) => {
                 )}
                 {product.productType === ProductTypeEnum.ROBOT && <LayoutAvatarImageView direction={2} figure={product.extraParam} fit />}
                 {offer.clubLevel > 0 && (
-                    <span aria-label="Habbo Club" className="octane-catalog-grid-club-level" title="Habbo Club">
-                        <i aria-hidden="true" className="octane-icon icon-catalogue-hc_small" />
-                    </span>
+                    <Hint content="Habbo Club">
+                        <span aria-label="Habbo Club" className="octane-catalog-grid-club-level" role="img">
+                            <i aria-hidden="true" className="octane-icon icon-catalogue-hc_small" />
+                        </span>
+                    </Hint>
                 )}
                 {showPrices && currentType !== CatalogType.BUILDER && prices.length > 0 && (
                     <span className={`octane-catalog-grid-price ${prices.length > 1 ? 'is-multi-price' : 'is-single-price'}`}>

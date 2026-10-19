@@ -1,6 +1,8 @@
 import { FC } from 'react';
 import { ICatalogNode } from '../../../../api';
+import { BaseButton } from '../../../../common/BaseButton';
 import { CatalogIconView } from '../catalog-icon/CatalogIconView';
+import { Hint } from '../../../../common/Tooltip';
 
 interface CatalogRailItemViewProps {
     node: ICatalogNode;
@@ -12,9 +14,10 @@ export const CatalogRailItemView: FC<CatalogRailItemViewProps> = (props) => {
     const { node, isActive, onClick } = props;
 
     return (
-        <div
-            className={`flex items-center gap-2 px-1.5 py-1.5 rounded-lg cursor-pointer transition-all duration-150 shrink-0 ${isActive ? 'bg-white shadow-catalog-card ring-1 ring-catalog-accent/30' : 'hover:bg-white/60'}`}
-            title={node.localization}
+        <Hint content={node.localization}><BaseButton
+            aria-pressed={isActive}
+            type="button"
+            className={`flex w-full items-center gap-2 px-1.5 py-1.5 rounded-lg cursor-pointer transition-all duration-150 shrink-0 ${isActive ? 'bg-white shadow-catalog-card ring-1 ring-catalog-accent/30' : 'hover:bg-white/60'}`}
             onClick={onClick}
         >
             <div className="w-8 h-8 flex items-center justify-center shrink-0">
@@ -25,6 +28,6 @@ export const CatalogRailItemView: FC<CatalogRailItemViewProps> = (props) => {
             >
                 {node.localization}
             </span>
-        </div>
+        </BaseButton></Hint>
     );
 };

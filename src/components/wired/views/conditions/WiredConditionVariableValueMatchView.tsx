@@ -17,6 +17,8 @@ import {
     normalizeVariableTokenFromWire
 } from '../WiredVariablePickerData';
 import { WiredConditionBaseView } from './WiredConditionBaseView';
+import { BaseButton } from '../../../../common/BaseButton';
+import { Radio } from '../../../../common/Radio';
 
 type VariableTargetType = 'user' | 'furni' | 'global' | 'context';
 type ReferenceMode = 'constant' | 'variable';
@@ -400,13 +402,7 @@ export const WiredConditionVariableValueMatchView: FC<{}> = () => {
                         <Text bold>{LocalizeText('wiredfurni.params.quantifier_selection')}</Text>
                         {[QUANTIFIER_ALL, QUANTIFIER_ANY].map((value) => (
                             <label key={value} className="flex items-center gap-1">
-                                <input
-                                    checked={quantifier === value}
-                                    className="form-check-input"
-                                    name="wiredConditionVariableValueQuantifier"
-                                    type="radio"
-                                    onChange={() => setQuantifier(value)}
-                                />
+                                <Radio checked={quantifier === value} name="wiredConditionVariableValueQuantifier" onCheckedChange={ () => setQuantifier(value) } />
                                 <Text>{LocalizeText(`wiredfurni.params.quantifier.variables.${value}`)}</Text>
                             </label>
                         ))}
@@ -442,7 +438,7 @@ export const WiredConditionVariableValueMatchView: FC<{}> = () => {
                     <Text>{LocalizeText('wiredfurni.params.variables.variable_selection')}</Text>
                     <div className="octane-wired__give-var-targets">
                         {TARGET_BUTTONS.map((button) => (
-                            <button
+                            <BaseButton
                                 key={button.key}
                                 type="button"
                                 disabled={button.disabled}
@@ -450,7 +446,7 @@ export const WiredConditionVariableValueMatchView: FC<{}> = () => {
                                 onClick={() => handleTargetChange(button.key)}
                             >
                                 <img src={button.icon} alt={button.key} />
-                            </button>
+                            </BaseButton>
                         ))}
                     </div>
                 </div>
@@ -471,13 +467,7 @@ export const WiredConditionVariableValueMatchView: FC<{}> = () => {
                     <div className="flex flex-wrap gap-2">
                         {COMPARISON_OPTIONS.map((option) => (
                             <label key={option.value} className="flex items-center gap-1">
-                                <input
-                                    checked={comparison === option.value}
-                                    className="form-check-input"
-                                    name="wiredConditionVariableComparison"
-                                    type="radio"
-                                    onChange={() => setComparison(option.value)}
-                                />
+                                <Radio checked={comparison === option.value} name="wiredConditionVariableComparison" onCheckedChange={ () => setComparison(option.value) } />
                                 <Text>{option.label}</Text>
                             </label>
                         ))}

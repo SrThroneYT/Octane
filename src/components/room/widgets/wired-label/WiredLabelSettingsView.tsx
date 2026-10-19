@@ -4,6 +4,7 @@ import { localizeWithFallback, SendMessageComposer } from '../../../../api';
 import { Button, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Text } from '../../../../common';
 import { UbuntuDropmenuView } from '../../../../common/dropmenu/UbuntuDropmenuView';
 import { wiredLabelCss } from './WiredLabelBubbleView';
+import { Checkbox } from '../../../../common/Checkbox';
 
 const COLOR_NAMES = [ 'blue', 'teal', 'green', 'gold', 'orange', 'red', 'purple', 'charcoal' ];
 const COLOR_FALLBACKS = [ 'Blue', 'Teal', 'Green', 'Gold', 'Orange', 'Red', 'Purple', 'Charcoal' ];
@@ -60,7 +61,7 @@ export const WiredLabelSettingsView: FC<WiredLabelSettingsViewProps> = ({ label,
                     onSelect={(value) => setVisibility(Number(value) === WIRED_LABEL_VISIBILITY_EVERYONE ? WIRED_LABEL_VISIBILITY_EVERYONE : WIRED_LABEL_VISIBILITY_WIRED_INSPECTORS)}
                 />
                 <label className="flex items-center gap-1">
-                    <input type="checkbox" className="octane-wired-label-settings__checkbox" data-testid="wired-label-always-open" disabled={!everyone} checked={everyone && alwaysOpen} onChange={(event) => setAlwaysOpen(event.target.checked)} />
+                    <Checkbox checked={everyone && alwaysOpen} data-testid="wired-label-always-open" disabled={!everyone} onCheckedChange={ nextChecked => setAlwaysOpen(nextChecked) } />
                     <Text>{localizeWithFallback('widget.furniture_label.settings.always_open', 'Keep this label always open')}</Text>
                 </label>
                 <div className="flex justify-between gap-2">

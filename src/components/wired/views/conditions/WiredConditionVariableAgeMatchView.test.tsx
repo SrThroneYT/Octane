@@ -69,7 +69,7 @@ describe('WiredConditionVariableAgeMatchView duration (AIR VariableAge + ValueOr
         render(<WiredConditionVariableAgeMatchView />);
 
         expect(field()).toHaveValue('30');
-        expect(screen.getByRole('combobox', { name: 'wiredfurni.params.variables.duration' })).toHaveValue('2');
+        expect(screen.getByRole('combobox', { name: 'wiredfurni.params.variables.duration' })).toHaveTextContent('wiredfurni.params.variables.duration.2');
         expect(field().closest('.octane-wired__value-row')).toContainElement(screen.getByRole('combobox', { name: 'wiredfurni.params.variables.duration' }));
         expect(screen.queryByText('wiredfurni.params.variables.reference_type.constant')).toBeNull();
         baseProps.save();
@@ -86,10 +86,10 @@ describe('WiredConditionVariableAgeMatchView duration (AIR VariableAge + ValueOr
         openPopup();
         const popup = screen.getByRole('dialog');
 
-        expect(within(popup).getAllByRole('button', { name: /^(global|context|furni|user)$/ })).toHaveLength(4);
+        expect(within(popup).getAllByRole('button', { name: /^wiredfurni\.params\.sourcetype\.(global|context|furni|users)$/ })).toHaveLength(4);
         expect(within(popup).queryByText('wiredfurni.params.sources.merged.title.variables')).toBeNull();
         expect(within(popup).queryByRole('checkbox')).toBeNull();
-        fireEvent.click(within(popup).getByRole('button', { name: 'global' }));
+        fireEvent.click(within(popup).getByRole('button', { name: 'wiredfurni.params.sourcetype.global' }));
         fireEvent.click(within(screen.getByRole('dialog')).getByText('round'));
         baseProps.save();
 

@@ -31,6 +31,8 @@ import { Button, DraggableWindowPosition, LayoutAvatarImageView, LayoutBadgeImag
 import { useHasPermission, useNotification, useRewardTracks } from '../../hooks';
 import { OctaneCard } from '../../layout';
 import { RewardTrackAdminView } from './RewardTrackAdminView';
+import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 const CURRENCY_TYPES: Record<string, number> = { credits: -1, duckets: 0, diamonds: 5 };
 
@@ -83,11 +85,10 @@ const RewardTrackPrizeView: FC<{
     };
 
     return (
-        <div
+        <Hint content={getRewardTrackPrizeTooltip(state)}><BaseButton
             className={`octane-reward-track-prize octane-reward-track-prize-${state}`}
             style={column ? { gridColumn: column } : undefined}
             data-premium={prize.premium}
-            title={getRewardTrackPrizeTooltip(state)}
             onClick={onClick}
         >
             <div className="octane-reward-track-prize-icon air-bitmap-surface">
@@ -96,7 +97,7 @@ const RewardTrackPrizeView: FC<{
             </div>
             {state === 'premium_locked' && <div className="octane-reward-track-prize-marker octane-reward-track-prize-marker-locked" />}
             {state === 'claimed' && <div className="octane-reward-track-prize-marker octane-reward-track-prize-marker-claimed" />}
-        </div>
+        </BaseButton></Hint>
     );
 };
 
@@ -376,15 +377,16 @@ export const RewardTrackView: FC<{}> = () => {
                         <>
                             <div className="octane-reward-track-header">
                                 {isEditor && (
-                                    <button
-                                        type="button"
-                                        className="octane-reward-track-admin-toggle"
-                                        title={localizeWithFallback('reward_track.admin.open', 'Edit the reward tracks')}
-                                        data-testid="reward-track-admin-toggle"
-                                        onClick={() => setEditMode(true)}
-                                    >
-                                        <FaCog />
-                                    </button>
+                                    <Hint content={localizeWithFallback('reward_track.admin.open', 'Edit the reward tracks')}>
+                                        <BaseButton aria-label={localizeWithFallback('reward_track.admin.open', 'Edit the reward tracks')}
+                                            type="button"
+                                            className="octane-reward-track-admin-toggle"
+                                            data-testid="reward-track-admin-toggle"
+                                            onClick={() => setEditMode(true)}
+                                        >
+                                            <FaCog />
+                                        </BaseButton>
+                                    </Hint>
                                 )}
                                 <div className="octane-reward-track-profile">
                                     <LayoutAvatarImageView figure={GetSessionDataManager().figure} direction={2} className="octane-reward-track-avatar" />
@@ -412,7 +414,7 @@ export const RewardTrackView: FC<{}> = () => {
                                         )}
                                     </div>
                                 </div>
-                                <button
+                                <BaseButton
                                     type="button"
                                     className="octane-reward-track-scroll"
                                     data-side="prev"
@@ -422,7 +424,7 @@ export const RewardTrackView: FC<{}> = () => {
                                 >
                                     {'«'}
                                     {panorama.claimableBefore > 0 && <span className="octane-reward-track-scroll-badge">{panorama.claimableBefore}</span>}
-                                </button>
+                                </BaseButton>
                                 <div className="octane-reward-track-rewards" ref={panoramaRef} onScroll={measurePanorama}>
                                     <div className="octane-reward-track-tier octane-reward-track-tier-free">
                                         <span className="octane-reward-track-tier-title">
@@ -496,7 +498,7 @@ export const RewardTrackView: FC<{}> = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <button
+                                <BaseButton
                                     type="button"
                                     className="octane-reward-track-scroll"
                                     data-side="next"
@@ -506,7 +508,7 @@ export const RewardTrackView: FC<{}> = () => {
                                 >
                                     {'»'}
                                     {panorama.claimableAfter > 0 && <span className="octane-reward-track-scroll-badge">{panorama.claimableAfter}</span>}
-                                </button>
+                                </BaseButton>
                             </div>
                             <div className="octane-reward-track-body">
                                 <div className="octane-reward-track-tasks">
@@ -526,7 +528,7 @@ export const RewardTrackView: FC<{}> = () => {
                                     </div>
                                     <div className="octane-reward-track-filters">
                                         {FILTERS.map((value) => (
-                                            <button
+                                            <BaseButton
                                                 key={value}
                                                 type="button"
                                                 className="octane-reward-track-filter"
@@ -534,7 +536,7 @@ export const RewardTrackView: FC<{}> = () => {
                                                 onClick={() => setFilter(value)}
                                             >
                                                 {filterText(value)}
-                                            </button>
+                                            </BaseButton>
                                         ))}
                                     </div>
                                     <div className="octane-reward-track-task-list">
@@ -542,7 +544,7 @@ export const RewardTrackView: FC<{}> = () => {
                                             const level = task.activeLevel;
 
                                             return (
-                                                <div
+                                                <BaseButton
                                                     key={task.id}
                                                     className="octane-reward-track-task"
                                                     data-selected={selectedTask?.id === task.id}
@@ -571,7 +573,7 @@ export const RewardTrackView: FC<{}> = () => {
                                                         {level ? level.pointsReward : 0}
                                                         <img src={pointsIcon} alt="" className="octane-reward-track-points-icon" draggable={false} />
                                                     </div>
-                                                </div>
+                                                </BaseButton>
                                             );
                                         })}
                                     </div>

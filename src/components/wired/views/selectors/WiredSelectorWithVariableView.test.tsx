@@ -85,7 +85,7 @@ describe('WiredSelectorWithVariableView reference value (AIR WithVariable + Valu
         trigger = { stringData: 'custom:9\t', intData: [2, 0, 0, 0, 0, 0] };
         render(<WiredSelectorWithVariableView selectorTarget="user" />);
 
-        expect(selectByValue()).toBeDisabled();
+        expect(selectByValue()).toHaveAttribute('aria-disabled', 'true');
         expect(field()).toBeDisabled();
         expect(screen.getByRole('button', { name: 'wiredfurni.params.variables.reference_value.popup' })).toBeDisabled();
         fireEvent.change(field(), { target: { value: 'nope' } });
@@ -123,7 +123,7 @@ describe('WiredSelectorWithVariableView reference value (AIR WithVariable + Valu
         render(<WiredSelectorWithVariableView selectorTarget="furni" />);
 
         openPopup();
-        expect(within(screen.getByRole('dialog')).getByRole('checkbox')).toBeDisabled();
+        expect(within(screen.getByRole('dialog')).getByRole('checkbox')).toHaveAttribute('aria-disabled', 'true');
         baseProps.save();
         expect(setIntParams).toHaveBeenLastCalledWith([2, 2, 0, 0, 0, 0]);
     });

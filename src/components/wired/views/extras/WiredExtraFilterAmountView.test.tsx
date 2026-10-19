@@ -78,7 +78,7 @@ describe('WiredExtraFilterAmountView (AIR SelectorFilter + ValueOrVariableSectio
         const popup = screen.getByRole('dialog');
 
         expect(within(popup).queryByText('wiredfurni.params.sources.merged.title.variables')).toBeNull();
-        fireEvent.click(within(popup).getByRole('button', { name: 'global' }));
+        fireEvent.click(within(popup).getByRole('button', { name: 'wiredfurni.params.sourcetype.global' }));
         fireEvent.click(within(screen.getByRole('dialog')).getByText('round'));
         baseProps.save();
 

@@ -1,6 +1,8 @@
 import { FC, ReactNode, useMemo } from 'react';
 import { GetBotSkillWindowPosition, GetRoomObjectBounds, GetRoomSession } from '../../../../api';
 import { DraggableWindow, DraggableWindowPosition } from '../../../../common';
+import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 export const BOT_SKILL_WINDOW_SIZES = {
     chatter: { width: 278, height: 369 },
@@ -60,12 +62,16 @@ export const AvatarInfoBotSkillButtonsView: FC<AvatarInfoBotSkillButtonsViewProp
 
     return (
         <div className="air-bot-skill-buttons">
-            <button className="air-bot-skill-button" title={cancelLabel} type="button" onClick={onCancel}>
-                <span>{cancelLabel}</span>
-            </button>
-            <button className="air-bot-skill-button air-bot-skill-button--save" title={saveLabel} type="button" onClick={onSave}>
-                <span>{saveLabel}</span>
-            </button>
+            <Hint content={cancelLabel}>
+                <BaseButton className="air-bot-skill-button" type="button" onClick={onCancel}>
+                    <span>{cancelLabel}</span>
+                </BaseButton>
+            </Hint>
+            <Hint content={saveLabel}>
+                <BaseButton className="air-bot-skill-button air-bot-skill-button--save" type="button" onClick={onSave}>
+                    <span>{saveLabel}</span>
+                </BaseButton>
+            </Hint>
         </div>
     );
 };

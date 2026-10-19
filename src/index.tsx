@@ -43,6 +43,9 @@ import './css/habbo/HabboSkin.css';
 import './css/common/PrefixEffects.css';
 
 import './css/forms/form_select.css';
+import './css/forms/base-ui-autocomplete.css';
+import './css/forms/base-ui-disclosure.css';
+import './css/forms/base-ui-menus.css';
 
 import './css/friends/FriendsView.css';
 import './css/fortune-wheel/FortuneWheelView.css';
@@ -55,6 +58,7 @@ import './css/game-center/GameCenterView.css';
 import './css/help/MyReports.css';
 import './css/help/HelpView.css';
 import './css/help/HelpIndex.css';
+import './css/guide-tool/GuideTool.css';
 import './css/housekeeping/HousekeepingView.css';
 
 import './css/hotelview/HotelView.css';

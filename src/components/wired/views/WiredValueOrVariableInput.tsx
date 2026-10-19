@@ -9,6 +9,9 @@ import variableReferenceIcon from '../../../assets/images/wired/var/icon_variabl
 import { Text } from '../../../common';
 import { WiredVariablePicker } from './WiredVariablePicker';
 import { flattenWiredVariablePickerEntries, IWiredVariablePickerEntry, WiredVariablePickerTarget } from './WiredVariablePickerData';
+import { BaseButton } from '../../../common/BaseButton';
+import { Checkbox } from '../../../common/Checkbox';
+import { Hint } from '../../../common/Tooltip';
 
 /*
  * AIR WIN63-202610131318-860371703, roomevents/wired_setup/uibuilder/presets:
@@ -79,16 +82,17 @@ export const WiredVariableTargetButtons: FC<{
 }> = ({ targets, value, disabled = false, onChange }) => (
     <div className="octane-wired__give-var-targets">
         {targets.map((target) => (
-            <button
-                key={target}
-                type="button"
-                disabled={disabled}
-                title={LocalizeText(`wiredfurni.params.sourcetype.${TARGET_TYPE_NAMES[target]}`)}
-                className={`octane-wired__give-var-target octane-wired__give-var-target--${target} ${value === target ? 'is-active' : ''}`}
-                onClick={() => onChange(target)}
-            >
-                <img src={WIRED_VALUE_TARGET_ICONS[target]} alt={target} />
-            </button>
+            <Hint key={target} content={LocalizeText(`wiredfurni.params.sourcetype.${TARGET_TYPE_NAMES[target]}`)}>
+                <BaseButton
+                    type="button"
+                    disabled={disabled}
+                    aria-label={LocalizeText(`wiredfurni.params.sourcetype.${TARGET_TYPE_NAMES[target]}`)}
+                    className={`octane-wired__give-var-target octane-wired__give-var-target--${target} ${value === target ? 'is-active' : ''}`}
+                    onClick={() => onChange(target)}
+                >
+                    <img src={WIRED_VALUE_TARGET_ICONS[target]} alt={target} />
+                </BaseButton>
+            </Hint>
         ))}
     </div>
 );
@@ -272,17 +276,18 @@ export const WiredValueOrVariableInput: FC<WiredValueOrVariableInputProps> = (pr
                         <img alt={target} draggable={false} src={WIRED_VALUE_TARGET_ICONS[target]} style={{ filter: `drop-shadow(0 0 2px ${TARGET_GLOW_COLORS[target]})` }} />
                     </span>
                 )}
-                <button
-                    aria-expanded={open}
-                    aria-label={LocalizeText('wiredfurni.params.variables.reference_value.popup')}
-                    className="octane-wired__value-input-button"
-                    disabled={disabled}
-                    title={LocalizeText('wiredfurni.params.variables.reference_value.popup')}
-                    type="button"
-                    onClick={toggle}
-                >
-                    <img alt="" draggable={false} src={variableReferenceIcon} />
-                </button>
+                <Hint content={LocalizeText('wiredfurni.params.variables.reference_value.popup')}>
+                    <BaseButton
+                        aria-expanded={open}
+                        aria-label={LocalizeText('wiredfurni.params.variables.reference_value.popup')}
+                        className="octane-wired__value-input-button"
+                        disabled={disabled}
+                        type="button"
+                        onClick={toggle}
+                    >
+                        <img alt="" draggable={false} src={variableReferenceIcon} />
+                    </BaseButton>
+                </Hint>
                 {showError && (
                     <div className="octane-wired__value-input-error" role="alert">
                         {errorText}
@@ -318,17 +323,11 @@ export const WiredValueOrVariableInput: FC<WiredValueOrVariableInputProps> = (pr
                                 {onSameHolderChange && (
                                     <>
                                         <label className={`octane-wired__value-popup-same-holder ${sameHolderEligible ? '' : 'is-disabled'}`}>
-                                            <input
-                                                checked={sameHolder}
-                                                className="form-check-input"
-                                                disabled={!sameHolderEligible}
-                                                type="checkbox"
-                                                onChange={(event) => {
-                                                    onSameHolderChange(event.target.checked);
+                                            <Checkbox checked={sameHolder} disabled={!sameHolderEligible} onCheckedChange={ nextChecked => {
+                                                    onSameHolderChange(nextChecked);
                                                     // onReferenceVariableOnTargetChanged -> onPopupVariableChanged(selected, checked) (L443-451, 421-424).
-                                                    if (event.target.checked) onIsVariableChange(true);
-                                                }}
-                                            />
+                                                    if (nextChecked) onIsVariableChange(true);
+                                                } } />
                                             <Text>{LocalizeText('wiredfurni.params.variables.reference_value.same_holder')}</Text>
                                         </label>
                                         <div className="octane-wired__divider" />

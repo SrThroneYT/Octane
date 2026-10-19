@@ -81,7 +81,7 @@ describe('WiredActionPlaceTemporaryFurniView spawn value (AIR place furni + Valu
 
         expect(within(popup).getByText('wiredfurni.params.sources.merged.title.variables')).toBeTruthy();
         expect(within(popup).getByText('wiredfurni.params.sources.users.200')).toBeTruthy();
-        expect(within(popup).getAllByRole('button', { name: /^(global|context|furni|user)$/ })).toHaveLength(4);
+        expect(within(popup).getAllByRole('button', { name: /^wiredfurni\.params\.sourcetype\.(global|context|furni|users)$/ })).toHaveLength(4);
         expect(within(popup).queryByRole('checkbox')).toBeNull();
         baseProps.save();
 

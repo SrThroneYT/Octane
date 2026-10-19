@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import { getSkillLevelStars } from '../../../../api';
 import { SNOWWAR_AIR_ASSETS } from '../../../../assets/images/snowstorm/air';
+import { Hint } from '../../../../common/Tooltip';
 
 /**
  * AIR GameEndingViewController / GameLoadingViewController.getSkillLevelImage:
@@ -14,8 +15,8 @@ export const SnowWarSkillStars: FC<{ skillLevel: number; teamReference?: 1 | 2; 
     const stars = getSkillLevelStars(skillLevel);
     const filledAsset = SNOWWAR_AIR_ASSETS[`star_filled_${ stars.tier }`];
 
-    return (
-        <div className={ `snowwar-stars snowwar-stars--${ stars.tier }${ (teamReference === 2) ? ' snowwar-stars--reverse' : '' }` } title={ title }>
+    const element = (
+        <div aria-label={ title } className={ `snowwar-stars snowwar-stars--${ stars.tier }${ (teamReference === 2) ? ' snowwar-stars--reverse' : '' }` } role={ title ? 'img' : undefined }>
             { Array.from({ length: stars.total }, (_, index) =>
             {
                 const filled = (index < stars.filled) && !!filledAsset;
@@ -31,4 +32,6 @@ export const SnowWarSkillStars: FC<{ skillLevel: number; teamReference?: 1 | 2; 
             }) }
         </div>
     );
+
+    return title ? <Hint content={ title }>{ element }</Hint> : element;
 };

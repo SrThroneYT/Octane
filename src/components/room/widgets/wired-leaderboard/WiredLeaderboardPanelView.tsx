@@ -14,6 +14,8 @@ import {
     leaderboardPanelWidth
 } from '../../../../api/wired/WiredLeaderboard';
 import { LayoutAvatarImageView } from '../../../../common';
+import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 /** Where a panel stands: a tile, a horizontal offset and an altitude, both in pixels at scale 1. */
 export interface ILeaderboardLocation {
@@ -195,20 +197,24 @@ export const WiredLeaderboardPanelView: FC<WiredLeaderboardPanelViewProps> = (pr
                     </div>
                     {description.length > 0 && <div className="octane-wired-leaderboard__description">{description}</div>}
                 </div>
-                {onRelocate && <span className="octane-wired-leaderboard__drag" title={localizeWithFallback('wiredfurni.params.variable_leaderboard.location.drag_status', 'Drag to move')}>✥</span>}
+                {onRelocate && (
+                    <Hint content={localizeWithFallback('wiredfurni.params.variable_leaderboard.location.drag_status', 'Drag to move')}>
+                        <span aria-label={localizeWithFallback('wiredfurni.params.variable_leaderboard.location.drag_status', 'Drag to move')} className="octane-wired-leaderboard__drag" role="img">✥</span>
+                    </Hint>
+                )}
                 {choices.length > 1 && (
-                    <button type="button" className="octane-wired-leaderboard__choice-toggle" onMouseDown={(event) => event.stopPropagation()} onClick={() => setChoicesOpen((open) => !open)}>▾</button>
+                    <BaseButton type="button" className="octane-wired-leaderboard__choice-toggle" onMouseDown={(event) => event.stopPropagation()} onClick={() => setChoicesOpen((open) => !open)}>▾</BaseButton>
                 )}
             </div>
             {choicesOpen && choices.length > 1 && (
                 <div className="octane-wired-leaderboard__choices">
                     {choices.map((choice) => (
-                        <div key={choice.variableId} className={`octane-wired-leaderboard__choice${ choice.variableId === variableId ? ' is-selected' : '' }`} onClick={() => {
+                        <BaseButton type="button" key={choice.variableId} className={`octane-wired-leaderboard__choice${ choice.variableId === variableId ? ' is-selected' : '' }`} onClick={() => {
                             setChoicesOpen(false);
                             onSelectVariable?.(choice.variableId);
                         }}>
                             {choice.displayName}
-                        </div>
+                        </BaseButton>
                     ))}
                 </div>
             )}
@@ -231,10 +237,10 @@ export const WiredLeaderboardPanelView: FC<WiredLeaderboardPanelViewProps> = (pr
                         <div className="octane-wired-leaderboard__rank" style={{ width: LEADERBOARD_RANK_GUTTER }}>{row.rank}</div>
                         {columns.map((column, index) => (column.type === LeaderboardColumnType.USERNAME)
                             ? (
-                                <div key={index} className="octane-wired-leaderboard__user" style={{ width: LEADERBOARD_COLUMN_PIXELS[column.width] }} onClick={() => GetUserProfile(row.userId)}>
+                                <BaseButton type="button" key={index} className="octane-wired-leaderboard__user" style={{ width: LEADERBOARD_COLUMN_PIXELS[column.width] }} onClick={() => GetUserProfile(row.userId)}>
                                     <div className="octane-wired-leaderboard__face">{row.figure && <LayoutAvatarImageView figure={row.figure} headOnly compactHead compactHeadSize={18} direction={2} />}</div>
                                     <span>{row.username}</span>
-                                </div>
+                                </BaseButton>
                             )
                             : <div key={index} className={`octane-wired-leaderboard__cell ${ columnAlign(column.type) }`} style={{ width: LEADERBOARD_COLUMN_PIXELS[column.width] }}>{cellText(row, column.type, now)}</div>)}
                     </div>
@@ -244,9 +250,9 @@ export const WiredLeaderboardPanelView: FC<WiredLeaderboardPanelViewProps> = (pr
                 ))}
             </div>
             <div className="octane-wired-leaderboard__pager">
-                <button type="button" disabled={page <= 0} onClick={() => onMovePage?.(-1)}>‹</button>
+                <BaseButton type="button" disabled={page <= 0} onClick={() => onMovePage?.(-1)}>‹</BaseButton>
                 <span>{localizeWithFallback('wiredfurni.variable_leaderboard.page', `Page ${ page + 1 } / ${ pages }`, [ 'page', 'pages' ], [ String(page + 1), String(pages) ])}</span>
-                <button type="button" disabled={page + 1 >= pages} onClick={() => onMovePage?.(1)}>›</button>
+                <BaseButton type="button" disabled={page + 1 >= pages} onClick={() => onMovePage?.(1)}>›</BaseButton>
             </div>
         </div>
     );

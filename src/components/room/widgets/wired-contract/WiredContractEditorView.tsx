@@ -31,6 +31,9 @@ import { UbuntuDropmenuView } from '../../../../common/dropmenu/UbuntuDropmenuVi
 import { NativeText } from '../../../../common/native-text/NativeText';
 import { parseNativeSkin } from '../../../mod-tools/native/NativeSkin';
 import { NativeSkinView } from '../../../mod-tools/native/NativeSkinView';
+import { BaseButton } from '../../../../common/BaseButton';
+import { Checkbox } from '../../../../common/Checkbox';
+import { Radio } from '../../../../common/Radio';
 
 /** wired_style_ubuntu: container colour 0xe9e9e1; trade rules on 0xdadada, nodes on 0xeeeeee. */
 const UBUNTU_BACKGROUND = 0xe9e9e1;
@@ -60,7 +63,7 @@ export const ContractSection: FC<PropsWithChildren<{ title: string; disabled?: b
     return (
         <fieldset className="wired-contract__section" disabled={ disabled }>
             { collapsed
-                ? <button className="wired-contract__fold" type="button" aria-expanded={ open } aria-label={ title } onClick={ () => setOpen(value => !value) }><ContractText text={ title } bold /><span aria-hidden>{ open ? '▾' : '▸' }</span></button>
+                ? <BaseButton className="wired-contract__fold" type="button" aria-expanded={ open } aria-label={ title } onClick={ () => setOpen(value => !value) }><ContractText text={ title } bold /><span aria-hidden>{ open ? '▾' : '▸' }</span></BaseButton>
                 : <div className="wired-contract__section-title"><ContractText text={ title } bold />{ headerOption }</div> }
             <div hidden={ !open }>{ children }</div>
         </fieldset>
@@ -70,8 +73,8 @@ export const ContractSection: FC<PropsWithChildren<{ title: string; disabled?: b
 /** AIR FooterPreset: Ready and Cancel. */
 export const ContractFooter: FC<{ saveDisabled: boolean; onSave: () => void; onClose: () => void }> = ({ saveDisabled, onSave, onClose }) =>
     <div className="wired-contract__footer">
-        <button type="button" className="wired-contract__button" disabled={ saveDisabled } onClick={ onSave }>{ LocalizeText('wiredfurni.ready') }</button>
-        <button type="button" className="wired-contract__button" onClick={ onClose }>{ LocalizeText('cancel') }</button>
+        <BaseButton type="button" className="wired-contract__button" disabled={ saveDisabled } onClick={ onSave }>{ LocalizeText('wiredfurni.ready') }</BaseButton>
+        <BaseButton type="button" className="wired-contract__button" onClick={ onClose }>{ LocalizeText('cancel') }</BaseButton>
     </div>;
 
 /** AIR FramePreset in the Ubuntu wired style: 262px wide (420 for the element editor), not resizable. */
@@ -86,10 +89,10 @@ const AddNodeButton: FC<{ onClick: () => void }> = ({ onClick }) =>
     const [ state, setState ] = useState('default');
 
     return (
-        <button type="button" className="wired-contract__add-node" aria-label={ LocalizeText('wiredcontracts.add_element.title') }
+        <BaseButton type="button" className="wired-contract__add-node" aria-label={ LocalizeText('wiredcontracts.add_element.title') }
             onMouseEnter={ () => setState('hovering') } onMouseLeave={ () => setState('default') } onMouseDown={ () => setState('pressed') } onMouseUp={ () => setState('hovering') } onClick={ onClick }>
             <ContractSkin type="plus" width={ 23 } height={ 22 } state={ state } />
-        </button>
+        </BaseButton>
     );
 };
 
@@ -118,16 +121,16 @@ export const ContractRuleView: FC<ContractRuleViewProps> = ({ title, rule, onEdi
     <div className="wired-contract__rule">
         <ContractSkin type="rule" width={ 246 } height={ 68 } color={ RULE_BACKGROUND } />
         <ContractText text={ title } background={ RULE_BACKGROUND } />
-        { onRemove && <button className="wired-contract__remove-rule" type="button" aria-label={ LocalizeText('wiredcontracts.payment_rule', [ 'i' ], [ '' ]) } onClick={ onRemove }><CloseIcon /></button> }
+        { onRemove && <BaseButton className="wired-contract__remove-rule" type="button" aria-label={ LocalizeText('wiredcontracts.payment_rule', [ 'i' ], [ '' ]) } onClick={ onRemove }><CloseIcon /></BaseButton> }
         <div className="wired-contract__nodes">
             { rule.nodes.map((node, index) =>
                 <div className="wired-contract__node" key={ index }>
-                    <button type="button" className="wired-contract__node-edit" aria-label={ LocalizeText('wiredcontracts.edit_element.title') } onClick={ () => onEdit(index) }>
+                    <BaseButton type="button" className="wired-contract__node-edit" aria-label={ LocalizeText('wiredcontracts.edit_element.title') } onClick={ () => onEdit(index) }>
                         <ContractSkin type="node" width={ 42 } height={ 42 } color={ 0xeeeeee } />
                         <ContractNodeIcon node={ node } />
                         { (node.type === WIRED_CONTRACT_COIN || node.amount !== 1) && <span className="wired-contract__quantity">{ node.amount }</span> }
-                    </button>
-                    <button type="button" className="wired-contract__remove-node" aria-label={ LocalizeText('wiredcontracts.edit_element.title') + ' x' } onClick={ () => onChange({ nodes: rule.nodes.filter((unused, position) => position !== index) }) }><CloseIcon /></button>
+                    </BaseButton>
+                    <BaseButton type="button" className="wired-contract__remove-node" aria-label={ LocalizeText('wiredcontracts.edit_element.title') + ' x' } onClick={ () => onChange({ nodes: rule.nodes.filter((unused, position) => position !== index) }) }><CloseIcon /></BaseButton>
                 </div>) }
             { rule.nodes.length < WIRED_CONTRACT_MAX_NODES && <AddNodeButton onClick={ () => onEdit(null) } /> }
         </div>
@@ -186,7 +189,7 @@ export const WiredContractEditorView: FC<WiredContractEditorViewProps> = ({ cont
                     onEdit={ node => setEditing({ side: 'give', rule: index, node }) }
                     onChange={ next => setRule('give', index, next) }
                     onRemove={ index > 0 ? () => setGive(give.filter((unused, position) => position !== index)) : undefined } />) }
-            <button type="button" className="wired-contract__button wired-contract__button--wide" disabled={ give.length >= WIRED_CONTRACT_MAX_RULES } onClick={ () => setGive([ ...give, { nodes: [] } ]) }>{ LocalizeText('wiredcontracts.payment_add_more') }</button>
+            <BaseButton type="button" className="wired-contract__button wired-contract__button--wide" disabled={ give.length >= WIRED_CONTRACT_MAX_RULES } onClick={ () => setGive([ ...give, { nodes: [] } ]) }>{ LocalizeText('wiredcontracts.payment_add_more') }</BaseButton>
         </div>;
     const rewardRule = get && <ContractRuleView title={ LocalizeText('wiredcontracts.reward_rule') } rule={ get } onEdit={ node => setEditing({ side: 'get', rule: 0, node }) } onChange={ next => setRule('get', 0, next) } />;
     const titleKey = (type === WIRED_CONTRACT_PAYMENT) ? 'payment' : (type === WIRED_CONTRACT_TRADE) ? 'trade' : 'reward';
@@ -199,7 +202,7 @@ export const WiredContractEditorView: FC<WiredContractEditorViewProps> = ({ cont
                         <ContractSection title={ LocalizeText('wiredcontracts.payment_contract.mode') }>
                             { [ WIRED_CONTRACT_MODE_DONATION, WIRED_CONTRACT_MODE_SPECIFIC ].map(mode =>
                                 <label className="wired-contract__choice" key={ mode }>
-                                    <input type="radio" name="wired-contract-payment-mode" checked={ draft.paymentMode === mode } onChange={ () => patch({ paymentMode: mode }) } />
+                                    <Radio name="wired-contract-payment-mode" checked={ draft.paymentMode === mode } onCheckedChange={ () => patch({ paymentMode: mode }) } />
                                     <ContractText text={ LocalizeText(`wiredcontracts.payment_contract.mode.${ mode }`) } />
                                 </label>) }
                         </ContractSection>
@@ -222,7 +225,7 @@ export const WiredContractEditorView: FC<WiredContractEditorViewProps> = ({ cont
                         <ContractSection title={ LocalizeText('wiredcontracts.reward_contract.reward_popup') }>
                             <textarea className="wired-contract__input wired-contract__textarea" aria-label={ LocalizeText('wiredcontracts.reward_contract.reward_popup.text') } title={ LocalizeText('wiredcontracts.reward_contract.reward_popup.text.tooltip') } maxLength={ WIRED_CONTRACT_REWARD_TEXT_MAX } value={ draft.rewardText } onChange={ event => patch({ rewardText: event.target.value }) } />
                             <label className="wired-contract__choice">
-                                <input type="checkbox" checked={ draft.showDialog } onChange={ event => patch({ showDialog: event.target.checked }) } />
+                                <Checkbox checked={ draft.showDialog } onCheckedChange={ nextChecked => patch({ showDialog: nextChecked }) } />
                                 <ContractText text={ LocalizeText('wiredcontracts.reward_contract.reward_popup.show_by_default') } />
                             </label>
                         </ContractSection>

@@ -1,6 +1,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { PropsWithChildren } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { selectOption } from '../../../../test-utils/selectOption';
 import { WIRED_FX_CATEGORY } from '../../../../api';
 
 const setIntParams = vi.fn();
@@ -134,7 +135,7 @@ describe('WiredExtraVariableFxView', () => {
 
         fireEvent.click(screen.getByText('Variable decreased'));
         fireEvent.click(screen.getByTestId('fx-mouse-hover'));
-        fireEvent.change(screen.getByDisplayValue('2'), { target: { value: '3' } });
+        selectOption(screen.getAllByRole('combobox').find((select) => select.textContent === '2') as HTMLElement, '3');
         fireEvent.change(screen.getByTestId('fx-stack-order'), { target: { value: '-2' } });
         baseProps.save();
 
@@ -147,7 +148,7 @@ describe('WiredExtraVariableFxView', () => {
 
     it('only shows the icon picker where the server reads one', () => {
         const { unmount } = render(<WiredExtraVariableFxView category={WIRED_FX_CATEGORY.BOSS_BAR} />);
-        fireEvent.change(screen.getByTestId('fx-icon'), { target: { value: 'misc_skull' } });
+        selectOption(screen.getByTestId('fx-icon'), 'misc skull');
         baseProps.save();
         expect(setStringParam).toHaveBeenCalledWith('\t\t\tmisc_skull');
         unmount();

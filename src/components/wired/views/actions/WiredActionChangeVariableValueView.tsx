@@ -19,6 +19,8 @@ import {
 import { WiredActionBaseView } from './WiredActionBaseView';
 import { WiredActionDelaySection } from './WiredActionDelaySection';
 import { localizeWiredVariableOperation, WIRED_VARIABLE_ADVANCED_OPERATIONS, WIRED_VARIABLE_BASIC_OPERATIONS, WIRED_VARIABLE_UNARY_OPERATIONS } from './WiredVariableOperations';
+import { BaseButton } from '../../../../common/BaseButton';
+import { Select } from '../../../../common/Select';
 
 type VariableTargetType = 'user' | 'furni' | 'global' | 'context';
 type ReferenceMode = 'constant' | 'variable';
@@ -403,7 +405,7 @@ export const WiredActionChangeVariableValueView: FC<{}> = () => {
                     <Text>{LocalizeText('wiredfurni.params.variables.variable_selection')}</Text>
                     <div className="octane-wired__give-var-targets">
                         {TARGET_BUTTONS.map((button) => (
-                            <button
+                            <BaseButton
                                 key={button.key}
                                 type="button"
                                 disabled={button.disabled}
@@ -411,7 +413,7 @@ export const WiredActionChangeVariableValueView: FC<{}> = () => {
                                 onClick={() => handleDestinationTargetChange(button.key)}
                             >
                                 <img src={button.icon} alt={button.key} />
-                            </button>
+                            </BaseButton>
                         ))}
                     </div>
                 </div>
@@ -427,7 +429,7 @@ export const WiredActionChangeVariableValueView: FC<{}> = () => {
 
                 <div className="octane-wired__give-var-section">
                     <div className="octane-wired__give-var-section-title">{LocalizeText('wiredfurni.params.variables.operation')}</div>
-                    <select
+                    <Select
                         className="form-select form-select-sm octane-wired__give-var-select"
                         title={localizeWithFallback('wiredfurni.params.variables.operation.tooltip', '')}
                         value={operation}
@@ -445,7 +447,7 @@ export const WiredActionChangeVariableValueView: FC<{}> = () => {
                                 </option>
                             ))}
                         </optgroup>
-                    </select>
+                    </Select>
                 </div>
 
                 <div className="octane-wired__divider" />

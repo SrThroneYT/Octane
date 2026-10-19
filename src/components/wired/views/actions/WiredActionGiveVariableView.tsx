@@ -20,6 +20,8 @@ import { isWiredSameHolderEligible, WiredValueOrVariableInput } from '../WiredVa
 import { customVariablePickerEntries, normalizeWiredValueTarget, variableTokenFromId, WIRED_VALUE_TARGETS } from '../WiredValueOrVariableField';
 import { WiredActionBaseView } from './WiredActionBaseView';
 import { WiredActionDelaySection } from './WiredActionDelaySection';
+import { BaseButton } from '../../../../common/BaseButton';
+import { Checkbox } from '../../../../common/Checkbox';
 
 type VariableTargetType = 'user' | 'furni' | 'context';
 
@@ -233,14 +235,14 @@ export const WiredActionGiveVariableView: FC<{}> = () => {
                     <Text>{LocalizeText('wiredfurni.params.variables.variable_selection')}</Text>
                     <div className="octane-wired__give-var-targets">
                         {TARGET_BUTTONS.map((button) => (
-                            <button
+                            <BaseButton
                                 key={button.key}
                                 type="button"
                                 className={`octane-wired__give-var-target octane-wired__give-var-target--${button.key} ${selectedTargetType === button.key ? 'is-active' : ''}`}
                                 onClick={() => handleTargetTypeChange(button.key)}
                             >
                                 <img src={button.icon} alt={button.key} />
-                            </button>
+                            </BaseButton>
                         ))}
                     </div>
                 </div>
@@ -256,12 +258,7 @@ export const WiredActionGiveVariableView: FC<{}> = () => {
                     {!targetDefinitions.length && <Text small>{missingVariablesText}</Text>}
 
                     <label className="octane-wired__give-var-checkbox">
-                        <input
-                            checked={overrideExisting}
-                            className="form-check-input"
-                            type="checkbox"
-                            onChange={(event) => setOverrideExisting(event.target.checked)}
-                        />
+                        <Checkbox checked={overrideExisting} onCheckedChange={ nextChecked => setOverrideExisting(nextChecked) } />
                         <Text>{LocalizeText('wiredfurni.params.variables.value_settings.override_existing')}</Text>
                     </label>
 

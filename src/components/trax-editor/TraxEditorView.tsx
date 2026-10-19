@@ -7,6 +7,9 @@ import { useOctaneEvent, usePurse, useTraxEditor } from '../../hooks';
 import { OctaneCard, OctaneInput } from '../../layout';
 import { CreateEmptyChannels, ITraxPlacement, ParseTraxSong, SerializeTraxSong, TRAX_CHANNEL_COUNT, TRAX_DEFAULT_UNITS, TRAX_MAX_UNITS, TRAX_MIN_UNITS, TraxChannels } from './TraxSongData';
 import { GetTraxSampleId, GetTraxSoundSetForSample, TraxSoundSets } from './TraxSoundSets';
+import { BaseButton } from '../../common/BaseButton';
+import { ToggleButton } from '../../common/ToggleButton';
+import { Hint } from '../../common/Tooltip';
 
 const CELL_WIDTH = 22;
 const CARTRIDGES_PER_PAGE = 8;
@@ -33,8 +36,7 @@ interface MachineButtonProps {
 }
 
 const MachineButton: FC<MachineButtonProps> = ({ title = undefined, disabled = false, accent = undefined, onClick, children = null }) => (
-    <button
-        title={title}
+    <Hint content={title}><BaseButton
         disabled={disabled}
         onClick={onClick}
         className="flex h-9 w-10 shrink-0 items-center justify-center rounded-[5px] border font-bold"
@@ -52,7 +54,7 @@ const MachineButton: FC<MachineButtonProps> = ({ title = undefined, disabled = f
         }}
     >
         {children}
-    </button>
+    </BaseButton></Hint>
 );
 
 export const TraxEditorView: FC<{}> = () =>
@@ -482,10 +484,10 @@ export const TraxEditorView: FC<{}> = () =>
                                 const diskColor = GetDiskColor(song.data);
 
                                 return (
-                                    <div
+                                    <ToggleButton type="button" pressed={isOpen}
                                         key={song.id}
                                         onClick={() => openSong(song)}
-                                        className="flex cursor-pointer items-center gap-2 rounded-lg border p-2"
+                                        className="flex w-full cursor-pointer items-center gap-2 rounded-lg border p-2 text-left"
                                         style={{
                                             borderColor: isOpen ? '#2e6f8a' : 'rgba(0, 0, 0, 0.2)',
                                             background: isOpen ? 'linear-gradient(#eaf7fe, #d2ecf9)' : 'linear-gradient(#ffffff, #ececec)',
@@ -505,7 +507,7 @@ export const TraxEditorView: FC<{}> = () =>
                                             <span className="block text-[10px]" style={{ color: 'rgba(0, 0, 0, 0.5)' }}>♪ {formatStamp(song.length)}</span>
                                         </div>
                                         {isOpen && <span className="shrink-0 text-[12px]" style={{ color: '#2e6f8a' }}>▶</span>}
-                                    </div>
+                                    </ToggleButton>
                                 );
                             })}
                         {loaded &&
@@ -565,9 +567,7 @@ export const TraxEditorView: FC<{}> = () =>
                                     </MachineButton>
                                     <div className="grid min-w-0 flex-1 grid-cols-4 gap-1">
                                         {rackCartridges.map((set) => (
-                                            <button
-                                                key={set.cd}
-                                                title={`${set.title} — ${set.artist}`}
+                                            <Hint key={set.cd} content={`${set.title} — ${set.artist}`}><BaseButton
                                                 onClick={() => loadCartridge(set.cd)}
                                                 className={`flex h-8 cursor-pointer items-center gap-1 rounded-[3px] border px-1 ${slotSets[activeSlot] === set.cd ? 'border-white' : 'border-black/50'}`}
                                                 style={{
@@ -581,7 +581,7 @@ export const TraxEditorView: FC<{}> = () =>
                                                     <span className="h-5 w-4 shrink-0 rounded-[2px] border border-black/30" style={{ backgroundColor: set.color }} />
                                                 )}
                                                 <span className="truncate text-left text-[10px] font-bold leading-tight text-black/75">{set.title}</span>
-                                            </button>
+                                            </BaseButton></Hint>
                                         ))}
                                     </div>
                                     <MachineButton
@@ -625,9 +625,7 @@ export const TraxEditorView: FC<{}> = () =>
                                                 </Flex>
                                                 <div className="grid grid-cols-9 gap-0.5">
                                                     {(set?.sampleLengths ?? []).map((length, index) => (
-                                                        <button
-                                                            key={index}
-                                                            title={`#${index + 1} — ${length * 2}s`}
+                                                        <Hint key={index} content={`#${index + 1} — ${length * 2}s`}><BaseButton
                                                             onClick={(event) =>
                                                             {
                                                                 event.stopPropagation();
@@ -641,7 +639,7 @@ export const TraxEditorView: FC<{}> = () =>
                                                             }}
                                                         >
                                                             {index + 1}
-                                                        </button>
+                                                        </BaseButton></Hint>
                                                     ))}
                                                 </div>
                                             </div>

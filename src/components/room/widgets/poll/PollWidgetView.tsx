@@ -16,6 +16,9 @@ import {
 import offerImage from '../../../../assets/images/poll/poll-prompt-offer.png';
 import questionImage from '../../../../assets/images/poll/poll-prompt-question.png';
 import { OctaneCardContentView, OctaneCardHeaderView, OctaneCardView } from '../../../../common';
+import { BaseButton } from '../../../../common/BaseButton';
+import { Checkbox } from '../../../../common/Checkbox';
+import { Radio } from '../../../../common/Radio';
 import { useNotification, usePollActions, useUiEvent } from '../../../../hooks';
 
 interface PollOffer {
@@ -184,15 +187,15 @@ export const PollWidgetView: FC = () => {
                     </div>
                     <div className="octane-poll-body">{offer.summary || localizeWithFallback('poll.default.summary', "We'd like to ask something...")}</div>
                     <div className="octane-poll-footer">
-                        <button className="octane-poll-link" disabled={offer.starting} type="button" onClick={rejectOffer}>
+                        <BaseButton className="octane-poll-link" disabled={offer.starting} type="button" onClick={rejectOffer}>
                             {localizeWithFallback('generic.cancel', 'Cancel')}...
-                        </button>
-                        <button className="octane-poll-link is-later" type="button" onClick={() => setOffer(null)}>
+                        </BaseButton>
+                        <BaseButton className="octane-poll-link is-later" type="button" onClick={() => setOffer(null)}>
                             {localizeWithFallback('poll_offer_later', 'Later')}
-                        </button>
-                        <button className="octane-poll-ok" disabled={offer.starting} type="button" onClick={acceptOffer}>
+                        </BaseButton>
+                        <BaseButton className="octane-poll-ok" disabled={offer.starting} type="button" onClick={acceptOffer}>
                             {localizeWithFallback('generic.ok', 'OK')}
-                        </button>
+                        </BaseButton>
                     </div>
                 </OctaneCardContentView>
             </OctaneCardView>
@@ -219,12 +222,11 @@ export const PollWidgetView: FC = () => {
                         {isChoice &&
                             (question.questionChoices ?? []).map((choice, index) => (
                                 <label key={index} className="octane-poll-answer">
-                                    <input
-                                        checked={selected.includes(index)}
-                                        name={`poll-${content.id}-${question.questionId}`}
-                                        type={question.questionType === POLL_QUESTION_CHECKBOX ? 'checkbox' : 'radio'}
-                                        onChange={() => toggleChoice(index)}
-                                    />
+                                    {question.questionType === POLL_QUESTION_CHECKBOX ? (
+                                        <Checkbox checked={selected.includes(index)} onCheckedChange={() => toggleChoice(index)} />
+                                    ) : (
+                                        <Radio checked={selected.includes(index)} name={`poll-${content.id}-${question.questionId}`} onCheckedChange={() => toggleChoice(index)} />
+                                    )}
                                     <span>{choice.choiceText}</span>
                                 </label>
                             ))}
@@ -249,12 +251,12 @@ export const PollWidgetView: FC = () => {
                             [pageNumber.toString(), content.pageCount.toString()]
                         )}
                     </span>
-                    <button className="octane-poll-link" type="button" onClick={cancelContent}>
+                    <BaseButton className="octane-poll-link" type="button" onClick={cancelContent}>
                         {localizeWithFallback('generic.cancel', 'Cancel')}
-                    </button>
-                    <button className="octane-poll-ok" type="button" onClick={submitAnswer}>
+                    </BaseButton>
+                    <BaseButton className="octane-poll-ok" type="button" onClick={submitAnswer}>
                         {localizeWithFallback('generic.ok', 'OK')}
-                    </button>
+                    </BaseButton>
                 </div>
             </OctaneCardContentView>
         </OctaneCardView>

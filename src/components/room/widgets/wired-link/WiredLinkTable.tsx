@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { BaseButton } from '../../../../common/BaseButton';
 
 export interface WiredLinkColumn
 {
@@ -44,4 +45,4 @@ export const WiredLinkTable = <T,>(props: WiredLinkTableProps<T>) =>
 
 /** AIR TableCell link: an underlined action in the cell. */
 export const WiredLinkAction = (props: { text: string; onClick: () => void; disabled?: boolean; danger?: boolean }) =>
-    <button className={ `cursor-pointer border-0 bg-transparent p-0 underline disabled:cursor-default disabled:opacity-40 ${ props.danger ? 'text-[#934343]' : 'text-[#0000ee]' }` } disabled={ props.disabled } type="button" onClick={ props.onClick }>{ props.text }</button>;
+    <BaseButton className={ `cursor-pointer border-0 bg-transparent p-0 underline disabled:cursor-default disabled:opacity-40 ${ props.danger ? 'text-[#934343]' : 'text-[#0000ee]' }` } disabled={ props.disabled } type="button" onClick={ props.onClick }>{ props.text }</BaseButton>;

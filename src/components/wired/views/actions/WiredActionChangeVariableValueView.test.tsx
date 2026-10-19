@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { ButtonHTMLAttributes, PropsWithChildren } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { selectOption } from '../../../../test-utils/selectOption';
 
 const setIntParams = vi.fn();
 const setStringParam = vi.fn();
@@ -132,7 +133,7 @@ describe('WiredActionChangeVariableValueView reference value (AIR ChangeVariable
         render(<WiredActionChangeVariableValueView />);
 
         fireEvent.change(field(), { target: { value: 'nope' } });
-        fireEvent.change(screen.getByRole('combobox'), { target: { value: '60' } });
+        selectOption(screen.getByRole('combobox'), 'wiredfurni.params.variables.operation.60');
         expect(field()).toBeDisabled();
         expect(screen.queryByRole('alert')).toBeNull();
         expect(baseProps.validate()).toBe(true);

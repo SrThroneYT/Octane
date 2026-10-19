@@ -6,6 +6,8 @@ import { OctaneCardContentView, OctaneCardHeaderView, OctaneCardView } from '../
 import { clearWiredLinkConnection, createWiredLinkNetwork, requestWiredLinkConnections, saveWiredLink, setWiredLinkReceiveLocal } from '../../../../hooks/rooms/widgets/useWiredLinkActions';
 import { useWiredLinkStore } from '../../../../hooks/rooms/widgets/useWiredLinkState';
 import { WiredLinkAction, WiredLinkColumn, WiredLinkTable } from './WiredLinkTable';
+import { BaseButton } from '../../../../common/BaseButton';
+import { Checkbox } from '../../../../common/Checkbox';
 
 /**
  * AIR WiredLinkView (wired_link_view_xml): the Link's current network with "clear connection", the user's
@@ -76,10 +78,10 @@ export const WiredLinkView: FC<{}> = () =>
                 <div className="flex items-center gap-2 rounded border border-[#d6d1c4] bg-white px-2 py-1">
                     <span className="font-bold">{ localizeWithFallback('wiredlink.new_name', 'New network:') }</span>
                     <input aria-label={ localizeWithFallback('wiredlink.new_name', 'New network:') } className="form-control form-control-sm grow" maxLength={ 255 } type="text" value={ nameInput } onChange={ event => setNameDraft({ seq: createCount, text: event.target.value }) } onKeyDown={ event => { if(event.key === 'Enter') createWiredLinkNetwork(nameInput); } } />
-                    <button className="btn btn-primary btn-sm" type="button" onClick={ () => createWiredLinkNetwork(nameInput) }>{ localizeWithFallback('wiredlink.create', 'Create network') }</button>
+                    <BaseButton className="btn btn-primary btn-sm" type="button" onClick={ () => createWiredLinkNetwork(nameInput) }>{ localizeWithFallback('wiredlink.create', 'Create network') }</BaseButton>
                 </div>
                 <label className="flex cursor-pointer items-center gap-2 rounded bg-[#deded7] px-2 py-1">
-                    <input checked={ receiveLocal } className="form-check-input" type="checkbox" onChange={ event => setWiredLinkReceiveLocal(event.target.checked) } />
+                    <Checkbox checked={ receiveLocal } onCheckedChange={ nextChecked => setWiredLinkReceiveLocal(nextChecked) } />
                     <span>{ localizeWithFallback('wiredlink.receive', 'Receive messages sent by this room') }</span>
                 </label>
                 { status && <div className="text-[12px]" role="status" style={ { color: status.error ? '#ad3434' : '#555555' } }>{ localizeWithFallback(status.key, WIRED_LINK_FALLBACKS[status.key] ?? status.key) }</div> }

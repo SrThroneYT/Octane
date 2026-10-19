@@ -17,6 +17,7 @@ import { WiredSourcesSelector } from '../WiredSourcesSelector';
 import { WiredVariablePicker } from '../WiredVariablePicker';
 import { buildWiredVariablePickerEntries, IWiredVariablePickerEntry, normalizeVariableTokenFromWire } from '../WiredVariablePickerData';
 import { WiredTriggerBaseView } from './WiredTriggerBaseView';
+import { Select } from '../../../../common/Select';
 
 const LINK_SOURCES = [ { value: 100, label: 'wiredfurni.params.sources.furni.100' } ];
 
@@ -92,9 +93,9 @@ export const WiredTriggerReceiveLinkDataframeView: FC<{}> = () =>
             { invalid && <Text small className="text-[#ad3434]">{ localizeWithFallback('wiredfurni.error.link.invalid_dataframe', 'The dataframe configuration is invalid.') }</Text> }
             <div className="flex items-center justify-between gap-2">
                 <Text bold>{ localizeWithFallback('wiredfurni.params.link.row_count', 'Row count') }</Text>
-                <select className="form-select form-select-sm w-[70px]" value={ rows.length } onChange={ event => setCount(parseInt(event.target.value, 10)) }>
+                <Select className="form-select form-select-sm w-[70px]" value={ rows.length } onChange={ event => setCount(parseInt(event.target.value, 10)) }>
                     { Array.from({ length: LINK_DATAFRAME_MAX_ROWS + 1 }, (_, count) => <option key={ count } value={ count }>{ count }</option>) }
-                </select>
+                </Select>
             </div>
             <div className="flex max-h-[55vh] flex-col gap-2 overflow-y-auto">
                 { rows.map((row, index) => (
@@ -103,10 +104,10 @@ export const WiredTriggerReceiveLinkDataframeView: FC<{}> = () =>
                         <div className="flex items-center gap-1">
                             <Text small>{ localizeWithFallback('wiredfurni.params.link.key', 'Key') }</Text>
                             <input className="form-control form-control-sm grow" maxLength={ LINK_DATAFRAME_MAX_KEY_LENGTH } type="text" value={ row.key } onChange={ event => updateRow(index, { key: event.target.value }) } />
-                            <select className="form-select form-select-sm w-[130px]" value={ row.kind } onChange={ event => updateRow(index, { kind: parseInt(event.target.value, 10) }) }>
+                            <Select className="form-select form-select-sm w-[130px]" value={ row.kind } onChange={ event => updateRow(index, { kind: parseInt(event.target.value, 10) }) }>
                                 <option value={ LINK_RECEIVE_PLACEHOLDER }>{ localizeWithFallback('wiredfurni.params.link.destination.placeholder', 'Text placeholder') }</option>
                                 <option value={ LINK_RECEIVE_VARIABLE }>{ localizeWithFallback('wiredfurni.params.link.destination.variable', 'Context variable') }</option>
-                            </select>
+                            </Select>
                         </div>
                         { (row.kind === LINK_RECEIVE_PLACEHOLDER)
                             ? (

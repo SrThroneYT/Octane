@@ -98,7 +98,7 @@ describe('WiredConditionVariableValueMatchView reference value (AIR VariableValu
 
         expect(within(popup).getByText('wiredfurni.params.sources.merged.title.variables')).toBeTruthy();
         expect(within(popup).getByText('wiredfurni.params.sources.users.200')).toBeTruthy();
-        expect(within(popup).getAllByRole('button', { name: /^(global|context|furni|user)$/ })).toHaveLength(4);
+        expect(within(popup).getAllByRole('button', { name: /^wiredfurni\.params\.sourcetype\.(global|context|furni|users)$/ })).toHaveLength(4);
         expect(within(popup).getByText('wiredfurni.params.variables.reference_value.same_holder')).toBeTruthy();
     });
 
@@ -115,10 +115,10 @@ describe('WiredConditionVariableValueMatchView reference value (AIR VariableValu
 
         // A room variable reference cannot be read on the same holder: the stored flag is not saved.
         fireEvent.click(within(screen.getByRole('dialog')).getByRole('checkbox'));
-        fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'global' }));
+        fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'wiredfurni.params.sourcetype.global' }));
         fireEvent.change(field(), { target: { value: 'round' } });
         expect(screen.queryByRole('dialog')).toBeTruthy();
-        expect(within(screen.getByRole('dialog')).getByRole('checkbox')).toBeDisabled();
+        expect(within(screen.getByRole('dialog')).getByRole('checkbox')).toHaveAttribute('aria-disabled', 'true');
         baseProps.save();
         expect(setStringParam).toHaveBeenLastCalledWith('custom:5\tcustom:8\t');
         expect(setIntParams).toHaveBeenLastCalledWith([0, 2, 1, 0, 0, 3, 0, 200, 0, 1]);

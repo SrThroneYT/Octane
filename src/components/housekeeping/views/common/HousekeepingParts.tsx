@@ -1,4 +1,7 @@
 import { FC, PropsWithChildren, ReactNode } from 'react';
+import { NumberInput } from '../../../../common/NumberInput';
+import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 /**
  * Small building blocks shared by the housekeeping tabs, so every tab uses the
@@ -94,15 +97,7 @@ export const HousekeepingNumberField: FC<{
 }> = ({ value, onChange, unit, min = 1, max, label, widthClass = 'w-14' }) => (
     <label className="flex shrink-0 items-center gap-1">
         {label && <span className="text-[10px] font-semibold text-zinc-600">{label}</span>}
-        <input
-            aria-label={label ?? unit}
-            className={`${widthClass} rounded border border-zinc-300 bg-white px-1.5 py-0.5 text-xs tabular-nums focus:outline-none focus:ring-1 focus:ring-sky-400`}
-            max={max}
-            min={min}
-            type="number"
-            value={Number.isFinite(value) && value > 0 ? value : ''}
-            onChange={(event) => onChange(parseInt(event.target.value) || 0)}
-        />
+        <NumberInput aria-label={label ?? unit} className={`${widthClass} rounded border border-zinc-300 bg-white px-1.5 py-0.5 text-xs tabular-nums focus:outline-none focus:ring-1 focus:ring-sky-400`} max={max} min={min} value={Number.isFinite(value) && value > 0 ? value : ''} onChange={(event) => onChange(parseInt(event.target.value) || 0)} />
         {unit && <span className="text-[10px] text-zinc-500">{unit}</span>}
     </label>
 );
@@ -148,13 +143,12 @@ export const HousekeepingButton: FC<
         onClick?: () => void;
     }>
 > = ({ variant = 'primary', size = 'md', disabled = false, title, classNames = [], type = 'button', onClick, children }) => (
-    <button
+    <Hint content={title}><BaseButton
         className={['hk-btn', BUTTON_TONES[variant], size === 'sm' ? 'hk-btn--sm' : '', ...classNames].filter(Boolean).join(' ')}
         disabled={disabled}
-        title={title}
         type={type}
         onClick={onClick}
     >
         {children}
-    </button>
+    </BaseButton></Hint>
 );

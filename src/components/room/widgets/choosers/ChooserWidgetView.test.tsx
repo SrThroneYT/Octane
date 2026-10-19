@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { selectOption } from '../../../../test-utils/selectOption';
 
 vi.mock('@octane/renderer', () => ({ FurniturePickupAllComposer: class {}, RoomObjectCategory: { FLOOR: 1, WALL: 2, UNIT: 100 } }));
 vi.mock('../../../../api', () => ({
@@ -79,7 +80,7 @@ describe('ChooserWidgetView', () => {
 
         expect(screen.getByText('3 items found')).toBeTruthy();
 
-        fireEvent.change(screen.getByRole('combobox'), { target: { value: 'owner:Bob' } });
+        selectOption(screen.getByRole('combobox'), 'Bob');
         expect(screen.getByText('2 items found')).toBeTruthy();
         expect(screen.getByText('1')).toBeTruthy();
     });
@@ -96,9 +97,13 @@ describe('ChooserWidgetView', () => {
         );
 
         expect(screen.getByText('4 users found')).toBeTruthy();
+        fireEvent.click(screen.getByRole('combobox'));
         expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual(['All types', 'Habbo', 'Pet', 'Bot']);
 
-        fireEvent.change(screen.getByRole('combobox'), { target: { value: '4' } });
+        const botOption = screen.getByRole('option', { name: 'Bot' });
+
+        fireEvent.pointerDown(botOption);
+        fireEvent.click(botOption);
         expect(screen.getByText('1 users found')).toBeTruthy();
         expect(screen.getByText('Robo')).toBeTruthy();
     });
@@ -121,7 +126,7 @@ describe('ChooserWidgetView', () => {
         render(<ChooserWidgetView items={[furni(1, 'Lamp', 'all'), furni(2, 'Chair', 'Bob')]} onClose={() => undefined} selectItem={() => undefined} title="Furni" type="furni" />);
 
         expect(screen.getByText('2 items found')).toBeTruthy();
-        fireEvent.change(screen.getByRole('combobox'), { target: { value: 'owner:all' } });
+        selectOption(screen.getByRole('combobox'), 'all');
         expect(screen.getByText('1 items found')).toBeTruthy();
         expect(screen.getByText('Lamp')).toBeTruthy();
     });

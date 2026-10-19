@@ -8,6 +8,7 @@ import { variableTokenFromId } from '../WiredValueOrVariableField';
 import { WiredVariablePicker } from '../WiredVariablePicker';
 import { buildWiredVariablePickerEntries, getCustomVariableItemId, IWiredVariablePickerEntry } from '../WiredVariablePickerData';
 import { WiredExtraBaseView } from './WiredExtraBaseView';
+import { Radio } from '../../../../common/Radio';
 
 const SOURCE_SELECTED = 100;
 const SOURCE_SECONDARY_SELECTED = 101;
@@ -236,7 +237,7 @@ export const WiredExtraChestItemTypeScannerView: FC<{}> = () => {
                     <div className="flex flex-col gap-1 pt-1">
                         {SCAN_MODES.map((value) => (
                             <label key={value} className="flex items-center gap-1">
-                                <input type="radio" className="form-check-input" name="chestItemTypeScannerMode" checked={mode === value} onChange={() => setMode(value)} />
+                                <Radio name="chestItemTypeScannerMode" checked={mode === value} onCheckedChange={ () => setMode(value) } />
                                 <Text>{LocalizeText(`wiredfurni.params.chest_item_type_scanner.${value}`)}</Text>
                             </label>
                         ))}

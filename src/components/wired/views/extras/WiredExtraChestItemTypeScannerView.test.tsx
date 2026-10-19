@@ -143,7 +143,7 @@ describe('WiredExtraChestItemTypeScannerView', () => {
     it('opens on the stored definition and saves the official layout', () => {
         render(<WiredExtraChestItemTypeScannerView />);
 
-        expect((screen.getAllByRole('radio')[1] as HTMLInputElement).checked).toBe(true);
+        expect(screen.getAllByRole('radio')[1]).toBeChecked();
         fireEvent.click(screen.getAllByRole('radio')[0]);
         mocks.save();
 
@@ -159,6 +159,6 @@ describe('WiredExtraChestItemTypeScannerView', () => {
         render(<WiredExtraChestItemTypeScannerView />);
 
         expect(mocks.validate()).toBe(false);
-        expect((screen.getAllByRole('radio')[0] as HTMLInputElement).checked).toBe(true);
+        expect(screen.getAllByRole('radio')[0]).toBeChecked();
     });
 });

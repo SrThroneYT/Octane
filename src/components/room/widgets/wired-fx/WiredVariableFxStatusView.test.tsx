@@ -60,7 +60,7 @@ describe('WiredVariableFxStatusView', () => {
         view = render(
             <WiredVariableFxStatusView config={config({ category: WIRED_FX_CATEGORY.HEALTH_POINTS, rendererId: WIRED_FX_RENDERER.HEALTH_BAR, extra: { icon: 'misc_heart' } })} entry={entry(50)} />
         );
-        expect(screen.getByTitle('misc heart')).toBeTruthy();
+        expect(screen.getByLabelText('misc heart')).toBeTruthy();
         expect(screen.getByTestId('fx-bar')).toBeTruthy();
         view.unmount();
 
@@ -79,7 +79,7 @@ describe('WiredVariableFxStatusView', () => {
             <WiredVariableFxStatusView config={config({ category: WIRED_FX_CATEGORY.BOSS_BAR, rendererId: WIRED_FX_RENDERER.BOSS, defaultMaxValue: 5000, extra: { icon: 'misc_skull', icon_alignment: 'double' } })} entry={entry(1250)} />
         );
         expect(screen.getByText('1250 / 5000')).toBeTruthy();
-        expect(screen.getAllByTitle('misc skull')).toHaveLength(2);
+        expect(screen.getAllByLabelText('misc skull')).toHaveLength(2);
         unmount();
 
         render(<WiredVariableFxStatusView config={config({ category: WIRED_FX_CATEGORY.NUMBER_DISPLAY, rendererId: WIRED_FX_RENDERER.NUMBER_STYLED, extra: { design: 'blocky' } })} entry={entry(123456)} />);
