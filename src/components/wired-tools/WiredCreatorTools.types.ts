@@ -59,6 +59,8 @@ export interface InspectionUserLiveState {
 export interface MonitorStat {
     label: string;
     value: string;
+    /** The official statistics colour of the value (WIRED_MONITOR_COLOR), as a CSS colour. */
+    color?: string;
 }
 
 export interface MonitorLog {
