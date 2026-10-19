@@ -6,7 +6,10 @@ import {
     formatMonitorSource,
     formatVariableTimestamp,
     isStackOnlyVariable,
-    normalizeMonitorReason
+    normalizeMonitorReason,
+    splitMonitorStatLine,
+    WIRED_MONITOR_THRESHOLDS,
+    wiredMonitorColor
 } from './WiredCreatorTools.helpers';
 
 describe('WiredCreatorTools helpers', () => {
@@ -129,6 +132,23 @@ describe('WiredCreatorTools helpers', () => {
             expect(isStackOnlyVariable({ requiresExecutionContext: false })).toBe(false);
             expect(isStackOnlyVariable({})).toBe(false);
             expect(isStackOnlyVariable(null)).toBe(false);
+        });
+    });
+
+    describe('official monitor statistics', () => {
+        it('colours a value green, orange and red at the official shares of its limit', () => {
+            expect(wiredMonitorColor(29, 100, WIRED_MONITOR_THRESHOLDS.usage)).toBe('008000');
+            expect(wiredMonitorColor(30, 100, WIRED_MONITOR_THRESHOLDS.usage)).toBe('BD7800');
+            expect(wiredMonitorColor(70, 100, WIRED_MONITOR_THRESHOLDS.usage)).toBe('ff5733');
+            expect(wiredMonitorColor(84, 100, WIRED_MONITOR_THRESHOLDS.furni)).toBe('BD7800');
+            expect(wiredMonitorColor(49, 100, WIRED_MONITOR_THRESHOLDS.variables)).toBe('008000');
+            // 0/0 is not a number; the official comparisons fall through to red.
+            expect(wiredMonitorColor(0, 0, WIRED_MONITOR_THRESHOLDS.usage)).toBe('ff5733');
+        });
+
+        it('splits a localized line into its label and the coloured value', () => {
+            expect(splitMonitorStatLine('Floor furni: <font color="#008000">12/2500</font>')).toEqual({ label: 'Floor furni', value: '12/2500' });
+            expect(splitMonitorStatLine('Plain text')).toEqual({ label: 'Plain text', value: '' });
         });
     });
 });

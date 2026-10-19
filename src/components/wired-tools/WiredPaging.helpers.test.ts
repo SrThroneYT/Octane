@@ -8,6 +8,7 @@ import {
     NO_PAGE,
     parseInputPage,
     restrictPageInput,
+    splitPagingText,
     tryRequestPage
 } from './WiredPaging.helpers';
 
@@ -48,5 +49,14 @@ describe('WiredPaging.helpers', () => {
         markPageLoaded(state, 2);
         expect(state.requestedPage).toBe(NO_PAGE);
         expect(tryRequestPage(state, 2, 1500, 200, true)).toBe(true);
+    });
+
+    it('splits the footer text at %page% like PagedTableView', () => {
+        expect(splitPagingText('%entries_count% logs found. Showing page %page% of %page_count%', 120, 3)).toEqual({
+            start: '120 logs found. Showing page ',
+            end: ' of 3'
+        });
+        expect(splitPagingText('no page field here', 1, 1)).toBeNull();
+        expect(splitPagingText('%page% and %page%', 1, 1)).toBeNull();
     });
 });

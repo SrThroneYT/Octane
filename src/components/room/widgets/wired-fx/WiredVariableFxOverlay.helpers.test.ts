@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { groupWiredVariableFxStatuses, wiredVariableFxIconGlyph, wiredVariableFxSegmentFills } from './WiredVariableFxOverlay.helpers';
 
-const config = (configId: number, category: number) => ({
+const config = (configId: number, category: number, extra: Record<string, string> = {}) => ({
     configId,
     userFx: true,
     showMode: 0,
@@ -15,10 +15,10 @@ const config = (configId: number, category: number) => ({
     rendererId: 0,
     defaultMinValue: 0,
     defaultMaxValue: 100,
-    extra: {}
+    extra
 });
 
-const entry = (configId: number, userEntity: boolean, entityId: number, variableId = 'user:20') => {
+const entry = (configId: number, userEntity: boolean, entityId: number, variableId = 'user:20', createdAt = 0) => {
     const key = `${configId}|${variableId}|${userEntity ? 'u' : 'f'}|${entityId}`;
 
     return [
@@ -26,24 +26,31 @@ const entry = (configId: number, userEntity: boolean, entityId: number, variable
         {
             key,
             status: { configId, variableId, initialize: false, userEntity, entityId, value: 1, overrideMinValue: null, overrideMaxValue: null, extra: {} },
-            changedAt: 0,
+            createdAt,
+            shownAt: null,
             previousValue: null
         }
     ] as const;
 };
 
 describe('WiredVariableFxOverlay helpers', () => {
-    it('piles statuses per avatar or furni, sends boss bars to the top and skips unknown configs', () => {
+    it('piles statuses per avatar or furni, boss bars included, and skips unknown configs', () => {
         const configs = { 7: config(7, 1), 8: config(8, 0), 9: config(9, 4) };
         const statuses = Object.fromEntries([entry(8, true, 100), entry(7, true, 100), entry(7, false, 500), entry(9, true, 100), entry(42, true, 100)]);
 
         const groups = groupWiredVariableFxStatuses(configs, statuses);
 
-        expect(groups.bosses.map((drawn) => drawn.config.configId)).toEqual([9]);
-        expect(groups.entities.map((group) => group.entityKey)).toEqual(['f:500', 'u:100']);
-        expect(groups.entities[1].drawn.map((drawn) => drawn.config.configId)).toEqual([7, 8]);
-        expect(groups.entities[0].userEntity).toBe(false);
-        expect(groups.entities[0].entityId).toBe(500);
+        expect(groups.map((group) => group.entityKey)).toEqual(['f:500', 'u:100']);
+        expect(groups[1].drawn.map((drawn) => drawn.config.configId)).toEqual([7, 8, 9]);
+        expect(groups[0].userEntity).toBe(false);
+        expect(groups[0].entityId).toBe(500);
+    });
+
+    it("stacks as AIR does: higher stack order lowest, then the older fx, then the config id", () => {
+        const configs = { 7: config(7, 1), 8: config(8, 1, { stack_order: '5' }), 9: config(9, 1), 10: config(10, 1, { stack_order: '-1' }) };
+        const statuses = Object.fromEntries([entry(7, true, 100, 'user:20', 300), entry(8, true, 100, 'user:20', 900), entry(9, true, 100, 'user:20', 100), entry(10, true, 100)]);
+
+        expect(groupWiredVariableFxStatuses(configs, statuses)[0].drawn.map((drawn) => drawn.config.configId)).toEqual([8, 9, 7, 10]);
     });
 
     it('lights whole segments and one partial one', () => {

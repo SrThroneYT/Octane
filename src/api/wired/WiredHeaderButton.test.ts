@@ -6,9 +6,8 @@ describe('WiredHeaderButton', () => {
         expect(resolveWiredHeaderButton('condition', 0)).toBe('apply_snapshot');
         expect(resolveWiredHeaderButton('condition', 13)).toBe('apply_snapshot');
         expect(resolveWiredHeaderButton('action', 3)).toBe('apply_snapshot');
-        // The server cannot apply these snapshots yet.
-        expect(resolveWiredHeaderButton('trigger', 20)).toBeNull();
-        expect(resolveWiredHeaderButton('action', 55)).toBeNull();
+        expect(resolveWiredHeaderButton('trigger', 20)).toBe('apply_snapshot');
+        expect(resolveWiredHeaderButton('action', 55)).toBe('apply_snapshot');
     });
 
     it('links the log action, the web API add-on and variables', () => {
