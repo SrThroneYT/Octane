@@ -253,8 +253,6 @@ export const useChatInputActions = () => {
                     }
                     case ':client':
                     case ':octane':
-                    case ':nitro':
-                    case ':billsonnn':
                         showOctaneAlert();
                         return null;
                     case ':settings':

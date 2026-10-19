@@ -8,7 +8,6 @@ import { WiredSelectorFurniPicksView } from './WiredSelectorFurniPicksView';
 import { WiredSelectorFurniSignalView } from './WiredSelectorFurniSignalView';
 import { WiredSelectorFurniWithVariableView } from './WiredSelectorFurniWithVariableView';
 import { WiredSelectorRemoteView } from './WiredSelectorRemoteView';
-import { WiredSelectorScanChestFurniByType } from './WiredSelectorScanChestFurniByType';
 import { WiredSelectorUsersAreaView } from './WiredSelectorUsersAreaView';
 import { WiredSelectorUsersByActionView } from './WiredSelectorUsersByActionView';
 import { WiredSelectorUsersByNameView } from './WiredSelectorUsersByNameView';
@@ -66,8 +65,6 @@ export const WiredSelectorLayoutView = (code: number) =>
             return <WiredSelectorUsersWithVariableView />;
         case WiredSelectorLayoutCode.REMOTE_SELECTOR:
             return <WiredSelectorRemoteView />;
-        case WiredSelectorLayoutCode.SCAN_CHEST_FURNI_BY_TYPE:
-            return <WiredSelectorScanChestFurniByType />;
     }
 
     return null;

@@ -11,7 +11,10 @@ interface WiredVariableFxEntityViewProps {
     entityId: number;
 }
 
-/** A pile of fx that follows one avatar or floor furni around the room, like the object location widget. */
+/**
+ * A pile of fx that follows one avatar or floor furni around the room, like the object location
+ * widget. The first fx sits at the bottom, nearest the holder, the rest above it (AIR's stack).
+ */
 const WiredVariableFxEntityView: FC<PropsWithChildren<WiredVariableFxEntityViewProps>> = (props) => {
     const { roomId, userEntity, entityId, children } = props;
     const elementRef = useRef<HTMLDivElement>(null);
@@ -50,8 +53,8 @@ const WiredVariableFxEntityView: FC<PropsWithChildren<WiredVariableFxEntityViewP
 
 /**
  * Draws the room's wired variable fx (health points, progress, levels, status and boss bars,
- * numbers) as DOM overlays above the avatars and furni holding the variables, plus boss bars
- * along the top of the room. What to draw comes from the four fx packets through the store.
+ * numbers) as DOM overlays stacked above the avatars and furni holding the variables, where AIR's
+ * room renderer stacks them. What to draw comes from the four fx packets through the store.
  */
 export const WiredVariableFxOverlayView: FC<{}> = () => {
     useWiredVariableFxEvents();
@@ -59,23 +62,17 @@ export const WiredVariableFxOverlayView: FC<{}> = () => {
     const { roomSession = null } = useRoom();
     const configs = useWiredVariableFxStore((state) => state.configs);
     const statuses = useWiredVariableFxStore((state) => state.statuses);
+    const hoveredHolder = useWiredVariableFxStore((state) => state.hoveredHolder);
     const groups = useMemo(() => groupWiredVariableFxStatuses(configs, statuses), [configs, statuses]);
 
-    if (!roomSession || (!groups.entities.length && !groups.bosses.length)) return null;
+    if (!roomSession || !groups.length) return null;
 
     return (
         <div className="octane-wired-fx-overlay" data-testid="fx-overlay">
-            {groups.bosses.length > 0 && (
-                <div className="octane-wired-fx-overlay__bosses">
-                    {groups.bosses.map((drawn) => (
-                        <WiredVariableFxStatusView key={drawn.entry.key} config={drawn.config} entry={drawn.entry} />
-                    ))}
-                </div>
-            )}
-            {groups.entities.map((group) => (
+            {groups.map((group) => (
                 <WiredVariableFxEntityView key={group.entityKey} roomId={roomSession.roomId} userEntity={group.userEntity} entityId={group.entityId}>
                     {group.drawn.map((drawn) => (
-                        <WiredVariableFxStatusView key={drawn.entry.key} config={drawn.config} entry={drawn.entry} />
+                        <WiredVariableFxStatusView key={drawn.entry.key} config={drawn.config} entry={drawn.entry} hovered={hoveredHolder === group.entityKey} />
                     ))}
                 </WiredVariableFxEntityView>
             ))}
