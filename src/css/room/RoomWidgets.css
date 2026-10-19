@@ -1356,7 +1356,7 @@
     background-image: url('../../assets/images/avatar-menu/air/arrow-up-hover.png');
 }
 
-/* WIN63 avatar_menu_widget (RentableBotMenuView): the same bubble as own_avatar_menu_xml, 36px wider. */
+/* WIN63 avatar_menu_widget (AvatarMenuView, RentableBotMenuView): the same bubble as own_avatar_menu_xml, 36px wider. */
 .octane-avatar-action-menu--own.octane-avatar-action-menu--widget:not(.menu-hidden) {
     width: 151px;
     min-width: 151px;
