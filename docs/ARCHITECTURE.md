@@ -333,7 +333,7 @@ The current branch (**`feat/react19-modernization`**, PR #2) has applied:
 
 ### Toolchain
 - React 19.2 / `react-dom` 19.2 / `@types/react` 19.2.
-- TS 6 for build + **TS 7 native preview** (`tsgo`) for `yarn typecheck`.
+- TS 6 for the ESLint parser + **TS 7** (`typescript7` alias) for `yarn typecheck`.
 - Biome for lint and format; ESLint 10 + `@typescript-eslint/parser` 8 + `eslint-plugin-react-hooks@7`
   only for the Rules of Hooks gate.
 - Vite 8 + React Compiler 1.0 (`babel-plugin-react-compiler`).
