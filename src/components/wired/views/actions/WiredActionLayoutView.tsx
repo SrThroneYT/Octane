@@ -199,6 +199,7 @@ export const WiredActionLayoutView = (code: number) => {
         case WiredActionLayoutCode.MODIFY_ARRAY:
             return <WiredActionModifyArrayView />;
         case WiredActionLayoutCode.WRITE_TO_LOGS:
+        case WiredActionLayoutCode.WRITE_TO_LOGS_NEGATIVE:
             return <WiredActionWriteToLogsView />;
         case WiredActionLayoutCode.TELEPORT_TO_ROOM:
             return <WiredActionTeleportToRoomView />;

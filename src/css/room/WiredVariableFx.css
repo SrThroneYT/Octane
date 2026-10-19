@@ -1,4 +1,4 @@
-/* Wired variable fx: bars, hearts, levels, boss bars and numbers drawn over the room. */
+/* Wired variable fx: bars, hearts, levels, boss bars and numbers stacked over their holders. */
 
 .octane-wired-fx-overlay {
     position: absolute;
@@ -11,22 +11,12 @@
 .octane-wired-fx-overlay__entity {
     position: absolute;
     display: flex;
-    flex-direction: column;
+    /* AIR's stack: the first fx sits lowest, the next 4px above it. */
+    flex-direction: column-reverse;
     align-items: center;
-    gap: 2px;
+    gap: 4px;
     transform: translateX(-50%);
     will-change: left, top;
-}
-
-.octane-wired-fx-overlay__bosses {
-    position: absolute;
-    top: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
 }
 
 .octane-wired-fx {
@@ -40,6 +30,17 @@
     color: #fff;
     text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
     filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.5));
+    animation: octane-wired-fx-fade-in 0.15s ease-out;
+}
+
+/* AIR fades an fx in over 150 ms when it shows. */
+@keyframes octane-wired-fx-fade-in {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
 }
 
 .octane-wired-fx--changed .octane-wired-fx__fill,
@@ -150,10 +151,17 @@
     -webkit-text-stroke: 0;
 }
 
-.octane-wired-fx__cross {
-    color: #e04b4b;
-    font-size: 13px;
-    line-height: 1;
+.octane-wired-fx__heart--single {
+    font-size: 20px;
+}
+
+/* One heart filled from the bottom by the value. */
+.octane-wired-fx__heart--single::before {
+    width: 100%;
+    top: auto;
+    height: calc(var(--fx-fill, 0) * 100%);
+    display: flex;
+    align-items: flex-end;
 }
 
 .octane-wired-fx__icon {

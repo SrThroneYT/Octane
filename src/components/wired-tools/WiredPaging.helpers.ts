@@ -78,3 +78,19 @@ export const tryRequestPage = (state: WiredPageRequestState, page: number, now: 
 export const markPageLoaded = (state: WiredPageRequestState, currentPage: number): void => {
     if (currentPage === state.requestedPage) state.requestedPage = NO_PAGE;
 };
+
+/** The footer text when a window's own key has no translation. */
+export const DEFAULT_PAGING_TEXT = '%entries_count% found. Showing page %page% of %page_count%';
+
+/**
+ * `PagedTableView.updatePaging`: the window's footer text is split at `%page%`, where the page
+ * field sits. The part before it gets the entry count, the part after it the last page. A text
+ * without exactly one `%page%` leaves the footer without labels.
+ */
+export const splitPagingText = (text: string, totalEntries: number, lastPage: number): { start: string; end: string } | null => {
+    const parts = (text ?? '').split('%page%');
+
+    if (parts.length !== 2) return null;
+
+    return { start: parts[0].replace('%entries_count%', String(totalEntries)), end: parts[1].replace('%page_count%', String(lastPage)) };
+};
