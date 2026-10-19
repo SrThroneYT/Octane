@@ -5,12 +5,12 @@ import { WIRED_FX_CATEGORY } from '../../../../api';
 
 const setIntParams = vi.fn();
 const setStringParam = vi.fn();
-/** Our former sixteen-param order, as the official 23-int layout the box now sends and saves. */
-const official = (l: number[]) => {
+/** Our former sixteen-param order, as the official 23-int layout the box now sends and saves (plus update mask and renderer). */
+const official = (l: number[], updateMask = 0, renderer = 0) => {
     const holder = l[0] === 1 ? 0 : 1;
     const word = (value: number) => (value < 0 ? -1 : 0);
 
-    return [holder, l[1], l[2], 0, 0, l[3], l[4], l[5], l[6], 0, word(l[8]), l[8], word(l[9]), l[9], l[10], l[11], l[12] === 1 ? -10 : holder, l[13] === 1 ? -10 : holder, word(l[14]), l[14], l[7], l[15], 0];
+    return [holder, l[1], l[2], updateMask, 0, l[3], l[4], l[5], l[6], renderer, word(l[8]), l[8], word(l[9]), l[9], l[10], l[11], l[12] === 1 ? -10 : holder, l[13] === 1 ? -10 : holder, word(l[14]), l[14], l[7], l[15], 0];
 };
 
 let trigger: { stringData: string; intData: number[] } | null = null;
@@ -65,7 +65,7 @@ describe('WiredExtraVariableFxView', () => {
 
         baseProps.save();
 
-        expect(setIntParams).toHaveBeenCalledWith(official([0, 2, 0, 3000, 0, -1, 2, 0, 0, 100, 0, 0, 0, 0, 0, 0]));
+        expect(setIntParams).toHaveBeenCalledWith(official([0, 2, 0, 3000, 0, -1, 2, 0, 0, 100, 0, 0, 0, 0, 0, 0], 7));
         expect(setStringParam).toHaveBeenCalledWith('\t\t\t');
     });
 
@@ -83,7 +83,8 @@ describe('WiredExtraVariableFxView', () => {
         fireEvent.change(screen.getByTestId('fx-show-duration'), { target: { value: '99999' } });
         baseProps.save();
 
-        expect(setIntParams).toHaveBeenCalledWith(official([0, 1, 1, 20000, 1, 3, 3, 4, 10, 300, 1, 0, 0, 0, 0, 0]));
+        // Style 1 is the block bar, so the renderer goes out as the block (2).
+        expect(setIntParams).toHaveBeenCalledWith(official([0, 1, 1, 20000, 1, 3, 3, 4, 10, 300, 1, 0, 0, 0, 0, 0], 0, 2));
         expect(setStringParam).toHaveBeenCalledWith('custom:300\t\t\t');
     });
 
@@ -122,8 +123,26 @@ describe('WiredExtraVariableFxView', () => {
 
         baseProps.save();
 
-        expect(setIntParams).toHaveBeenCalledWith(official([0, 4, 0, 3000, 0, -1, 2, 0, 0, 100, 0, 1, 0, 1, 5, 0]));
+        expect(setIntParams).toHaveBeenCalledWith(official([0, 4, 0, 3000, 0, -1, 2, 0, 0, 100, 0, 1, 0, 1, 5, 0], 0, 2));
         expect(setStringParam).toHaveBeenCalledWith('\tcustom:500\tcustom:300\t');
+    });
+
+    it("writes AIR's update mask, hover, status bar renderer and stack order", () => {
+        trigger = { stringData: '', intData: official([0, 2, 1, 3000, 0, -1, 2, 0, 0, 100, 0, 0, 0, 0, 0, 0], 2) };
+
+        render(<WiredExtraVariableFxView category={WIRED_FX_CATEGORY.STATUS_BAR} />);
+
+        fireEvent.click(screen.getByText('Variable decreased'));
+        fireEvent.click(screen.getByTestId('fx-mouse-hover'));
+        fireEvent.change(screen.getByDisplayValue('2'), { target: { value: '3' } });
+        fireEvent.change(screen.getByTestId('fx-stack-order'), { target: { value: '-2' } });
+        baseProps.save();
+
+        const params = setIntParams.mock.calls[0][0] as number[];
+        expect(params[3]).toBe(6);
+        expect(params[4]).toBe(1);
+        expect(params[9]).toBe(3);
+        expect(params[22]).toBe(-2);
     });
 
     it('only shows the icon picker where the server reads one', () => {
