@@ -11,20 +11,33 @@ import { resolve } from 'path';
  * `src/octane-renderer.mock.ts` so jsdom doesn't try to evaluate Pixi +
  * the full message parser/composer registry at import time.
  */
+const alias = {
+    '@octane/renderer': resolve(__dirname, 'src/octane-renderer.mock.ts'),
+    'pixi.js': resolve(__dirname, 'src/pixi.mock.ts'),
+    '@': resolve(__dirname, 'src'),
+    '@layout': resolve(__dirname, 'src/layout')
+};
+
+/**
+ * Creating a jsdom window per test file dominated the run (472 windows, over
+ * half of the tracked time). Component suites (`.test.tsx`) keep jsdom; plain
+ * `.test.ts` suites run in node. A `.test.ts` that needs the DOM opts in with
+ * a `@vitest-environment jsdom` pragma.
+ */
 export default defineConfig({
     test: {
-        environment: 'jsdom',
         globals: false,
-        include: [ 'src/**/*.test.ts', 'src/**/*.test.tsx' ],
         setupFiles: [ './src/test-setup.ts' ],
-        css: false
-    },
-    resolve: {
-        alias: {
-            '@octane/renderer': resolve(__dirname, 'src/octane-renderer.mock.ts'),
-            'pixi.js': resolve(__dirname, 'src/pixi.mock.ts'),
-            '@': resolve(__dirname, 'src'),
-            '@layout': resolve(__dirname, 'src/layout')
-        }
+        css: false,
+        projects: [
+            {
+                resolve: { alias },
+                test: { name: 'dom', environment: 'jsdom', include: [ 'src/**/*.test.tsx' ] }
+            },
+            {
+                resolve: { alias },
+                test: { name: 'node', environment: 'node', include: [ 'src/**/*.test.ts' ] }
+            }
+        ]
     }
 });

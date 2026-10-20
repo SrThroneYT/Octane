@@ -1,3 +1,4 @@
+/* @vitest-environment jsdom */
 import { describe, expect, it } from 'vitest';
 import { WiredActionLayoutCode, WiredAddonLayoutCode, WiredConditionlayout, WiredSelectorLayoutCode, WiredTriggerLayout, WiredVariableLayoutCode } from '../../../api';
 import { WiredActionLayoutView } from './actions/WiredActionLayoutView';

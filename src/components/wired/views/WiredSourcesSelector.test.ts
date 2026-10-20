@@ -1,3 +1,4 @@
+/* @vitest-environment jsdom */
 import { describe, expect, it } from 'vitest';
 import { FURNI_SOURCES, getAvailableUserSources, getServerSlotSources, USER_SOURCES } from './WiredSourcesSelector';
 

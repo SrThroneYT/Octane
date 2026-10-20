@@ -1,3 +1,4 @@
+/* @vitest-environment jsdom */
 import { IFurnitureData } from '@octane/renderer';
 import { describe, expect, it } from 'vitest';
 import { IPurchasableOffer } from '../../../../../api';

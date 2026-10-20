@@ -1,3 +1,4 @@
+/* @vitest-environment jsdom */
 import type { IFurnitureData } from '@octane/renderer';
 import { describe, expect, it } from 'vitest';
 import { EDITABLE_FURNI_VARIABLES } from './WiredCreatorTools.constants';

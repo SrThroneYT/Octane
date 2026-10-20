@@ -1,3 +1,4 @@
+/* @vitest-environment jsdom */
 import { describe, expect, it } from 'vitest';
 import * as PageEditor from './CatalogAdminPageEditView';
 import { createCatalogAdminPageDetailsFromSnapshot } from './CatalogAdminPageState';

@@ -1,3 +1,4 @@
+/* @vitest-environment jsdom */
 import { StringDataType } from '@octane/renderer';
 import { describe, expect, it } from 'vitest';
 import { FurniCategory } from './FurniCategory';

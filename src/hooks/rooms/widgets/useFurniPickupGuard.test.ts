@@ -1,3 +1,4 @@
+/* @vitest-environment jsdom */
 import { describe, expect, it } from 'vitest';
 import { BUILDERS_CLUB_FURNI_ID_MIN, TEMPORARY_FURNI_ID_MAX } from '../../../api/utils/FurniIdBand';
 import { needsWarehouseConfirm } from './useFurniPickupGuard';
