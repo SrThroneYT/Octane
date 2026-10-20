@@ -12,8 +12,7 @@ import {
     UserSettingsOldChatComposer,
     UserSettingsPrivacyComposer,
     UserSettingsRoomInvitesComposer,
-    UserSettingsSoundComposer,
-    WiredMenuSettingsComposer
+    UserSettingsSoundComposer
 } from '@octane/renderer';
 import { useUserChatPreferencesStore } from '@/state/userChatPreferences';
 import { FC, ReactNode, useEffect, useState } from 'react';
@@ -26,7 +25,7 @@ import {
     useChatWindow,
     useKeyboardMovement,
     useMessageEvent,
-    useWiredToolsState
+    useWiredToolsActions
 } from '../../hooks';
 import { AirSettingsVolumeRow } from './AirSettingsVolumeRow';
 import { SoundboardVolumeControl } from './SoundboardVolumeControl';
@@ -77,7 +76,7 @@ export const UserSettingsView: FC<{}> = () => {
     const { density: catalogGridDensity, setDensity: setCatalogGridDensity, showTilePrices, setShowTilePrices } = useCatalogDisplayPreferences();
     const [chatWindowEnabled, setChatWindowEnabled] = useChatWindow();
     const [keyboardMovement, setKeyboardMovement] = useKeyboardMovement();
-    const { accountPreferences: wiredAccountPreferences } = useWiredToolsState();
+    const { updateWiredWhisperDisabled } = useWiredToolsActions();
 
     const closeView = () => {
         setIsVisible(false);
@@ -140,17 +139,9 @@ export const UserSettingsView: FC<{}> = () => {
                 break;
             case 'wired_whisper_disabled':
                 clone.wiredWhisperDisabled = value as boolean;
-                // The official wired menu preferences travel together; send the stored ones along.
-                SendMessageComposer(
-                    new WiredMenuSettingsComposer(
-                        wiredAccountPreferences.showToolbarButton,
-                        wiredAccountPreferences.showInspectButton,
-                        false,
-                        clone.wiredWhisperDisabled,
-                        wiredAccountPreferences.showSystemNotifications,
-                        wiredAccountPreferences.wiredStyle
-                    )
-                );
+                // The official wired menu preferences travel together: the store sends the stored ones
+                // (playtest mode included) along, and keeps the switch for its own next save.
+                updateWiredWhisperDisabled(clone.wiredWhisperDisabled);
                 break;
         }
 

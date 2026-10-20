@@ -6,7 +6,19 @@ import { selectOption } from '../../../../test-utils/selectOption';
 const setIntParams = vi.fn();
 const setStringParam = vi.fn();
 const setFurniIds = vi.fn();
-let trigger: { stringData: string; intData: number[]; selectedItems?: number[]; maximumItemSelectionCount?: number } | null = null;
+const setFurniIds2 = vi.fn();
+const setVariableIds = vi.fn();
+const setSourceTypes = vi.fn();
+let trigger: {
+    stringData: string;
+    intData: number[];
+    selectedItems?: number[];
+    selectedItems2?: number[];
+    variableIds?: string[];
+    furniSourceTypes?: number[];
+    userSourceTypes?: number[];
+    maximumItemSelectionCount?: number;
+} | null = null;
 let baseProps: { save: () => void; validate?: () => boolean } | null = null;
 const noFurni: number[] = [];
 const setActionDelay = vi.fn();
@@ -25,6 +37,8 @@ vi.mock('../../../../api', () => ({
     LocalizeText: (key: string) => key,
     localizeWithFallback: (key: string) => key,
     GetRoomSession: () => ({ roomId: 1 }),
+    fromOfficialVariableTarget: (official: number) => (official === 0 ? 1 : official === -20 ? 2 : official === -10 ? 3 : 0),
+    toOfficialVariableTarget: (ours: number) => (ours === 1 ? 0 : ours === 2 ? -20 : ours === 3 ? -10 : 1),
     WiredFurniType: { STUFF_SELECTION_OPTION_NONE: 0, STUFF_SELECTION_OPTION_BY_ID: 1 },
     WiredSelectionVisualizer: {
         applySelectionShaderToFurni: vi.fn(),
@@ -44,7 +58,7 @@ vi.mock('../../../../common', () => ({
     Text: ({ children }: PropsWithChildren) => <span>{children}</span>
 }));
 vi.mock('../../../../hooks', () => ({
-    useWired: () => ({ trigger, furniIds: noFurni, actionDelay: 0, setActionDelay, setAllowsFurni, setFurniIds, setIntParams, setStringParam }),
+    useWired: () => ({ trigger, furniIds: noFurni, actionDelay: 0, setActionDelay, setAllowsFurni, setFurniIds, setFurniIds2, setIntParams, setSourceTypes, setStringParam, setVariableIds }),
     useWiredTools: () => tools
 }));
 vi.mock('../WiredSourcesSelector', () => ({
@@ -79,6 +93,9 @@ describe('WiredActionChangeVariableValueView reference value (AIR ChangeVariable
     beforeEach(() => {
         setIntParams.mockClear();
         setStringParam.mockClear();
+        setVariableIds.mockClear();
+        setSourceTypes.mockClear();
+        setFurniIds2.mockClear();
         baseProps = null;
     });
 
@@ -99,7 +116,7 @@ describe('WiredActionChangeVariableValueView reference value (AIR ChangeVariable
         expect(within(popup).getByText('wiredfurni.params.variables.reference_value.same_holder')).toBeTruthy();
     });
 
-    it('saves the same wire layout, with the same holder only on the destination type', () => {
+    it("saves AIR's layout from a box stored in ours, with the same holder only on the destination type", () => {
         trigger = { stringData: 'custom:5\tcustom:6\t', intData: [0, 0, 1, 0, 0, 0, 0, 200, 0, 0] };
         render(<WiredActionChangeVariableValueView />);
         openPopup();
@@ -108,8 +125,32 @@ describe('WiredActionChangeVariableValueView reference value (AIR ChangeVariable
         expect(within(screen.getByRole('dialog')).getByRole('group')).toBeDisabled();
         baseProps.save();
 
-        expect(setStringParam).toHaveBeenLastCalledWith('custom:5\tcustom:6\t');
-        expect(setIntParams).toHaveBeenLastCalledWith([0, 0, 1, 0, 0, 0, 0, 200, 0, 1]);
+        // AIR: [target, operation, operandIsVariable, high, low, referenceTarget, sameHolder] with official targets, the
+        // variables as variable ids, the destination and reference holders in source slots 0 and 1, no string.
+        expect(setStringParam).toHaveBeenLastCalledWith('');
+        expect(setIntParams).toHaveBeenLastCalledWith([1, 0, 1, 0, 0, 1, 1]);
+        expect(setVariableIds).toHaveBeenLastCalledWith(['user:5', 'user:6']);
+        expect(setSourceTypes).toHaveBeenLastCalledWith({ furni: [0, 0], users: [0, 200] });
+    });
+
+    it("reads AIR's layout back, the reference picks as the second picks", () => {
+        trigger = {
+            stringData: '',
+            intData: [0, 1, 1, 0, 0, 0, 0],
+            variableIds: ['furni:7', 'furni:7'],
+            furniSourceTypes: [100, 101],
+            userSourceTypes: [0, 0],
+            selectedItems: [11],
+            selectedItems2: [12]
+        };
+        render(<WiredActionChangeVariableValueView />);
+
+        expect(field()).toHaveValue('height');
+        baseProps.save();
+        expect(setIntParams).toHaveBeenLastCalledWith([0, 1, 1, 0, 0, 0, 0]);
+        expect(setVariableIds).toHaveBeenLastCalledWith(['furni:7', 'furni:7']);
+        expect(setSourceTypes).toHaveBeenLastCalledWith({ furni: [100, 101], users: [0, 0] });
+        expect(setFurniIds2).toHaveBeenLastCalledWith([12]);
     });
 
     it('takes a typed number as the constant and refuses an invalid text', () => {
@@ -119,15 +160,15 @@ describe('WiredActionChangeVariableValueView reference value (AIR ChangeVariable
         expect(field()).toHaveValue('7');
         fireEvent.change(field(), { target: { value: '-42' } });
         baseProps.save();
-        expect(setIntParams).toHaveBeenLastCalledWith([0, 0, 0, -42, 0, 0, 0, 0, 0, 0]);
-        expect(setStringParam).toHaveBeenLastCalledWith('custom:5\t\t');
+        expect(setIntParams).toHaveBeenLastCalledWith([1, 0, 0, -1, -42, 1, 0]);
+        expect(setVariableIds).toHaveBeenLastCalledWith(['user:5']);
 
         fireEvent.change(field(), { target: { value: 'nope' } });
         expect(baseProps.validate()).toBe(false);
         fireEvent.change(field(), { target: { value: 'COINS' } });
         expect(baseProps.validate()).toBe(true);
         baseProps.save();
-        expect(setStringParam).toHaveBeenLastCalledWith('custom:5\tcustom:6\t');
+        expect(setVariableIds).toHaveBeenLastCalledWith(['user:5', 'user:6']);
     });
 
     it('disables the reference value for an operation without operand', () => {
@@ -141,7 +182,7 @@ describe('WiredActionChangeVariableValueView reference value (AIR ChangeVariable
         expect(baseProps.validate()).toBe(true);
         // ChangeVariable.readIntParamsFromForm: no operand saves the typed-number option.
         baseProps.save();
-        expect(setIntParams).toHaveBeenLastCalledWith([0, 60, 0, 7, 0, 0, 0, 0, 0, 0]);
-        expect(setStringParam).toHaveBeenLastCalledWith('custom:5\t\t');
+        expect(setIntParams).toHaveBeenLastCalledWith([1, 60, 0, 0, 7, 1, 0]);
+        expect(setVariableIds).toHaveBeenLastCalledWith(['user:5']);
     });
 });

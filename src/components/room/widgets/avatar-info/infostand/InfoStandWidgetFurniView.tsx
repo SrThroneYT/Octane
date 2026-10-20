@@ -411,10 +411,13 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
         }
 
         const isValidController = avatarInfo.roomControllerLevel >= RoomControllerLevel.GUEST;
+        // AIR InfoStandFurniView: playtest mode (wired menu preference) hides move, rotate, pick up and
+        // the rights-only use for owners and staff too; the free furni movements mode below still shows them.
+        const isPlayTest = !!roomSession?.playTestMode;
 
         let removeBackgroundAllowed = false;
 
-        if (isValidController || avatarInfo.isOwner || avatarInfo.isRoomOwner || avatarInfo.isAnyRoomController) {
+        if (!isPlayTest && (isValidController || avatarInfo.isOwner || avatarInfo.isRoomOwner || avatarInfo.isAnyRoomController)) {
             canMove = true;
             canRotate = !avatarInfo.isWallItem;
             if (avatarInfo.roomControllerLevel >= RoomControllerLevel.MODERATOR) godMode = true;
@@ -432,9 +435,10 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
 
         if (
             avatarInfo.usagePolicy === RoomWidgetFurniInfoUsagePolicyEnum.EVERYBODY ||
-            (avatarInfo.usagePolicy === RoomWidgetFurniInfoUsagePolicyEnum.CONTROLLER && isValidController) ||
-            (avatarInfo.extraParam === RoomWidgetEnumItemExtradataParameter.JUKEBOX && isValidController) ||
-            (avatarInfo.extraParam === RoomWidgetEnumItemExtradataParameter.USABLE_PRODUCT && isValidController)
+            (!isPlayTest &&
+                ((avatarInfo.usagePolicy === RoomWidgetFurniInfoUsagePolicyEnum.CONTROLLER && isValidController) ||
+                    (avatarInfo.extraParam === RoomWidgetEnumItemExtradataParameter.JUKEBOX && isValidController) ||
+                    (avatarInfo.extraParam === RoomWidgetEnumItemExtradataParameter.USABLE_PRODUCT && isValidController)))
         )
             canUse = true;
 
@@ -520,7 +524,7 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
         if (avatarInfo.isOwner || avatarInfo.isAnyRoomController) pickupMode = PICKUP_MODE_FULL;
         else if (avatarInfo.isRoomOwner || avatarInfo.roomControllerLevel >= RoomControllerLevel.GUILD_ADMIN) pickupMode = PICKUP_MODE_EJECT;
 
-        if (avatarInfo.isStickie) pickupMode = PICKUP_MODE_NONE;
+        if (avatarInfo.isStickie || isPlayTest) pickupMode = PICKUP_MODE_NONE;
 
         setPickupMode(pickupMode);
         setCanMove(canMove);
@@ -1231,7 +1235,7 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
                 </Column>
             </Column>
             <Flex gap={1} justifyContent="end">
-                {showInspectButton && (
+                {showInspectButton && !roomSession?.playTestMode && (
                     <Button variant="dark" onClick={() => openInspectionForFurni(avatarInfo.id, avatarInfo.category)}>
                         Inspect
                     </Button>

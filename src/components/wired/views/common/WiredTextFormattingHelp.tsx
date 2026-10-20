@@ -1,4 +1,5 @@
 import { FC, useState } from 'react';
+import { localizeWithFallback } from '../../../../api';
 import { Text } from '../../../../common';
 import { BaseButton } from '../../../../common/BaseButton';
 
@@ -10,6 +11,17 @@ export const getWiredTextLineCount = (value: string) => {
     return value.replace(/\r/g, '').split('\n').length;
 };
 
+/** Our text counter (the official editor has none): "N lines - n/max characters", or with a line limit "N/max lines - ...". */
+export const formatWiredTextCounter = (lines: number, count: number, limit: number, maxLines: number | null = null) =>
+    maxLines === null
+        ? localizeWithFallback('wiredfurni.params.text_counter', `${lines} lines - ${count}/${limit} characters`, ['lines', 'count', 'limit'], [String(lines), String(count), String(limit)])
+        : localizeWithFallback(
+              'wiredfurni.params.text_counter.lines_limit',
+              `${lines}/${maxLines} lines - ${count}/${limit} characters`,
+              ['lines', 'max_lines', 'count', 'limit'],
+              [String(lines), String(maxLines), String(count), String(limit)]
+          );
+
 interface WiredTextCounterProps {
     value: string;
     maxLength?: number;
@@ -18,7 +30,7 @@ interface WiredTextCounterProps {
 export const WiredTextCounter: FC<WiredTextCounterProps> = (props) => {
     const { value = '', maxLength = WIRED_TEXT_MESSAGE_MAX_LENGTH } = props;
 
-    return <Text small>{`${getWiredTextLineCount(value)} righe - ${value.length}/${maxLength} caratteri`}</Text>;
+    return <Text small>{formatWiredTextCounter(getWiredTextLineCount(value), value.length, maxLength)}</Text>;
 };
 
 export const WiredTextFormattingHelp: FC<{}> = () => {

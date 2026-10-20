@@ -88,6 +88,7 @@ export const WiredTriggerReceiveLinkDataframeView: FC<{}> = () =>
             save={ save }
             validate={ validate }
             widthModifier={ 1.4 }
+            allowScrolling
             footer={ <WiredSourcesSelector showFurni={ true } furniSource={ 100 } furniSources={ LINK_SOURCES } furniTitle={ localizeWithFallback('wiredfurni.params.link.endpoints', 'WIRED Links') } onChangeFurni={ () => undefined } /> }
         >
             { invalid && <Text small className="text-[#ad3434]">{ localizeWithFallback('wiredfurni.error.link.invalid_dataframe', 'The dataframe configuration is invalid.') }</Text> }

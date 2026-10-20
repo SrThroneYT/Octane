@@ -314,6 +314,37 @@
         display: none;
     }
 
+    /*
+     * element.allowScrolling (WiredUIBuilder.build: ListScrollParams(maxHeight = screen height / 1.8,
+     * stickyHeader, stickyFooter)): the header and the Ready / Cancel row stay put, the sections
+     * between them scroll, and the whole list is capped at 100vh / 1.8.
+     */
+    &.octane-wired--scrolling .octane-wired__content {
+        display: flex;
+        flex-direction: column;
+        max-height: calc(100vh / 1.8);
+    }
+
+    &.octane-wired--scrolling .octane-wired__summary,
+    &.octane-wired--scrolling .octane-wired__divider--actions,
+    &.octane-wired--scrolling .octane-wired__actions {
+        flex: 0 0 auto;
+    }
+
+    &.octane-wired--scrolling .octane-wired__body {
+        flex: 1 1 auto;
+        min-height: 0;
+        max-height: none;
+        overflow: hidden;
+    }
+
+    &.octane-wired--scrolling .octane-wired__sections {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
     .form-check-input,
     .octane-checkbox,
     .octane-radio,
@@ -1231,8 +1262,9 @@
 }
 
 /* WiredStyle.invalidInputBackgroundColor (IlluminaWiredStyle: 0xffc6c9). */
-.octane-wired__value-input.is-invalid {
-    background: #ffc6c9;
+.octane-wired__value-input.is-invalid,
+.octane-wired .octane-wired__number-input.is-invalid {
+    background: #ffc6c9 !important;
 }
 
 .octane-wired__value-input.is-disabled {

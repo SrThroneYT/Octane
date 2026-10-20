@@ -17,6 +17,7 @@ import {
     normalizeVariableTokenFromWire,
     WiredVariablePickerTarget
 } from '../WiredVariablePickerData';
+import { readWiredVariableToken, toWiredVariableId, wiredVariableIdList } from '../WiredVariableIds';
 import { WiredSelectorBaseView } from './WiredSelectorBaseView';
 import { Checkbox } from '../../../../common/Checkbox';
 import { Radio } from '../../../../common/Radio';
@@ -133,7 +134,7 @@ export const WiredSelectorWithVariableView: FC<WiredSelectorWithVariableViewProp
     // Official layout: [comparison, reference (0 none, 1 value, 2 variable), value high, value low, reference
     // target, same holder]; the reference is read on the official source slots, filter / invert are the
     // official selector fields.
-    const { trigger = null, furniIds = [], setFurniIds = null, setIntParams = null, setStringParam = null, setSourceTypes = null, setSelectorOptions = null } = useWired();
+    const { trigger = null, furniIds = [], setFurniIds = null, setIntParams = null, setStringParam = null, setSourceTypes = null, setSelectorOptions = null, setVariableIds = null } = useWired();
     const [sameHolder, setSameHolder] = useState(false);
     const { userVariableDefinitions = [], furniVariableDefinitions = [], roomVariableDefinitions = [], contextVariableDefinitions = [] } = useWiredTools();
     const [variableToken, setVariableToken] = useState('');
@@ -220,8 +221,9 @@ export const WiredSelectorWithVariableView: FC<WiredSelectorWithVariableViewProp
         const stringParts = parseStringData(trigger.stringData);
         const nextReferenceFurniIds = [...(trigger.selectedItems ?? [])];
 
-        setVariableToken(normalizeVariableTokenFromWire(stringParts.length > 0 ? stringParts[0] : ''));
-        setReferenceVariableToken(normalizeVariableTokenFromWire(stringParts.length > 1 ? stringParts[1] : ''));
+        // AIR: variable ids [variable, reference variable]; an older server wrote both into the string.
+        setVariableToken(readWiredVariableToken(trigger.variableIds, 0, normalizeVariableTokenFromWire(stringParts.length > 0 ? stringParts[0] : '')));
+        setReferenceVariableToken(readWiredVariableToken(trigger.variableIds, 1, normalizeVariableTokenFromWire(stringParts.length > 1 ? stringParts[1] : '')));
         const d = trigger.intData;
         const reference = d.length > 1 ? d[1] : 0;
 
@@ -265,7 +267,13 @@ export const WiredSelectorWithVariableView: FC<WiredSelectorWithVariableViewProp
         const parsedReferenceConstantValue = parseInt(referenceConstantValueInput.trim(), 10);
 
         setReferenceFurniIds(nextReferenceFurniIds);
-        setStringParam(`${variableToken || ''}\t${selectByValue && referenceMode === 'variable' ? referenceVariableToken : ''}`);
+        setStringParam('');
+        setVariableIds(
+            wiredVariableIdList(
+                toWiredVariableId(selectorTarget, variableToken),
+                selectByValue && referenceMode === 'variable' ? toWiredVariableId(referenceTargetType, referenceVariableToken) : ''
+            )
+        );
         const constantValue = Number.isFinite(parsedReferenceConstantValue) ? parsedReferenceConstantValue : 0;
 
         setIntParams([

@@ -50,6 +50,9 @@ vi.mock('./WiredConditionBaseView', () => ({
     )
 }));
 
+import { WiredConditionActorIsOnFurniView } from './WiredConditionActorIsOnFurniView';
+import { WiredConditionActorIsWearingBadgeView } from './WiredConditionActorIsWearingBadgeView';
+import { WiredConditionActorIsWearingEffectView } from './WiredConditionActorIsWearingEffectView';
 import { WiredConditionFurniMatchesSnapshotView } from './WiredConditionFurniMatchesSnapshotView';
 import { WiredConditionUserCountInRoomView } from './WiredConditionUserCountInRoomView';
 import { WiredConditionUserLevelView } from './WiredConditionUserLevelView';
@@ -66,14 +69,14 @@ describe('conditions whose source moved from the ints to the official source slo
 
     afterEach(cleanup);
 
-    it('user level: [level, comparison, quantifier], the users in the slot', () => {
-        trigger = { intData: [12, 2, 1], stringData: '', userSourceTypes: [200] };
+    it('user level: [level, comparison], the users in the slot', () => {
+        trigger = { intData: [12, 2], stringData: '', userSourceTypes: [200] };
         render(<WiredConditionUserLevelView />);
 
         expect(screen.getByTestId('users-200')).toBeTruthy();
         save();
 
-        expect(setIntParams).toHaveBeenCalledWith([12, 2, 1]);
+        expect(setIntParams).toHaveBeenCalledWith([12, 2]);
         expect(setSourceTypes).toHaveBeenCalledWith({ furni: [], users: [200] });
     });
 
@@ -88,28 +91,28 @@ describe('conditions whose source moved from the ints to the official source slo
         expect(setSourceTypes).toHaveBeenCalledWith({ furni: [], users: [201] });
     });
 
-    it('user on furni with state: [quantifier], furni and users in the slots, the state in the string', () => {
-        trigger = { intData: [1], stringData: '2', furniSourceTypes: [201], userSourceTypes: [200] };
+    it('user on furni with state: no ints, furni and users in the slots, the state in the string', () => {
+        trigger = { intData: [], stringData: '2', furniSourceTypes: [201], userSourceTypes: [200] };
         render(<WiredConditionUserOnFurniWithStateView />);
 
         expect(screen.getByTestId('furni-201')).toBeTruthy();
         expect(screen.getByTestId('users-200')).toBeTruthy();
         save();
 
-        expect(setIntParams).toHaveBeenCalledWith([1]);
+        expect(setIntParams).toHaveBeenCalledWith([]);
         expect(setSourceTypes).toHaveBeenCalledWith({ furni: [201], users: [200] });
         expect(setStringParam).toHaveBeenCalledWith('2');
     });
 
-    it('furni matches snapshot: the official [state, direction, position, altitude], then the quantifier', () => {
-        const intData = [1, 0, 1, 1, 1];
+    it('furni matches snapshot: the official [state, direction, position, altitude] only', () => {
+        const intData = [1, 0, 1, 1];
         trigger = { intData, stringData: '', furniSourceTypes: [200], getBoolean: (index) => intData[index] === 1 };
         render(<WiredConditionFurniMatchesSnapshotView />);
 
         expect(screen.getByTestId('furni-200')).toBeTruthy();
         save();
 
-        expect(setIntParams).toHaveBeenCalledWith([1, 0, 1, 1, 1]);
+        expect(setIntParams).toHaveBeenCalledWith([1, 0, 1, 1]);
         expect(setSourceTypes).toHaveBeenCalledWith({ furni: [200], users: [] });
     });
 
@@ -119,7 +122,30 @@ describe('conditions whose source moved from the ints to the official source slo
         render(<WiredConditionFurniMatchesSnapshotView />);
         save();
 
-        expect(setIntParams).toHaveBeenCalledWith([0, 0, 0, 0, 0]);
+        expect(setIntParams).toHaveBeenCalledWith([0, 0, 0, 0]);
         expect(setSourceTypes).toHaveBeenCalledWith({ furni: [100], users: [] });
+    });
+
+    it('quantified user conditions send only their own params: the quantifier goes in the save slot', () => {
+        // A box saved before still sends its old trailing quantifier int; the view drops it.
+        trigger = { intData: [7, 1], stringData: '', userSourceTypes: [200] };
+        const effect = render(<WiredConditionActorIsWearingEffectView />);
+        save();
+        expect(setIntParams).toHaveBeenLastCalledWith([7]);
+        effect.unmount();
+
+        trigger = { intData: [1], stringData: 'ACH1', userSourceTypes: [0] };
+        const badge = render(<WiredConditionActorIsWearingBadgeView />);
+        save();
+        expect(setIntParams).toHaveBeenLastCalledWith([]);
+        expect(setStringParam).toHaveBeenLastCalledWith('ACH1');
+        badge.unmount();
+
+        trigger = { intData: [1], stringData: '', furniSourceTypes: [100], userSourceTypes: [0] };
+        render(<WiredConditionActorIsOnFurniView />);
+        save();
+        expect(setIntParams).toHaveBeenLastCalledWith([]);
+        expect(setSourceTypes).toHaveBeenLastCalledWith({ furni: [100], users: [0] });
+        expect(screen.queryByText('wiredfurni.params.quantifier_selection')).toBeNull();
     });
 });

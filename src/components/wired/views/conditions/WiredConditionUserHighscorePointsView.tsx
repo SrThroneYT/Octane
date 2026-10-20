@@ -5,25 +5,21 @@ import { useWired } from '../../../../hooks';
 import { normalizeWiredComparison, WIRED_CMP_GREATER_EQUAL, WiredComparisonOperator } from '../WiredComparisonOperator';
 import { WiredSourcesSelector } from '../WiredSourcesSelector';
 import { WiredConditionBaseView } from './WiredConditionBaseView';
-import { Checkbox } from '../../../../common/Checkbox';
 import { NumberInput } from '../../../../common/NumberInput';
 
 const MIN_POINTS = 0;
 const MAX_POINTS = 1_000_000_000;
-const QUANTIFIER_ALL = 0;
-const QUANTIFIER_ANY = 1;
 
 const clampPoints = (value: number) => (Number.isNaN(value) ? MIN_POINTS : Math.max(MIN_POINTS, Math.min(MAX_POINTS, Math.floor(value))));
 
-// Server contract (WiredConditionHabboHasHighscorePoints): intData = [points, comparison, quantifier], the
-// users in the official source slot, plus the picked scoreboards. The user's best score across them is what
+// Server contract (WiredConditionHabboHasHighscorePoints): intData = [points, comparison], the users in the
+// official source slot and the quantifier in its slot (the base view's), plus the picked scoreboards. The user's best score across them is what
 // gets compared; a user with no entry has zero points, and a box with no scoreboard never passes.
 export const WiredConditionUserHighscorePointsView: FC<{}> = () => {
     const { trigger = null, setIntParams = null, setSourceTypes = null } = useWired();
     const [points, setPoints] = useState(MIN_POINTS);
     const [comparison, setComparison] = useState(WIRED_CMP_GREATER_EQUAL);
     const [userSource, setUserSource] = useState(0);
-    const [quantifier, setQuantifier] = useState(QUANTIFIER_ALL);
 
     useEffect(() => {
         if (!trigger) return;
@@ -32,11 +28,10 @@ export const WiredConditionUserHighscorePointsView: FC<{}> = () => {
         setPoints(data.length > 0 ? clampPoints(data[0]) : MIN_POINTS);
         setComparison(data.length > 1 ? normalizeWiredComparison(data[1]) : WIRED_CMP_GREATER_EQUAL);
         setUserSource(trigger.userSourceTypes?.[0] ?? 0);
-        setQuantifier(data.length > 2 && data[2] === QUANTIFIER_ANY ? QUANTIFIER_ANY : QUANTIFIER_ALL);
     }, [trigger]);
 
     const save = () => {
-        setIntParams([clampPoints(points), comparison, quantifier]);
+        setIntParams([clampPoints(points), comparison]);
         setSourceTypes({ furni: [], users: [userSource] });
     };
 
@@ -59,10 +54,6 @@ export const WiredConditionUserHighscorePointsView: FC<{}> = () => {
                     <NumberInput min={MIN_POINTS} max={MAX_POINTS} className="form-control form-control-sm" style={{ maxWidth: 160 }} value={points} onChange={(event) => setPoints(clampPoints(parseInt(event.target.value, 10)))} />
                 </div>
                 <WiredComparisonOperator name="wiredHighscorePointsComparison" value={comparison} onChange={setComparison} />
-                <label className="flex items-center gap-1 cursor-pointer">
-                    <Checkbox checked={quantifier === QUANTIFIER_ANY} onCheckedChange={(nextChecked) => setQuantifier(nextChecked ? QUANTIFIER_ANY : QUANTIFIER_ALL)} />
-                    <Text>{localizeWithFallback('wiredfurni.params.level.any_user', 'One user is enough (otherwise every user must match)')}</Text>
-                </label>
             </div>
         </WiredConditionBaseView>
     );

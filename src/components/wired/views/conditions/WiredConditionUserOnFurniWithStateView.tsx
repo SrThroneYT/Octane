@@ -1,19 +1,17 @@
 import { FC, useEffect, useState } from 'react';
-import { LocalizeText, localizeWithFallback, WiredFurniType } from '../../../../api';
+import { localizeWithFallback, WiredFurniType } from '../../../../api';
 import { Text } from '../../../../common';
 import { useWired } from '../../../../hooks';
 import { WiredSourcesSelector } from '../WiredSourcesSelector';
 import { WiredConditionBaseView } from './WiredConditionBaseView';
-import { Radio } from '../../../../common/Radio';
 
 export const WiredConditionUserOnFurniWithStateView: FC<{}> = () =>
 {
-    // As user on furni: the furni and users in the official source slots, our quantifier (0 all, 1 any) is
-    // param 0; the required state in the string.
+    // As user on furni: no int params, the furni and users in the official source slots, the required state in the
+    // string; the quantifier is the base view's.
     const { trigger = null, setIntParams = null, setStringParam = null, setSourceTypes = null } = useWired();
     const [ furniSource, setFurniSource ] = useState<number>(() => trigger?.furniSourceTypes?.[0] ?? ((trigger?.selectedItems?.length ?? 0) > 0 ? 100 : 0));
     const [ userSource, setUserSource ] = useState<number>(() => trigger?.userSourceTypes?.[0] ?? 0);
-    const [ quantifier, setQuantifier ] = useState<number>(() => (trigger?.intData?.[0] === 1 ? 1 : 0));
     const [ requiredState, setRequiredState ] = useState<string>(() => trigger?.stringData ?? '');
 
     useEffect(() =>
@@ -22,7 +20,6 @@ export const WiredConditionUserOnFurniWithStateView: FC<{}> = () =>
 
         setFurniSource(trigger.furniSourceTypes?.[0] ?? ((trigger.selectedItems?.length ?? 0) > 0 ? 100 : 0));
         setUserSource(trigger.userSourceTypes?.[0] ?? 0);
-        setQuantifier(trigger.intData?.[0] === 1 ? 1 : 0);
         setRequiredState(trigger.stringData ?? '');
     }, [ trigger ]);
 
@@ -30,7 +27,7 @@ export const WiredConditionUserOnFurniWithStateView: FC<{}> = () =>
 
     const save = () =>
     {
-        setIntParams([ quantifier ]);
+        setIntParams([]);
         setSourceTypes({ furni: [ furniSource ], users: [ userSource ] });
         setStringParam(requiredState ?? '');
     };
@@ -43,24 +40,13 @@ export const WiredConditionUserOnFurniWithStateView: FC<{}> = () =>
             requiresFurni={ requiresFurni }
             save={ save }
             footer={ (
-                <div className="flex flex-col gap-2">
-                    <div className="flex flex-col gap-1">
-                        <Text bold>{ LocalizeText('wiredfurni.params.quantifier_selection') }</Text>
-                        { [ 0, 1 ].map(value => (
-                            <label key={ value } className="flex items-center gap-1">
-                                <Radio checked={ (quantifier === value) } name="userOnFurniWithStateQuantifier" onCheckedChange={() => setQuantifier(value)} />
-                                <Text>{ LocalizeText(`wiredfurni.params.quantifier.users.${ value }`) }</Text>
-                            </label>
-                        )) }
-                    </div>
-                    <WiredSourcesSelector
-                        showFurni={ true }
-                        showUsers={ true }
-                        furniSource={ furniSource }
-                        userSource={ userSource }
-                        onChangeFurni={ onChangeFurniSource }
-                        onChangeUsers={ setUserSource } />
-                </div>
+                <WiredSourcesSelector
+                    showFurni={ true }
+                    showUsers={ true }
+                    furniSource={ furniSource }
+                    userSource={ userSource }
+                    onChangeFurni={ onChangeFurniSource }
+                    onChangeUsers={ setUserSource } />
             ) }>
             <div className="flex flex-col gap-1">
                 <Text bold>{ localizeWithFallback('wiredfurni.params.state', 'State') }</Text>

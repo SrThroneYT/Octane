@@ -145,6 +145,7 @@ export const WiredActionSendLinkDataframeView: FC<{}> = () =>
             save={ save }
             validate={ validate }
             widthModifier={ 1.4 }
+            allowScrolling
             footer={ <WiredSourcesSelector showFurni={ true } furniSource={ endpointSource } furniSources={ LINK_SOURCES } furniTitle={ localizeWithFallback('wiredfurni.params.link.endpoints', 'WIRED Links') } onChangeFurni={ setEndpointSource } /> }
         >
             { invalid && <Text small className="text-[#ad3434]">{ localizeWithFallback('wiredfurni.error.link.invalid_dataframe', 'The dataframe configuration is invalid.') }</Text> }

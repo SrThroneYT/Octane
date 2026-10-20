@@ -4,7 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const setIntParams = vi.fn();
 const setStringParam = vi.fn();
-let trigger: { stringData: string; intData: number[] } | null = null;
+const setVariableIds = vi.fn();
+let trigger: { stringData: string; intData: number[]; variableIds?: string[] } | null = null;
 let baseProps: { save: () => void; validate?: () => boolean } | null = null;
 const variable = (itemId: number, name: string, hasValue = true) => ({ itemId, name, availability: 0, hasValue, isReadOnly: false, variableType: 0 });
 const tools = {
@@ -24,7 +25,7 @@ vi.mock('../../../../common', () => ({
     Text: ({ children }: PropsWithChildren) => <span>{children}</span>
 }));
 vi.mock('../../../../hooks', () => ({
-    useWired: () => ({ trigger, setIntParams, setStringParam }),
+    useWired: () => ({ trigger, setIntParams, setStringParam, setVariableIds }),
     useWiredTools: () => tools
 }));
 vi.mock('../WiredSourcesSelector', () => ({
@@ -48,6 +49,7 @@ describe('WiredExtraFilterAmountView (AIR SelectorFilter + ValueOrVariableSectio
     beforeEach(() => {
         setIntParams.mockClear();
         setStringParam.mockClear();
+        setVariableIds.mockClear();
         baseProps = null;
     });
 
@@ -67,6 +69,7 @@ describe('WiredExtraFilterAmountView (AIR SelectorFilter + ValueOrVariableSectio
 
         expect(setIntParams).toHaveBeenLastCalledWith([1000, 0, 1, 0]);
         expect(setStringParam).toHaveBeenLastCalledWith('');
+        expect(setVariableIds).toHaveBeenLastCalledWith([]);
     });
 
     it('reads the variable on the triggering holder: type selector only in the popup', () => {
@@ -83,6 +86,17 @@ describe('WiredExtraFilterAmountView (AIR SelectorFilter + ValueOrVariableSectio
         baseProps.save();
 
         expect(setIntParams).toHaveBeenLastCalledWith([1, 1, -10, 1]);
-        expect(setStringParam).toHaveBeenLastCalledWith('8');
+        // AIR: the variable as the first variable id, no string.
+        expect(setStringParam).toHaveBeenLastCalledWith('');
+        expect(setVariableIds).toHaveBeenLastCalledWith(['room:8']);
+    });
+
+    it('reads the variable from the variable ids', () => {
+        trigger = { stringData: '', intData: [1, 1, 0, 1], variableIds: ['furni:7'] };
+        render(<WiredExtraFilterAmountView />);
+
+        expect(field()).toHaveValue('level');
+        baseProps.save();
+        expect(setVariableIds).toHaveBeenLastCalledWith(['furni:7']);
     });
 });

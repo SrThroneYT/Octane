@@ -55,6 +55,8 @@ import {
 import { rememberReceivedBadgeRarity } from '../../api/badges/badgeRarity';
 import { AchievementNotificationBubbleItem } from '../../api/notification/AchievementNotificationBubbleItem';
 import { localizeWithFallback } from '../../api/utils/localizeWithFallback';
+import { countSimpleAlert } from '../../api/notification/SimpleAlertCounter';
+import { wiredRewardResultAlert } from '../../api/wired/WiredRewardResult';
 import { useMessageEvent } from '../events';
 import { useHotelAlertToastStore } from './hotelAlertToastStore';
 
@@ -153,6 +155,8 @@ const useNotificationStore = () => {
             timeoutSeconds: number = null,
             data: Map<string, string> = null
         ) => {
+            countSimpleAlert();
+
             if (!title || !title.length) title = LocalizeText('notifications.broadcast.title');
 
             if (!type || !type.length) type = NotificationAlertType.DEFAULT;
@@ -724,35 +728,10 @@ const useNotificationStore = () => {
     });
 
     useMessageEvent<WiredRewardResultMessageEvent>(WiredRewardResultMessageEvent, (event) => {
-        const parser = event.getParser();
+        // Official: a product, a badge, or a refusal with its reason; no reason is dropped.
+        const { titleKey, bodyKey } = wiredRewardResultAlert(event.getParser().reason);
 
-        switch (parser.reason) {
-            case WiredRewardResultMessageEvent.PRODUCT_DONATED_CODE:
-            case WiredRewardResultMessageEvent.BADGE_DONATED_CODE:
-                simpleAlert(
-                    LocalizeText('wiredfurni.rewardsuccess.body'),
-                    NotificationAlertType.DEFAULT,
-                    null,
-                    null,
-                    LocalizeText('wiredfurni.rewardsuccess.title')
-                );
-                return;
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-            case 8:
-                simpleAlert(
-                    LocalizeText(`wiredfurni.rewardfailed.reason.${parser.reason}`),
-                    NotificationAlertType.DEFAULT,
-                    null,
-                    null,
-                    LocalizeText('wiredfurni.rewardfailed.title')
-                );
-                return;
-        }
+        simpleAlert(LocalizeText(bodyKey), NotificationAlertType.DEFAULT, null, null, LocalizeText(titleKey));
     });
 
     const onRoomEnterEvent = useCallback(() => {

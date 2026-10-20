@@ -8,11 +8,14 @@ import { selectOption } from '../../test-utils/selectOption';
 const mocks = vi.hoisted(() => ({
     config: {} as Record<string, unknown>,
     showConfirm: vi.fn(),
+    showSingleBubble: vi.fn(),
+    preferences: { playTestMode: false, showToolbarButton: false, showInspectButton: false, showSystemNotifications: false, wiredStyle: '' },
     saveRoomSettings: vi.fn(),
     saveRoomTimezone: vi.fn(),
     reloadRoomWired: vi.fn(),
     rollbackRoomWired: vi.fn(),
     updateAccountPreferences: vi.fn(),
+    setPlayTestMode: vi.fn(),
     roomSettings: {
         roomId: 7,
         inspectMask: 1,
@@ -29,6 +32,7 @@ vi.mock('../../api', () => ({
     GetConfigurationValue: (key: string, fallback: unknown) => (key in mocks.config ? mocks.config[key] : fallback),
     LocalizeText: (key: string) => key,
     localizeWithFallback: (key: string, fallback: string) => fallback,
+    NotificationBubbleType: { INFO: 'info' },
     normalizeWiredStyle: (value: string) => value,
     WIRED_STYLE_DEFAULT: '',
     WIRED_STYLE_OPTIONS: ['illumina', 'volter'],
@@ -46,14 +50,15 @@ vi.mock('../../common', () => ({
 
 vi.mock('../../hooks', () => ({
     useRoom: () => ({ roomSession: { hotelTimeZone: 'UTC' } }),
-    useNotification: () => ({ showConfirm: mocks.showConfirm }),
+    useNotification: () => ({ showConfirm: mocks.showConfirm, showSingleBubble: mocks.showSingleBubble }),
     useWiredTools: () => ({
-        accountPreferences: { showToolbarButton: false, showInspectButton: false, showSystemNotifications: false, wiredStyle: '' },
+        accountPreferences: mocks.preferences,
         roomSettings: mocks.roomSettings,
         saveRoomSettings: mocks.saveRoomSettings,
         saveRoomTimezone: mocks.saveRoomTimezone,
         reloadRoomWired: mocks.reloadRoomWired,
         rollbackRoomWired: mocks.rollbackRoomWired,
+        setPlayTestMode: mocks.setPlayTestMode,
         updateAccountPreferences: mocks.updateAccountPreferences
     })
 }));
@@ -67,6 +72,10 @@ describe('WiredToolsSettingsTabView', () => {
         mocks.saveRoomTimezone.mockReset();
         mocks.reloadRoomWired.mockReset();
         mocks.rollbackRoomWired.mockReset();
+        mocks.showSingleBubble.mockReset();
+        mocks.updateAccountPreferences.mockReset();
+        mocks.setPlayTestMode.mockReset();
+        mocks.preferences.playTestMode = false;
     });
 
     afterEach(cleanup);
@@ -92,19 +101,36 @@ describe('WiredToolsSettingsTabView', () => {
         expect(mocks.saveRoomTimezone).toHaveBeenCalledWith('Europe/Berlin');
     });
 
-    it('reload and rollback ask first and then send the room-state action', () => {
+    it('rollback asks first, reload goes at once (official WiredMenuSettingsTab)', () => {
         render(<WiredToolsSettingsTabView />);
 
         fireEvent.click(screen.getByRole('button', { name: 'Rollback' }));
         expect(mocks.rollbackRoomWired).not.toHaveBeenCalled();
         expect(mocks.showConfirm).toHaveBeenCalledTimes(1);
+        // titled by the button, as the official confirm is
+        expect(mocks.showConfirm.mock.calls[0][5]).toBe('Rollback');
 
         (mocks.showConfirm.mock.calls[0][1] as () => void)();
         expect(mocks.rollbackRoomWired).toHaveBeenCalledTimes(1);
 
         fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
-        (mocks.showConfirm.mock.calls[1][1] as () => void)();
+        expect(mocks.showConfirm).toHaveBeenCalledTimes(1);
         expect(mocks.reloadRoomWired).toHaveBeenCalledTimes(1);
+    });
+
+    it('labels the permission levels with the official keys', () => {
+        render(<WiredToolsSettingsTabView />);
+
+        expect(screen.getAllByText('Users with rights')).toHaveLength(2);
+        expect(screen.getByText('Everyone')).toBeInTheDocument();
+    });
+
+    it('hands the playtest switch to the store (official setPlayTestMode with notify)', () => {
+        render(<WiredToolsSettingsTabView />);
+
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Enable playtesting mode' }));
+        expect(mocks.setPlayTestMode).toHaveBeenCalledWith(true);
+        expect(mocks.updateAccountPreferences).not.toHaveBeenCalled();
     });
 
     it('shows the sandbox donation tool only when the hotel enables it', () => {

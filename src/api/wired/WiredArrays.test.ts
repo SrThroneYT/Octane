@@ -101,10 +101,10 @@ describe('wired array payloads', () => {
         const check = parseWiredCheckArrayPayload('{"conditionMode":1,"stateCheck":3,"quantifier":1,"variableType":2,"ownerSource":11}');
         const checkParams = wiredCheckArrayIntParams(check);
 
-        expect(checkParams).toHaveLength(10);
+        // The owners' all / any choice goes in the save packet's quantifier slot, not in the ints.
+        expect(checkParams).toHaveLength(9);
         expect(checkParams[2]).toBe(1);
         expect(checkParams[7]).toBe(3);
-        expect(checkParams[9]).toBe(1);
         // Slot 6 is the legacy comparison the box no longer reads, but the count has to line up.
         expect(checkParams[6]).toBe(WIRED_ARRAY_COMPARISON_EQUALS);
 

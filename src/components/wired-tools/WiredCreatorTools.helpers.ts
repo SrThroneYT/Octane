@@ -1,4 +1,4 @@
-import type { HotelDateTimeParts, MonitorRoomStats, MonitorSnapshot, VariableTextValue } from './WiredCreatorTools.types';
+import type { HotelDateTimeParts, MonitorErrorLog, MonitorLog, MonitorRoomStats, MonitorSnapshot, VariableTextValue } from './WiredCreatorTools.types';
 
 const HOTEL_TIME_FORMATTERS: Map<string, Intl.DateTimeFormat> = new Map();
 
@@ -22,7 +22,8 @@ export const createEmptyMonitorSnapshot = (): MonitorSnapshot => ({
     heavyDelayedThresholdPercent: 0,
     logs: [],
     history: [],
-    roomStats: null
+    roomStats: null,
+    errors: []
 });
 
 /** AIR WiredMenuMonitorTab: statistic colours, and the share of the limit where each one starts. */
@@ -201,6 +202,59 @@ export const normalizeMonitorReason = (reason: string): string => {
     return normalizedReason || 'No detailed reason was recorded for this entry.';
 };
 
+/** AIR calls a placement failure PLACEMENT_FAILURE; our diagnostics (the 5101 detail, the history) call it PLACEMENT_FAILED. */
+const MONITOR_DIAGNOSTIC_TYPE_OF_ERROR: Record<string, string> = { PLACEMENT_FAILURE: 'PLACEMENT_FAILED' };
+
+/** The diagnostic type behind a row of AIR's error list. */
+export const monitorDiagnosticType = (errorName: string): string => MONITOR_DIAGNOSTIC_TYPE_OF_ERROR[errorName] ?? errorName;
+
+/**
+ * AIR's error list (15) as the store keeps it: the server sends the milliseconds since the latest occurrence, so the
+ * time is pinned to the client clock when the packet arrives; -1 (never) stays -1.
+ */
+export const toMonitorErrorLogs = (
+    errors: ReadonlyArray<{ errorId: number; errorName: string; category: string; amount: number; msSinceLatest: number }>,
+    receivedAtMs: number
+): MonitorErrorLog[] =>
+    (errors ?? []).map((error) => ({
+        errorId: Number(error.errorId ?? 0),
+        name: String(error.errorName ?? ''),
+        category: String(error.category ?? ''),
+        amount: Number(error.amount ?? 0),
+        latestOccurredAtMs: Number(error.msSinceLatest ?? -1) < 0 ? -1 : receivedAtMs - Number(error.msSinceLatest)
+    }));
+
+/**
+ * The monitor log table: AIR's rows in the server's order (type, category, amount, latest), each with the detail of its
+ * latest occurrence from our monitor packet (5101) for the info window.
+ */
+export const buildMonitorLogs = (errors: ReadonlyArray<MonitorErrorLog>, details: MonitorSnapshot['logs'], nowMs: number): MonitorLog[] =>
+    (errors ?? []).map((error) => {
+        const detail = (details ?? []).find((entry) => entry.type === monitorDiagnosticType(error.name));
+        const amount = Math.max(0, error.amount);
+
+        return {
+            errorId: error.errorId,
+            type: error.name,
+            category: error.category,
+            amount: String(amount),
+            latest: amount > 0 && error.latestOccurredAtMs >= 0 ? formatMonitorLatestOccurrence(error.latestOccurredAtMs / 1000, nowMs) : '/',
+            latestReason: normalizeMonitorReason(detail?.latestReason),
+            latestSourceLabel: String(detail?.latestSourceLabel ?? ''),
+            latestSourceId: Number(detail?.latestSourceId ?? 0)
+        };
+    });
+
+/** AIR's info text of an error (`wiredmenu.error_info.<id>`, one paragraph per line break) or, without it, ours. */
+export const resolveMonitorErrorDescription = (officialText: string, fallback: string[] = []): string[] => {
+    const paragraphs = (officialText ?? '')
+        .split(/\\n|\n/)
+        .map((paragraph) => paragraph.trim())
+        .filter((paragraph) => paragraph.length > 0);
+
+    return paragraphs.length ? paragraphs : fallback;
+};
+
 /** The server's text-connector table as the variables tab lists it; undefined when there is none. */
 /** A pointer (AIR requiresExecutionContext) only exists while a stack runs: nobody holds it, so it cannot be highlighted or managed. */
 export const isStackOnlyVariable = (definition?: { requiresExecutionContext?: boolean } | null): boolean => !!definition?.requiresExecutionContext;
@@ -210,3 +264,14 @@ export const toVariableTextValues = (textConnector?: Array<{ key: number; value:
 
     return textConnector.map((entry) => ({ value: String(entry.key), text: entry.value }));
 };
+
+/** Official WiredMenuOverviewTab: at most 1000 holders highlighted, 400 when each shows a value. */
+export const WIRED_VARIABLE_HIGHLIGHT_MAX = 1000;
+export const WIRED_VARIABLE_HIGHLIGHT_MAX_WITH_VALUE = 400;
+
+/** Whether a variable has too many holders to highlight (`wiredmenu.variable_overview.highlight.error.too_many`). */
+export const exceedsVariableHighlightLimit = (holderCount: number, hasValue: boolean): boolean =>
+    holderCount > (hasValue ? WIRED_VARIABLE_HIGHLIGHT_MAX_WITH_VALUE : WIRED_VARIABLE_HIGHLIGHT_MAX);
+
+/** Official VariableTypePicker: the furni / users / global / context buttons are titled `wiredfurni.params.sourcetype.*`. */
+export const wiredSourceTypeLabelKey = (type: string): string => `wiredfurni.params.sourcetype.${type === 'user' ? 'users' : type}`;

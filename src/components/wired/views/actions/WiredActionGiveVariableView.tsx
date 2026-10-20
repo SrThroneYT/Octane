@@ -18,6 +18,7 @@ import {
 } from '../WiredVariablePickerData';
 import { isWiredSameHolderEligible, WiredValueOrVariableInput } from '../WiredValueOrVariableInput';
 import { customVariablePickerEntries, normalizeWiredValueTarget, variableTokenFromId, WIRED_VALUE_TARGETS } from '../WiredValueOrVariableField';
+import { fromWiredVariableId, toWiredVariableId, wiredVariableIdList } from '../WiredVariableIds';
 import { WiredActionBaseView } from './WiredActionBaseView';
 import { WiredActionDelaySection } from './WiredActionDelaySection';
 import { BaseButton } from '../../../../common/BaseButton';
@@ -69,7 +70,8 @@ export const WiredActionGiveVariableView: FC<{}> = () => {
         setIntParams = null,
         setFurniIds = null,
         setStringParam = null,
-        setSourceTypes = null
+        setSourceTypes = null,
+        setVariableIds = null
     } = useWired();
     const { userVariableDefinitions = [], furniVariableDefinitions = [], roomVariableDefinitions = [], contextVariableDefinitions = [] } = useWiredTools();
     const [selectedTargetType, setSelectedTargetType] = useState<VariableTargetType>('user');
@@ -146,27 +148,30 @@ export const WiredActionGiveVariableView: FC<{}> = () => {
         if (!trigger) return;
 
         // Official layout: [target, initialHigh, initialLow, override, fromVariable, referenceTarget, sameHolder];
-        // string "variable\treferenceVariable"; furni / user slot 0 are the targets.
+        // variable ids [variable, reference variable or none]; furni / user slot 0 are the targets. An older server
+        // wrote "variable\treferenceVariable" as the string.
         const [variableText = '', referenceText = ''] = (trigger.stringData || '').split('\t');
         const parsedVariableItemId = parseInt(variableText.trim(), 10);
         const nextTargetType = normalizeTargetType(trigger.intData.length > 0 ? trigger.intData[0] : TARGET_USER);
+        const variableIds = trigger.variableIds ?? [];
 
         setSelectedTargetType(nextTargetType);
         setSelectedVariableToken(
-            normalizeVariableTokenFromWire(
-                !Number.isNaN(parsedVariableItemId) && parsedVariableItemId > 0
-                    ? String(parsedVariableItemId)
-                    : nextTargetType === 'user' && (trigger.selectedItems?.length ?? 0) > 0
-                      ? String(trigger.selectedItems[0])
-                      : ''
-            )
+            fromWiredVariableId(variableIds[0] ?? '') ||
+                normalizeVariableTokenFromWire(
+                    !Number.isNaN(parsedVariableItemId) && parsedVariableItemId > 0
+                        ? String(parsedVariableItemId)
+                        : nextTargetType === 'user' && (trigger.selectedItems?.length ?? 0) > 0
+                          ? String(trigger.selectedItems[0])
+                          : ''
+                )
         );
         setInitialValueInput((trigger.intData.length > 2 ? trigger.intData[2] : 0).toString());
         setOverrideExisting(trigger.intData.length > 3 ? trigger.intData[3] === 1 : false);
         setFromVariable(trigger.intData[4] === 1);
         setReferenceTarget(trigger.intData.length > 5 ? normalizeWiredValueTarget(trigger.intData[5]) : REFERENCE_GLOBAL);
         setSameHolder(trigger.intData[6] === 1);
-        setReferenceToken(variableTokenFromId(referenceText));
+        setReferenceToken(fromWiredVariableId(variableIds[1] ?? '') || variableTokenFromId(referenceText));
         setUserSource(trigger.userSourceTypes?.[0] ?? 0);
         setFurniSource(trigger.furniSourceTypes?.[0] ?? ((trigger.selectedItems?.length ?? 0) > 0 ? SOURCE_SELECTED : 0));
     }, [trigger]);
@@ -181,12 +186,12 @@ export const WiredActionGiveVariableView: FC<{}> = () => {
     const save = () => {
         const targetValue = getTargetValue(selectedTargetType);
         const parsedInitialValue = parseInt(initialValueInput.trim(), 10);
-        const variableItemId = getCustomVariableItemId(selectedVariableToken);
-
         const initialValue = Number.isFinite(parsedInitialValue) ? parsedInitialValue : 0;
-        const referenceItemId = fromVariable ? getCustomVariableItemId(referenceToken) : 0;
 
-        setStringParam(`${variableItemId || ''}\t${referenceItemId}`);
+        setStringParam('');
+        setVariableIds(
+            wiredVariableIdList(toWiredVariableId(selectedTargetType, selectedVariableToken), fromVariable ? toWiredVariableId(referenceTargetKey, referenceToken) : '')
+        );
         setIntParams([targetValue, initialValue < 0 ? -1 : 0, initialValue, overrideExisting ? 1 : 0, fromVariable ? 1 : 0, referenceTarget, sameHolderActive ? 1 : 0]);
         setSourceTypes({ furni: [furniSource], users: [userSource] });
         setFurniIds(selectedTargetType === 'furni' && furniSource === SOURCE_SELECTED ? [...furniIds] : []);

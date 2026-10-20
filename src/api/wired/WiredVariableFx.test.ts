@@ -2,22 +2,21 @@ import { describe, expect, it } from 'vitest';
 import { WiredAddonLayoutCode } from './WiredAddonLayoutCode';
 import {
     defaultWiredVariableFxParams,
-    formatWiredVariableFxValue,
+    IWiredVariableFxConfigLike,
+    sanitizeWiredVariableFxAppearance,
+    WIRED_FX_COLOR,
+    WIRED_FX_WIDTH,
+    wiredVariableFxAppearance,
+    wiredVariableFxColorLabel,
     readWiredVariableFxParams,
     readWiredVariableFxTokens,
-    resolveWiredVariableFxColor,
-    resolveWiredVariableFxRange,
     resolveWiredVariableFxRenderer,
     WIRED_FX_CATEGORY,
-    WIRED_FX_COLOR_DYNAMIC_LEVELLING,
-    WIRED_FX_COLOR_DYNAMIC_TEAM,
     WIRED_FX_RENDERER,
     WIRED_FX_SHOW_MODE,
     WIRED_FX_STATUS_BAR_THEMES,
     WIRED_FX_UPDATE,
     wiredVariableFxCategoryOfCode,
-    wiredVariableFxLevel,
-    wiredVariableFxProgress,
     wiredVariableFxRendererOptions,
     wiredVariableFxSegmentRenderer,
     wiredVariableFxStackOrder,
@@ -28,7 +27,7 @@ import {
     writeWiredVariableFxTokens
 } from './WiredVariableFx';
 
-const config = (overrides: Partial<Parameters<typeof resolveWiredVariableFxColor>[0]> = {}) => ({
+const config = (overrides: Partial<IWiredVariableFxConfigLike> = {}): IWiredVariableFxConfigLike => ({
     category: WIRED_FX_CATEGORY.PROGRESS_BAR,
     styleId: 0,
     colorId: -1,
@@ -38,14 +37,6 @@ const config = (overrides: Partial<Parameters<typeof resolveWiredVariableFxColor
     showDurationMs: 3000,
     defaultMinValue: 0,
     defaultMaxValue: 100,
-    extra: {} as Record<string, string>,
-    ...overrides
-});
-
-const status = (overrides: Partial<Parameters<typeof resolveWiredVariableFxColor>[1]> = {}) => ({
-    value: 50,
-    overrideMinValue: null as number | null,
-    overrideMaxValue: null as number | null,
     extra: {} as Record<string, string>,
     ...overrides
 });
@@ -125,37 +116,22 @@ describe('WiredVariableFx helpers', () => {
         expect(wiredVariableFxStackOrder(config())).toBe(0);
     });
 
-    it('draws against the status range when the server sent one and repairs an empty one', () => {
-        expect(resolveWiredVariableFxRange(config(), status())).toEqual({ min: 0, max: 100 });
-        expect(resolveWiredVariableFxRange(config(), status({ overrideMinValue: 10, overrideMaxValue: 40 }))).toEqual({ min: 10, max: 40 });
-        expect(resolveWiredVariableFxRange(config({ defaultMaxValue: 0 }), status())).toEqual({ min: 0, max: 1 });
-        expect(wiredVariableFxProgress(25, 0, 100)).toBe(0.25);
-        expect(wiredVariableFxProgress(500, 0, 100)).toBe(1);
-        expect(wiredVariableFxProgress(-5, 0, 100)).toBe(0);
-    });
+    it("offers AIR's colours and widths per style and falls back to the style's defaults", () => {
+        const plain = wiredVariableFxAppearance(WIRED_FX_CATEGORY.PROGRESS_BAR, 0);
 
-    it('reads the level extras with sensible defaults', () => {
-        expect(wiredVariableFxLevel(status())).toEqual({ level: 1, maxLevel: 1, maxed: false });
-        expect(wiredVariableFxLevel(status({ extra: { current_level: '4', max_level: '10', is_maxed: 'true' } }))).toEqual({ level: 4, maxLevel: 10, maxed: true });
-    });
-
-    it('resolves the team, level, palette, theme and battery colours in that order', () => {
-        expect(resolveWiredVariableFxColor(config({ colorId: WIRED_FX_COLOR_DYNAMIC_TEAM }), status({ extra: { delegated_color: '#df291e' } }))).toBe('#df291e');
-        expect(resolveWiredVariableFxColor(config({ colorId: WIRED_FX_COLOR_DYNAMIC_TEAM }), status())).toBeNull();
-        expect(resolveWiredVariableFxColor(config({ colorId: WIRED_FX_COLOR_DYNAMIC_LEVELLING }), status({ extra: { current_level: '10', max_level: '10' } }))).toBe('hsl(120, 75%, 50%)');
-        expect(resolveWiredVariableFxColor(config({ colorId: 1 }), status())).toBe('#e04b4b');
-        expect(resolveWiredVariableFxColor(config({ category: WIRED_FX_CATEGORY.STATUS_BAR, extra: { color: '#4aa9f6' } }), status())).toBe('#4aa9f6');
-        expect(resolveWiredVariableFxColor(config({ category: WIRED_FX_CATEGORY.STATUS_BAR }), status({ value: 100 }))).toBe('hsl(120, 75%, 50%)');
-        expect(resolveWiredVariableFxColor(config(), status())).toBeNull();
-    });
-
-    it('formats big numbers compactly', () => {
-        expect(formatWiredVariableFxValue(999)).toBe('999');
-        expect(formatWiredVariableFxValue(12345)).toBe('12.3k');
-        expect(formatWiredVariableFxValue(250000)).toBe('250k');
-        expect(formatWiredVariableFxValue(2500000)).toBe('2.5M');
-        expect(formatWiredVariableFxValue(-1500)).toBe('-1500');
-        expect(formatWiredVariableFxValue(NaN)).toBe('0');
+        expect(plain.colors).toHaveLength(25);
+        expect(plain.colors).toContain(WIRED_FX_COLOR.EMERALD);
+        expect(plain.colors).toContain(WIRED_FX_COLOR.DYNAMIC_TEAM);
+        expect(plain.defaultColor).toBe(WIRED_FX_COLOR.GREEN);
+        expect(plain.widths).toEqual([WIRED_FX_WIDTH.EXTRA_SMALL, WIRED_FX_WIDTH.SMALL, WIRED_FX_WIDTH.MEDIUM, WIRED_FX_WIDTH.LARGE, WIRED_FX_WIDTH.EXTRA_LARGE]);
+        expect(wiredVariableFxAppearance(WIRED_FX_CATEGORY.HEALTH_POINTS, 0).colors).toEqual([WIRED_FX_COLOR.DYNAMIC_RED_TO_GREEN]);
+        expect(wiredVariableFxAppearance(WIRED_FX_CATEGORY.BOSS_BAR, 0)).toMatchObject({ colors: [WIRED_FX_COLOR.RED], widths: [WIRED_FX_WIDTH.LARGE, WIRED_FX_WIDTH.EXTRA_LARGE, WIRED_FX_WIDTH.HUGE], defaultWidth: WIRED_FX_WIDTH.EXTRA_LARGE });
+        expect(wiredVariableFxAppearance(WIRED_FX_CATEGORY.STATUS_BAR, 16).defaultColor).toBe(WIRED_FX_COLOR.DYNAMIC_RED_TO_GREEN);
+        expect(wiredVariableFxAppearance(WIRED_FX_CATEGORY.STATUS_BAR, 0).colors).toEqual([-1]);
+        expect(sanitizeWiredVariableFxAppearance(WIRED_FX_CATEGORY.PROGRESS_BAR, 0, -1, 2)).toEqual({ colorId: WIRED_FX_COLOR.GREEN, widthId: 2 });
+        expect(sanitizeWiredVariableFxAppearance(WIRED_FX_CATEGORY.NUMBER_DISPLAY, 0, WIRED_FX_COLOR.BLUE, 2)).toEqual({ colorId: WIRED_FX_COLOR.BLUE, widthId: -1 });
+        expect(wiredVariableFxColorLabel(102, (key, fallback) => (key.endsWith('metallic') ? '[Metal]' : key.endsWith('102') ? 'Gold' : fallback))).toBe('[Metal] Gold');
+        expect(wiredVariableFxColorLabel(1000, (key, fallback) => (key.endsWith('dynamic') ? '[Dyn]' : 'Red to green'))).toBe('[Dyn] Red to green');
     });
 
     it('shows a value always, on hover, or for the show duration after a picked update', () => {

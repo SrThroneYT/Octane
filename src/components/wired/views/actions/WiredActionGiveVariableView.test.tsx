@@ -4,11 +4,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const setIntParams = vi.fn();
 const setStringParam = vi.fn();
+const setVariableIds = vi.fn();
 const setSourceTypes = vi.fn();
 const setFurniIds = vi.fn();
 const setActionDelay = vi.fn();
 const noFurni: number[] = [];
-let trigger: { stringData: string; intData: number[]; selectedItems?: number[]; userSourceTypes?: number[]; furniSourceTypes?: number[] } | null = null;
+let trigger: { stringData: string; intData: number[]; variableIds?: string[]; selectedItems?: number[]; userSourceTypes?: number[]; furniSourceTypes?: number[] } | null = null;
 let baseProps: { save: () => void; validate?: () => boolean } | null = null;
 const variable = (itemId: number, name: string, hasValue = true) => ({ itemId, name, availability: 0, hasValue, isReadOnly: false, variableType: 0 });
 const tools = {
@@ -33,7 +34,7 @@ vi.mock('../../../../common', () => ({
     Text: ({ children }: PropsWithChildren) => <span>{children}</span>
 }));
 vi.mock('../../../../hooks', () => ({
-    useWired: () => ({ trigger, furniIds: noFurni, actionDelay: 0, setActionDelay, setFurniIds, setIntParams, setStringParam, setSourceTypes }),
+    useWired: () => ({ trigger, furniIds: noFurni, actionDelay: 0, setActionDelay, setFurniIds, setIntParams, setStringParam, setSourceTypes, setVariableIds }),
     useWiredTools: () => tools
 }));
 vi.mock('../WiredSourcesSelector', () => ({
@@ -62,6 +63,7 @@ describe('WiredActionGiveVariableView initial value (AIR GiveVariable + ValueOrV
     beforeEach(() => {
         setIntParams.mockClear();
         setStringParam.mockClear();
+        setVariableIds.mockClear();
     });
 
     it('reads the initial value from the field and keeps the wire layout', () => {
@@ -73,7 +75,9 @@ describe('WiredActionGiveVariableView initial value (AIR GiveVariable + ValueOrV
         expect(field()).toHaveValue('12');
         fireEvent.change(field(), { target: { value: '-3' } });
         baseProps.save();
-        expect(setStringParam).toHaveBeenLastCalledWith('5\t0');
+        // AIR: no string, variable ids [variable] (no reference while the value is a number).
+        expect(setStringParam).toHaveBeenLastCalledWith('');
+        expect(setVariableIds).toHaveBeenLastCalledWith(['user:5']);
         expect(setIntParams).toHaveBeenLastCalledWith([1, -1, -3, 1, 0, -10, 0]);
     });
 
@@ -95,8 +99,17 @@ describe('WiredActionGiveVariableView initial value (AIR GiveVariable + ValueOrV
         fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'wiredfurni.variable_picker.tab.all' }));
         fireEvent.click(screen.getAllByRole('option').find((option) => option.textContent === 'coins'));
         baseProps.save();
-        expect(setStringParam).toHaveBeenLastCalledWith('5\t6');
+        expect(setVariableIds).toHaveBeenLastCalledWith(['user:5', 'user:6']);
         expect(setIntParams).toHaveBeenLastCalledWith([1, 0, 0, 0, 1, 1, 1]);
+    });
+
+    it('reads the variable and the reference from the variable ids', () => {
+        trigger = { stringData: '', intData: [1, 0, 0, 0, 1, -10, 0], variableIds: ['user:5', 'room:8'] };
+        render(<WiredActionGiveVariableView />);
+
+        expect(field()).toHaveValue('round');
+        baseProps.save();
+        expect(setVariableIds).toHaveBeenLastCalledWith(['user:5', 'room:8']);
     });
 
     it('disables the initial value for a variable without a value', () => {

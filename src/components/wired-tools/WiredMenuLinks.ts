@@ -4,7 +4,7 @@
  *
  * - `wiredmenu/open` shows the menu on its current tab (`wired-tools/open`);
  * - `wiredmenu/open/<tab>` also selects that tab, with `variable_overview` for our variables tab;
- * - `wiredmenu/open/variable_overview/<name>` opens the variables tab;
+ * - `wiredmenu/open/variable_overview/<name>` opens the variables tab on that variable;
  * - `wiredmenu/open/inspection/<0 furni | 1 user>/<id>`;
  * - `wiredmenu/logs` opens the room logs.
  */
@@ -37,6 +37,9 @@ export const translateWiredMenuLink = (url: string): string | null => {
     }
 
     const tab = OFFICIAL_TABS[parts[2]];
+    const variableName = parts[2] === 'variable_overview' ? parts.slice(3).join('/') : '';
+
+    if (variableName) return `wired-tools/tab/variables/${variableName}`;
 
     return tab ? `wired-tools/tab/${tab}` : 'wired-tools/open';
 };

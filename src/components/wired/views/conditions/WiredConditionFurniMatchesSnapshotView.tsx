@@ -5,25 +5,19 @@ import { useWired } from '../../../../hooks';
 import { WiredSourcesSelector } from '../WiredSourcesSelector';
 import { WiredConditionBaseView } from './WiredConditionBaseView';
 import { Checkbox } from '../../../../common/Checkbox';
-import { Radio } from '../../../../common/Radio';
 
-interface WiredConditionFurniMatchesSnapshotViewProps {
-    negative?: boolean;
-}
-
-export const WiredConditionFurniMatchesSnapshotView: FC<WiredConditionFurniMatchesSnapshotViewProps> = ({ negative = false }) => {
+export const WiredConditionFurniMatchesSnapshotView: FC = () => {
     const [stateFlag, setStateFlag] = useState(0);
     const [directionFlag, setDirectionFlag] = useState(0);
     const [positionFlag, setPositionFlag] = useState(0);
     const [altitudeFlag, setAltitudeFlag] = useState(0);
-    const [quantifier, setQuantifier] = useState(0);
-    // Official layout: [state, direction, position, altitude], the furni in the official source slot; our
-    // quantifier (0 all, 1 any) follows as param 4.
+    // Official layout: [state, direction, position, altitude], the furni in the official source slot; the
+    // quantifier is the base view's.
     const { trigger = null, setIntParams = null, setSourceTypes = null } = useWired();
     const [furniSource, setFurniSource] = useState<number>(() => trigger?.furniSourceTypes?.[0] ?? ((trigger?.selectedItems?.length ?? 0) > 0 ? 100 : 0));
 
     const save = () => {
-        setIntParams([stateFlag, directionFlag, positionFlag, altitudeFlag, quantifier]);
+        setIntParams([stateFlag, directionFlag, positionFlag, altitudeFlag]);
         setSourceTypes({ furni: [furniSource], users: [] });
     };
 
@@ -33,7 +27,6 @@ export const WiredConditionFurniMatchesSnapshotView: FC<WiredConditionFurniMatch
         setPositionFlag(trigger.getBoolean(2) ? 1 : 0);
         setAltitudeFlag(trigger.getBoolean(3) ? 1 : 0);
         setFurniSource(trigger.furniSourceTypes?.[0] ?? ((trigger.selectedItems?.length ?? 0) > 0 ? 100 : 0));
-        setQuantifier(trigger.intData[4] === 1 ? 1 : 0);
     }, [trigger]);
 
     const onChangeFurniSource = (next: number) => setFurniSource(next);
@@ -45,22 +38,7 @@ export const WiredConditionFurniMatchesSnapshotView: FC<WiredConditionFurniMatch
             hasSpecialInput={true}
             requiresFurni={requiresFurni}
             save={save}
-            footer={
-                <div className="flex flex-col gap-2">
-                    <div className="flex flex-col gap-1">
-                        <Text bold>{LocalizeText('wiredfurni.params.quantifier_selection')}</Text>
-                        {[0, 1].map((value) => {
-                            return (
-                                <label key={value} className="flex items-center gap-1">
-                                    <Radio checked={quantifier === value} name="snapshotQuantifier" onCheckedChange={() => setQuantifier(value)} />
-                                    <Text>{LocalizeText(`wiredfurni.params.quantifier.furni${negative ? '.neg' : ''}.${value}`)}</Text>
-                                </label>
-                            );
-                        })}
-                    </div>
-                    <WiredSourcesSelector showFurni={true} furniSource={furniSource} onChangeFurni={onChangeFurniSource} />
-                </div>
-            }
+            footer={<WiredSourcesSelector showFurni={true} furniSource={furniSource} onChangeFurni={onChangeFurniSource} />}
         >
             <div className="flex flex-col gap-1">
                 <Text bold>{LocalizeText('wiredfurni.params.conditions')}</Text>

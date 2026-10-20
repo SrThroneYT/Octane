@@ -10,8 +10,6 @@ import {
     WIRED_ARRAY_CONDITION_MODE_STATE,
     WIRED_ARRAY_CRITERIA_ALL,
     WIRED_ARRAY_CRITERIA_ANY,
-    WIRED_ARRAY_QUANTIFIER_ALL,
-    WIRED_ARRAY_QUANTIFIER_ANY,
     WIRED_ARRAY_RESULT_ALL,
     WIRED_ARRAY_RESULT_AT_LEAST_ONE,
     WIRED_ARRAY_RESULT_EXACTLY,
@@ -80,7 +78,6 @@ export const WiredConditionCheckArrayView: FC<{}> = () => {
             conditionMode: readInt(2, next.conditionMode),
             criteriaMode: readInt(4, next.criteriaMode),
             ownerSource: readInt(1, next.ownerSource),
-            quantifier: readInt(9, next.quantifier),
             resultMode: readInt(5, next.resultMode),
             searchScope: readInt(3, next.searchScope),
             stateCheck: readInt(7, next.stateCheck),
@@ -258,12 +255,6 @@ export const WiredConditionCheckArrayView: FC<{}> = () => {
                     </>
                 )}
 
-                {ownerSources.length > 0 && (
-                    <label className="flex items-center gap-1 cursor-pointer">
-                        <Checkbox checked={payload.quantifier === WIRED_ARRAY_QUANTIFIER_ANY} onCheckedChange={(nextChecked) => setPayload({ ...payload, quantifier: nextChecked ? WIRED_ARRAY_QUANTIFIER_ANY : WIRED_ARRAY_QUANTIFIER_ALL })} />
-                        <Text>{localizeWithFallback('wiredfurni.params.arrays.quantifier.any', 'One owner passing is enough')}</Text>
-                    </label>
-                )}
             </div>
         </WiredConditionBaseView>
     );

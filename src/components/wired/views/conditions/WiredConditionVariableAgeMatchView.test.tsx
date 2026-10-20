@@ -6,8 +6,9 @@ const setIntParams = vi.fn();
 const setStringParam = vi.fn();
 const setSourceTypes = vi.fn();
 const setFurniIds = vi.fn();
+const setVariableIds = vi.fn();
 const noFurni: number[] = [];
-let trigger: { stringData: string; intData: number[]; selectedItems?: number[]; userSourceTypes?: number[]; furniSourceTypes?: number[] } | null = null;
+let trigger: { stringData: string; intData: number[]; variableIds?: string[]; selectedItems?: number[]; userSourceTypes?: number[]; furniSourceTypes?: number[] } | null = null;
 let baseProps: { save: () => void; validate?: () => boolean } | null = null;
 const variable = (itemId: number, name: string, hasValue = true) => ({ itemId, name, availability: 0, hasValue, isReadOnly: false, variableType: 0 });
 const tools = {
@@ -34,7 +35,7 @@ vi.mock('../../../../common', () => ({
     Text: ({ children }: PropsWithChildren) => <span>{children}</span>
 }));
 vi.mock('../../../../hooks', () => ({
-    useWired: () => ({ trigger, furniIds: noFurni, setFurniIds, setIntParams, setStringParam, setSourceTypes }),
+    useWired: () => ({ trigger, furniIds: noFurni, setFurniIds, setIntParams, setStringParam, setSourceTypes, setVariableIds }),
     useWiredTools: () => tools
 }));
 vi.mock('../WiredSourcesSelector', () => ({
@@ -61,11 +62,12 @@ describe('WiredConditionVariableAgeMatchView duration (AIR VariableAge + ValueOr
     beforeEach(() => {
         setIntParams.mockClear();
         setStringParam.mockClear();
+        setVariableIds.mockClear();
         baseProps = null;
     });
 
     it('shows the duration field in one row with the unit and no radios', () => {
-        trigger = { stringData: 'custom:5\t0', intData: [0, 0, 0, 0, 30, 2, 0, -10, 0] };
+        trigger = { stringData: 'custom:5\t0', intData: [0, 0, 0, 0, 30, 2, 0, -10] };
         render(<WiredConditionVariableAgeMatchView />);
 
         expect(field()).toHaveValue('30');
@@ -74,12 +76,14 @@ describe('WiredConditionVariableAgeMatchView duration (AIR VariableAge + ValueOr
         expect(screen.queryByText('wiredfurni.params.variables.reference_type.constant')).toBeNull();
         baseProps.save();
 
-        expect(setStringParam).toHaveBeenLastCalledWith('custom:5\t0');
-        expect(setIntParams).toHaveBeenLastCalledWith([0, 0, 0, 0, 30, 2, 0, -10, 0]);
+        // AIR: no string, variable ids [variable] (no duration variable while the duration is a number).
+        expect(setStringParam).toHaveBeenLastCalledWith('');
+        expect(setVariableIds).toHaveBeenLastCalledWith(['user:5']);
+        expect(setIntParams).toHaveBeenLastCalledWith([0, 0, 0, 0, 30, 2, 0, -10]);
     });
 
     it('reads a variable duration on its type: the popup has the type selector only, no holder and no same holder', () => {
-        trigger = { stringData: 'custom:5\t10', intData: [0, 2, 1, 0, 0, 1, 1, -20, 1] };
+        trigger = { stringData: 'custom:5\t10', intData: [0, 2, 1, 0, 0, 1, 1, -20] };
         render(<WiredConditionVariableAgeMatchView />);
 
         expect(field()).toHaveValue('combo');
@@ -93,12 +97,21 @@ describe('WiredConditionVariableAgeMatchView duration (AIR VariableAge + ValueOr
         fireEvent.click(within(screen.getByRole('dialog')).getByText('round'));
         baseProps.save();
 
-        expect(setStringParam).toHaveBeenLastCalledWith('custom:5\t8');
-        expect(setIntParams).toHaveBeenLastCalledWith([0, 2, 1, 0, 0, 1, 1, -10, 1]);
+        expect(setVariableIds).toHaveBeenLastCalledWith(['user:5', 'room:8']);
+        expect(setIntParams).toHaveBeenLastCalledWith([0, 2, 1, 0, 0, 1, 1, -10]);
+    });
+
+    it('reads the variable and the duration variable from the variable ids', () => {
+        trigger = { stringData: '', intData: [0, 2, 1, 0, 0, 1, 1, -20], variableIds: ['user:5', 'ctx:10'] };
+        render(<WiredConditionVariableAgeMatchView />);
+
+        expect(field()).toHaveValue('combo');
+        baseProps.save();
+        expect(setVariableIds).toHaveBeenLastCalledWith(['user:5', 'ctx:10']);
     });
 
     it('refuses an unknown name or a variable without a value', () => {
-        trigger = { stringData: 'custom:5\t0', intData: [0, 0, 0, 0, 30, 2, 0, -10, 0] };
+        trigger = { stringData: 'custom:5\t0', intData: [0, 0, 0, 0, 30, 2, 0, -10] };
         render(<WiredConditionVariableAgeMatchView />);
 
         fireEvent.change(field(), { target: { value: 'flag' } });
@@ -107,6 +120,6 @@ describe('WiredConditionVariableAgeMatchView duration (AIR VariableAge + ValueOr
         fireEvent.change(field(), { target: { value: '0b101' } });
         expect(baseProps.validate()).toBe(true);
         baseProps.save();
-        expect(setIntParams).toHaveBeenLastCalledWith([0, 0, 0, 0, 5, 2, 0, -10, 0]);
+        expect(setIntParams).toHaveBeenLastCalledWith([0, 0, 0, 0, 5, 2, 0, -10]);
     });
 });

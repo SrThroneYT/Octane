@@ -3,6 +3,7 @@ import { LocalizeText, WiredFurniType } from '../../../../api';
 import { Text } from '../../../../common';
 import { useWired } from '../../../../hooks';
 import { WiredConditionBaseView } from './WiredConditionBaseView';
+import { resolveConditionTimezone, useWiredRoomTimezone, WiredConditionTimezoneSection } from './WiredConditionTimezoneSection';
 import { Checkbox } from '../../../../common/Checkbox';
 import { Radio } from '../../../../common/Radio';
 import { NumberInput } from '../../../../common/NumberInput';
@@ -96,7 +97,10 @@ const MatchDateSection: FC<MatchDateSectionProps> = (props) => {
 };
 
 export const WiredConditionMatchDateView: FC<{}> = () => {
-    const { trigger = null, setIntParams = null } = useWired();
+    const { trigger = null, setIntParams = null, setStringParam = null } = useWired();
+    const { roomZone } = useWiredRoomTimezone();
+    // The string param is the timezone; a box without one follows the room's.
+    const [timezone, setTimezone] = useState('');
     const currentYear = useMemo(() => new Date().getFullYear(), []);
     const [weekdayMask, setWeekdayMask] = useState(ALL_WEEKDAYS_MASK);
     const [dayMode, setDayMode] = useState(MODE_SKIP);
@@ -124,6 +128,7 @@ export const WiredConditionMatchDateView: FC<{}> = () => {
         setYearMode(toMode(d[1] === 1, yFrom, yTo));
         setYearFrom(yFrom);
         setYearTo(yTo);
+        setTimezone((trigger.stringData ?? '').trim());
     }, [currentYear, trigger]);
 
     const save = () => {
@@ -140,6 +145,7 @@ export const WiredConditionMatchDateView: FC<{}> = () => {
             clampValue(yearFrom, 0, 9999),
             clampValue(yearMode === MODE_RANGE ? yearTo : yearFrom, 0, 9999)
         ]);
+        setStringParam(resolveConditionTimezone(timezone, roomZone));
     };
 
     return (
@@ -199,6 +205,7 @@ export const WiredConditionMatchDateView: FC<{}> = () => {
                     onModeChange={setYearMode}
                     onToChange={(value) => setYearTo(clampValue(value, 0, 9999))}
                 />
+                <WiredConditionTimezoneSection value={timezone} onChange={setTimezone} />
             </div>
         </WiredConditionBaseView>
     );

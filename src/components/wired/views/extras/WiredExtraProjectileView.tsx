@@ -5,7 +5,6 @@ import {
     clampProjectileParam,
     decodeProjectileTokens,
     defaultProjectileParams,
-    encodeProjectileTokens,
     isProjectileVariableEnabled,
     LocalizeText,
     localizeWithFallback,
@@ -53,6 +52,7 @@ import {
     normalizeVariableTokenFromWire,
     WiredVariablePickerTarget
 } from '../WiredVariablePickerData';
+import { readWiredVariableToken, toWiredVariableId, wiredVariableIdList } from '../WiredVariableIds';
 import { WiredExtraBaseView } from './WiredExtraBaseView';
 import { WiredProjectileDirectionGrid } from './WiredProjectileDirectionGrid';
 import { Checkbox as BaseCheckbox } from '../../../../common/Checkbox';
@@ -248,7 +248,7 @@ const ValueOrVariable: FC<ValueOrVariableProps> = (props) => {
 };
 
 export const WiredExtraProjectileView: FC<{}> = () => {
-    const { trigger = null, setIntParams = null, setStringParam = null } = useWired();
+    const { trigger = null, setIntParams = null, setStringParam = null, setVariableIds = null } = useWired();
     const [params, setParams] = useState<number[]>(defaultProjectileParams);
     const [timeToken, setTimeToken] = useState('');
     const [distanceToken, setDistanceToken] = useState('');
@@ -261,8 +261,9 @@ export const WiredExtraProjectileView: FC<{}> = () => {
         const [time, distance] = decodeProjectileTokens(trigger.stringData);
 
         setParams(normalizeProjectileParams(trigger.intData));
-        setTimeToken(normalizeVariableTokenFromWire(time));
-        setDistanceToken(normalizeVariableTokenFromWire(distance));
+        // AIR: variable ids [time variable, distance variable]; an older server wrote both tokens as the string.
+        setTimeToken(readWiredVariableToken(trigger.variableIds, 0, normalizeVariableTokenFromWire(time)));
+        setDistanceToken(readWiredVariableToken(trigger.variableIds, 1, normalizeVariableTokenFromWire(distance)));
     }, [trigger]);
 
     const setParam = (index: number, value: number) =>
@@ -281,7 +282,13 @@ export const WiredExtraProjectileView: FC<{}> = () => {
 
     const save = () => {
         setIntParams(normalizeProjectileParams(params));
-        setStringParam(encodeProjectileTokens(timeFromVariable ? timeToken : '', distanceFromVariable ? distanceToken : ''));
+        setStringParam('');
+        setVariableIds(
+            wiredVariableIdList(
+                timeFromVariable ? toWiredVariableId(targetKeyOf(params[PROJECTILE_PARAM_TIME_TARGET]), timeToken) : '',
+                distanceFromVariable ? toWiredVariableId(targetKeyOf(params[PROJECTILE_PARAM_DISTANCE_TARGET]), distanceToken) : ''
+            )
+        );
     };
 
     return (

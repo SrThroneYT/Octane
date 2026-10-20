@@ -196,7 +196,7 @@ describe('useWiredCreatorToolsUiStore', () => {
             const populated = {
                 ...createEmptyMonitorSnapshot(),
                 usageCurrentWindow: 5,
-                logs: [{ amount: 1, latestOccurrenceSeconds: 0, latestReason: '', latestSourceId: 0, latestSourceLabel: '', severity: 'ERROR', type: 'foo' }],
+                logs: [{ latestReason: '', latestSourceId: 0, latestSourceLabel: '', type: 'foo' }],
                 history: [{ occurredAtSeconds: 0, reason: '', sourceId: 0, sourceLabel: '', severity: 'ERROR', type: 'foo' }]
             };
             useWiredCreatorToolsUiStore.getState().setMonitorSnapshot(populated);
@@ -236,6 +236,20 @@ describe('useWiredCreatorToolsUiStore', () => {
             useWiredCreatorToolsUiStore.getState().resetMonitorSnapshot();
 
             expect(useWiredCreatorToolsUiStore.getState().monitorSnapshot.roomStats).toBeNull();
+        });
+
+        it('AIR error list (15) arrives on its own and survives the next monitor packet', () => {
+            const errors = [{ errorId: 4, name: 'KILLED', category: 'ERROR', amount: 2, latestOccurredAtMs: 1000 }];
+
+            useWiredCreatorToolsUiStore.getState().setMonitorErrorLogs(errors);
+            useWiredCreatorToolsUiStore.getState().setMonitorSnapshot({ ...createEmptyMonitorSnapshot(), usageCurrentWindow: 4 });
+
+            expect(useWiredCreatorToolsUiStore.getState().monitorSnapshot.usageCurrentWindow).toBe(4);
+            expect(useWiredCreatorToolsUiStore.getState().monitorSnapshot.errors).toEqual(errors);
+
+            useWiredCreatorToolsUiStore.getState().resetMonitorSnapshot();
+
+            expect(useWiredCreatorToolsUiStore.getState().monitorSnapshot.errors).toEqual([]);
         });
 
         it('the snapshot persists across the panel close/reopen lifecycle (UI flag flip)', () => {

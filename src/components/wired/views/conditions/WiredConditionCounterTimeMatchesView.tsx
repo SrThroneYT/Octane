@@ -34,20 +34,20 @@ const formatSeconds = (halfSeconds: number) => {
 };
 
 export const WiredConditionCounterTimeMatchesView: FC<{}> = () => {
-    // Official layout: [seconds, minutes, half second, comparison, our quantifier], the counters in the official source slot.
+    // Official layout: [seconds, minutes, half second, comparison], the counters in the official source slot; the
+    // quantifier is the base view's.
     const { trigger = null, setIntParams = null, setSourceTypes = null } = useWired();
     const [comparison, setComparison] = useState(1);
     const [furniSource, setFurniSource] = useState<number>(() => trigger?.furniSourceTypes?.[0] ?? ((trigger?.selectedItems?.length ?? 0) > 0 ? 100 : 0));
     const [minutes, setMinutes] = useState(0);
     const [halfSeconds, setHalfSeconds] = useState(0);
-    const [quantifier, setQuantifier] = useState(0);
 
     const secondsLabel = useMemo(() => formatSeconds(halfSeconds), [halfSeconds]);
 
     const save = () => {
         const steps = normalizeHalfSeconds(halfSeconds);
 
-        setIntParams([Math.floor(steps / 2), normalizeMinutes(minutes), steps % 2, normalizeComparison(comparison), quantifier]);
+        setIntParams([Math.floor(steps / 2), normalizeMinutes(minutes), steps % 2, normalizeComparison(comparison)]);
         setSourceTypes({ furni: [furniSource], users: [] });
     };
 
@@ -58,7 +58,6 @@ export const WiredConditionCounterTimeMatchesView: FC<{}> = () => {
         setMinutes(trigger.intData.length > 1 ? normalizeMinutes(trigger.intData[1]) : 0);
         setComparison(trigger.intData.length > 3 ? normalizeComparison(trigger.intData[3]) : 1);
         setFurniSource(trigger.furniSourceTypes?.[0] ?? ((trigger.selectedItems?.length ?? 0) > 0 ? 100 : 0));
-        setQuantifier(trigger.intData.length > 4 ? (trigger.intData[4] === 1 ? 1 : 0) : 1);
     }, [trigger]);
 
     return (
@@ -66,22 +65,10 @@ export const WiredConditionCounterTimeMatchesView: FC<{}> = () => {
             hasSpecialInput={true}
             requiresFurni={WiredFurniType.STUFF_SELECTION_OPTION_BY_ID_BY_TYPE_OR_FROM_CONTEXT}
             save={save}
-            footer={
-                <div className="flex flex-col gap-2">
-                    <div className="flex flex-col gap-1">
-                        <Text bold>{LocalizeText('wiredfurni.params.quantifier_selection')}</Text>
-                        {[0, 1].map((value) => (
-                            <label key={value} className="flex items-center gap-1">
-                                <Radio checked={quantifier === value} name="counterTimeQuantifier" onCheckedChange={() => setQuantifier(value)} />
-                                <Text>{LocalizeText(`wiredfurni.params.quantifier.furni.${value}`)}</Text>
-                            </label>
-                        ))}
-                    </div>
-                    <WiredSourcesSelector showFurni={true} furniSource={furniSource} onChangeFurni={setFurniSource} />
-                </div>
-            }
+            footer={<WiredSourcesSelector showFurni={true} furniSource={furniSource} onChangeFurni={setFurniSource} />}
         >
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1">
+                <Text bold>{LocalizeText('wiredfurni.params.comparison_selection')}</Text>
                 {COMPARISON_OPTIONS.map((option) => {
                     return (
                         <div key={option.value} className="flex items-center gap-1">

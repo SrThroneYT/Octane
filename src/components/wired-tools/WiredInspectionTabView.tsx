@@ -1,9 +1,10 @@
 import { KeyboardEvent } from 'react';
-import { GetConfigurationValue, LocalizeText } from '../../api';
+import { GetConfigurationValue, LocalizeText, localizeWithFallback } from '../../api';
 import wiredGlobalPlaceholderImage from '../../assets/images/wiredtools/wired_global_placeholder.png';
 import { Button, LayoutAvatarImageView, LayoutPetImageView, LayoutRoomObjectImageView, Text } from '../../common';
 import { INSPECTION_ELEMENTS } from './WiredCreatorTools.constants';
 import { InspectionFurniSelection, InspectionUserSelection, InspectionVariable } from './WiredCreatorTools.types';
+import { wiredSourceTypeLabelKey } from './WiredCreatorTools.helpers';
 import { useWiredCreatorToolsUiStore } from './wiredCreatorToolsUiStore';
 import { Checkbox } from '../../common/Checkbox';
 import { Select } from '../../common/Select';
@@ -66,6 +67,9 @@ export interface WiredInspectionTabViewProps {
     onToggleHighlightWireds?: () => void;
 }
 
+/** Official VariableValueTableObject: an int at the edge of the 32-bit range is shown as hidden. */
+export const isFlashRestrictedValue = (value: string): boolean => value === '2147483647' || value === '-2147483648';
+
 /**
  * The "Inspection" tab body of WiredCreatorToolsView, extracted from
  * the parent's inline JSX. Same shape as WiredVariablesTabView:
@@ -112,23 +116,23 @@ export const WiredInspectionTabView = (props: WiredInspectionTabViewProps) => {
         <div className="p-3 min-h-[360px] flex gap-4">
             <div className="w-[145px] shrink-0 flex flex-col gap-2">
                 <div className="flex flex-col gap-1">
-                    <Text bold>Element type:</Text>
+                    <Text bold>{localizeWithFallback('wiredmenu.inspection.type', 'Element type:')}</Text>
                     <div className="flex gap-1">
                         {INSPECTION_ELEMENTS.map((element) => (
-                            <Hint key={element.key} content={element.label}>
-                                <BaseButton aria-label={element.label}
+                            <Hint key={element.key} content={localizeWithFallback(wiredSourceTypeLabelKey(element.key), element.label)}>
+                                <BaseButton aria-label={localizeWithFallback(wiredSourceTypeLabelKey(element.key), element.label)}
                                     type="button"
                                     className={`w-[42px] h-[38px] rounded border flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,.7)] ${inspectionType === element.key ? 'border-[#222] bg-[#d9d6cf]' : 'border-[#7f7f7f] bg-[#ece9e1]'}`}
                                     onClick={() => setInspectionType(element.key)}
                                 >
-                                    <img alt={element.label} className="w-auto h-auto max-w-[22px] max-h-[22px] object-contain" src={element.icon} />
+                                    <img alt="" className="w-auto h-auto max-w-[22px] max-h-[22px] object-contain" src={element.icon} />
                                 </BaseButton>
                             </Hint>
                         ))}
                     </div>
                 </div>
                 <div className="flex flex-col gap-1">
-                    <Text bold>Preview:</Text>
+                    <Text bold>{localizeWithFallback('wiredmenu.inspection.preview', 'Preview:')}</Text>
                     <div className="relative h-[224px] rounded border border-[#c0bdb4] bg-[#d7d7d7] overflow-hidden">
                         {inspectionType === 'furni' && selectedFurni && roomId !== null && (
                             <div className="absolute inset-0 flex items-center justify-center p-3">
@@ -184,20 +188,20 @@ export const WiredInspectionTabView = (props: WiredInspectionTabViewProps) => {
                 </div>
                 <label className="flex items-center gap-2 text-[12px] text-[#111]">
                     <Checkbox checked={keepSelected} className="mt-0" onCheckedChange={(nextChecked) => onKeepSelectedChange(nextChecked)} />
-                    <span>Keep selected</span>
+                    <span>{localizeWithFallback('wiredmenu.inspection.pin', 'Keep selected')}</span>
                 </label>
             </div>
             <div className="min-w-0 grow flex flex-col gap-2">
                 <div className="flex flex-col gap-1 grow min-h-0">
-                    <Text bold>Variables:</Text>
+                    <Text bold>{localizeWithFallback('wiredmenu.inspection.variables', 'Variables:')}</Text>
                     <div className="grow rounded border border-[#bdb8ab] bg-white overflow-hidden">
                         <div className="grid grid-cols-[1fr_120px] border-b border-[#d8d4c8] bg-[#f5f2ea] px-3 py-2 text-[12px] text-[#666]">
-                            <span>Variable</span>
-                            <span>Value</span>
+                            <span>{localizeWithFallback('wiredmenu.inspection.variables.variable', 'Variable')}</span>
+                            <span>{localizeWithFallback('wiredmenu.inspection.variables.value', 'Value')}</span>
                         </div>
                         {!displayedVariables.length && (
                             <div className="h-[calc(100%-37px)] flex items-center justify-center text-[#b1aca2] text-[20px]">
-                                <Text>Nothing to display</Text>
+                                <Text>{localizeWithFallback('wiredmenu.table.empty', 'Nothing to display')}</Text>
                             </div>
                         )}
                         {!!displayedVariables.length && (
@@ -225,10 +229,15 @@ export const WiredInspectionTabView = (props: WiredInspectionTabViewProps) => {
                                                             onKeyDownCapture={onVariableInputKeyDown}
                                                         />
                                                     )}
-                                                    {editingVariable !== variable.key && !variable.editable && (
+                                                    {editingVariable !== variable.key && isFlashRestrictedValue(variable.value) && (
+                                                        <Hint content={localizeWithFallback('wiredmenu.inspection.flash_restriction.desc', 'The classic client can not inspect this value, it is too large')}>
+                                                            <span className="text-[#ff5733]">{localizeWithFallback('wiredmenu.inspection.flash_restriction.text', 'Hidden')}</span>
+                                                        </Hint>
+                                                    )}
+                                                    {editingVariable !== variable.key && !isFlashRestrictedValue(variable.value) && !variable.editable && (
                                                         <span className={variable.valueClassName}>{variable.label ? `${variable.value} (${variable.label})` : variable.value}</span>
                                                     )}
-                                                    {editingVariable !== variable.key && variable.editable && (
+                                                    {editingVariable !== variable.key && !isFlashRestrictedValue(variable.value) && variable.editable && (
                                                         <BaseButton
                                                             className={`w-full cursor-pointer rounded px-1 text-right text-[#1b57b2] hover:underline ${variable.valueClassName ?? ''}`}
                                                             type="button"
@@ -252,31 +261,33 @@ export const WiredInspectionTabView = (props: WiredInspectionTabViewProps) => {
                 <div className="relative flex justify-between gap-2">
                     {isInspectionGiveOpen && (
                         <div className="absolute right-0 bottom-full mb-2 w-[210px] rounded border border-[#8d887a] bg-[#efede5] p-3 shadow-[0_2px_8px_rgba(0,0,0,.25)] z-10 flex flex-col gap-2">
-                            <Text bold>Variable:</Text>
+                            <Text bold>{localizeWithFallback('wiredmenu.inspection.select_variable', 'Variable:')}</Text>
                             <Select
                                 className="rounded border border-[#b8b2a4] bg-white px-2 py-[3px] text-[12px]"
                                 value={selectedInspectionGiveDefinition?.itemId ?? 0}
                                 onChange={(event) => onSelectGiveVariable(Number(event.target.value))}
                             >
-                                {!availableInspectionDefinitions.length && <option value={0}>No variables available</option>}
+                                {!availableInspectionDefinitions.length && (
+                                    <option value={0}>{localizeWithFallback('wiredmenu.inspection.no_variables', 'No variables available')}</option>
+                                )}
                                 {availableInspectionDefinitions.map((definition) => (
                                     <option key={definition.itemId} value={definition.itemId}>
                                         {definition.name}
                                     </option>
                                 ))}
                             </Select>
-                            <Text bold>Value:</Text>
+                            <Text bold>{localizeWithFallback('wiredmenu.inspection.select_value', 'Value:')}</Text>
                             <NumberInput className="w-[96px] rounded border border-[#b8b2a4] bg-white px-2 py-[3px] text-[12px] disabled:opacity-60" disabled={!selectedInspectionGiveDefinition?.hasValue} value={inspectionGiveValue} onChange={(event) => onInspectionGiveValueChange(event.target.value)} />
                             <Button disabled={!canGiveInspectionVariable} variant="secondary" onClick={onGiveInspectionVariable}>
-                                Create
+                                {localizeWithFallback('wiredmenu.inspection.create', 'Create')}
                             </Button>
                         </div>
                     )}
                     <Button disabled={!canRemoveInspectionVariable} variant="secondary" onClick={onRemoveInspectionVariable}>
-                        Remove variable
+                        {localizeWithFallback('wiredmenu.inspection.delete', 'Remove variable')}
                     </Button>
                     <Button disabled={!canGiveInspectionVariable} variant="secondary" onClick={() => setIsInspectionGiveOpen((value) => !value)}>
-                        Give variable
+                        {localizeWithFallback('wiredmenu.inspection.add', 'Give variable')}
                     </Button>
                 </div>
             </div>

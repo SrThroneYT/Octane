@@ -251,6 +251,7 @@ export const WiredCustomContractOfficialView: FC<{}> = () => {
             save={save}
             validate={validate}
             widthModifier={1.2}
+            allowScrolling
             showSelection={false}
             footerCollapsible={false}
             footer={

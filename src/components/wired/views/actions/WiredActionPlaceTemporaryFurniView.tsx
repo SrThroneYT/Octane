@@ -8,7 +8,8 @@ import { WiredFurniSelectionSourceRow } from '../WiredFurniSelectionSourceRow';
 import { sortWiredSourceOptions, useAvailableUserSources } from '../WiredSourcesSelector';
 import { WiredVariablePicker } from '../WiredVariablePicker';
 import { flattenWiredVariablePickerEntries, getCustomVariableItemId } from '../WiredVariablePickerData';
-import { customVariablePickerEntries, normalizeWiredValueTarget, variableTokenFromId, WiredValueOrVariableField } from '../WiredValueOrVariableField';
+import { customVariablePickerEntries, normalizeWiredValueTarget, variableTokenFromId, WiredValueOrVariableField, wiredValueTargetKey } from '../WiredValueOrVariableField';
+import { readWiredVariableToken, toWiredVariableId, wiredVariableIdList } from '../WiredVariableIds';
 import { WiredActionBaseView } from './WiredActionBaseView';
 import { Checkbox } from '../../../../common/Checkbox';
 import { Radio } from '../../../../common/Radio';
@@ -48,11 +49,12 @@ const clamp = (value: number, bound: number) => Math.max(-bound, Math.min(bound,
  * spawnWithVariable, valueIsVariable, value, valueTarget]; furni sources [picks, target furni, value
  * furni], user sources [target user, value user]. Spawning with a variable gives every copy a furni
  * variable; its value is a number or another variable's (value target 0 furni, 1 user, -10 global,
- * -20 context). The two variables travel in the string param as "spawnId\tvalueId".
+ * -20 context). The two variables are AIR's variable ids [spawn variable, value variable]; an older server wrote
+ * them as the string "spawnId\tvalueId".
  */
 export const WiredActionPlaceTemporaryFurniView: FC<{}> = () =>
 {
-    const { trigger = null, setIntParams = null, setStringParam = null, setSourceTypes = null } = useWired();
+    const { trigger = null, setIntParams = null, setStringParam = null, setSourceTypes = null, setVariableIds = null } = useWired();
     const [ targetIsUser, setTargetIsUser ] = useState(false);
     const [ location, setLocation ] = useState(0);
     const [ altitude, setAltitude ] = useState(0);
@@ -108,8 +110,8 @@ export const WiredActionPlaceTemporaryFurniView: FC<{}> = () =>
         setValueIsVariable(params[7] === 1);
         setValue(String(params[8] ?? 0));
         setValueTarget(normalizeWiredValueTarget(params[9]));
-        setSpawnToken(variableTokenFromId(variables[0]));
-        setValueToken(variableTokenFromId(variables[1]));
+        setSpawnToken(readWiredVariableToken(trigger.variableIds, 0, variableTokenFromId(variables[0])));
+        setValueToken(readWiredVariableToken(trigger.variableIds, 1, variableTokenFromId(variables[1])));
         setValueFurniSource(trigger.furniSourceTypes?.[2] ?? SOURCE_TRIGGER);
         setValueUserSource(trigger.userSourceTypes?.[1] ?? SOURCE_TRIGGER);
     }, [ trigger ]);
@@ -120,7 +122,10 @@ export const WiredActionPlaceTemporaryFurniView: FC<{}> = () =>
         const spawn = [ spawnWithVariable ? 1 : 0, valueIsVariable ? 1 : 0, Number.isFinite(parsedValue) ? parsedValue : 0, valueTarget ];
 
         setIntParams([ targetIsUser ? 1 : 0, location, altitude, offsetX, offsetY, offsetAltitude, ...spawn ]);
-        setStringParam(`${ getCustomVariableItemId(spawnToken) }\t${ getCustomVariableItemId(valueToken) }`);
+        setStringParam('');
+        setVariableIds(spawnWithVariable
+            ? wiredVariableIdList(toWiredVariableId('furni', spawnToken), valueIsVariable ? toWiredVariableId(wiredValueTargetKey(valueTarget), valueToken) : '')
+            : []);
         setSourceTypes({
             furni: [ templateSource, targetFurniSource, valueFurniSource ],
             users: [ targetUserSource, valueUserSource ]
@@ -170,7 +175,7 @@ export const WiredActionPlaceTemporaryFurniView: FC<{}> = () =>
     );
 
     return (
-        <WiredActionBaseView hasSpecialInput={ true } requiresFurni={ WiredFurniType.STUFF_SELECTION_OPTION_BY_ID } save={ save } validate={ validate } widthModifier={ 1.2 }>
+        <WiredActionBaseView hasSpecialInput={ true } requiresFurni={ WiredFurniType.STUFF_SELECTION_OPTION_BY_ID } save={ save } validate={ validate } widthModifier={ 1.2 } allowScrolling>
             <div className="flex flex-col gap-2">
                 <Text small>{ localizeWithFallback('wiredfurni.params.place_furni.usage_info', 'Places temporary copies of the picked furni, as they are when you save.') }</Text>
 

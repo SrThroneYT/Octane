@@ -5,8 +5,9 @@ import { selectOption } from '../../../../test-utils/selectOption';
 
 const setIntParams = vi.fn();
 const setStringParam = vi.fn();
+const setVariableIds = vi.fn();
 const setSourceTypes = vi.fn();
-let trigger: { stringData: string; intData: number[]; userSourceTypes?: number[]; furniSourceTypes?: number[] } | null = null;
+let trigger: { stringData: string; intData: number[]; variableIds?: string[]; userSourceTypes?: number[]; furniSourceTypes?: number[] } | null = null;
 let enabledWiredAchievements: string[] = [];
 let baseProps: { save: () => void; validate?: () => boolean } | null = null;
 const variable = (itemId: number, name: string, hasValue = true) => ({ itemId, name, availability: 0, hasValue, isReadOnly: false, variableType: 0 });
@@ -25,7 +26,7 @@ vi.mock('../../../../api', () => ({
 }));
 
 vi.mock('../../../../hooks', () => ({
-    useWired: () => ({ trigger, setIntParams, setStringParam, setSourceTypes }),
+    useWired: () => ({ trigger, setIntParams, setStringParam, setSourceTypes, setVariableIds }),
     useWiredTools: () => tools,
     useAchievements: () => ({ enabledWiredAchievements })
 }));
@@ -60,6 +61,7 @@ describe('WiredActionProgressAchievementView', () => {
     beforeEach(() => {
         setIntParams.mockClear();
         setStringParam.mockClear();
+        setVariableIds.mockClear();
         setSourceTypes.mockClear();
         baseProps = null;
         enabledWiredAchievements = [];
@@ -86,8 +88,10 @@ describe('WiredActionProgressAchievementView', () => {
         fireEvent.change(screen.getByRole('textbox', { name: 'Amount' }), { target: { value: '5000000' } });
         baseProps.save();
 
-        expect(setStringParam).toHaveBeenCalledWith('ACH_Race\t0');
-        expect(setIntParams).toHaveBeenCalledWith([0, 0, 1_000_000, 0]);
+        // AIR: the name as the string, the amount's variable (none here) as the variable ids.
+        expect(setStringParam).toHaveBeenCalledWith('ACH_Race');
+        expect(setVariableIds).toHaveBeenCalledWith([]);
+        expect(setIntParams).toHaveBeenCalledWith([0, 0, 5_000_000, 0]);
         expect(setSourceTypes).toHaveBeenCalledWith({ furni: [0], users: [200, 0] });
     });
 
@@ -99,7 +103,8 @@ describe('WiredActionProgressAchievementView', () => {
         fireEvent.change(screen.getByRole('textbox', { name: 'Amount' }), { target: { value: 'Height' } });
         baseProps.save();
 
-        expect(setStringParam).toHaveBeenCalledWith('ACH_Game\t42');
+        expect(setStringParam).toHaveBeenCalledWith('ACH_Game');
+        expect(setVariableIds).toHaveBeenCalledWith(['furni:42']);
         expect(setIntParams).toHaveBeenCalledWith([1, 1, 1, 0]);
     });
 
@@ -129,6 +134,7 @@ describe('WiredActionProgressAchievementView', () => {
         expect(within(popup).queryByRole('checkbox')).toBeNull();
         baseProps.save();
         expect(setIntParams).toHaveBeenLastCalledWith([1, 1, 1, 1]);
+        expect(setVariableIds).toHaveBeenLastCalledWith(['user:5']);
         expect(setSourceTypes).toHaveBeenLastCalledWith({ furni: [0], users: [0, 200] });
     });
 
@@ -148,10 +154,12 @@ describe('WiredActionProgressAchievementView', () => {
         expect(baseProps.validate()).toBe(true);
     });
 
-    it('clamps the amount to what the server accepts', () => {
-        expect(clampProgressAmount(-4)).toBe(1);
-        expect(clampProgressAmount(Number.NaN)).toBe(1);
+    it('keeps the amount to 0..int max as AIR', () => {
+        expect(clampProgressAmount(-4)).toBe(0);
+        expect(clampProgressAmount(0)).toBe(0);
+        expect(clampProgressAmount(Number.NaN)).toBe(0);
         expect(clampProgressAmount(2.9)).toBe(2);
-        expect(clampProgressAmount(9_999_999)).toBe(1_000_000);
+        expect(clampProgressAmount(9_999_999)).toBe(9_999_999);
+        expect(clampProgressAmount(99_999_999_999)).toBe(2_147_483_647);
     });
 });

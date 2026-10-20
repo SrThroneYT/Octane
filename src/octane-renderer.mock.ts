@@ -362,6 +362,9 @@ export class ChestNotificationEvent extends MessageEvent {}
 export class WiredTransactionFailEvent extends MessageEvent {}
 export class WiredTradeErrorEvent extends MessageEvent {}
 export class WiredTransactionSuccessEvent extends MessageEvent {}
+export class FurnitureFloorRemoveEvent extends MessageEvent {}
+export class FurnitureWallRemoveEvent extends MessageEvent {}
+export class RoomRightsEvent extends MessageEvent {}
 export class ClubGiftNotificationEvent extends MessageEvent {}
 export class ClubGiftSelectedEvent extends MessageEvent {}
 export class ConnectionErrorEvent extends MessageEvent {}
@@ -382,8 +385,8 @@ export class RoomEnterEvent extends MessageEvent {}
 export class SimpleAlertMessageEvent extends MessageEvent {}
 export class UserBannedMessageEvent extends MessageEvent {}
 export class WiredRewardResultMessageEvent extends MessageEvent {
-    static readonly PRODUCT_DONATED_CODE = 7;
-    static readonly BADGE_DONATED_CODE = 8;
+    static readonly PRODUCT_DONATED_CODE = 6;
+    static readonly BADGE_DONATED_CODE = 7;
 }
 
 // RoomEnterEffect — used by useNotificationStore to check if the room-enter
@@ -1061,6 +1064,47 @@ export class WiredVariableFxStatusEvent extends StubClass {}
 export class WiredVariableFxStatusRemovedEvent extends StubClass {}
 export const wiredVariableFxStatusKey = (status: { configId: number; variableId: string; userEntity: boolean; entityId: number }) =>
     `${status.configId}|${status.variableId}|${status.userEntity ? 'u' : 'f'}|${status.entityId}`;
+/** The renderer's port of AIR's variable fx painters: a deterministic stand-in that draws nothing. */
+export class VariableFxStatusData {
+    constructor(
+        public readonly value: number,
+        public readonly overrideMinValue: number | null = null,
+        public readonly overrideMaxValue: number | null = null,
+        public readonly extra: Record<string, string> = {},
+        public readonly isInitialize = false
+    ) {}
+
+    public static fromWire(status: { value: number; overrideMinValue: number | null; overrideMaxValue: number | null; extra: Record<string, string> }, initialize = false) {
+        return new VariableFxStatusData(status.value, status.overrideMinValue, status.overrideMaxValue, { ...status.extra }, initialize);
+    }
+}
+export class VariableFxVisualizer {
+    public frame: null = null;
+    public readonly statuses: VariableFxStatusData[] = [];
+
+    constructor(
+        public readonly config: unknown,
+        status: VariableFxStatusData
+    ) {
+        this.statuses.push(status);
+    }
+
+    public static fromWire(config: unknown, status: { value: number; overrideMinValue: number | null; overrideMaxValue: number | null; extra: Record<string, string> }, _now: number, initialize = false) {
+        return new VariableFxVisualizer(config, VariableFxStatusData.fromWire(status, initialize));
+    }
+
+    public updateData(status: VariableFxStatusData): void {
+        this.statuses.push(status);
+    }
+
+    public needsUpdate(): boolean {
+        return false;
+    }
+
+    public update(): boolean {
+        return false;
+    }
+}
 export class WiredMenuPermissionsSaveComposer extends RecordingComposer {}
 export class WiredRoomStateActionComposer extends RecordingComposer {}
 export class SelfDonationMessageComposer extends RecordingComposer {}

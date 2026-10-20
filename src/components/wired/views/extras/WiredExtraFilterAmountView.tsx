@@ -2,7 +2,8 @@ import { FC, useEffect, useState } from 'react';
 import { LocalizeText, localizeWithFallback, WiredFurniType } from '../../../../api';
 import { Text } from '../../../../common';
 import { useWired } from '../../../../hooks';
-import { normalizeWiredValueTarget, variableTokenFromId, WiredValueOrVariableField } from '../WiredValueOrVariableField';
+import { normalizeWiredValueTarget, variableTokenFromId, WiredValueOrVariableField, wiredValueTargetKey } from '../WiredValueOrVariableField';
+import { readWiredVariableToken, toWiredVariableId, wiredVariableIdList } from '../WiredVariableIds';
 import { getCustomVariableItemId } from '../WiredVariablePickerData';
 import { WiredExtraBaseView } from './WiredExtraBaseView';
 import { Checkbox } from '../../../../common/Checkbox';
@@ -18,11 +19,11 @@ const clampValue = (value: number) => {
 };
 
 /**
- * Official layout: [N, N from a variable, variable target], the variable id as text; ours follow:
+ * Official layout: [N, N from a variable, variable target], variable ids [N variable], no string; ours follow:
  * [random pick]. The variable is read on the triggering holder.
  */
 export const WiredExtraFilterAmountView: FC<{}> = () => {
-    const { trigger = null, setIntParams = null, setStringParam = null } = useWired();
+    const { trigger = null, setIntParams = null, setStringParam = null, setVariableIds = null } = useWired();
     const [amount, setAmount] = useState(String(MIN_FILTER));
     const [fromVariable, setFromVariable] = useState(false);
     const [target, setTarget] = useState(TARGET_USER);
@@ -39,14 +40,15 @@ export const WiredExtraFilterAmountView: FC<{}> = () => {
         setFromVariable(d[1] === 1);
         setTarget(d.length > 2 ? normalizeWiredValueTarget(d[2]) : TARGET_USER);
         setRandomPick(d.length > 3 ? d[3] === 1 : true);
-        setToken(variableTokenFromId(trigger.stringData));
+        setToken(readWiredVariableToken(trigger.variableIds, 0, variableTokenFromId(trigger.stringData)));
     }, [trigger]);
 
     const save = () => {
         const variableId = fromVariable ? getCustomVariableItemId(token) : 0;
 
         setIntParams([clampValue(Number(amount)), fromVariable ? 1 : 0, target, randomPick ? 1 : 0]);
-        setStringParam(variableId > 0 ? String(variableId) : '');
+        setStringParam('');
+        setVariableIds(wiredVariableIdList(variableId > 0 ? toWiredVariableId(wiredValueTargetKey(target), token) : ''));
     };
 
     const validate = () => amountValid && (!fromVariable || getCustomVariableItemId(token) > 0);

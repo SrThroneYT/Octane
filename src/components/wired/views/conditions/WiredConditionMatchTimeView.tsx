@@ -3,6 +3,7 @@ import { LocalizeText, WiredFurniType } from '../../../../api';
 import { Text } from '../../../../common';
 import { useWired } from '../../../../hooks';
 import { WiredConditionBaseView } from './WiredConditionBaseView';
+import { resolveConditionTimezone, useWiredRoomTimezone, WiredConditionTimezoneSection } from './WiredConditionTimezoneSection';
 import { Radio } from '../../../../common/Radio';
 import { NumberInput } from '../../../../common/NumberInput';
 
@@ -83,7 +84,10 @@ const TimeFilterSection: FC<TimeFilterSectionProps> = (props) => {
 };
 
 export const WiredConditionMatchTimeView: FC<{}> = () => {
-    const { trigger = null, setIntParams = null } = useWired();
+    const { trigger = null, setIntParams = null, setStringParam = null } = useWired();
+    const { roomZone } = useWiredRoomTimezone();
+    // The string param is the timezone; a box without one follows the room's.
+    const [timezone, setTimezone] = useState('');
     const [hourMode, setHourMode] = useState(MODE_SKIP);
     const [hourFrom, setHourFrom] = useState(0);
     const [hourTo, setHourTo] = useState(0);
@@ -112,6 +116,7 @@ export const WiredConditionMatchTimeView: FC<{}> = () => {
         setHourMode(toMode(d[2] === 1, hrFrom, hrTo));
         setHourFrom(hrFrom);
         setHourTo(hrTo);
+        setTimezone((trigger.stringData ?? '').trim());
     }, [trigger]);
 
     const save = () => {
@@ -125,6 +130,7 @@ export const WiredConditionMatchTimeView: FC<{}> = () => {
             ...range(minuteMode, minuteFrom, minuteTo, 59),
             ...range(hourMode, hourFrom, hourTo, 23)
         ]);
+        setStringParam(resolveConditionTimezone(timezone, roomZone));
     };
 
     return (
@@ -166,6 +172,7 @@ export const WiredConditionMatchTimeView: FC<{}> = () => {
                     onModeChange={setSecondMode}
                     onToChange={(value) => setSecondTo(clampValue(value, 0, 59))}
                 />
+                <WiredConditionTimezoneSection value={timezone} onChange={setTimezone} />
             </div>
         </WiredConditionBaseView>
     );

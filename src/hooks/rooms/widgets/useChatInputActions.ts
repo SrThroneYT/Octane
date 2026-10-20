@@ -15,7 +15,7 @@ import {
     TriggerHabbiconComposer
 } from '@octane/renderer';
 import { useCallback } from 'react';
-import { CanOpenFurniChooser, CanOpenUserChooser,ChatMessageTypeEnum, GetClubMemberLevel, GetConfigurationValue, IsAnyRoomController, LocalizeText, SendMessageComposer } from '../../../api';
+import { CanOpenFurniChooser, CanOpenUserChooser,ChatMessageTypeEnum, GetClubMemberLevel, GetConfigurationValue, IsAnyRoomController, LocalizeText, SendMessageComposer, WIRED_PLAYTEST_TOGGLE_LINK } from '../../../api';
 import { useNotification } from '../../notification';
 import { useTranslation } from '../../translation';
 import { useRoom } from '../useRoom';
@@ -244,6 +244,10 @@ export const useChatInputActions = () => {
                     case ':inspect':
                     case ':inspection':
                         CreateLinkEvent('wiredmenu/open/inspection');
+                        return null;
+                    case ':playtest':
+                        // AIR ChatInputWidgetHandler: flips the wired menu playtest preference, with its notification.
+                        CreateLinkEvent(WIRED_PLAYTEST_TOGGLE_LINK);
                         return null;
                     case ':togglefps': {
                         if (GetTicker().maxFPS > 0) GetTicker().maxFPS = 0;

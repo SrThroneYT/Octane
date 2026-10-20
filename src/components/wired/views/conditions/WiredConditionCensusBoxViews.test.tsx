@@ -88,22 +88,22 @@ describe('the six condition windows added with the 2026-09 census', () => {
 
     afterEach(cleanup);
 
-    it('rank: sends [rank, comparison, quantifier] with the users in the source slot and reads them back', () => {
-        trigger = { intData: [5, 2, 1], stringData: '', userSourceTypes: [200] };
+    it('rank: sends [rank, comparison] with the users in the source slot and reads them back; the quantifier is not in the ints', () => {
+        trigger = { intData: [5, 2], stringData: '', userSourceTypes: [200] };
         render(<WiredConditionUserRankView />);
 
         expect(screen.getByTestId('users-200')).toBeTruthy();
         save();
 
-        expect(setIntParams).toHaveBeenCalledWith([5, 2, 1]);
+        expect(setIntParams).toHaveBeenCalledWith([5, 2]);
         expect(setSourceTypes).toHaveBeenCalledWith({ furni: [], users: [200] });
     });
 
-    it('rank: an untouched window sends rank 1, at least, the triggering user, every user', () => {
+    it('rank: an untouched window sends rank 1, at least, the triggering user', () => {
         render(<WiredConditionUserRankView />);
         save();
 
-        expect(setIntParams).toHaveBeenCalledWith([1, 5, 0]);
+        expect(setIntParams).toHaveBeenCalledWith([1, 5]);
         expect(setSourceTypes).toHaveBeenCalledWith({ furni: [], users: [0] });
     });
 
@@ -145,16 +145,16 @@ describe('the six condition windows added with the 2026-09 census', () => {
         expect(setStringParam).toHaveBeenCalledWith('');
     });
 
-    it('highscore points: sends [points, comparison, quantifier] with the users in the source slot and needs a scoreboard', () => {
-        trigger = { intData: [500, 5, 1], stringData: '', selectedItems: [], userSourceTypes: [201] };
+    it('highscore points: sends [points, comparison] with the users in the source slot and needs a scoreboard', () => {
+        trigger = { intData: [500, 5], stringData: '', selectedItems: [], userSourceTypes: [201] };
         const { unmount } = render(<WiredConditionUserHighscorePointsView />);
         expect(screen.getByTestId('valid').textContent).toBe('false');
         save();
-        expect(setIntParams).toHaveBeenCalledWith([500, 5, 1]);
+        expect(setIntParams).toHaveBeenCalledWith([500, 5]);
         expect(setSourceTypes).toHaveBeenCalledWith({ furni: [], users: [201] });
         unmount();
 
-        trigger = { intData: [500, 5, 1], stringData: '', selectedItems: [{ id: 1 }] };
+        trigger = { intData: [500, 5], stringData: '', selectedItems: [{ id: 1 }] };
         render(<WiredConditionUserHighscorePointsView />);
         expect(screen.getByTestId('valid').textContent).toBe('true');
     });

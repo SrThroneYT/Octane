@@ -18,6 +18,7 @@ import {
     normalizeVariableTokenFromWire,
     WiredVariablePickerTarget
 } from '../WiredVariablePickerData';
+import { readWiredVariableToken, toWiredVariableId, wiredVariableIdList } from '../WiredVariableIds';
 import { WiredExtraBaseView } from './WiredExtraBaseView';
 import { Radio } from '../../../../common/Radio';
 import { Select } from '../../../../common/Select';
@@ -75,7 +76,7 @@ const targetOf = (value: number): VariableTarget => TARGETS.find((target) => tar
 const targetValue = (key: VariableTarget) => TARGETS.find((target) => target.key === key)?.value ?? 1;
 
 export const WiredExtraMovementCurveView: FC<{}> = () => {
-    const { trigger = null, furniIds = [], setFurniIds = null, setIntParams = null, setStringParam = null, setSourceTypes = null } = useWired();
+    const { trigger = null, furniIds = [], setFurniIds = null, setIntParams = null, setStringParam = null, setSourceTypes = null, setVariableIds = null } = useWired();
     const { userVariableDefinitions = [], furniVariableDefinitions = [], roomVariableDefinitions = [], contextVariableDefinitions = [] } = useWiredTools();
     const [curveType, setCurveType] = useState(CURVE_JUMP);
     const [intensity, setIntensity] = useState(INTENSITY_DEFAULT);
@@ -120,7 +121,8 @@ export const WiredExtraMovementCurveView: FC<{}> = () => {
         setIntensity(ints.length > 4 ? clamp(ints[4], 0, 100, INTENSITY_DEFAULT) : INTENSITY_DEFAULT);
         setUserSource(trigger.userSourceTypes?.[0] ?? SOURCE_TRIGGER);
         setFurniSource(toEditorPickSource(trigger.furniSourceTypes?.[0] ?? SOURCE_TRIGGER));
-        setVariableToken(normalizeVariableTokenFromWire(trigger.stringData ?? ''));
+        // AIR: the variable as the first variable id; an older server wrote the token as the string.
+        setVariableToken(readWiredVariableToken(trigger.variableIds, 0, normalizeVariableTokenFromWire(trigger.stringData ?? '')));
     }, [trigger]);
 
     const chooseTarget = (next: VariableTarget) => {
@@ -140,7 +142,8 @@ export const WiredExtraMovementCurveView: FC<{}> = () => {
             intensity
         ]);
         setSourceTypes({ furni: [toWirePickSource(trigger, furniSource)], users: [userSource] });
-        setStringParam(fromVariable ? variableToken : '');
+        setStringParam('');
+        setVariableIds(wiredVariableIdList(fromVariable ? toWiredVariableId(target as WiredVariablePickerTarget, variableToken) : ''));
         if (!picksFurni) setFurniIds([]);
     };
 

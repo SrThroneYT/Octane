@@ -2,7 +2,7 @@ import { FC, useEffect, useState } from 'react';
 import { LocalizeText, WiredFurniType } from '../../../../api';
 import { Text } from '../../../../common';
 import { useWired } from '../../../../hooks';
-import { WiredTextFormattingHelp } from '../common/WiredTextFormattingHelp';
+import { formatWiredTextCounter, WiredTextFormattingHelp } from '../common/WiredTextFormattingHelp';
 import { WiredExtraBaseView } from './WiredExtraBaseView';
 
 const DEFAULT_CONNECTOR_PLACEHOLDER = '0=text 1\n1=text 2\n2 = text 3\n_=any other value';
@@ -67,7 +67,7 @@ export const WiredExtraVariableTextConnectorView: FC<{}> = () => {
                     value={mappingsText}
                     onChange={(event) => handleTextChange(event.target.value)}
                 />
-                <Text small>{`${lineCount}/${MAX_CONNECTOR_LINES} righe - ${characterCount}/${MAX_CONNECTOR_CHARACTERS} caratteri`}</Text>
+                <Text small>{formatWiredTextCounter(lineCount, characterCount, MAX_CONNECTOR_CHARACTERS, MAX_CONNECTOR_LINES)}</Text>
                 <WiredTextFormattingHelp />
             </div>
         </WiredExtraBaseView>

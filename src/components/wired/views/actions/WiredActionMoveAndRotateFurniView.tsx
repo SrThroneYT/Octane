@@ -2,7 +2,7 @@ import { FC, useEffect, useState } from 'react';
 import { LocalizeText, WiredFurniType } from '../../../../api';
 import { Text } from '../../../../common';
 import { useWired } from '../../../../hooks';
-import { WIRED_DIRECTION_GRID, WiredDirectionIcon } from '../WiredDirectionIcon';
+import { WIRED_MOVE_ICONS, WIRED_SEQUENTIAL_DIRECTIONS, WiredIconRadioGroup } from '../WiredMoveIconRadios';
 import { WiredSourcesSelector } from '../WiredSourcesSelector';
 import { slotFurniSource } from '../WiredSourceSlots';
 import { WiredActionBaseView } from './WiredActionBaseView';
@@ -10,6 +10,9 @@ import { Checkbox } from '../../../../common/Checkbox';
 import { Radio } from '../../../../common/Radio';
 
 const rotationOptions: number[] = [0, 1, 2, 3, 4, 5, 6];
+
+// Official: the start directions 0..7 as move_* icons, 4 per row in order.
+const START_DIRECTION_OPTIONS = WIRED_SEQUENTIAL_DIRECTIONS.map((direction) => ({ value: direction, icon: WIRED_MOVE_ICONS[direction] }));
 
 export const WiredActionMoveAndRotateFurniView: FC<{}> = (props) => {
     const [movement, setMovement] = useState(0);
@@ -51,24 +54,7 @@ export const WiredActionMoveAndRotateFurniView: FC<{}> = (props) => {
         >
             <div className="flex flex-col gap-1">
                 <Text bold>{LocalizeText('wiredfurni.params.startdir')}</Text>
-                <div className="grid grid-cols-4 gap-2 max-w-[240px]">
-                    {WIRED_DIRECTION_GRID.flatMap((row, rowIndex) =>
-                        row.map((direction, columnIndex) => {
-                            if (direction === null) {
-                                return <div key={`move-to-dir-empty-${rowIndex}-${columnIndex}`} />;
-                            }
-
-                            return (
-                                <label key={`move-to-dir-${direction}`} className="flex items-center justify-center gap-[2px] cursor-pointer">
-                                    <Radio checked={movement === direction} id={`movement${direction}`} name="movement" onCheckedChange={() => setMovement(direction)} />
-                                    <span className="inline-flex items-center justify-center">
-                                        <WiredDirectionIcon direction={direction} selected={movement === direction} />
-                                    </span>
-                                </label>
-                            );
-                        })
-                    )}
-                </div>
+                <WiredIconRadioGroup name="movement" options={START_DIRECTION_OPTIONS} value={movement} onChange={setMovement} />
             </div>
             <div className="flex flex-col gap-1">
                 <Text bold>{LocalizeText('wiredfurni.params.turn')}</Text>

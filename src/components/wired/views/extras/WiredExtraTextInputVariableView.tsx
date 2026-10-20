@@ -12,6 +12,7 @@ import {
     isCustomVariableToken,
     normalizeVariableTokenFromWire
 } from '../WiredVariablePickerData';
+import { fromWiredVariableId, toWiredVariableId, wiredVariableIdList } from '../WiredVariableIds';
 import { WiredExtraBaseView } from './WiredExtraBaseView';
 import { WiredPlaceholderPreview } from './WiredPlaceholderPreview';
 import { Radio } from '../../../../common/Radio';
@@ -53,7 +54,7 @@ const normalizeCapturerName = (value: string) => {
 const escapeHtml = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
 export const WiredExtraTextInputVariableView: FC<{}> = () => {
-    const { trigger = null, setIntParams = null, setStringParam = null } = useWired();
+    const { trigger = null, setIntParams = null, setStringParam = null, setVariableIds = null } = useWired();
     const { contextVariableDefinitions = [] } = useWiredTools();
     const [variableToken, setVariableToken] = useState('');
     const [capturerName, setCapturerName] = useState(DEFAULT_CAPTURER_NAME);
@@ -86,7 +87,10 @@ export const WiredExtraTextInputVariableView: FC<{}> = () => {
     useEffect(() => {
         if (!trigger) return;
 
-        const [nextVariableToken, nextCapturerName] = splitStringData(trigger.stringData);
+        // AIR: the context variable as the first variable id, the name as the string; an older server wrote
+        // `variable\tname`.
+        const idToken = fromWiredVariableId(trigger.variableIds?.[0] ?? '');
+        const [nextVariableToken, nextCapturerName] = idToken ? [idToken, trigger.stringData ?? ''] : splitStringData(trigger.stringData);
 
         setVariableToken(normalizeVariableTokenFromWire(nextVariableToken));
         setCapturerName(normalizeCapturerName(nextCapturerName));
@@ -109,10 +113,9 @@ export const WiredExtraTextInputVariableView: FC<{}> = () => {
     const previewHtml = useMemo(() => LocalizeText('wiredfurni.params.texts.placeholder_preview', ['placeholder'], [escapeHtml(previewToken)]), [previewToken]);
 
     const save = () => {
-        const variableItemId = getCustomVariableItemId(variableToken);
-
         setIntParams([canUseTextDisplay && normalizeDisplayType(displayType) === DISPLAY_TEXTUAL ? 1 : 0]);
-        setStringParam(`${variableItemId ? String(variableItemId) : ''}\t${normalizeCapturerName(capturerName)}`);
+        setStringParam(normalizeCapturerName(capturerName));
+        setVariableIds(wiredVariableIdList(toWiredVariableId('context', variableToken)));
     };
 
     const validate = () => !!normalizeCapturerName(capturerName).length && getCustomVariableItemId(variableToken) > 0;

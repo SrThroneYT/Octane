@@ -7,7 +7,6 @@ import { OctaneInput } from '../../../../layout';
 import { BOT_SOURCES, WiredSourcesSelector } from '../WiredSourcesSelector';
 import { WiredActionBaseView } from './WiredActionBaseView';
 
-const DEFAULT_FIGURE: string = 'hd-180-1.ch-210-66.lg-270-82.sh-290-81';
 const normalizeBotSource = (value: number, hasBotName = false) => (BOT_SOURCES.some((option) => option.value === value) ? value : hasBotName ? 100 : 0);
 
 export const WiredActionBotChangeFigureView: FC<{}> = (props) => {
@@ -27,9 +26,9 @@ export const WiredActionBotChangeFigureView: FC<{}> = (props) => {
         const data = trigger.stringData.split(WIRED_STRING_DELIMETER);
         const nextBotName = data.length > 0 ? data[0] : '';
 
-        if (data.length > 0) setBotName(nextBotName);
-        if (data.length > 1) setFigure(data[1].length > 0 ? data[1] : DEFAULT_FIGURE);
-        else setFigure(DEFAULT_FIGURE);
+        // Official: an empty figure stays empty until one is captured.
+        setBotName(nextBotName);
+        setFigure(data.length > 1 ? data[1] : '');
 
         setBotSource(normalizeBotSource(trigger.userSourceTypes?.[0] ?? -1, true));
     }, [trigger]);
@@ -55,7 +54,7 @@ export const WiredActionBotChangeFigureView: FC<{}> = (props) => {
             </div>
             <Text bold>{LocalizeText('wiredfurni.params.capture.figure')}</Text>
             <div className="flex items-center justify-center">
-                <LayoutAvatarImageView direction={4} figure={figure} />
+                {figure && <LayoutAvatarImageView direction={4} figure={figure} />}
                 <Button onClick={(event) => setFigure(GetSessionDataManager().figure)}>{LocalizeText('wiredfurni.params.capture.figure')}</Button>
             </div>
         </WiredActionBaseView>

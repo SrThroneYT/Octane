@@ -1,11 +1,9 @@
 import { FC, useCallback, useEffect, useRef, useState } from 'react';
-import { LocalizeText, WiredFurniType, WiredSelectionVisualizer } from '../../../../api';
-import { Text } from '../../../../common';
+import { WiredFurniType, WiredSelectionVisualizer } from '../../../../api';
 import { useWired } from '../../../../hooks';
 import { WiredFurniSelectionSourceRow } from '../WiredFurniSelectionSourceRow';
 import { FURNI_SOURCES, sortWiredSourceOptions, WiredSourceOption } from '../WiredSourcesSelector';
 import { WiredConditionBaseView } from './WiredConditionBaseView';
-import { Radio } from '../../../../common/Radio';
 
 const SOURCE_TRIGGER = 0;
 const SOURCE_SELECTED = 100;
@@ -41,14 +39,9 @@ const serializeIds = (ids: number[]): string => {
     return ids.filter((id) => id > 0).join(FURNI_DELIMITER);
 };
 
-interface WiredConditionFurniIsOfTypeViewProps {
-    negative?: boolean;
-}
-
-export const WiredConditionFurniIsOfTypeView: FC<WiredConditionFurniIsOfTypeViewProps> = ({ negative = false }) => {
+export const WiredConditionFurniIsOfTypeView: FC = () => {
     const [matchSource, setMatchSource] = useState<number>(SOURCE_TRIGGER);
     const [compareSource, setCompareSource] = useState<number>(SOURCE_TRIGGER);
-    const [quantifier, setQuantifier] = useState<number>(0);
     const [primaryFurniIds, setPrimaryFurniIds] = useState<number[]>([]);
     const [secondaryFurniIds, setSecondaryFurniIds] = useState<number[]>([]);
     const [selectionMode, setSelectionMode] = useState<SelectionMode>('primary');
@@ -56,7 +49,8 @@ export const WiredConditionFurniIsOfTypeView: FC<WiredConditionFurniIsOfTypeView
     const highlightedIds = useRef<number[]>([]);
 
     // Official layout: the picks are the types to match (our secondary set), the furni checked come from the
-    // official source slot; ours follow: [type source, quantifier] and the furni checked as picks in the string.
+    // official source slot, the quantifier in its slot (the base view's); ours follow: [type source] and the furni
+    // checked as picks in the string.
     const { trigger = null, furniIds = [], setFurniIds, setIntParams, setStringParam, setAllowsFurni, setSourceTypes } = useWired();
 
     // AIR tints by pick list: the first slot's picks (source 100, AIR stuffIds) the first tint, the second slot's
@@ -92,16 +86,14 @@ export const WiredConditionFurniIsOfTypeView: FC<WiredConditionFurniIsOfTypeView
         const nextSecondaryIds = [...(trigger.selectedItems ?? [])];
         const nextMatchSource = trigger.furniSourceTypes?.[0] ?? (nextPrimaryIds.length ? SOURCE_SELECTED : SOURCE_TRIGGER);
         const nextCompareSource = trigger.intData.length >= 1 ? trigger.intData[0] : SOURCE_SECONDARY_SELECTED;
-        const nextQuantifier = trigger.intData.length >= 2 ? (trigger.intData[1] === 1 ? 1 : 0) : 1;
 
         setMatchSource(nextMatchSource);
         setCompareSource(nextCompareSource);
-        setQuantifier(nextQuantifier);
         setPrimaryFurniIds(nextPrimaryIds);
         setSecondaryFurniIds(nextSecondaryIds);
         setSelectionMode('primary');
         setFurniIds([...nextPrimaryIds]);
-    }, [trigger, setFurniIds, negative]);
+    }, [trigger, setFurniIds]);
 
     useEffect(() => {
         if (selectionMode === 'primary') setPrimaryFurniIds(furniIds);
@@ -158,13 +150,12 @@ export const WiredConditionFurniIsOfTypeView: FC<WiredConditionFurniIsOfTypeView
         setFurniIds(compareSource === SOURCE_SECONDARY_SELECTED ? [...nextSecondaryIds] : []);
         // Keep the live picks and the selection mode together if the window stays open.
         setSelectionMode('secondary');
-        setIntParams([compareSource, quantifier]);
+        setIntParams([compareSource]);
         setStringParam(matchSource === SOURCE_SELECTED ? serializeIds(nextPrimaryIds) : '');
         setSourceTypes({ furni: [matchSource], users: [] });
-    }, [selectionMode, furniIds, primaryFurniIds, matchSource, compareSource, quantifier, secondaryFurniIds, setFurniIds, setIntParams, setStringParam, setSourceTypes]);
+    }, [selectionMode, furniIds, primaryFurniIds, matchSource, compareSource, secondaryFurniIds, setFurniIds, setIntParams, setStringParam, setSourceTypes]);
 
     const selectionLimit = trigger?.maximumItemSelectionCount ?? 0;
-    const quantifierKeyPrefix = negative ? 'wiredfurni.params.quantifier.furni.neg' : 'wiredfurni.params.quantifier.furni';
 
     return (
         <WiredConditionBaseView
@@ -199,16 +190,6 @@ export const WiredConditionFurniIsOfTypeView: FC<WiredConditionFurniIsOfTypeView
                     />
                 </div>
             }
-        >
-            <div className="flex flex-col gap-2">
-                <Text bold>{LocalizeText('wiredfurni.params.quantifier_selection')}</Text>
-                {[0, 1].map((value) => (
-                    <label key={value} className="flex items-center gap-1">
-                        <Radio checked={quantifier === value} name="stuffIsQuantifier" onCheckedChange={() => setQuantifier(value)} />
-                        <Text>{LocalizeText(`${quantifierKeyPrefix}.${value}`)}</Text>
-                    </label>
-                ))}
-            </div>
-        </WiredConditionBaseView>
+        />
     );
 };

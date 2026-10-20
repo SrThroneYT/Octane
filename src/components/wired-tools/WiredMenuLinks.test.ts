@@ -6,7 +6,10 @@ describe('WiredMenuLinks', () => {
         expect(translateWiredMenuLink('wiredmenu/open')).toBe('wired-tools/open');
         expect(translateWiredMenuLink('wiredmenu/open/settings')).toBe('wired-tools/tab/settings');
         expect(translateWiredMenuLink('wiredmenu/open/variable_overview')).toBe('wired-tools/tab/variables');
-        expect(translateWiredMenuLink('wiredmenu/open/variable_overview/@score')).toBe('wired-tools/tab/variables');
+        expect(translateWiredMenuLink('wiredmenu/open/variable_overview/@score')).toBe('wired-tools/tab/variables/@score');
+        expect(translateWiredMenuLink('wiredmenu/open/variable_overview/@event.transaction_failed.reason')).toBe(
+            'wired-tools/tab/variables/@event.transaction_failed.reason'
+        );
     });
 
     it('inspects furni and users and opens the logs', () => {

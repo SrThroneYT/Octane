@@ -3,13 +3,24 @@ import { ConditionDefinition, TriggerDefinition, Triggerable, WiredActionDefinit
 /** Which of the three holders a box belongs to; a clipboard entry only pastes into the same holder and code. */
 export type WiredHolder = 'action' | 'condition' | 'trigger' | 'addon' | 'selector' | 'variable' | 'unknown';
 
-/** What a box's settings look like off the box: the same four things the save packet carries. */
+/**
+ * What a box's settings look like off the box (the official ClipboardWiredEntry): what the save
+ * packet carries, the second picks, the sources and the variable ids, plus the delay, quantifier or
+ * selector switches of the holders that have them.
+ */
 export interface WiredClipboardEntry {
     key: string;
     intParams: number[];
     stringParam: string;
     furniIds: number[];
     delayInPulses: number;
+    furniIds2?: number[];
+    furniSourceTypes?: number[];
+    userSourceTypes?: number[];
+    variableIds?: string[];
+    quantifierCode?: number;
+    selectorFilter?: boolean;
+    selectorInvert?: boolean;
 }
 
 export interface WiredTriggerableData {
@@ -95,11 +106,48 @@ export const withServerDefaultIntParams = <T extends Triggerable>(triggerable: T
 };
 
 /**
- * The box with a clipboard entry pasted in. "Paste into" keeps the box's own furni picks and
- * delay and takes only the settings, so a copied configuration lands on a box that already
- * points at its own furni.
+ * The box with a clipboard entry pasted in. A paste takes everything the official one restores: the
+ * settings, both pick lists, the sources, the variable ids, and the delay, quantifier or selector
+ * switches. "Paste into" keeps the box's own furni picks and delay and takes only the settings: the int params, the
+ * string and the variable ids (where the variable boxes keep their variables, as AIR).
  */
 export const pasteTriggerableData = <T extends Triggerable>(triggerable: T, entry: WiredClipboardEntry, pasteInto: boolean): T =>
     pasteInto
-        ? withTriggerableData(triggerable, { intParams: entry.intParams, stringParam: entry.stringParam })
-        : withTriggerableData(triggerable, { intParams: entry.intParams, stringParam: entry.stringParam, furniIds: entry.furniIds, delayInPulses: entry.delayInPulses });
+        ? withTriggerableData(triggerable, { intParams: entry.intParams, stringParam: entry.stringParam, variableIds: entry.variableIds })
+        : withTriggerableData(triggerable, {
+              intParams: entry.intParams,
+              stringParam: entry.stringParam,
+              furniIds: entry.furniIds,
+              delayInPulses: entry.delayInPulses,
+              furniIds2: entry.furniIds2,
+              furniSourceTypes: entry.furniSourceTypes,
+              userSourceTypes: entry.userSourceTypes,
+              variableIds: entry.variableIds,
+              quantifierCode: entry.quantifierCode,
+              selectorFilter: entry.selectorFilter,
+              selectorInvert: entry.selectorInvert
+          });
+
+/** The two pick lists of an open box after a furni left the room. */
+export interface WiredPicksAfterRemoval {
+    /** The open box itself was removed: the editor closes. */
+    closesEditor: boolean;
+    furniIds: number[];
+    furniIds2: number[];
+    /** Whether either list lost the furni. */
+    changed: boolean;
+}
+
+/**
+ * Official stuffRemoved: the removed furni closes the editor when it is the open box, and otherwise
+ * drops out of both pick lists.
+ */
+export const removeFurniFromWiredPicks = (openBoxId: number, furniIds: number[], furniIds2: number[], removedId: number): WiredPicksAfterRemoval => {
+    if (openBoxId === removedId) return { closesEditor: true, furniIds, furniIds2, changed: false };
+
+    const nextFurniIds = furniIds.filter((id) => id !== removedId);
+    const nextFurniIds2 = furniIds2.filter((id) => id !== removedId);
+    const changed = nextFurniIds.length !== furniIds.length || nextFurniIds2.length !== furniIds2.length;
+
+    return { closesEditor: false, furniIds: changed ? nextFurniIds : furniIds, furniIds2: changed ? nextFurniIds2 : furniIds2, changed };
+};

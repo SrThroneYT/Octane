@@ -64,6 +64,8 @@ export interface MonitorStat {
 }
 
 export interface MonitorLog {
+    /** AIR's error id; it picks the info text `wiredmenu.error_info.<id>`. */
+    errorId: number;
     type: string;
     category: string;
     amount: string;
@@ -112,13 +114,11 @@ export interface MonitorSnapshot {
     heavyConsecutiveWindowsThreshold: number;
     overloadConsecutiveWindowsThreshold: number;
     heavyDelayedThresholdPercent: number;
+    /** Our monitor packet (5101): the detail behind the latest occurrence of each diagnostic type. */
     logs: Array<{
-        amount: number;
-        latestOccurrenceSeconds: number;
         latestReason: string;
         latestSourceId: number;
         latestSourceLabel: string;
-        severity: string;
         type: string;
     }>;
     history: Array<{
@@ -131,9 +131,23 @@ export interface MonitorSnapshot {
     }>;
     /** The server's room stats (AIR's own packet, 1891); null until the server answers one. */
     roomStats: MonitorRoomStatsData | null;
+    /** The server's error list (AIR's own packet, 15, asked with 1132); empty until the server answers one. */
+    errors: MonitorErrorLog[];
+}
+
+/** One row of AIR's monitor error list (WiredErrorLogs, 15). */
+export interface MonitorErrorLog {
+    errorId: number;
+    name: string;
+    category: string;
+    amount: number;
+    /** When the latest one happened (client clock, ms), from the server's "ms since"; -1 while it never happened. */
+    latestOccurredAtMs: number;
 }
 
 export interface MonitorLogDetails {
+    /** AIR's error id of a monitor row, for its `wiredmenu.error_info.<id>` text; absent for a history row. */
+    errorId?: number;
     amount?: string;
     latest?: string;
     occurredAt?: string;

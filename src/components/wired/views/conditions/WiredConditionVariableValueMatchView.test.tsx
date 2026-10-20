@@ -7,8 +7,18 @@ const setStringParam = vi.fn();
 const setSourceTypes = vi.fn();
 const setFurniIds = vi.fn();
 const setAllowsFurni = vi.fn();
+const setVariableIds = vi.fn();
+const setFurniIds2 = vi.fn();
 const noFurni: number[] = [];
-let trigger: { stringData: string; intData: number[]; selectedItems?: number[]; userSourceTypes?: number[]; furniSourceTypes?: number[] } | null = null;
+let trigger: {
+    stringData: string;
+    intData: number[];
+    variableIds?: string[];
+    selectedItems?: number[];
+    selectedItems2?: number[];
+    userSourceTypes?: number[];
+    furniSourceTypes?: number[];
+} | null = null;
 let baseProps: { save: () => void; validate?: () => boolean } | null = null;
 const variable = (itemId: number, name: string, hasValue = true) => ({ itemId, name, availability: 0, hasValue, isReadOnly: false, variableType: 0 });
 const tools = {
@@ -46,7 +56,7 @@ vi.mock('../../../../common', () => ({
     Text: ({ children }: PropsWithChildren) => <span>{children}</span>
 }));
 vi.mock('../../../../hooks', () => ({
-    useWired: () => ({ trigger, furniIds: noFurni, setAllowsFurni, setFurniIds, setIntParams, setStringParam, setSourceTypes }),
+    useWired: () => ({ trigger, furniIds: noFurni, setAllowsFurni, setFurniIds, setFurniIds2, setIntParams, setStringParam, setSourceTypes, setVariableIds }),
     useWiredTools: () => tools
 }));
 vi.mock('../WiredSourcesSelector', () => ({
@@ -82,12 +92,14 @@ describe('WiredConditionVariableValueMatchView reference value (AIR VariableValu
     beforeEach(() => {
         setIntParams.mockClear();
         setStringParam.mockClear();
+        setVariableIds.mockClear();
+        setSourceTypes.mockClear();
         baseProps = null;
     });
 
     it('keeps only the destination holder in the footer; the reference holder is the popup source', () => {
         // user "score" (5) = variable "coins" (6) on users, reference user source 200.
-        trigger = { stringData: 'custom:5\tcustom:6\t', intData: [0, 2, 1, 0, 0, 0, 0, 200, 0, 0] };
+        trigger = { stringData: 'custom:5\tcustom:6\t', intData: [0, 2, 1, 0, 0, 0, 0, 200, 0] };
         render(<WiredConditionVariableValueMatchView />);
 
         expect(field()).toHaveValue('coins');
@@ -104,16 +116,19 @@ describe('WiredConditionVariableValueMatchView reference value (AIR VariableValu
         expect(within(popup).getByText('wiredfurni.params.variables.reference_value.same_holder')).toBeTruthy();
     });
 
-    it('saves the unchanged layout; the same holder only counts on the destination type and locks the source', () => {
-        trigger = { stringData: 'custom:5\tcustom:6\t', intData: [0, 2, 1, 0, 0, 0, 0, 200, 0, 1] };
+    it("saves AIR's layout from a box stored in ours; the same holder only counts on the destination type", () => {
+        trigger = { stringData: 'custom:5\tcustom:6\t', intData: [0, 2, 1, 0, 0, 0, 0, 200, 0] };
         render(<WiredConditionVariableValueMatchView />);
         openPopup();
         fireEvent.click(within(screen.getByRole('dialog')).getByRole('checkbox'));
         expect(within(screen.getByRole('dialog')).getByRole('group')).toBeDisabled();
         baseProps.save();
 
-        expect(setStringParam).toHaveBeenLastCalledWith('custom:5\tcustom:6\t');
-        expect(setIntParams).toHaveBeenLastCalledWith([0, 2, 1, 0, 0, 0, 1, 200, 0, 1]);
+        // AIR: seven ints, the variables as variable ids, the reference holders in source slot 1, no string.
+        expect(setStringParam).toHaveBeenLastCalledWith('');
+        expect(setVariableIds).toHaveBeenLastCalledWith(['user:5', 'user:6']);
+        expect(setIntParams).toHaveBeenLastCalledWith([0, 2, 1, 0, 0, 0, 1]);
+        expect(setSourceTypes).toHaveBeenLastCalledWith({ furni: [0, 0], users: [0, 200] });
 
         // A room variable reference cannot be read on the same holder: the stored flag is not saved.
         fireEvent.click(within(screen.getByRole('dialog')).getByRole('checkbox'));
@@ -122,12 +137,24 @@ describe('WiredConditionVariableValueMatchView reference value (AIR VariableValu
         expect(screen.queryByRole('dialog')).toBeTruthy();
         expect(within(screen.getByRole('dialog')).getByRole('checkbox')).toHaveAttribute('aria-disabled', 'true');
         baseProps.save();
-        expect(setStringParam).toHaveBeenLastCalledWith('custom:5\tcustom:8\t');
-        expect(setIntParams).toHaveBeenLastCalledWith([0, 2, 1, 0, 0, 3, 0, 200, 0, 1]);
+        expect(setVariableIds).toHaveBeenLastCalledWith(['user:5', 'room:8']);
+        expect(setIntParams).toHaveBeenLastCalledWith([0, 2, 1, 0, 0, 3, 0]);
+    });
+
+    it("reads AIR's layout back: variable ids, the reference holder from source slot 1", () => {
+        trigger = { stringData: '', intData: [0, 2, 1, 0, 0, 0, 0], variableIds: ['user:5', 'user:6'], userSourceTypes: [0, 200], furniSourceTypes: [0, 0] };
+        render(<WiredConditionVariableValueMatchView />);
+
+        expect(field()).toHaveValue('coins');
+        openPopup();
+        expect(within(screen.getByRole('dialog')).getByText('wiredfurni.params.sources.users.200')).toBeTruthy();
+        baseProps.save();
+        expect(setVariableIds).toHaveBeenLastCalledWith(['user:5', 'user:6']);
+        expect(setSourceTypes).toHaveBeenLastCalledWith({ furni: [0, 0], users: [0, 200] });
     });
 
     it('takes a typed number as the constant (high and low int) and refuses an invalid text', () => {
-        trigger = { stringData: 'custom:5\t\t', intData: [0, 2, 0, 0, 7, 0, 0, 0, 0, 0] };
+        trigger = { stringData: 'custom:5\t\t', intData: [0, 2, 0, 0, 7, 0, 0, 0, 0] };
         render(<WiredConditionVariableValueMatchView />);
 
         expect(field()).toHaveValue('7');
@@ -136,8 +163,8 @@ describe('WiredConditionVariableValueMatchView reference value (AIR VariableValu
         fireEvent.change(field(), { target: { value: '-42' } });
         expect(baseProps.validate()).toBe(true);
         baseProps.save();
-        expect(setIntParams).toHaveBeenLastCalledWith([0, 2, 0, -1, -42, 0, 0, 0, 0, 0]);
-        expect(setStringParam).toHaveBeenLastCalledWith('custom:5\t\t');
+        expect(setIntParams).toHaveBeenLastCalledWith([0, 2, 0, -1, -42, 0, 0]);
+        expect(setVariableIds).toHaveBeenLastCalledWith(['user:5']);
 
         fireEvent.change(field(), { target: { value: 'nope' } });
         expect(screen.getByRole('alert')).toBeTruthy();

@@ -5,24 +5,20 @@ import { useWired } from '../../../../hooks';
 import { normalizeWiredComparison, WIRED_CMP_GREATER_EQUAL, WiredComparisonOperator } from '../WiredComparisonOperator';
 import { WiredSourcesSelector } from '../WiredSourcesSelector';
 import { WiredConditionBaseView } from './WiredConditionBaseView';
-import { Checkbox } from '../../../../common/Checkbox';
 import { NumberInput } from '../../../../common/NumberInput';
 
 const MIN_RANK = 1;
 const MAX_RANK = 1000;
-const QUANTIFIER_ALL = 0;
-const QUANTIFIER_ANY = 1;
 
 const clampRank = (value: number) => (Number.isNaN(value) ? MIN_RANK : Math.max(MIN_RANK, Math.min(MAX_RANK, Math.floor(value))));
 
-// Server contract (WiredConditionHabboHasRank): intData = [rank, comparison, quantifier], the users in the
-// official source slot. The negative box shares the dialog and turns the per-user check around on the server.
+// Server contract (WiredConditionHabboHasRank): intData = [rank, comparison], the users in the official source
+// slot and the quantifier in its slot (the base view's). The negative box shares the dialog and turns the per-user check around on the server.
 export const WiredConditionUserRankView: FC<{}> = () => {
     const { trigger = null, setIntParams = null, setSourceTypes = null } = useWired();
     const [rank, setRank] = useState(MIN_RANK);
     const [comparison, setComparison] = useState(WIRED_CMP_GREATER_EQUAL);
     const [userSource, setUserSource] = useState(0);
-    const [quantifier, setQuantifier] = useState(QUANTIFIER_ALL);
 
     useEffect(() => {
         if (!trigger) return;
@@ -31,11 +27,10 @@ export const WiredConditionUserRankView: FC<{}> = () => {
         setRank(data.length > 0 ? clampRank(data[0]) : MIN_RANK);
         setComparison(data.length > 1 ? normalizeWiredComparison(data[1]) : WIRED_CMP_GREATER_EQUAL);
         setUserSource(trigger.userSourceTypes?.[0] ?? 0);
-        setQuantifier(data.length > 2 && data[2] === QUANTIFIER_ANY ? QUANTIFIER_ANY : QUANTIFIER_ALL);
     }, [trigger]);
 
     const save = () => {
-        setIntParams([clampRank(rank), comparison, quantifier]);
+        setIntParams([clampRank(rank), comparison]);
         setSourceTypes({ furni: [], users: [userSource] });
     };
 
@@ -52,10 +47,6 @@ export const WiredConditionUserRankView: FC<{}> = () => {
                     <NumberInput min={MIN_RANK} max={MAX_RANK} className="form-control form-control-sm" style={{ maxWidth: 140 }} value={rank} onChange={(event) => setRank(clampRank(parseInt(event.target.value, 10)))} />
                 </div>
                 <WiredComparisonOperator name="wiredUserRankComparison" value={comparison} onChange={setComparison} />
-                <label className="flex items-center gap-1 cursor-pointer">
-                    <Checkbox checked={quantifier === QUANTIFIER_ANY} onCheckedChange={(nextChecked) => setQuantifier(nextChecked ? QUANTIFIER_ANY : QUANTIFIER_ALL)} />
-                    <Text>{localizeWithFallback('wiredfurni.params.level.any_user', 'One user is enough (otherwise every user must match)')}</Text>
-                </label>
             </div>
         </WiredConditionBaseView>
     );

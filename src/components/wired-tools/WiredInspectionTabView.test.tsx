@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../api', () => ({
     GetConfigurationValue: (_key: string, fallback: string) => fallback,
+    localizeWithFallback: (_key: string, fallback: string) => fallback,
     LocalizeText: (key: string) => (key === 'wiredmenu.inspection.highlight_wireds' ? 'Highlight Wired boxes that have this furni in their furni picks' : key)
 }));
 
@@ -98,5 +99,26 @@ describe('WiredInspectionTabView', () => {
         renderTab({ canHighlightWireds: true });
 
         expect(screen.queryByRole('button', { name: HIGHLIGHT })).toBeNull();
+    });
+
+    it('hides a value at the edge of the 32-bit range, as the official table does', () => {
+        renderTab({
+            displayedVariables: [
+                { key: 'big', value: '2147483647', editable: true },
+                { key: 'small', value: '5', editable: true }
+            ]
+        });
+
+        expect(screen.getByText('Hidden')).toBeInTheDocument();
+        expect(screen.queryByText('2147483647')).toBeNull();
+        expect(screen.getByRole('button', { name: '5' })).toBeInTheDocument();
+    });
+
+    it('uses the official texts for its labels', () => {
+        renderTab();
+
+        expect(screen.getByText('Keep selected')).toBeInTheDocument();
+        expect(screen.getByText('Element type:')).toBeInTheDocument();
+        expect(screen.getByText('Nothing to display')).toBeInTheDocument();
     });
 });

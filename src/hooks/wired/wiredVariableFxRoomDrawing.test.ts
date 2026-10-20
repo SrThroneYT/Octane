@@ -127,7 +127,7 @@ describe('WiredVariableFxRoomDrawing', () => {
         drawing.sync(1, configs, { [next.key]: next }, null, 1200);
 
         expect(drawing.getVisualizer(first.key)).toBe(visualizer);
-        expect(visualizer.setData).toHaveBeenLastCalledWith(configs[7], next.status, true, 1200);
+        expect(visualizer.setData).toHaveBeenLastCalledWith(configs[7], next.status, false, 1200);
         // Same keys, flags and visualizer: the renderer keeps what it draws and the visualizer redraws.
         expect(calls).toHaveLength(1);
     });

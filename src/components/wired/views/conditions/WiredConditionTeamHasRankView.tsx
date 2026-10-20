@@ -4,6 +4,7 @@ import { Text } from '../../../../common';
 import { useWired } from '../../../../hooks';
 import { WiredSourcesSelector } from '../WiredSourcesSelector';
 import { WiredConditionBaseView } from './WiredConditionBaseView';
+import { WiredConditionQuantifierSection } from './WiredConditionQuantifierSection';
 import { Radio } from '../../../../common/Radio';
 import { BaseButton } from '../../../../common/BaseButton';
 
@@ -15,7 +16,6 @@ export const WiredConditionTeamHasRankView: FC<{}> = () => {
     const [team, setTeam] = useState(1);
     const [placement, setPlacement] = useState(1);
     const [userSource, setUserSource] = useState(0);
-    const [quantifier, setQuantifier] = useState(0);
     const [showAdvanced, setShowAdvanced] = useState(false);
 
     useEffect(() => {
@@ -25,17 +25,16 @@ export const WiredConditionTeamHasRankView: FC<{}> = () => {
         // Officially the placement is 0 (first) .. 3 (fourth); the editor shows 1-4.
         const nextPlacement = trigger.intData.length > 1 ? trigger.intData[1] + 1 : 1;
         const nextUserSource = trigger.intData.length > 2 ? trigger.intData[2] : 0;
-        const nextQuantifier = trigger.intData.length > 3 ? trigger.intData[3] : 0;
 
         setTeam(TEAM_OPTIONS.includes(nextTeam) ? nextTeam : 1);
         setPlacement(PLACEMENT_OPTIONS.includes(nextPlacement) ? nextPlacement : 1);
         setUserSource(nextUserSource);
-        setQuantifier(nextQuantifier === 1 ? 1 : 0);
-        setShowAdvanced(nextUserSource !== 0 || nextQuantifier !== 0);
+        setShowAdvanced(nextUserSource !== 0 || (trigger.quantifierCode ?? 0) !== 0);
     }, [trigger]);
 
     const save = () => {
-        setIntParams([team, placement - 1, userSource, quantifier]);
+        // Official [team, placement]; our user source follows. The quantifier goes in its own slot.
+        setIntParams([team, placement - 1, userSource]);
     };
 
     return (
@@ -44,6 +43,7 @@ export const WiredConditionTeamHasRankView: FC<{}> = () => {
             requiresFurni={WiredFurniType.STUFF_SELECTION_OPTION_NONE}
             save={save}
             footerCollapsible={false}
+            showQuantifier={false}
             footer={
                 <div className="flex flex-col gap-2">
                     <BaseButton className="btn btn-link p-0 align-self-start" type="button" onClick={() => setShowAdvanced((value) => !value)}>
@@ -51,17 +51,7 @@ export const WiredConditionTeamHasRankView: FC<{}> = () => {
                     </BaseButton>
                     {showAdvanced && (
                         <>
-                            <div className="flex flex-col gap-1">
-                                <Text bold>{LocalizeText('wiredfurni.params.quantifier_selection')}</Text>
-                                {[0, 1].map((value) => {
-                                    return (
-                                        <div key={value} className="flex items-center gap-1">
-                                            <Radio checked={quantifier === value} id={`teamRankQuantifier${value}`} name="teamRankQuantifier" onCheckedChange={() => setQuantifier(value)} />
-                                            <Text>{LocalizeText(`wiredfurni.params.quantifier.users.${value}`)}</Text>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                            <WiredConditionQuantifierSection />
                             <WiredSourcesSelector showUsers={true} userSource={userSource} onChangeUsers={setUserSource} />
                         </>
                     )}

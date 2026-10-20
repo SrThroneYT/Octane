@@ -1,140 +1,61 @@
+import { VariableFxStatusData, VariableFxVisualizer } from '@octane/renderer';
 import type { IRoomObjectVariableFxFrame, IRoomObjectVariableFxVisualizer } from '@octane/renderer';
 import { IWiredVariableFxConfigLike, IWiredVariableFxStatusLike } from './WiredVariableFx';
-import { buildWiredVariableFxDrawing, IWiredVariableFxDrawing, paintWiredVariableFxDrawing, wiredVariableFxDrawProgress } from './WiredVariableFxDrawing';
 
-/** A canvas to draw on; the browser's by default, a fake one in tests. */
-export interface IWiredVariableFxCanvas {
-    width: number;
-    height: number;
-    getContext(type: '2d'): CanvasRenderingContext2D | null;
+/** What paints one value: the room renderer's port of AIR's painters (VariableFxVisualizer). */
+export interface IWiredVariableFxPainter extends IRoomObjectVariableFxVisualizer {
+    updateData(status: VariableFxStatusData, now: number): void;
 }
 
-export type WiredVariableFxCanvasFactory = () => IWiredVariableFxCanvas | null;
+export type WiredVariableFxPainterFactory = (config: IWiredVariableFxConfigLike, status: IWiredVariableFxStatusLike, initialize: boolean, now: number) => IWiredVariableFxPainter | null;
 
-const createBrowserCanvas: WiredVariableFxCanvasFactory = () => (typeof document === 'undefined' ? null : document.createElement('canvas'));
+const createRendererPainter: WiredVariableFxPainterFactory = (config, status, initialize, now) => {
+    // A renderer bundle from before AIR's painters has none; nothing is drawn then.
+    if (typeof VariableFxVisualizer?.fromWire !== 'function') return null;
 
-const easeOut = (t: number) => 1 - (1 - t) * (1 - t);
+    return VariableFxVisualizer.fromWire(config, status, now, initialize);
+};
 
 /**
- * Paints one variable fx value for the room renderer (AIR's VariableFxVisualizer): the holder's
- * visualization asks it for frames and stacks them. A new value slides the fill there over 350 ms
- * and flashes it for 500 ms; an "initialize" value is drawn at once.
+ * One drawn fx value for the room renderer, as AIR's VariableFxStackAddition keeps it: AIR's
+ * painter for the config's renderer draws it from the room's fx assets. A new config makes a new
+ * painter; a new value for the same config goes to the painter, which animates to it unless it is
+ * an "initialize" value or the fx is hidden (AIR draws those at once).
  */
 export class WiredVariableFxVisualizer implements IRoomObjectVariableFxVisualizer {
-    public static FILL_TRANSITION_MS = 350;
-    public static CHANGE_FLASH_MS = 500;
-
     private _config: IWiredVariableFxConfigLike = null;
     private _status: IWiredVariableFxStatusLike = null;
-    private _fromProgress = 0;
-    private _toProgress = 0;
-    private _transitionStart = -Infinity;
-    private _flashStart = -Infinity;
-    private _dirty = true;
-    private _canvas: IWiredVariableFxCanvas = null;
-    private _frame: IRoomObjectVariableFxFrame = null;
-    private _updateId = 0;
-    private _lastDrawing: IWiredVariableFxDrawing = null;
-    private _animating = false;
+    private _painter: IWiredVariableFxPainter = null;
 
-    constructor(private readonly _createCanvas: WiredVariableFxCanvasFactory = createBrowserCanvas) {}
+    constructor(private readonly _createPainter: WiredVariableFxPainterFactory = createRendererPainter) {}
 
-    /** Takes the config and value to draw; `changed` flashes the fill (a real update of the value). */
-    public setData(config: IWiredVariableFxConfigLike, status: IWiredVariableFxStatusLike & { initialize?: boolean }, changed: boolean, now: number): void {
-        const first = !this._config;
-        const target = wiredVariableFxDrawProgress(config, status);
+    /** Takes the config and value to draw; `invisible` (the fx is hidden) skips the animation like an initialize. */
+    public setData(config: IWiredVariableFxConfigLike, status: IWiredVariableFxStatusLike & { initialize?: boolean }, invisible: boolean, now: number): void {
+        const initialize = !!status.initialize || invisible;
+
+        if (!this._painter || config !== this._config) {
+            this._painter = this._createPainter(config, status, initialize, now);
+        } else if (status !== this._status) {
+            this._painter.updateData(VariableFxStatusData.fromWire(status, initialize), now);
+        }
 
         this._config = config;
         this._status = status;
-        this._dirty = true;
+    }
 
-        if (first || status.initialize) {
-            this._fromProgress = target;
-            this._toProgress = target;
-            this._transitionStart = -Infinity;
-        } else if (target !== this._toProgress) {
-            this._fromProgress = this.progressAt(now);
-            this._toProgress = target;
-            this._transitionStart = now;
-        }
-
-        if (changed && !first && !status.initialize) this._flashStart = now;
+    public get painter(): IWiredVariableFxPainter {
+        return this._painter;
     }
 
     public get frame(): IRoomObjectVariableFxFrame {
-        return this._frame;
-    }
-
-    /** The last laid out drawing, for tests and debugging. */
-    public get drawing(): IWiredVariableFxDrawing {
-        return this._lastDrawing;
+        return this._painter?.frame ?? null;
     }
 
     public needsUpdate(now: number): boolean {
-        if (!this._config) return false;
-
-        return this._dirty || !this._frame || this.isTransitioning(now) || this.isFlashing(now) || this.wasAnimating;
+        return !!this._painter && this._painter.needsUpdate(now);
     }
 
     public update(now: number): boolean {
-        if (!this._config) return false;
-
-        if (!this._canvas) this._canvas = this._createCanvas();
-
-        const context = this._canvas?.getContext('2d') ?? null;
-
-        if (!context) return false;
-
-        const measure = (text: string, font: string) => {
-            context.font = font;
-
-            return context.measureText(text).width;
-        };
-        const drawing = buildWiredVariableFxDrawing(this._config, this._status, { progress: this.progressAt(now), flash: this.flashAt(now) }, measure);
-
-        if (this._canvas.width !== drawing.width || this._canvas.height !== drawing.height) {
-            this._canvas.width = drawing.width;
-            this._canvas.height = drawing.height;
-        }
-
-        paintWiredVariableFxDrawing(context, drawing);
-
-        this._lastDrawing = drawing;
-        this._dirty = false;
-        this._animating = this.isTransitioning(now) || this.isFlashing(now);
-        this._frame = { source: this._canvas as unknown as CanvasImageSource, width: drawing.width, height: drawing.height, anchorX: 0, anchorY: 0, updateId: ++this._updateId };
-
-        return true;
-    }
-
-    /** 0..1 fill drawn at `now`. */
-    public progressAt(now: number): number {
-        const elapsed = now - this._transitionStart;
-
-        if (!(elapsed < WiredVariableFxVisualizer.FILL_TRANSITION_MS)) return this._toProgress;
-
-        return this._fromProgress + (this._toProgress - this._fromProgress) * easeOut(Math.max(0, elapsed) / WiredVariableFxVisualizer.FILL_TRANSITION_MS);
-    }
-
-    /** 0..1 brightness of the change flash at `now`, fading linearly. */
-    public flashAt(now: number): number {
-        const elapsed = now - this._flashStart;
-
-        if (!(elapsed < WiredVariableFxVisualizer.CHANGE_FLASH_MS)) return 0;
-
-        return 1 - Math.max(0, elapsed) / WiredVariableFxVisualizer.CHANGE_FLASH_MS;
-    }
-
-    /** The last frame was mid-animation: draw the settled one too. */
-    private get wasAnimating(): boolean {
-        return this._animating;
-    }
-
-    private isTransitioning(now: number): boolean {
-        return now - this._transitionStart < WiredVariableFxVisualizer.FILL_TRANSITION_MS;
-    }
-
-    private isFlashing(now: number): boolean {
-        return now - this._flashStart < WiredVariableFxVisualizer.CHANGE_FLASH_MS;
+        return !!this._painter && this._painter.update(now);
     }
 }

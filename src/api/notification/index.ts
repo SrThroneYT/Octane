@@ -6,3 +6,4 @@ export * from './NotificationBubbleType';
 export * from './NotificationConfirmItem';
 export * from './NotificationConfirmType';
 export * from './AchievementNotificationBubbleItem';
+export * from './SimpleAlertCounter';

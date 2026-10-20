@@ -55,6 +55,8 @@ interface WiredExtraVariableViewProps
     availabilityRoomText: string;
     availabilityRadioName: string;
     showSharedAvailability?: boolean;
+    /** AIR: a user variable sends [availability, hasValue], a furni variable [hasValue, availability]. */
+    availabilityFirst?: boolean;
 }
 
 export const WiredExtraVariableView: FC<WiredExtraVariableViewProps> = props =>
@@ -84,14 +86,18 @@ export const WiredExtraVariableView: FC<WiredExtraVariableViewProps> = props =>
         if(!trigger) return;
 
         setVariableName(normalizeVariableName(trigger.stringData));
-        setHasValue((trigger.intData.length > 0) ? (trigger.intData[0] === 1) : false);
-        setAvailability(normalizeAvailability((trigger.intData.length > 1) ? trigger.intData[1] : props.availabilityRoomValue));
-    }, [ normalizeAvailability, props.availabilityRoomValue, trigger ]);
+        const [ hasValueIndex, availabilityIndex ] = props.availabilityFirst ? [ 1, 0 ] : [ 0, 1 ];
+
+        setHasValue((trigger.intData.length > hasValueIndex) ? (trigger.intData[hasValueIndex] === 1) : false);
+        setAvailability(normalizeAvailability((trigger.intData.length > availabilityIndex) ? trigger.intData[availabilityIndex] : props.availabilityRoomValue));
+    }, [ normalizeAvailability, props.availabilityFirst, props.availabilityRoomValue, trigger ]);
 
     const save = () =>
     {
         setStringParam(normalizeVariableName(variableName));
-        setIntParams([ hasValue ? 1 : 0, normalizeAvailability(availability) ]);
+        const nextAvailability = normalizeAvailability(availability);
+
+        setIntParams(props.availabilityFirst ? [ nextAvailability, hasValue ? 1 : 0 ] : [ hasValue ? 1 : 0, nextAvailability ]);
     };
 
     // Official (user variables only): a stored variable switched to one that is not stored loses its data, so the
@@ -100,7 +106,8 @@ export const WiredExtraVariableView: FC<WiredExtraVariableViewProps> = props =>
     {
         if(!props.showSharedAvailability || !trigger) return null;
 
-        const saved = normalizeAvailability((trigger.intData.length > 1) ? trigger.intData[1] : props.availabilityRoomValue);
+        const availabilityIndex = props.availabilityFirst ? 0 : 1;
+        const saved = normalizeAvailability((trigger.intData.length > availabilityIndex) ? trigger.intData[availabilityIndex] : props.availabilityRoomValue);
         const next = normalizeAvailability(availability);
 
         if(!isStoredAvailability(saved) || isStoredAvailability(next)) return null;
@@ -150,7 +157,7 @@ export const WiredExtraVariableView: FC<WiredExtraVariableViewProps> = props =>
 
 export const WiredExtraUserVariableView: FC<{}> = () =>
 {
-    return <WiredExtraVariableView availabilityRadioName="wiredUserVariableAvailability" availabilityRoomText={ LocalizeText('wiredfurni.params.variables.availability.0') } availabilityRoomValue={ AVAILABILITY_ROOM } showSharedAvailability={ true } />;
+    return <WiredExtraVariableView availabilityRadioName="wiredUserVariableAvailability" availabilityRoomText={ LocalizeText('wiredfurni.params.variables.availability.0') } availabilityRoomValue={ AVAILABILITY_ROOM } showSharedAvailability={ true } availabilityFirst={ true } />;
 };
 
 

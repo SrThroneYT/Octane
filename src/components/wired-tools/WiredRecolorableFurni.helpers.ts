@@ -3,9 +3,10 @@ import { recolorSwatch } from '../../api';
 import type { InspectionVariable } from './WiredCreatorTools.types';
 
 export const RECOLORABLE_FURNI_RGB = '~recolorable_furni.color.rgb';
-export const RECOLORABLE_FURNI_RED = '~recolorable_furni.color.rgb.r';
-export const RECOLORABLE_FURNI_GREEN = '~recolorable_furni.color.rgb.g';
-export const RECOLORABLE_FURNI_BLUE = '~recolorable_furni.color.rgb.b';
+// AIR's part names (smart variables ~140..~142); the server still reads our earlier .r / .g / .b.
+export const RECOLORABLE_FURNI_RED = '~recolorable_furni.color.rgb.red';
+export const RECOLORABLE_FURNI_GREEN = '~recolorable_furni.color.rgb.green';
+export const RECOLORABLE_FURNI_BLUE = '~recolorable_furni.color.rgb.blue';
 
 export const RECOLORABLE_FURNI_KEYS = [RECOLORABLE_FURNI_RGB, RECOLORABLE_FURNI_RED, RECOLORABLE_FURNI_GREEN, RECOLORABLE_FURNI_BLUE];
 

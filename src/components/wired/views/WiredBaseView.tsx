@@ -32,7 +32,8 @@ import {
     wiredStyleClassName,
     wiredStyleVariables
 } from '../../../api';
-import { isAdvancedAlwaysVisible, isUsingAdvancedSettings } from '../../../api/wired/WiredAdvancedSettings';
+import { getSimpleAlertCount } from '../../../api/notification/SimpleAlertCounter';
+import { isAdvancedAlwaysVisible, isUsingAdvancedSettings, opensOnConditionQuantifier } from '../../../api/wired/WiredAdvancedSettings';
 import wiredBgLeft from '../../../assets/images/wired/wired_bg_left.png';
 import wiredBgRight from '../../../assets/images/wired/wired_bg_right.png';
 import wiredTypeIconAction from '../../../assets/images/wired/type/icon_action.png';
@@ -52,7 +53,11 @@ export interface WiredBaseViewProps {
     requiresFurni: number;
     hasSpecialInput: boolean;
     save: () => void;
-    validate?: () => boolean;
+    /**
+     * Official element.validate(): true (or nothing) when the settings may be saved; false, or the
+     * error text or key, when not. A failure shows the save failed alert unless the view showed one.
+     */
+    validate?: () => boolean | string | void;
     cardStyle?: CSSProperties;
     footer?: ReactNode;
     footerCollapsible?: boolean;
@@ -65,6 +70,11 @@ export interface WiredBaseViewProps {
     delaySection?: ReactNode;
     /** A save that must be confirmed first (a box that would lose stored data): the confirmation's texts, or null. */
     confirmSave?: () => { title: string; body: string } | null;
+    /**
+     * Official element.allowScrolling: the sections scroll between a fixed header and footer, the
+     * window capped at the screen height / 1.8 (Place Furni, the link dataframes, variable fx, chests).
+     */
+    allowScrolling?: boolean;
 }
 
 /** The official frame width (Illumina and Volter templates; the proto styles are 256). */
@@ -105,7 +115,8 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
         showSelection = true,
         widthModifier = 1,
         delaySection = null,
-        confirmSave = null
+        confirmSave = null,
+        allowScrolling = false
     } = props;
     const [wiredName, setWiredName] = useState<string>(null);
     const [furniClassName, setFurniClassName] = useState<string>(null);
@@ -129,12 +140,13 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
         pasteWiredFromClipboard = null,
         resetWiredToDefault = null,
         clearWiredPicks = null,
+        furniIds2 = null,
         pasteIntoMode = false,
         setPasteIntoMode = null,
         getSelectorOptions = null
     } = useWired();
     const { roomSettings, accountPreferences } = useWiredTools();
-    const { showSingleBubble = null, showConfirm = null } = useNotification();
+    const { showSingleBubble = null, showConfirm = null, simpleAlert = null } = useNotification();
     // Official determineActiveWiredStyle(): the proto furni force their own look, the rest wear the user's pick.
     const wiredStyle = resolveWiredStyle(accountPreferences?.wiredStyle, furniClassName);
     const styleTokens = WIRED_STYLE_TOKENS[wiredStyle];
@@ -178,10 +190,37 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
         setTrigger(null);
     };
 
+    /**
+     * Official validateForm(): a view that refuses its settings gets the save failed alert, titled
+     * wiredfurni.error.title, with its error text (or a generic one when it only said no). A view
+     * that already showed its own alert is left at that.
+     */
+    const passesValidation = (): boolean => {
+        if (!validate) return true;
+
+        const alertsBefore = getSimpleAlertCount();
+        const result = validate();
+
+        if (result === true || result === undefined || result === null) return true;
+
+        if (getSimpleAlertCount() === alertsBefore) {
+            const message =
+                typeof result === 'string' && result.length
+                    ? /^[a-z0-9_.]+$/i.test(result)
+                        ? localizeWithFallback(result, result)
+                        : result
+                    : localizeWithFallback('wiredfurni.error.invalid_settings', 'These settings are not valid. Check the fields of this wired box.');
+
+            simpleAlert?.(message, null, null, null, localizeWithFallback('wiredfurni.error.title', 'Update failed'));
+        }
+
+        return false;
+    };
+
     const onSave = (keepOpen: boolean = false) => {
         if (!roomSettings.canModify) return;
 
-        if (validate && !validate()) return;
+        if (!passesValidation()) return;
 
         if (save) save();
 
@@ -236,7 +275,7 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
     // step "ready" takes), so the clipboard holds what is on screen and not what was last saved.
     const canEdit = !!roomSettings.canModify;
     const onCopy = () => {
-        if (validate && !validate()) return;
+        if (!passesValidation()) return;
 
         if (save) save();
 
@@ -247,7 +286,7 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
     // configuration into it. Switching it on pushes the view's settings into the hook first.
     const onTogglePasteInto = () => {
         if (!pasteIntoMode) {
-            if (validate && !validate()) return;
+            if (!passesValidation()) return;
             if (save) save();
         }
 
@@ -278,8 +317,14 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
         {
             id: 'clear-picks',
             label: localizeWithFallback('wiredfurni.params.menu.clear_picks', 'Clear furni picks'),
-            disabled: !canEdit || !furniIds?.length,
-            onClick: () => clearWiredPicks?.()
+            // Official: off while neither pick list holds a furni.
+            disabled: !canEdit || !(furniIds?.length || (furniIds2 ?? trigger?.selectedItems2 ?? []).length),
+            onClick: () => {
+                // The view's unsaved settings go into the hook first, so only the picks are dropped.
+                if (save) save();
+
+                clearWiredPicks?.();
+            }
         },
         { id: 'reset', label: localizeWithFallback('wiredfurni.params.menu.reset', 'Reset to default'), disabled: !canEdit, onClick: () => resetWiredToDefault?.() },
         null,
@@ -304,7 +349,7 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
         if (!trigger) return;
 
         // Official: the advanced section opens expanded when it holds a non-default choice.
-        setShowFooter(isUsingAdvancedSettings(trigger, wiredType));
+        setShowFooter(isUsingAdvancedSettings(trigger, wiredType) || opensOnConditionQuantifier(trigger, wiredType));
         setIsMenuOpen(false);
 
         WiredSelectionVisualizer.clearAllSelectionShaders();
@@ -377,7 +422,7 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
 
     return (
         <OctaneCardView
-            className={`octane-wired ${wiredStyleClassName(wiredStyle)} max-h-[calc(100vh-16px)]`}
+            className={`octane-wired ${wiredStyleClassName(wiredStyle)} ${allowScrolling ? 'octane-wired--scrolling' : ''} max-h-[calc(100vh-16px)]`}
             theme="primary-slim"
             uniqueKey="octane-wired"
             isResizable={false}

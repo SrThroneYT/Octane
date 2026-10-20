@@ -1,105 +1,112 @@
-import { FC, useEffect, useMemo, useState } from 'react';
-import { localizeWithFallback, WiredFurniType } from '../../../../api';
-import { Text } from '../../../../common';
-import { useWired, useWiredTools } from '../../../../hooks';
+import { FC, useEffect, useState } from 'react';
+import { LocalizeText, WiredFurniType } from '../../../../api';
+import { useWired } from '../../../../hooks';
 import { normalizeWiredComparison, WIRED_CMP_DEFAULT, WiredComparisonOperator } from '../WiredComparisonOperator';
-import { WiredVariablePicker } from '../WiredVariablePicker';
-import { buildWiredVariablePickerEntries, createFallbackVariableEntry, flattenWiredVariablePickerEntries, normalizeVariableTokenFromWire } from '../WiredVariablePickerData';
+import { normalizeWiredValueTarget, variableTokenFromId, WIRED_VALUE_TARGET_GLOBAL, WiredValueOrVariableField } from '../WiredValueOrVariableField';
+import { getCustomVariableItemId, normalizeVariableTokenFromWire } from '../WiredVariablePickerData';
 import { WiredConditionBaseView } from './WiredConditionBaseView';
-import { Radio } from '../../../../common/Radio';
-import { NumberInput } from '../../../../common/NumberInput';
 
-// Server contract (WiredConditionChestHasItems):
-//   official: intData[0] = amount, [1] = amount mode, [2] = variable target (user 1, global -10), [3] = comparison
-//   stringData = the variable token
-// Old saves carry two ints and no token, so they read as a constant and behave as they did.
+const CHEST_AMOUNT_MIN = 0;
+const CHEST_AMOUNT_MAX = 1_000_000;
 
-const AMOUNT_CONSTANT = 0;
-const AMOUNT_VARIABLE = 1;
-const TARGET_USER = 0;
-const TARGET_ROOM = 3;
+/** The chest amount fields AIR's ChestHasAmount reads and writes (shared by Chest Has Items and Chest Has Item Types). */
+export interface IChestAmountState {
+    amount: string;
+    fromVariable: boolean;
+    target: number;
+    token: string;
+    comparison: number;
+}
 
+/**
+ * The official [value, valueIsVariable, target, comparison] with the variable as the first variable id. Boxes saved
+ * by older clients kept the variable token in the string; a target outside the official four reads as global.
+ */
+export const readChestAmountState = (intData: number[], variableIds: string[] | undefined, stringData: string): IChestAmountState => {
+    const target = intData?.length > 2 ? intData[2] : WIRED_VALUE_TARGET_GLOBAL;
+
+    return {
+        amount: String(Math.max(CHEST_AMOUNT_MIN, intData?.[0] ?? 1)),
+        fromVariable: intData?.[1] === 1,
+        target: [0, 1, -10, -20].includes(target) ? normalizeWiredValueTarget(target) : WIRED_VALUE_TARGET_GLOBAL,
+        token: variableTokenFromId(variableIds?.[0] ?? '') || normalizeVariableTokenFromWire(stringData ?? ''),
+        comparison: intData?.length > 3 ? normalizeWiredComparison(intData[3]) : WIRED_CMP_DEFAULT
+    };
+};
+
+export const chestAmountParams = (state: IChestAmountState) => {
+    const value = Math.max(CHEST_AMOUNT_MIN, Math.min(CHEST_AMOUNT_MAX, Math.floor(Number(state.amount) || 0)));
+    const variableId = state.fromVariable ? getCustomVariableItemId(state.token) : 0;
+
+    return {
+        intParams: [value, state.fromVariable ? 1 : 0, state.target, state.comparison],
+        variableIds: variableId > 0 ? [String(variableId)] : []
+    };
+};
+
+interface ChestAmountSectionsProps {
+    state: IChestAmountState;
+    onChange: (state: IChestAmountState) => void;
+    onValidityChange: (valid: boolean) => void;
+}
+
+/** AIR ChestHasAmount: the comparison section, then the value-or-variable amount (0..1000000). */
+export const WiredConditionChestAmountSections: FC<ChestAmountSectionsProps> = ({ state, onChange, onValidityChange }) => (
+    <div className="flex flex-col gap-3">
+        <WiredComparisonOperator
+            name="chestAmountComparison"
+            title={LocalizeText('wiredfurni.params.comparison_selection')}
+            value={state.comparison}
+            onChange={(comparison) => onChange({ ...state, comparison })}
+        />
+        <WiredValueOrVariableField
+            isVariable={state.fromVariable}
+            label={LocalizeText('wiredfurni.params.chest_compare_amount')}
+            literal={state.amount}
+            max={CHEST_AMOUNT_MAX}
+            min={CHEST_AMOUNT_MIN}
+            target={state.target}
+            token={state.token}
+            onIsVariableChange={(fromVariable) => onChange({ ...state, fromVariable })}
+            onLiteralChange={(amount) => onChange({ ...state, amount })}
+            onTargetChange={(target) => onChange({ ...state, target })}
+            onTokenChange={(token) => onChange({ ...state, token })}
+            onValidityChange={onValidityChange}
+        />
+    </div>
+);
+
+export const isChestAmountValid = (state: IChestAmountState, literalValid: boolean) =>
+    literalValid && (!state.fromVariable || getCustomVariableItemId(state.token) > 0);
+
+/** Chest Has Items (45): the chests are the furni picks (`sources.furni.title.chests`). */
 export const WiredConditionChestHasItemsView: FC<{}> = () => {
-    const { trigger = null, setIntParams = null, setStringParam = null } = useWired();
-    const { userVariableDefinitions = [], roomVariableDefinitions = [] } = useWiredTools();
-
-    const [amount, setAmount] = useState(1);
-    const [comparison, setComparison] = useState(WIRED_CMP_DEFAULT);
-    const [amountMode, setAmountMode] = useState(AMOUNT_CONSTANT);
-    const [amountTarget, setAmountTarget] = useState(TARGET_ROOM);
-    const [variableToken, setVariableToken] = useState('');
+    const { trigger = null, setIntParams = null, setStringParam = null, setVariableIds = null } = useWired();
+    const [state, setState] = useState<IChestAmountState>(() => readChestAmountState([], [], ''));
+    const [literalValid, setLiteralValid] = useState(true);
 
     useEffect(() => {
         if (!trigger) return;
 
-        const data = trigger.intData ?? [];
-        setAmount(data.length > 0 ? Math.max(0, data[0]) : 1);
-        setAmountMode(data.length > 1 && data[1] === AMOUNT_VARIABLE ? AMOUNT_VARIABLE : AMOUNT_CONSTANT);
-        setAmountTarget(data.length > 2 && data[2] === 1 ? TARGET_USER : TARGET_ROOM);
-        setComparison(data.length > 3 ? normalizeWiredComparison(data[3]) : WIRED_CMP_DEFAULT);
-        setVariableToken(normalizeVariableTokenFromWire(trigger.stringData ?? ''));
+        setState(readChestAmountState(trigger.intData ?? [], trigger.variableIds, trigger.stringData ?? ''));
     }, [trigger]);
 
-    const pickerTarget = amountTarget === TARGET_USER ? 'user' : 'global';
-    const definitions = amountTarget === TARGET_USER ? userVariableDefinitions : roomVariableDefinitions;
-
-    const entries = useMemo(() => buildWiredVariablePickerEntries(pickerTarget, 'change-reference', definitions), [definitions, pickerTarget]);
-
-    // A token saved against a variable that has since gone keeps its place in the list, so reopening
-    // the box shows what it was set to instead of looking unconfigured.
-    const resolvedEntries = useMemo(() => {
-        if (!variableToken) return entries;
-        if (flattenWiredVariablePickerEntries(entries).some((entry) => entry.token === variableToken)) return entries;
-
-        const fallback = createFallbackVariableEntry(pickerTarget, variableToken);
-        return fallback ? [fallback, ...entries] : entries;
-    }, [entries, pickerTarget, variableToken]);
-
     const save = () => {
-        setStringParam(amountMode === AMOUNT_VARIABLE ? variableToken : '');
-        setIntParams([Math.max(0, amount), amountMode, amountTarget === TARGET_USER ? 1 : -10, comparison]);
+        const { intParams, variableIds } = chestAmountParams(state);
+
+        setIntParams(intParams);
+        setVariableIds(variableIds);
+        setStringParam('');
     };
 
     return (
-        <WiredConditionBaseView hasSpecialInput={true} requiresFurni={WiredFurniType.STUFF_SELECTION_OPTION_BY_ID} save={save}>
-            <div className="flex flex-col gap-3">
-                <Text small className="text-black/60">
-                    {localizeWithFallback('wiredfurni.params.sources.furni.title.chests', 'Pick the chest above. Passes when its total contents compare to the amount below.')}
-                </Text>
-                <WiredComparisonOperator name="chestHasItemsComparison" value={comparison} onChange={setComparison} />
-                <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-1">
-                        <Radio checked={amountMode === AMOUNT_CONSTANT} id="chestAmountConstant" name="chestAmountMode" onCheckedChange={() => setAmountMode(AMOUNT_CONSTANT)} />
-                        <Text>{localizeWithFallback('wiredfurni.params.amount.from_value', 'A number')}</Text>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <Radio checked={amountMode === AMOUNT_VARIABLE} id="chestAmountVariable" name="chestAmountMode" onCheckedChange={() => setAmountMode(AMOUNT_VARIABLE)} />
-                        <Text>{localizeWithFallback('wiredfurni.params.amount.from_variable', 'The value of a variable')}</Text>
-                    </div>
-                </div>
-                {amountMode === AMOUNT_CONSTANT ? (
-                    <div className="flex flex-col gap-1">
-                        <Text bold>{localizeWithFallback('wiredfurni.params.count', 'Amount')}</Text>
-                        <NumberInput className="form-control form-control-sm" min={0} style={{ maxWidth: 140 }} value={amount} onChange={(event) => setAmount(Math.max(0, parseInt(event.target.value, 10) || 0))} />
-                    </div>
-                ) : (
-                    <div className="flex flex-col gap-2">
-                        <div className="flex flex-col gap-1">
-                            <Text bold>{localizeWithFallback('wiredfurni.params.variables.target', 'Where the variable lives')}</Text>
-                            {[
-                                { target: TARGET_ROOM, key: 'wiredfurni.params.variables.target.room', fallback: 'The room' },
-                                { target: TARGET_USER, key: 'wiredfurni.params.variables.target.user', fallback: 'The user who triggered' }
-                            ].map((option) => (
-                                <div key={option.target} className="flex items-center gap-1">
-                                    <Radio checked={amountTarget === option.target} id={`chestAmountTarget${option.target}`} name="chestAmountTarget" onCheckedChange={() => setAmountTarget(option.target)} />
-                                    <Text>{localizeWithFallback(option.key, option.fallback)}</Text>
-                                </div>
-                            ))}
-                        </div>
-                        <WiredVariablePicker entries={resolvedEntries} recentScope={`chest-amount-${pickerTarget}`} selectedToken={variableToken} onSelect={(entry) => setVariableToken(entry.token)} />
-                    </div>
-                )}
-            </div>
+        <WiredConditionBaseView
+            hasSpecialInput={true}
+            requiresFurni={WiredFurniType.STUFF_SELECTION_OPTION_BY_ID}
+            save={save}
+            validate={() => isChestAmountValid(state, literalValid)}
+        >
+            <WiredConditionChestAmountSections state={state} onChange={setState} onValidityChange={setLiteralValid} />
         </WiredConditionBaseView>
     );
 };

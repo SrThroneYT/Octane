@@ -7,6 +7,7 @@ import {
     isSmartVariableKey,
     isWiredVariableNodeDisabled,
     IWiredVariableNode,
+    normalizeInternalVariableKey,
     WIRED_VARIABLE_TYPE_DYNAMIC,
     WIRED_VARIABLE_TYPE_INTERNAL,
     WIRED_VARIABLE_TYPE_USER,
@@ -116,7 +117,9 @@ describe('Wired variable picker echo filter', () => {
         expect(user.find((entry) => entry.label === 'level.xp')?.selectable).toBe(true);
         expect(user.find((entry) => entry.label === 'temp')?.selectable).toBe(false);
         expect(user.find((entry) => entry.label === '@index')?.selectable).toBe(true);
-        expect(context.every((entry) => !entry.selectable)).toBe(true);
+        // AIR's echo lists context variables too; a context echo reads its built-in in the running stack.
+        expect(context.find((entry) => entry.label === '@selector_furni_count')?.selectable).toBe(true);
+        expect(context.find((entry) => entry.label === 'turn')?.selectable).toBe(true);
     });
 });
 
@@ -158,5 +161,31 @@ describe('Wired variable picker sub-variables', () => {
         // Every box that runs in a stack can pick a pointer like any other variable.
         const give = buildWiredVariablePickerEntries('user', 'give', definitions).filter((entry) => entry.kind === 'custom');
         expect(give.every((entry) => entry.selectable)).toBe(true);
+    });
+});
+
+describe('Wired variable picker: AIR internal and smart variables', () => {
+    const labels = (target: 'furni' | 'user' | 'context', usage: 'change-reference' | 'change-destination') =>
+        flattenWiredVariablePickerEntries(buildWiredVariablePickerEntries(target, usage, []))
+            .filter((entry) => entry.selectable)
+            .map((entry) => entry.label);
+
+    it('offers the packed @position and @occupation as AIR', () => {
+        expect(labels('furni', 'change-destination')).toEqual(expect.arrayContaining(['@position', '@occupation']));
+        expect(labels('user', 'change-destination')).toContain('@position');
+        expect(labels('user', 'change-destination')).not.toContain('@occupation');
+    });
+
+    it('lists the smart variables read-only, under AIR names', () => {
+        const furni = labels('furni', 'change-reference');
+
+        expect(furni).toEqual(expect.arrayContaining(['~chest.capacity', '~area_hide.width', '~recolorable_furni.color.rgb.red']));
+        expect(labels('furni', 'change-destination')).not.toContain('~chest.capacity');
+        expect(labels('user', 'change-reference')).toEqual(expect.arrayContaining(['~pet.level', '~horse.is_riding', '~plant.is_dead']));
+        expect(normalizeInternalVariableKey('~recolorable_furni.color.rgb.g')).toBe('~recolorable_furni.color.rgb.green');
+    });
+
+    it('offers the link source room and the transaction failure reason in the context', () => {
+        expect(labels('context', 'change-reference')).toEqual(expect.arrayContaining(['@event.link.source_room_id', '@event.transaction_failed.reason']));
     });
 });

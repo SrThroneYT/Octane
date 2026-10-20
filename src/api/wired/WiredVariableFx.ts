@@ -184,28 +184,148 @@ export const WIRED_FX_ICONS = [
     'misc_star'
 ];
 
-/** The fixed colour palette a colour id below 1000 picks from. */
-export const WIRED_FX_PALETTE: { id: number; key: string; fallback: string; hex: string }[] = [
-    { id: 0, key: 'wiredfurni.params.variablefx.color.green', fallback: 'Green', hex: '#5fd35f' },
-    { id: 1, key: 'wiredfurni.params.variablefx.color.red', fallback: 'Red', hex: '#e04b4b' },
-    { id: 2, key: 'wiredfurni.params.variablefx.color.blue', fallback: 'Blue', hex: '#3b7de3' },
-    { id: 3, key: 'wiredfurni.params.variablefx.color.yellow', fallback: 'Yellow', hex: '#ffd83d' },
-    { id: 4, key: 'wiredfurni.params.variablefx.color.orange', fallback: 'Orange', hex: '#ff9f24' },
-    { id: 5, key: 'wiredfurni.params.variablefx.color.purple', fallback: 'Purple', hex: '#8751d1' },
-    { id: 6, key: 'wiredfurni.params.variablefx.color.pink', fallback: 'Pink', hex: '#ff6fb5' },
-    { id: 7, key: 'wiredfurni.params.variablefx.color.cyan', fallback: 'Cyan', hex: '#4fd6e0' },
-    { id: 8, key: 'wiredfurni.params.variablefx.color.white', fallback: 'White', hex: '#f4f4f4' },
-    { id: 9, key: 'wiredfurni.params.variablefx.color.grey', fallback: 'Grey', hex: '#9aa3ad' },
-    { id: 10, key: 'wiredfurni.params.variablefx.color.black', fallback: 'Black', hex: '#2b2b2b' },
-    { id: 11, key: 'wiredfurni.params.variablefx.color.brown', fallback: 'Brown', hex: '#a0663a' }
+/** AIR's colour ids: the plain palette, the metallic ones (100-104) and the dynamic ones (1000-1002). */
+export const WIRED_FX_COLOR = {
+    GREEN: 1,
+    LIME_GREEN: 2,
+    YELLOW: 3,
+    ORANGE: 4,
+    RED: 5,
+    CYAN: 6,
+    BLUE: 7,
+    PURPLE: 8,
+    PINK: 9,
+    BROWN: 10,
+    BEIGE: 11,
+    TEAL: 12,
+    INDIGO: 13,
+    MAGENTA: 14,
+    LIGHT_BLUE: 15,
+    FIRE_ORANGE: 16,
+    DARK_GREEN: 17,
+    DARK_BLUE: 18,
+    WHITE: 19,
+    BRONZE: 100,
+    SILVER: 101,
+    GOLD: 102,
+    DIAMOND: 103,
+    EMERALD: 104,
+    DYNAMIC_RED_TO_GREEN: 1000,
+    DYNAMIC_LEVELLING: WIRED_FX_COLOR_DYNAMIC_LEVELLING,
+    DYNAMIC_TEAM: WIRED_FX_COLOR_DYNAMIC_TEAM
+} as const;
+
+/** AIR's width ids (VariableFxWidth); each renderer turns them into its own size. */
+export const WIRED_FX_WIDTH = { NOT_APPLICABLE: -1, EXTRA_SMALL: 0, SMALL: 1, MEDIUM: 2, LARGE: 3, EXTRA_LARGE: 4, HUGE: 100 } as const;
+
+const PLAIN_COLORS = [
+    WIRED_FX_COLOR.GREEN,
+    WIRED_FX_COLOR.LIME_GREEN,
+    WIRED_FX_COLOR.YELLOW,
+    WIRED_FX_COLOR.ORANGE,
+    WIRED_FX_COLOR.RED,
+    WIRED_FX_COLOR.CYAN,
+    WIRED_FX_COLOR.BLUE,
+    WIRED_FX_COLOR.PURPLE,
+    WIRED_FX_COLOR.PINK,
+    WIRED_FX_COLOR.BROWN,
+    WIRED_FX_COLOR.BEIGE,
+    WIRED_FX_COLOR.TEAL,
+    WIRED_FX_COLOR.INDIGO,
+    WIRED_FX_COLOR.MAGENTA,
+    WIRED_FX_COLOR.LIGHT_BLUE,
+    WIRED_FX_COLOR.FIRE_ORANGE,
+    WIRED_FX_COLOR.DARK_GREEN,
+    WIRED_FX_COLOR.DARK_BLUE,
+    WIRED_FX_COLOR.WHITE,
+    WIRED_FX_COLOR.BRONZE,
+    WIRED_FX_COLOR.SILVER,
+    WIRED_FX_COLOR.GOLD,
+    WIRED_FX_COLOR.DIAMOND,
+    WIRED_FX_COLOR.EMERALD
 ];
 
-export const WIRED_FX_WIDTHS: { id: number; key: string; fallback: string; px: number }[] = [
-    { id: 1, key: 'wiredfurni.params.variablefx.width.small', fallback: 'Small', px: 44 },
-    { id: 2, key: 'wiredfurni.params.variablefx.width.medium', fallback: 'Medium', px: 64 },
-    { id: 3, key: 'wiredfurni.params.variablefx.width.large', fallback: 'Large', px: 96 },
-    { id: 4, key: 'wiredfurni.params.variablefx.width.huge', fallback: 'Huge', px: 140 }
-];
+const W = WIRED_FX_WIDTH;
+const C = WIRED_FX_COLOR;
+
+/** The colours and widths a style offers in AIR's editor, and the ones a new box starts with. */
+export interface IWiredVariableFxAppearance {
+    colors: number[];
+    defaultColor: number;
+    widths: number[];
+    defaultWidth: number;
+}
+
+const appearance = (colors: number[], defaultColor: number, widths: number[], defaultWidth: number): IWiredVariableFxAppearance => ({ colors, defaultColor, widths, defaultWidth });
+
+const BAR_WIDTHS = [W.EXTRA_SMALL, W.SMALL, W.MEDIUM, W.LARGE, W.EXTRA_LARGE];
+const STATUS_BAR_APPEARANCE = appearance([WIRED_FX_COLOR_NOT_APPLICABLE], WIRED_FX_COLOR_NOT_APPLICABLE, BAR_WIDTHS, W.MEDIUM);
+
+/** AIR's style definitions (category, style id): the colour and width options of each style. */
+const APPEARANCES: Record<number, Record<number, IWiredVariableFxAppearance>> = {
+    [WIRED_FX_CATEGORY.PROGRESS_BAR]: {
+        0: appearance([...PLAIN_COLORS, C.DYNAMIC_TEAM], C.GREEN, BAR_WIDTHS, W.MEDIUM),
+        1: appearance([...PLAIN_COLORS, C.DYNAMIC_TEAM], C.GREEN, BAR_WIDTHS, W.MEDIUM),
+        2: appearance([...PLAIN_COLORS, C.DYNAMIC_TEAM], C.GREEN, BAR_WIDTHS, W.MEDIUM),
+        3: appearance([...PLAIN_COLORS, C.DYNAMIC_TEAM], C.GREEN, BAR_WIDTHS, W.MEDIUM),
+        4: appearance([...PLAIN_COLORS, C.DYNAMIC_TEAM], C.GREEN, BAR_WIDTHS, W.MEDIUM)
+    },
+    [WIRED_FX_CATEGORY.HEALTH_POINTS]: {
+        0: appearance([C.DYNAMIC_RED_TO_GREEN], C.DYNAMIC_RED_TO_GREEN, [W.SMALL, W.MEDIUM, W.LARGE], W.MEDIUM),
+        1: appearance([...PLAIN_COLORS, C.DYNAMIC_TEAM], C.RED, [W.MEDIUM, W.LARGE], W.MEDIUM),
+        2: appearance([WIRED_FX_COLOR_NOT_APPLICABLE], WIRED_FX_COLOR_NOT_APPLICABLE, BAR_WIDTHS, W.MEDIUM),
+        3: appearance([...PLAIN_COLORS, C.DYNAMIC_TEAM], C.RED, [W.NOT_APPLICABLE], W.NOT_APPLICABLE)
+    },
+    [WIRED_FX_CATEGORY.LEVELLING_PROGRESS]: {
+        0: appearance([...PLAIN_COLORS, C.DYNAMIC_LEVELLING, C.DYNAMIC_TEAM], C.DYNAMIC_LEVELLING, [W.SMALL, W.MEDIUM, W.LARGE], W.MEDIUM),
+        1: appearance([...PLAIN_COLORS, C.DYNAMIC_LEVELLING, C.DYNAMIC_TEAM], C.DYNAMIC_LEVELLING, [W.SMALL, W.MEDIUM, W.LARGE, W.EXTRA_LARGE], W.MEDIUM)
+    },
+    [WIRED_FX_CATEGORY.BOSS_BAR]: {
+        0: appearance([C.RED], C.RED, [W.LARGE, W.EXTRA_LARGE, W.HUGE], W.EXTRA_LARGE),
+        1: appearance([...PLAIN_COLORS, C.DYNAMIC_RED_TO_GREEN, C.DYNAMIC_TEAM], C.RED, [W.LARGE, W.EXTRA_LARGE, W.HUGE], W.EXTRA_LARGE)
+    },
+    [WIRED_FX_CATEGORY.NUMBER_DISPLAY]: {
+        0: appearance([C.RED, C.GREEN, C.BLUE, C.YELLOW, C.WHITE, C.DYNAMIC_TEAM], C.GREEN, [W.NOT_APPLICABLE], W.NOT_APPLICABLE),
+        1: appearance([...PLAIN_COLORS, C.DYNAMIC_TEAM], C.GREEN, [W.NOT_APPLICABLE], W.NOT_APPLICABLE),
+        2: appearance([...PLAIN_COLORS, C.DYNAMIC_TEAM], C.GREEN, [W.NOT_APPLICABLE], W.NOT_APPLICABLE)
+    }
+};
+
+/** The battery runs red to green; every other status bar has its theme's colour baked in. */
+const BATTERY_APPEARANCE = appearance([C.DYNAMIC_RED_TO_GREEN], C.DYNAMIC_RED_TO_GREEN, BAR_WIDTHS, W.MEDIUM);
+
+export const wiredVariableFxAppearance = (category: number, styleId: number): IWiredVariableFxAppearance => {
+    if (category === WIRED_FX_CATEGORY.STATUS_BAR) return WIRED_FX_STATUS_BAR_THEMES[styleId]?.color === null ? BATTERY_APPEARANCE : STATUS_BAR_APPEARANCE;
+
+    const styles = APPEARANCES[category] ?? APPEARANCES[WIRED_FX_CATEGORY.PROGRESS_BAR];
+
+    return styles[styleId] ?? styles[0];
+};
+
+/** The colour and width kept when they are among the style's options, the style's defaults otherwise. */
+export const sanitizeWiredVariableFxAppearance = (category: number, styleId: number, colorId: number, widthId: number): { colorId: number; widthId: number } => {
+    const options = wiredVariableFxAppearance(category, styleId);
+
+    return {
+        colorId: options.colors.includes(colorId) ? colorId : options.defaultColor,
+        widthId: options.widths.includes(widthId) ? widthId : options.defaultWidth
+    };
+};
+
+/** The English width names, for hotels whose texts lack AIR's `wiredfurni.params.variablefx.width.<id>`. */
+export const WIRED_FX_WIDTH_NAMES: Record<number, string> = { [-1]: 'Not applicable', 0: 'Extra small', 1: 'Small', 2: 'Medium', 3: 'Large', 4: 'Extra large', 100: 'Huge' };
+
+/** AIR's colour label: the colour's text, with the metallic or dynamic prefix. */
+export const wiredVariableFxColorLabel = (colorId: number, localize: (key: string, fallback: string) => string): string => {
+    const entry = Object.entries(WIRED_FX_COLOR).find(([, id]) => id === colorId);
+    const fallback = colorId === WIRED_FX_COLOR_NOT_APPLICABLE ? 'Not applicable' : entry ? entry[0].replace(/^DYNAMIC_/, '').replace(/_/g, ' ').toLowerCase().replace(/^./, (first) => first.toUpperCase()) : String(colorId);
+    const name = localize(`wiredfurni.params.variablefx.color.${colorId}`, fallback);
+
+    if (colorId >= 1000) return `${localize('wiredfurni.params.variablefx.color.prefix.dynamic', '[Dynamic]')} ${name}`;
+    if (colorId >= 100) return `${localize('wiredfurni.params.variablefx.color.prefix.metallic', '[Metallic]')} ${name}`;
+
+    return name;
+};
 
 export const WIRED_FX_NUMBER_ALIGNMENTS = ['left', 'right', 'double'];
 
@@ -453,91 +573,6 @@ export interface IWiredVariableFxStatusLike {
     overrideMaxValue: number | null;
     extra: Record<string, string>;
 }
-
-/** The range a status is drawn against: its own pair when the server sent one, the config's otherwise. */
-export const resolveWiredVariableFxRange = (config: IWiredVariableFxConfigLike, status: IWiredVariableFxStatusLike): { min: number; max: number } => {
-    const hasOverrides = status.overrideMinValue !== null && status.overrideMaxValue !== null && status.overrideMinValue !== undefined && status.overrideMaxValue !== undefined;
-    const min = hasOverrides ? status.overrideMinValue : config.defaultMinValue;
-    let max = hasOverrides ? status.overrideMaxValue : config.defaultMaxValue;
-
-    if (max <= min) max = min + 1;
-
-    return { min, max };
-};
-
-/** 0..1 of the way from min to max, clamped. */
-export const wiredVariableFxProgress = (value: number, min: number, max: number): number => {
-    if (!Number.isFinite(value) || max <= min) return 0;
-
-    return clamp((value - min) / (max - min), 0, 1);
-};
-
-export interface IWiredVariableFxLevel {
-    level: number;
-    maxLevel: number;
-    maxed: boolean;
-}
-
-export const wiredVariableFxLevel = (status: IWiredVariableFxStatusLike): IWiredVariableFxLevel => {
-    const level = parseInt(status.extra?.[WIRED_FX_STATUS_EXTRA.CURRENT_LEVEL] ?? '', 10);
-    const maxLevel = parseInt(status.extra?.[WIRED_FX_STATUS_EXTRA.MAX_LEVEL] ?? '', 10);
-
-    return {
-        level: Number.isFinite(level) ? level : 1,
-        maxLevel: Number.isFinite(maxLevel) ? maxLevel : 1,
-        maxed: status.extra?.[WIRED_FX_STATUS_EXTRA.IS_MAXED] === 'true'
-    };
-};
-
-/** A level's hue: red at level one, green at the cap. */
-const levelColor = (level: IWiredVariableFxLevel): string => {
-    const span = Math.max(1, level.maxLevel - 1);
-    const ratio = clamp((level.level - 1) / span, 0, 1);
-
-    return `hsl(${Math.round(ratio * 120)}, 75%, 50%)`;
-};
-
-/**
- * The colour a value is drawn in: the holder's team colour or level hue when the box asked for a
- * dynamic one, a palette entry, the status bar theme's baked colour, or null for "the style's own".
- */
-export const resolveWiredVariableFxColor = (config: IWiredVariableFxConfigLike, status: IWiredVariableFxStatusLike): string | null => {
-    if (config.colorId === WIRED_FX_COLOR_DYNAMIC_TEAM) return status.extra?.[WIRED_FX_STATUS_EXTRA.DELEGATED_COLOR] ?? null;
-
-    if (config.colorId === WIRED_FX_COLOR_DYNAMIC_LEVELLING) return levelColor(wiredVariableFxLevel(status));
-
-    const palette = WIRED_FX_PALETTE.find((entry) => entry.id === config.colorId);
-
-    if (palette) return palette.hex;
-
-    if (config.category === WIRED_FX_CATEGORY.STATUS_BAR) {
-        const baked = config.extra?.[WIRED_FX_CONFIG_EXTRA.COLOR];
-
-        if (baked) return baked;
-
-        // The battery runs red to green with its charge.
-        const range = resolveWiredVariableFxRange(config, status);
-
-        return `hsl(${Math.round(wiredVariableFxProgress(status.value, range.min, range.max) * 120)}, 75%, 50%)`;
-    }
-
-    return null;
-};
-
-export const wiredVariableFxWidthPx = (widthId: number): number => (WIRED_FX_WIDTHS.find((entry) => entry.id === widthId) ?? WIRED_FX_WIDTHS[1]).px;
-
-/** Compact numbers so a boss bar reads "1.2k / 5k" instead of overflowing. */
-export const formatWiredVariableFxValue = (value: number): string => {
-    if (!Number.isFinite(value)) return '0';
-
-    const abs = Math.abs(value);
-
-    if (abs < 10000) return String(Math.trunc(value));
-    if (abs < 1000000) return `${(value / 1000).toFixed(abs < 100000 ? 1 : 0).replace(/\.0$/, '')}k`;
-    if (abs < 1000000000) return `${(value / 1000000).toFixed(1).replace(/\.0$/, '')}M`;
-
-    return `${(value / 1000000000).toFixed(1).replace(/\.0$/, '')}B`;
-};
 
 /**
  * Which kind of update a value got, as AIR's client sorts it: the first value for a holder, up,

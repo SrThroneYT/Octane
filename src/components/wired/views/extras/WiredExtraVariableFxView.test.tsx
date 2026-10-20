@@ -61,12 +61,13 @@ describe('WiredExtraVariableFxView', () => {
         trigger = { stringData: '', intData: [] };
     });
 
-    it('saves the defaults as the official params and four empty tokens', () => {
+    it("saves the defaults as the official params and four empty tokens, with the style's own default colour", () => {
         render(<WiredExtraVariableFxView category={WIRED_FX_CATEGORY.PROGRESS_BAR} />);
 
         baseProps.save();
 
-        expect(setIntParams).toHaveBeenCalledWith(official([0, 2, 0, 3000, 0, -1, 2, 0, 0, 100, 0, 0, 0, 0, 0, 0], 7));
+        // AIR's classic bar starts green (colour id 1) at medium width.
+        expect(setIntParams).toHaveBeenCalledWith(official([0, 2, 0, 3000, 0, 1, 2, 0, 0, 100, 0, 0, 0, 0, 0, 0], 7));
         expect(setStringParam).toHaveBeenCalledWith('\t\t\t');
     });
 

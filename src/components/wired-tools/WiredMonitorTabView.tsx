@@ -18,7 +18,7 @@ export interface WiredMonitorTabViewProps {
     /** AIR hasWritePermission: only users who may modify the room's wired can clear the logs. */
     canClearLogs?: boolean;
     onClearMonitorLogs: () => void;
-    onOpenMonitorLogDetails: (type: string, details: Pick<MonitorLogDetails, 'severity' | 'amount' | 'latest' | 'reason' | 'sourceLabel' | 'sourceId'>) => void;
+    onOpenMonitorLogDetails: (type: string, details: Pick<MonitorLogDetails, 'errorId' | 'severity' | 'amount' | 'latest' | 'reason' | 'sourceLabel' | 'sourceId'>) => void;
 }
 
 /**
@@ -76,6 +76,7 @@ export const WiredMonitorTabView = (props: WiredMonitorTabViewProps) => {
                                     className={`${index % 2 === 0 ? 'bg-white' : 'bg-[#f8f6f0]'} cursor-pointer hover:bg-[#e8eefc]`}
                                     onClick={() =>
                                         onOpenMonitorLogDetails(log.type, {
+                                            errorId: log.errorId,
                                             severity: log.category,
                                             amount: log.amount,
                                             latest: log.latest,

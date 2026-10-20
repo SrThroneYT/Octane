@@ -99,7 +99,7 @@ const sameEntries = (left: IRoomObjectVariableFxEntry[], right: IRoomObjectVaria
 
 /**
  * Hands the store's fx to the room renderer, which draws them in each holder's visualization: one
- * visualizer per value (kept while the value lives, so the fill can slide), visibility decided here
+ * visualizer per value (kept while the value lives, so AIR's painter can animate it), visibility decided here
  * as before (show mode, hover, update mask), and a holder that lost every fx sent an empty list so
  * the renderer fades them out. Objects that arrive later get their fx through `reapply`.
  */
@@ -134,8 +134,8 @@ export class WiredVariableFxRoomDrawing {
             const entries: IRoomObjectVariableFxEntry[] = [];
 
             for (const drawn of group.drawn) {
-                const visualizer = this.resolveVisualizer(drawn, now);
                 const visibility = wiredVariableFxVisibleUntil(drawn.config, drawn.entry.shownAt, hovered, now);
+                const visualizer = this.resolveVisualizer(drawn, !visibility.visible, now);
 
                 if (visibility.visible && visibility.until !== null && visibility.until > now) wakeAt = wakeAt === null ? visibility.until : Math.min(wakeAt, visibility.until);
 
@@ -188,7 +188,7 @@ export class WiredVariableFxRoomDrawing {
         return this._visualizers.get(key)?.visualizer ?? null;
     }
 
-    private resolveVisualizer(drawn: IWiredVariableFxDrawn, now: number): WiredVariableFxVisualizer {
+    private resolveVisualizer(drawn: IWiredVariableFxDrawn, invisible: boolean, now: number): WiredVariableFxVisualizer {
         let slot = this._visualizers.get(drawn.entry.key);
 
         if (!slot) {
@@ -197,10 +197,8 @@ export class WiredVariableFxRoomDrawing {
         }
 
         if (slot.entry !== drawn.entry || slot.config !== drawn.config) {
-            const status = drawn.entry.status;
-            const changed = slot.entry !== null && slot.entry !== drawn.entry && drawn.entry.previousValue !== null && drawn.entry.previousValue !== status.value && !status.initialize;
-
-            slot.visualizer.setData(drawn.config, status, changed, now);
+            // AIR draws a value that arrives while its fx is hidden at once, without animating to it.
+            slot.visualizer.setData(drawn.config, drawn.entry.status, invisible, now);
             slot.entry = drawn.entry;
             slot.config = drawn.config;
         }

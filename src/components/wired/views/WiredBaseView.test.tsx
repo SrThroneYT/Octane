@@ -27,6 +27,7 @@ const mocks = vi.hoisted(() => ({
     roomSettings: { canModify: true },
     showSingleBubble: vi.fn(),
     showConfirm: vi.fn(),
+    simpleAlert: vi.fn(),
     sent: [] as unknown[],
     links: [] as string[],
     floorItem: { name: 'Effect: Toggle state', className: 'wf_act_toggle_state' } as { name: string; className: string },
@@ -112,7 +113,7 @@ vi.mock('../../../common', () => ({
 
 vi.mock('../../../hooks', () => ({
     useWired: () => mocks.wired,
-    useNotification: () => ({ showSingleBubble: mocks.showSingleBubble, showConfirm: mocks.showConfirm }),
+    useNotification: () => ({ showSingleBubble: mocks.showSingleBubble, showConfirm: mocks.showConfirm, simpleAlert: mocks.simpleAlert }),
     useWiredTools: () => ({ roomSettings: mocks.roomSettings, accountPreferences: { wiredStyle: mocks.wiredStyle } })
 }));
 
@@ -139,6 +140,8 @@ describe('WiredBaseView quick menu', () => {
         mocks.roomSettings.canModify = true;
         mocks.showSingleBubble.mockReset();
         mocks.showConfirm.mockReset();
+        mocks.simpleAlert.mockReset();
+        (mocks.wired as Record<string, unknown>).furniIds2 = null;
         mocks.sent.length = 0;
         mocks.links.length = 0;
     });
@@ -213,6 +216,42 @@ describe('WiredBaseView quick menu', () => {
         openMenu();
         fireEvent.click(screen.getByRole('menuitem', { name: 'Close' }));
         expect(mocks.wired.setTrigger).toHaveBeenCalledWith(null);
+    });
+
+    it('clear picks pushes the view state first and is on while only the second list has picks', () => {
+        const save = vi.fn();
+        (mocks.wired as Record<string, unknown>).furniIds2 = [5];
+        render(<WiredBaseView hasSpecialInput={false} requiresFurni={0} save={save} wiredType="action" />);
+
+        openMenu();
+        fireEvent.click(screen.getByRole('menuitem', { name: 'Clear furni picks' }));
+        expect(save).toHaveBeenCalledTimes(1);
+        expect(mocks.wired.clearWiredPicks).toHaveBeenCalledTimes(1);
+    });
+
+    it('a refused validation shows the save failed alert instead of returning silently', () => {
+        render(<WiredBaseView hasSpecialInput={false} requiresFurni={0} save={vi.fn()} validate={() => false} wiredType="action" />);
+
+        fireEvent.click(screen.getByText('wiredfurni.ready'));
+        expect(mocks.wired.saveWired).not.toHaveBeenCalled();
+        expect(mocks.simpleAlert).toHaveBeenCalledTimes(1);
+        expect(mocks.simpleAlert.mock.calls[0][4]).toBe('Update failed');
+    });
+
+    it('shows the error text a view returns', () => {
+        render(<WiredBaseView hasSpecialInput={false} requiresFurni={0} save={vi.fn()} validate={() => 'Pick a variable first'} wiredType="action" />);
+
+        fireEvent.click(screen.getByText('wiredfurni.ready'));
+        expect(mocks.simpleAlert.mock.calls[0][0]).toBe('Pick a variable first');
+    });
+
+    it('scrolls between a fixed header and footer only when the element allows it', () => {
+        const { unmount } = render(<WiredBaseView hasSpecialInput={false} requiresFurni={0} save={vi.fn()} wiredType="action" />);
+
+        expect(screen.getByTestId('wired-window')).not.toHaveClass('octane-wired--scrolling');
+        unmount();
+        render(<WiredBaseView allowScrolling hasSpecialInput={false} requiresFurni={0} save={vi.fn()} wiredType="action" />);
+        expect(screen.getByTestId('wired-window')).toHaveClass('octane-wired--scrolling');
     });
 
     it('asks before saving a selector that inverts without filtering', () => {

@@ -80,9 +80,11 @@ export const customVariablePickerEntries = (target: WiredVariablePickerTarget, u
     return fallback ? [fallback, ...entries] : entries;
 };
 
-/** A variable token from the id the server sends as text. */
+/** A box variable's token from the id the server sends: a bare box id, or the variable list's `<target>:<box id>`. */
 export const variableTokenFromId = (text: string) => {
-    const id = parseInt((text ?? '').trim(), 10);
+    const value = (text ?? '').trim();
+    const listed = /^(?:user|furni|room|ctx|custom):(\d{1,10})$/.exec(value);
+    const id = listed ? parseInt(listed[1], 10) : parseInt(value, 10);
 
     return id > 0 ? createCustomVariableToken(id) : '';
 };

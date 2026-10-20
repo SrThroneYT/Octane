@@ -18,6 +18,7 @@ import {
     normalizeVariableTokenFromWire,
     WiredVariablePickerTarget
 } from '../WiredVariablePickerData';
+import { readWiredVariableToken, toWiredVariableId, wiredVariableIdList } from '../WiredVariableIds';
 import { WiredExtraBaseView } from './WiredExtraBaseView';
 import { Radio } from '../../../../common/Radio';
 import { Select } from '../../../../common/Select';
@@ -126,7 +127,7 @@ const resolveSourceOptions = (baseOptions: WiredSourceOption[], selectedValue: n
 };
 
 export const WiredExtraFilterByVariableView: FC<WiredExtraFilterByVariableViewProps> = ({ target }) => {
-    const { trigger = null, furniIds = [], setFurniIds = null, setIntParams = null, setStringParam = null, setSourceTypes = null } = useWired();
+    const { trigger = null, furniIds = [], setFurniIds = null, setIntParams = null, setStringParam = null, setSourceTypes = null, setVariableIds = null } = useWired();
     const { userVariableDefinitions = [], furniVariableDefinitions = [], roomVariableDefinitions = [], contextVariableDefinitions = [] } = useWiredTools();
     const [variableToken, setVariableToken] = useState('');
     const [sortBy, setSortBy] = useState(0);
@@ -202,8 +203,9 @@ export const WiredExtraFilterByVariableView: FC<WiredExtraFilterByVariableViewPr
         const stringParts = parseStringData(trigger.stringData);
         const nextReferenceFurniIds = [...(trigger.selectedItems ?? [])];
 
-        setVariableToken(normalizeVariableTokenFromWire(stringParts.length > 0 ? stringParts[0] : ''));
-        setReferenceVariableToken(normalizeVariableTokenFromWire(stringParts.length > 1 ? stringParts[1] : ''));
+        // AIR: variable ids [sorted variable, N variable]; an older server wrote both into the string.
+        setVariableToken(readWiredVariableToken(trigger.variableIds, 0, normalizeVariableTokenFromWire(stringParts.length > 0 ? stringParts[0] : '')));
+        setReferenceVariableToken(readWiredVariableToken(trigger.variableIds, 1, normalizeVariableTokenFromWire(stringParts.length > 1 ? stringParts[1] : '')));
         // Official layout: [N, sort, N from a variable, its target (official ids)]; the N variable's
         // sources in the official slots.
         const d = trigger.intData;
@@ -234,7 +236,10 @@ export const WiredExtraFilterByVariableView: FC<WiredExtraFilterByVariableViewPr
         const nextReferenceFurniIds = referenceSelectionEnabled ? [...furniIds] : [...referenceFurniIds];
 
         setReferenceFurniIds(nextReferenceFurniIds);
-        setStringParam(`${variableToken || ''}\t${amountMode === 'variable' ? referenceVariableToken : ''}`);
+        setStringParam('');
+        setVariableIds(
+            wiredVariableIdList(toWiredVariableId(target, variableToken), amountMode === 'variable' ? toWiredVariableId(referenceTargetType, referenceVariableToken) : '')
+        );
         setIntParams([
             Number.isFinite(parsedAmount) ? parsedAmount : 0,
             sortBy,

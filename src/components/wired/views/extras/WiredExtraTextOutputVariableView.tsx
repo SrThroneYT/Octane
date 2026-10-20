@@ -18,6 +18,7 @@ import {
     isCustomVariableToken,
     normalizeVariableTokenFromWire
 } from '../WiredVariablePickerData';
+import { fromWiredVariableId, toWiredVariableId, wiredVariableIdList } from '../WiredVariableIds';
 import { WiredExtraBaseView } from './WiredExtraBaseView';
 import { WiredPlaceholderPreview } from './WiredPlaceholderPreview';
 import { Radio } from '../../../../common/Radio';
@@ -139,11 +140,12 @@ const getTargetDefinitions = (
     }
 };
 
-const serializeStringData = (variableToken: string, placeholderName: string, delimiter: string) =>
-    `${variableToken || ''}\t${normalizePlaceholderName(placeholderName)}\t${normalizeDelimiter(delimiter)}`;
+/** AIR VariablePlaceholderAddon.readStringParamFromForm: the name, then a tab and the delimiter for every holder. */
+const serializePlaceholderString = (placeholderName: string, multiple: boolean, delimiter: string) =>
+    multiple ? `${normalizePlaceholderName(placeholderName)}\t${normalizeDelimiter(delimiter)}` : normalizePlaceholderName(placeholderName);
 
 export const WiredExtraTextOutputVariableView: FC<{}> = () => {
-    const { trigger = null, furniIds = [], setFurniIds = null, setIntParams = null, setStringParam = null, setSourceTypes = null } = useWired();
+    const { trigger = null, furniIds = [], setFurniIds = null, setIntParams = null, setStringParam = null, setSourceTypes = null, setVariableIds = null } = useWired();
     const { userVariableDefinitions = [], furniVariableDefinitions = [], roomVariableDefinitions = [], contextVariableDefinitions = [] } = useWiredTools();
     const [targetType, setTargetType] = useState<VariableTargetType>('user');
     const [variableToken, setVariableToken] = useState('');
@@ -192,7 +194,12 @@ export const WiredExtraTextOutputVariableView: FC<{}> = () => {
     useEffect(() => {
         if (!trigger) return;
 
-        const [nextVariableToken, nextPlaceholderName, nextDelimiter] = splitStringData(trigger.stringData);
+        // AIR: the variable as the first variable id and the string `name[\tdelimiter]`; an older server wrote
+        // `token\tname\tdelimiter`.
+        const idToken = fromWiredVariableId(trigger.variableIds?.[0] ?? '');
+        const [nextVariableToken, nextPlaceholderName, nextDelimiter] = idToken
+            ? [idToken, ...splitStringData(`\t${trigger.stringData ?? ''}`).slice(1)]
+            : splitStringData(trigger.stringData);
 
         // Official layout: [every holder 0/1, variable target (official ids), text mode 0/1]; the
         // holders' sources in the official slots.
@@ -233,7 +240,10 @@ export const WiredExtraTextOutputVariableView: FC<{}> = () => {
             textDisplayAllowed && normalizeDisplayType(displayType) === DISPLAY_TEXTUAL ? 1 : 0
         ]);
         setSourceTypes({ furni: [normalizeFurniSource(furniSource)], users: [normalizeUserSource(userSource)] });
-        setStringParam(serializeStringData(variableToken, placeholderName, delimiter));
+        const multiple = normalizePlaceholderType(placeholderType) === TYPE_MULTIPLE;
+
+        setStringParam(serializePlaceholderString(placeholderName, multiple, delimiter));
+        setVariableIds(wiredVariableIdList(toWiredVariableId(targetType, variableToken)));
         setFurniIds(targetType === 'furni' && furniSource === 100 ? [...furniIds] : []);
     };
 

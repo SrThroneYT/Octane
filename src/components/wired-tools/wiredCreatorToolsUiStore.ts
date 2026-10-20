@@ -142,6 +142,8 @@ interface WiredCreatorToolsUiState {
     setMonitorSnapshot: (next: MonitorSnapshot) => void;
     /** AIR's room stats packet (1891) arrives on its own; it replaces only `monitorSnapshot.roomStats`. */
     setMonitorRoomStats: (next: MonitorSnapshot['roomStats']) => void;
+    /** AIR's error list (15) arrives on its own; it replaces only `monitorSnapshot.errors`. */
+    setMonitorErrorLogs: (next: MonitorSnapshot['errors']) => void;
     resetMonitorSnapshot: () => void;
 
     setSelectedFurni: (next: InspectionFurniSelection | null) => void;
@@ -233,9 +235,17 @@ export const useWiredCreatorToolsUiStore = createOctaneStore<WiredCreatorToolsUi
     setMonitorHistoryTypeFilter: (next) => set({ monitorHistoryTypeFilter: next }),
 
 
-    // The monitor packet (5101) does not carry the room stats, so a new snapshot keeps the last ones.
-    setMonitorSnapshot: (next) => set((state) => ({ monitorSnapshot: { ...next, roomStats: next.roomStats ?? state.monitorSnapshot.roomStats } })),
+    // The monitor packet (5101) carries neither the room stats nor the error list, so a new snapshot keeps the last ones.
+    setMonitorSnapshot: (next) =>
+        set((state) => ({
+            monitorSnapshot: {
+                ...next,
+                roomStats: next.roomStats ?? state.monitorSnapshot.roomStats,
+                errors: next.errors?.length ? next.errors : state.monitorSnapshot.errors
+            }
+        })),
     setMonitorRoomStats: (next) => set((state) => ({ monitorSnapshot: { ...state.monitorSnapshot, roomStats: next } })),
+    setMonitorErrorLogs: (next) => set((state) => ({ monitorSnapshot: { ...state.monitorSnapshot, errors: [...(next ?? [])] } })),
     resetMonitorSnapshot: () => set({ monitorSnapshot: createEmptyMonitorSnapshot() }),
 
     setSelectedFurni: (next) => set({ selectedFurni: next }),

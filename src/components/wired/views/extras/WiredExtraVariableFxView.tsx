@@ -6,15 +6,12 @@ import {
     readWiredVariableFxParams,
     readWiredVariableFxTokens,
     resolveWiredVariableFxRenderer,
+    sanitizeWiredVariableFxAppearance,
     WIRED_FX_CATEGORY,
-    WIRED_FX_COLOR_DYNAMIC_LEVELLING,
-    WIRED_FX_COLOR_DYNAMIC_TEAM,
-    WIRED_FX_COLOR_NOT_APPLICABLE,
     WIRED_FX_ICONS,
     WIRED_FX_LEVEL_BARS,
     WIRED_FX_NUMBER_ALIGNMENTS,
     WIRED_FX_OVERRIDE_TARGET,
-    WIRED_FX_PALETTE,
     WIRED_FX_SEGMENTS_MAX,
     WIRED_FX_SHOW_DURATION_MAX_MS,
     WIRED_FX_SHOW_DURATION_MIN_MS,
@@ -22,8 +19,10 @@ import {
     WIRED_FX_SOURCE,
     WIRED_FX_UPDATE,
     WIRED_FX_VISIBILITY,
-    WIRED_FX_WIDTHS,
+    WIRED_FX_WIDTH_NAMES,
     WiredFurniType,
+    wiredVariableFxAppearance,
+    wiredVariableFxColorLabel,
     wiredVariableFxRendererOptions,
     wiredVariableFxRendererSupportsSegments,
     wiredVariableFxSegmentRenderer,
@@ -123,6 +122,7 @@ export const WiredExtraVariableFxView: FC<WiredExtraVariableFxViewProps> = (prop
 
     const usesRange = wiredVariableFxUsesRange(category);
     const styles = wiredVariableFxStyles(category);
+    const appearance = wiredVariableFxAppearance(category, params.styleId);
     const rendererOptions = wiredVariableFxRendererOptions(category, params.styleId);
     const rendererId = resolveWiredVariableFxRenderer(category, params.styleId, params.rendererId ?? -1);
     const segmentRenderer = wiredVariableFxSegmentRenderer(category, params.styleId, params.categoryExtra, rendererId);
@@ -143,7 +143,10 @@ export const WiredExtraVariableFxView: FC<WiredExtraVariableFxViewProps> = (prop
     const audienceEntries = useMemo(() => customOnly(buildWiredVariablePickerEntries('user', 'change-reference', userVariableDefinitions)), [userVariableDefinitions]);
 
     useEffect(() => {
-        setParams(readWiredVariableFxParams(trigger?.intData ?? [], category));
+        const read = readWiredVariableFxParams(trigger?.intData ?? [], category);
+
+        // AIR's editor only offers the style's colours and widths; anything else becomes its default.
+        setParams({ ...read, ...sanitizeWiredVariableFxAppearance(category, read.styleId, read.colorId, read.widthId) });
         setTokens(readWiredVariableFxTokens(trigger?.stringData ?? ''));
         setRangeError(false);
     }, [trigger, category]);
@@ -214,7 +217,7 @@ export const WiredExtraVariableFxView: FC<WiredExtraVariableFxViewProps> = (prop
     const categoryLabel = localizeWithFallback(title.key, title.fallback);
 
     return (
-        <WiredExtraBaseView hasSpecialInput={true} requiresFurni={WiredFurniType.STUFF_SELECTION_OPTION_NONE} save={save} validate={validate} widthModifier={1.45}>
+        <WiredExtraBaseView hasSpecialInput={true} requiresFurni={WiredFurniType.STUFF_SELECTION_OPTION_NONE} save={save} validate={validate} widthModifier={1.45} allowScrolling>
             <div className="flex flex-col gap-2 octane-wired-fx-editor">
                 <Text small={true}>
                     {localizeWithFallback(
@@ -298,7 +301,7 @@ export const WiredExtraVariableFxView: FC<WiredExtraVariableFxViewProps> = (prop
                     localizeWithFallback('wiredfurni.params.variablefx.style', 'Style'),
                     params.styleId,
                     styles.map((entry) => ({ value: entry.styleId, key: entry.key, fallback: entry.fallback })),
-                    (styleId) => patch({ styleId })
+                    (styleId) => patch({ styleId, ...sanitizeWiredVariableFxAppearance(category, styleId, params.colorId, params.widthId) })
                 )}
 
                 {rendererOptions.length > 1 &&
@@ -344,22 +347,19 @@ export const WiredExtraVariableFxView: FC<WiredExtraVariableFxViewProps> = (prop
                     <div className="flex flex-col gap-1 flex-1">
                         <Text bold>{localizeWithFallback('wiredfurni.params.variablefx.color', 'Colour')}</Text>
                         <Select className="form-select form-select-sm" data-testid="fx-color" value={params.colorId} onChange={(event) => patch({ colorId: Number(event.target.value) })}>
-                            <option value={WIRED_FX_COLOR_NOT_APPLICABLE}>{localizeWithFallback('wiredfurni.params.variablefx.color.default', "The style's own")}</option>
-                            <option value={WIRED_FX_COLOR_DYNAMIC_LEVELLING}>{localizeWithFallback('wiredfurni.params.variablefx.color.levelling', 'By level (red to green)')}</option>
-                            <option value={WIRED_FX_COLOR_DYNAMIC_TEAM}>{localizeWithFallback('wiredfurni.params.variablefx.color.team', "The holder's team colour")}</option>
-                            {WIRED_FX_PALETTE.map((entry) => (
-                                <option key={entry.id} value={entry.id}>
-                                    {localizeWithFallback(entry.key, entry.fallback)}
+                            {appearance.colors.map((colorId) => (
+                                <option key={colorId} value={colorId}>
+                                    {wiredVariableFxColorLabel(colorId, (key, fallback) => localizeWithFallback(key, fallback))}
                                 </option>
                             ))}
                         </Select>
                     </div>
                     <div className="flex flex-col gap-1 flex-1">
                         <Text bold>{localizeWithFallback('wiredfurni.params.variablefx.width', 'Width')}</Text>
-                        <Select className="form-select form-select-sm" value={params.widthId} onChange={(event) => patch({ widthId: Number(event.target.value) })}>
-                            {WIRED_FX_WIDTHS.map((entry) => (
-                                <option key={entry.id} value={entry.id}>
-                                    {localizeWithFallback(entry.key, entry.fallback)}
+                        <Select className="form-select form-select-sm" data-testid="fx-width" value={params.widthId} onChange={(event) => patch({ widthId: Number(event.target.value) })}>
+                            {appearance.widths.map((widthId) => (
+                                <option key={widthId} value={widthId}>
+                                    {localizeWithFallback(`wiredfurni.params.variablefx.width.${widthId}`, WIRED_FX_WIDTH_NAMES[widthId] ?? String(widthId))}
                                 </option>
                             ))}
                         </Select>

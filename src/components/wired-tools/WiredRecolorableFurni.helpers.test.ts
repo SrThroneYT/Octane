@@ -19,9 +19,9 @@ describe('recolorable furni variables', () =>
     {
         expect(recolorableFurniVariables(furni([0xffffff, 0xffb7bc]), true).map((row) => [row.key, row.value, row.editable])).toEqual([
             [RECOLORABLE_FURNI_RGB, '#FFB7BC', true],
-            ['~recolorable_furni.color.rgb.r', '255', true],
-            ['~recolorable_furni.color.rgb.g', '183', true],
-            ['~recolorable_furni.color.rgb.b', '188', true]
+            ['~recolorable_furni.color.rgb.red', '255', true],
+            ['~recolorable_furni.color.rgb.green', '183', true],
+            ['~recolorable_furni.color.rgb.blue', '188', true]
         ]);
         expect(recolorableFurniVariables(furni([0xaa0000], false), true)).toEqual([]);
         expect(recolorableFurniVariables(null, true)).toEqual([]);

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+    buildMonitorLogs,
+    exceedsVariableHighlightLimit,
+    wiredSourceTypeLabelKey,
+    monitorDiagnosticType,
+    resolveMonitorErrorDescription,
+    toMonitorErrorLogs,
     createEmptyMonitorSnapshot,
     formatMonitorHistoryOccurrence,
     formatMonitorLatestOccurrence,
@@ -186,5 +192,58 @@ describe('WiredCreatorTools helpers', () => {
             expect(counters.permanentFurniVariablesLimit).toBe(WIRED_MONITOR_DEFAULT_PERMANENT_FURNI_VARIABLES_LIMIT);
             expect(counters.hasVariableTotals).toBe(false);
         });
+    });
+    describe('AIR error list (15)', () => {
+        const NOW = 1_700_000_000_000;
+
+        it('pins the ms since the latest to the client clock and keeps -1 for never', () => {
+            expect(
+                toMonitorErrorLogs(
+                    [
+                        { errorId: 4, errorName: 'KILLED', category: 'ERROR', amount: 2, msSinceLatest: 10_000 },
+                        { errorId: 6, errorName: 'TOO_MANY_VARIABLES', category: 'ERROR', amount: 0, msSinceLatest: -1 }
+                    ],
+                    NOW
+                )
+            ).toEqual([
+                { errorId: 4, name: 'KILLED', category: 'ERROR', amount: 2, latestOccurredAtMs: NOW - 10_000 },
+                { errorId: 6, name: 'TOO_MANY_VARIABLES', category: 'ERROR', amount: 0, latestOccurredAtMs: -1 }
+            ]);
+        });
+
+        it('builds the table in the server order with the latest detail of the matching diagnostic', () => {
+            const logs = buildMonitorLogs(
+                [
+                    { errorId: 8, name: 'PLACEMENT_FAILURE', category: 'ERROR', amount: 1, latestOccurredAtMs: NOW - 10_000 },
+                    { errorId: 0, name: 'EXECUTION_CAP', category: 'ERROR', amount: 0, latestOccurredAtMs: -1 }
+                ],
+                [{ type: 'PLACEMENT_FAILED', latestReason: 'tile taken', latestSourceLabel: 'wf_act_place', latestSourceId: 9 }],
+                NOW
+            );
+
+            expect(logs.map((log) => log.type)).toEqual(['PLACEMENT_FAILURE', 'EXECUTION_CAP']);
+            expect(logs[0]).toMatchObject({ errorId: 8, amount: '1', latest: '10s ago', latestReason: 'tile taken', latestSourceId: 9 });
+            expect(logs[1]).toMatchObject({ errorId: 0, amount: '0', latest: '/', latestSourceLabel: '' });
+            expect(monitorDiagnosticType('KILLED')).toBe('KILLED');
+        });
+
+        it('uses AIR\'s info text split on its line breaks, or ours without it', () => {
+            expect(resolveMonitorErrorDescription('First.\\nSecond.', ['ours'])).toEqual(['First.', 'Second.']);
+            expect(resolveMonitorErrorDescription('', ['ours'])).toEqual(['ours']);
+        });
+    });
+});
+
+describe('variable overview helpers', () => {
+    it('refuses to highlight more than 1000 holders, or 400 that show a value (official MAX_HIGHLIGHTS)', () => {
+        expect(exceedsVariableHighlightLimit(1000, false)).toBe(false);
+        expect(exceedsVariableHighlightLimit(1001, false)).toBe(true);
+        expect(exceedsVariableHighlightLimit(400, true)).toBe(false);
+        expect(exceedsVariableHighlightLimit(401, true)).toBe(true);
+    });
+
+    it('titles the type buttons with the official source type keys', () => {
+        expect(wiredSourceTypeLabelKey('user')).toBe('wiredfurni.params.sourcetype.users');
+        expect(wiredSourceTypeLabelKey('furni')).toBe('wiredfurni.params.sourcetype.furni');
     });
 });

@@ -4,7 +4,6 @@ import { localizeWithFallback, SendMessageComposer } from '../../api';
 import { Button, DraggableWindowPosition, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Text } from '../../common';
 import { useMessageEvent } from '../../hooks';
 import { useWiredPageRequests } from '../../hooks/wired-tools/useWiredPageRequests';
-import { MONITOR_ERROR_INFO, MONITOR_LOG_ORDER } from './WiredCreatorTools.constants';
 import { WiredPagedTable, WiredTableCell, WiredTableColumn } from './WiredPagedTable';
 import { calculateLastPage, NO_PAGE } from './WiredPaging.helpers';
 import { Checkbox } from '../../common/Checkbox';
@@ -16,10 +15,12 @@ export const WIRED_ROOM_LOGS_PAGE_SIZE = 50;
 const REQUEST_PAGE_RATELIMIT = 300;
 const REFRESH_TIME_MS = 2500;
 const FILTER_MAX_CHARS = 400;
-/** Habbo's log levels, by the number the server sends: engine notes are warnings and errors, and
- * "write to logs" boxes can write at any of the four. */
-const LOG_LEVELS = ['DEBUG', 'INFO', 'WARNING', 'ERROR'];
-const LEVEL_CLASS: Record<number, string> = { 0: 'text-[#6b6b6b]', 1: 'text-[#1f5fa8]', 2: 'text-[#b36b00]', 3: 'text-[#c70d0d]' };
+/** AIR's log levels, by the number the server sends (`wiredmenu.logs_overview.log_level.N`). */
+export const WIRED_LOG_LEVELS = ['INFO', 'WARN', 'ERROR', 'DEBUG'];
+/** AIR's two log sources (`wiredmenu.logs_overview.log_source.N`): the engine's own notes and "write to logs" lines. */
+export const WIRED_LOG_SOURCES = ['System', 'Wired'];
+/** `WiredRoomLogListTableObject.COLORS`: info 0x0011FF, warn 0xB36800, error 0xDB2800, debug 0x9B01C6. */
+const LEVEL_CLASS: Record<number, string> = { 0: 'text-[#0011ff]', 1: 'text-[#b36800]', 2: 'text-[#db2800]', 3: 'text-[#9b01c6]' };
 
 interface LogPage {
     totalEntries: number;
@@ -34,15 +35,17 @@ export interface WiredRoomLogsViewProps {
     onClose: () => void;
 }
 
-const sourceLabel = (source: number): string => {
-    const name = MONITOR_LOG_ORDER[source];
+export const wiredLogSourceLabel = (source: number): string => {
+    const fallback = WIRED_LOG_SOURCES[source];
 
-    if (!name) return String(source);
-
-    return MONITOR_ERROR_INFO[name]?.title ?? name;
+    return fallback ? localizeWithFallback(`wiredmenu.logs_overview.log_source.${source}`, fallback) : String(source);
 };
 
-const levelLabel = (level: number): string => LOG_LEVELS[level] ?? String(level);
+export const wiredLogLevelLabel = (level: number): string => {
+    const fallback = WIRED_LOG_LEVELS[level];
+
+    return fallback ? localizeWithFallback(`wiredmenu.logs_overview.log_level.${level}`, fallback) : String(level);
+};
 
 /**
  * The room's wired log: a text filter, the source and level menus, auto refresh every 2.5 s
@@ -159,9 +162,9 @@ export const WiredRoomLogsView = ({ onClose }: WiredRoomLogsViewProps) => {
             case 'timestamp':
                 return { content: entry.timestampStr, title: entry.timestampStr, className: `${className} tabular-nums` };
             case 'source':
-                return { content: sourceLabel(entry.logSource), className };
+                return { content: wiredLogSourceLabel(entry.logSource), className };
             case 'level':
-                return { content: levelLabel(entry.logLevel), className };
+                return { content: wiredLogLevelLabel(entry.logLevel), className };
             default:
                 return { content: entry.logMessage, title: entry.logMessage, className };
         }
@@ -226,9 +229,9 @@ export const WiredRoomLogsView = ({ onClose }: WiredRoomLogsViewProps) => {
                             }}
                         >
                             <option value={-1}>{localizeWithFallback('wiredmenu.logs_overview.log_source.all', 'All')}</option>
-                            {MONITOR_LOG_ORDER.map((name, index) => (
+                            {WIRED_LOG_SOURCES.map((name, index) => (
                                 <option key={name} value={index}>
-                                    {sourceLabel(index)}
+                                    {wiredLogSourceLabel(index)}
                                 </option>
                             ))}
                         </Select>
@@ -249,9 +252,9 @@ export const WiredRoomLogsView = ({ onClose }: WiredRoomLogsViewProps) => {
                             }}
                         >
                             <option value={-1}>{localizeWithFallback('wiredmenu.logs_overview.log_level.all', 'All')}</option>
-                            {LOG_LEVELS.map((name, index) => (
+                            {WIRED_LOG_LEVELS.map((name, index) => (
                                 <option key={name} value={index}>
-                                    {name}
+                                    {wiredLogLevelLabel(index)}
                                 </option>
                             ))}
                         </Select>

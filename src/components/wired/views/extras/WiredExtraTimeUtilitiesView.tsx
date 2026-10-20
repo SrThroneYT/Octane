@@ -1,8 +1,10 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { localizeWithFallback, WiredFurniType } from '../../../../api';
 import { Text } from '../../../../common';
-import { useWired } from '../../../../hooks';
+import { useWired, useWiredToolsState } from '../../../../hooks';
 import {
+    availableTimeUtilModes,
+    ITimeUtilVariableCapabilities,
     isTimeUtilSubVariableSelected,
     ITimeUtilSubVariable,
     normalizeTimeUtilMask,
@@ -10,7 +12,6 @@ import {
     setTimeUtilSubVariableSelected,
     TIME_UTIL_ADVANCED_SUB_VARIABLES,
     TIME_UTIL_MODE_VALUE,
-    TIME_UTIL_MODES,
     TIME_UTIL_SUB_VARIABLES,
     isTimeUtilModeWritable,
     timeUtilPartName,
@@ -18,7 +19,7 @@ import {
 } from './timeUtilitiesParams';
 import { WiredExtraBaseView } from './WiredExtraBaseView';
 import { Checkbox } from '../../../../common/Checkbox';
-import { Radio } from '../../../../common/Radio';
+import { Select } from '../../../../common/Select';
 import { BaseButton } from '../../../../common/BaseButton';
 
 const MODE_FALLBACKS = ['Variable value', 'Creation time', 'Last update time'];
@@ -30,12 +31,30 @@ export const WiredExtraTimeUtilitiesView: FC<{}> = () => {
     const [mode, setMode] = useState(TIME_UTIL_MODE_VALUE);
     const [isCalendarOpen, setIsCalendarOpen] = useState(true);
     const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+    const [storedMode, setStoredMode] = useState(TIME_UTIL_MODE_VALUE);
+    const { userVariableDefinitions = [], furniVariableDefinitions = [], roomVariableDefinitions = [], contextVariableDefinitions = [] } = useWiredToolsState() ?? {};
+    // The room's variables as the official ruleset lists them: room variables have no creation time.
+    const variables = useMemo<ITimeUtilVariableCapabilities[]>(
+        () => [
+            ...[...userVariableDefinitions, ...furniVariableDefinitions, ...contextVariableDefinitions].map((definition) => ({
+                hasValue: !!definition.hasValue,
+                canReadCreationTime: true,
+                canReadLastUpdateTime: true
+            })),
+            ...roomVariableDefinitions.map((definition) => ({ hasValue: !!definition.hasValue, canReadCreationTime: false, canReadLastUpdateTime: true }))
+        ],
+        [userVariableDefinitions, furniVariableDefinitions, roomVariableDefinitions, contextVariableDefinitions]
+    );
+    const modes = useMemo(() => availableTimeUtilModes(variables, storedMode), [variables, storedMode]);
 
     useEffect(() => {
         const intData = trigger?.intData ?? [];
 
         setMask(normalizeTimeUtilMask(intData[0] ?? 0));
-        setMode(normalizeTimeUtilMode(intData[1] ?? TIME_UTIL_MODE_VALUE));
+        const nextMode = normalizeTimeUtilMode(intData[1] ?? TIME_UTIL_MODE_VALUE);
+
+        setMode(nextMode);
+        setStoredMode(nextMode);
     }, [trigger]);
 
     const save = () => {
@@ -64,14 +83,19 @@ export const WiredExtraTimeUtilitiesView: FC<{}> = () => {
             <div className="octane-wired__levelup">
                 <div className="octane-wired__levelup-section">
                     <Text bold>{localizeWithFallback('wiredfurni.params.choose_type', 'Read the variable as:')}</Text>
-                    <div className="flex flex-col gap-1">
-                        {TIME_UTIL_MODES.map((option) => (
-                            <label key={option} className="flex items-center gap-2">
-                                <Radio checked={mode === option} name="wiredTimeUtilMode" onCheckedChange={() => setMode(option)} />
-                                <Text>{localizeWithFallback(`wiredfurni.params.time_util.mode.${option}`, MODE_FALLBACKS[option])}</Text>
-                            </label>
+                    {/* Official: a dropdown of the modes the room's variables can be read as. */}
+                    <Select
+                        aria-label={localizeWithFallback('wiredfurni.params.choose_type', 'Read the variable as:')}
+                        className="form-select form-select-sm w-full"
+                        value={mode}
+                        onChange={(event) => setMode(normalizeTimeUtilMode(parseInt(event.target.value, 10)))}
+                    >
+                        {modes.map((option) => (
+                            <option key={option} value={option}>
+                                {localizeWithFallback(`wiredfurni.params.time_util.mode.${option}`, MODE_FALLBACKS[option])}
+                            </option>
                         ))}
-                    </div>
+                    </Select>
                     <Text small>
                         {isTimeUtilModeWritable(mode)
                             ? localizeWithFallback('wiredfurni.params.time_util.writable_info', 'Writing a part moves the variable by that part.')

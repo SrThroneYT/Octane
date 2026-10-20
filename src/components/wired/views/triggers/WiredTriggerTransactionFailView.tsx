@@ -17,7 +17,7 @@ export const WiredTriggerTransactionFailView: FC = () => {
             <div className="flex flex-col gap-2">
                 <Text small>{localizeWithFallback('wiredfurni.params.transaction_failed.usage_info', 'Fires when a transaction of this room fails.')}</Text>
                 <div className="flex justify-center">
-                    <Button variant="secondary" onClick={() => CreateLinkEvent('wired-tools/tab/variables')}>
+                    <Button variant="secondary" onClick={() => CreateLinkEvent('wiredmenu/open/variable_overview/@event.transaction_failed.reason')}>
                         {LocalizeText('wiredfurni.view_in_menu')}
                     </Button>
                 </div>

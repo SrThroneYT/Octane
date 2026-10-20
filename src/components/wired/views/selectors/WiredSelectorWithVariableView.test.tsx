@@ -7,10 +7,12 @@ const setStringParam = vi.fn();
 const setSourceTypes = vi.fn();
 const setFurniIds = vi.fn();
 const setSelectorOptions = vi.fn();
+const setVariableIds = vi.fn();
 const noFurni: number[] = [];
 let trigger: {
     stringData: string;
     intData: number[];
+    variableIds?: string[];
     selectedItems?: number[];
     userSourceTypes?: number[];
     furniSourceTypes?: number[];
@@ -45,7 +47,7 @@ vi.mock('../../../../common', () => ({
     Text: ({ children }: PropsWithChildren) => <span>{children}</span>
 }));
 vi.mock('../../../../hooks', () => ({
-    useWired: () => ({ trigger, furniIds: noFurni, setFurniIds, setIntParams, setStringParam, setSourceTypes, setSelectorOptions }),
+    useWired: () => ({ trigger, furniIds: noFurni, setFurniIds, setIntParams, setStringParam, setSourceTypes, setSelectorOptions, setVariableIds }),
     useWiredTools: () => tools
 }));
 vi.mock('../WiredSourcesSelector', () => ({
@@ -78,6 +80,7 @@ describe('WiredSelectorWithVariableView reference value (AIR WithVariable + Valu
         setIntParams.mockClear();
         setStringParam.mockClear();
         setSourceTypes.mockClear();
+        setVariableIds.mockClear();
         baseProps = null;
     });
 
@@ -112,9 +115,20 @@ describe('WiredSelectorWithVariableView reference value (AIR WithVariable + Valu
         expect(within(popup).getByRole('group')).toBeDisabled();
         baseProps.save();
 
-        expect(setStringParam).toHaveBeenLastCalledWith('custom:5\tcustom:6');
+        // AIR: no string, variable ids [variable, reference variable].
+        expect(setStringParam).toHaveBeenLastCalledWith('');
+        expect(setVariableIds).toHaveBeenLastCalledWith(['user:5', 'user:6']);
         expect(setIntParams).toHaveBeenLastCalledWith([2, 2, 0, 0, 0, 1]);
         expect(setSourceTypes).toHaveBeenLastCalledWith({ furni: [0], users: [200] });
+    });
+
+    it('reads the variables from the variable ids', () => {
+        trigger = { stringData: '', intData: [2, 2, 0, 0, 3, 0], variableIds: ['furni:7', 'room:8'] };
+        render(<WiredSelectorWithVariableView selectorTarget="furni" />);
+
+        expect(field()).toHaveValue('round');
+        baseProps.save();
+        expect(setVariableIds).toHaveBeenLastCalledWith(['furni:7', 'room:8']);
     });
 
     it('does not save the same holder for a variable on another holder type', () => {
@@ -136,7 +150,7 @@ describe('WiredSelectorWithVariableView reference value (AIR WithVariable + Valu
         fireEvent.change(field(), { target: { value: '-5' } });
         baseProps.save();
         expect(setIntParams).toHaveBeenLastCalledWith([2, 1, -1, -5, 0, 0]);
-        expect(setStringParam).toHaveBeenLastCalledWith('custom:5\t');
+        expect(setVariableIds).toHaveBeenLastCalledWith(['user:5']);
 
         fireEvent.change(field(), { target: { value: 'vip' } });
         expect(screen.getByRole('alert')).toBeTruthy();

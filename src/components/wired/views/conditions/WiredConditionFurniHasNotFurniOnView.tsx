@@ -34,7 +34,8 @@ export const WiredConditionFurniHasNotFurniOnView: FC<{}> = (props) => {
             footer={<WiredSourcesSelector showFurni={true} furniSource={furniSource} onChangeFurni={onChangeFurniSource} />}
         >
             <div className="flex flex-col gap-1">
-                <Text bold>{LocalizeText('wiredfurni.params.not_requireall')}</Text>
+                {/* Official: the options are not_requireall.N, the title is the shared requireall. */}
+                <Text bold>{LocalizeText('wiredfurni.params.requireall')}</Text>
                 {[0, 1].map((value) => {
                     return (
                         <div key={value} className="flex items-center gap-1">

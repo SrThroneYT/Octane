@@ -11,9 +11,10 @@ import { Radio } from '../../../../common/Radio';
 const TYPE_SINGLE = 1;
 const TYPE_MULTIPLE = 2;
 const DEFAULT_PLACEHOLDER_NAME = '';
-const DEFAULT_DELIMITER = ', ';
+// AIR: the delimiter starts empty and takes at most 5 characters; a longer one of an old box is cut on its next save.
+const DEFAULT_DELIMITER = '';
 const MAX_PLACEHOLDER_NAME_LENGTH = 32;
-const MAX_DELIMITER_LENGTH = 16;
+const MAX_DELIMITER_LENGTH = 5;
 const PLACEHOLDER_WRAPPER_PATTERN = /^\$\((.*)\)$/;
 
 const normalizePlaceholderType = (value: number) => (value === TYPE_MULTIPLE ? TYPE_MULTIPLE : TYPE_SINGLE);
@@ -76,7 +77,10 @@ export const WiredExtraTextOutputFurniNameView: FC<{}> = () => {
     const save = () => {
         setIntParams([normalizePlaceholderType(placeholderType) === TYPE_MULTIPLE ? 1 : 0]);
         setSourceTypes({ furni: [normalizeFurniSource(furniSource)], users: [] });
-        setStringParam(`${normalizePlaceholderName(placeholderName)}\t${normalizeDelimiter(delimiter)}`);
+        // AIR: the name alone, or `name\tdelimiter` when every name is written.
+        const name = normalizePlaceholderName(placeholderName);
+
+        setStringParam(placeholderType === TYPE_MULTIPLE ? `${name}\t${normalizeDelimiter(delimiter)}` : name);
     };
 
     return (

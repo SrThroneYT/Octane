@@ -4,7 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const setIntParams = vi.fn();
 const setStringParam = vi.fn();
-let trigger: { stringData: string; intData: number[]; userSourceTypes?: number[] } | null = null;
+const setVariableIds = vi.fn();
+let trigger: { stringData: string; intData: number[]; variableIds?: string[]; userSourceTypes?: number[] } | null = null;
 const setSourceTypes = vi.fn();
 let baseProps: { save: () => void; validate?: () => boolean } | null = null;
 const variable = (itemId: number, name: string, hasValue = true) => ({ itemId, name, availability: 0, hasValue, isReadOnly: false, variableType: 0 });
@@ -22,7 +23,7 @@ vi.mock('../../../../api', () => ({
     WiredFurniType: { STUFF_SELECTION_OPTION_NONE: 0, STUFF_SELECTION_OPTION_BY_ID: 1 }
 }));
 vi.mock('../../../../hooks', () => ({
-    useWired: () => ({ trigger, setIntParams, setStringParam, setSourceTypes }),
+    useWired: () => ({ trigger, setIntParams, setStringParam, setSourceTypes, setVariableIds }),
     useWiredTools: () => tools,
     useAchievements: () => ({ enabledWiredAchievements: [] })
 }));
@@ -49,7 +50,7 @@ vi.mock('./WiredActionBaseView', () => ({
     }
 }));
 
-import { normalizeRewardTrackId, WiredActionProgressRewardTrackView } from './WiredActionProgressRewardTrackView';
+import { normalizeResetRewardTrackId, normalizeRewardTrackId, WiredActionProgressRewardTrackView } from './WiredActionProgressRewardTrackView';
 import { WiredActionResetRewardTrackView } from './WiredActionResetRewardTrackView';
 
 describe('reward track wired actions', () => {
@@ -58,6 +59,7 @@ describe('reward track wired actions', () => {
     beforeEach(() => {
         setIntParams.mockClear();
         setStringParam.mockClear();
+        setVariableIds.mockClear();
         baseProps = null;
     });
 
@@ -112,7 +114,9 @@ describe('reward track wired actions', () => {
         fireEvent.click(within(popup).getByText('round'));
         expect(field).toHaveValue('round');
         baseProps.save();
-        expect(setStringParam).toHaveBeenLastCalledWith('season_1\tgames\t8');
+        // AIR: `track\ttask` as the string, the amount's variable as the variable id.
+        expect(setStringParam).toHaveBeenLastCalledWith('season_1\tgames');
+        expect(setVariableIds).toHaveBeenLastCalledWith(['room:8']);
         expect(setIntParams).toHaveBeenLastCalledWith([0, 1, 16, -10]);
     });
 
@@ -126,13 +130,27 @@ describe('reward track wired actions', () => {
         expect(setIntParams).toHaveBeenCalledWith([]);
         expect(setSourceTypes).toHaveBeenCalledWith({ furni: [], users: [200] });
 
+        // AIR does not ask for a filled-in id, and the id is anything but a tab.
         fireEvent.change(screen.getByLabelText('track'), { target: { value: '' } });
-        expect(baseProps.validate()).toBe(false);
+        expect(baseProps.validate).toBeUndefined();
+        fireEvent.change(screen.getByLabelText('track'), { target: { value: 'season 1.b' } });
+        baseProps.save();
+        expect(setStringParam).toHaveBeenLastCalledWith('season 1.b');
     });
 
-    it('keeps ids to what the staff editor accepts', () => {
-        expect(normalizeRewardTrackId('a.b-c_d')).toBe('a.b-c_d');
-        expect(normalizeRewardTrackId('a\tb:c d')).toBe('abcd');
-        expect(normalizeRewardTrackId('x'.repeat(80))).toHaveLength(64);
+    it('progress: a box saved under the older id rules shows its ids as stored', () => {
+        trigger = { stringData: 'season.1\tgames-2', intData: [0, 0, 5, -10] };
+        render(<WiredActionProgressRewardTrackView />);
+
+        expect((screen.getByLabelText('track') as HTMLInputElement).value).toBe('season.1');
+        expect((screen.getByLabelText('task') as HTMLInputElement).value).toBe('games-2');
+    });
+
+    it('keeps ids to what AIR\'s boxes accept', () => {
+        expect(normalizeRewardTrackId('a.b-c_d')).toBe('abc_d');
+        expect(normalizeRewardTrackId('a\tb:c d\u00e9')).toBe('abcd');
+        expect(normalizeRewardTrackId('x'.repeat(120))).toHaveLength(100);
+        expect(normalizeResetRewardTrackId('a.b c\td')).toBe('a.b cd');
+        expect(normalizeResetRewardTrackId('x'.repeat(120))).toHaveLength(100);
     });
 });

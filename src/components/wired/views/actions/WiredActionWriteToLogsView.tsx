@@ -13,12 +13,12 @@ import { Select } from '../../../../common/Select';
  * Server: WiredEffectLog. Int params `[level]`, string param the message, the user source in its slot.
  */
 
-/** Habbo's four levels, in the order the room log window numbers them. */
+/** AIR's four levels (its dropdown and `WiredRoomLogListTableObject.COLORS`): 0 INFO, 1 WARN, 2 ERROR, 3 DEBUG. */
 export const WRITE_TO_LOGS_LEVELS: Array<{ fallback: string; value: number }> = [
-    { fallback: 'Debug', value: 0 },
-    { fallback: 'Info', value: 1 },
-    { fallback: 'Warning', value: 2 },
-    { fallback: 'Error', value: 3 }
+    { fallback: 'INFO', value: 0 },
+    { fallback: 'WARN', value: 1 },
+    { fallback: 'ERROR', value: 2 },
+    { fallback: 'DEBUG', value: 3 }
 ];
 
 export const WRITE_TO_LOGS_MESSAGE_MAX_LENGTH = 400;
