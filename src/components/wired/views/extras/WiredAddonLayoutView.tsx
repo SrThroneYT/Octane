@@ -8,6 +8,7 @@ import { WiredCustomContractView } from './WiredCustomContractView';
 import { WiredExtraAchievementEnablerView } from './WiredExtraAchievementEnablerView';
 import { WiredExtraAnimationTimeView } from './WiredExtraAnimationTimeView';
 import { WiredExtraArrayCaptureView } from './WiredExtraArrayCaptureView';
+import { WiredExtraChestItemTypeScannerView } from './WiredExtraChestItemTypeScannerView';
 import { WiredExtraExecuteInOrderView } from './WiredExtraExecuteInOrderView';
 import { WiredExtraExecutionLimitView } from './WiredExtraExecutionLimitView';
 import { WiredExtraFilterFurniByVariableView } from './WiredExtraFilterFurniByVariableView';
@@ -73,6 +74,8 @@ export const WiredAddonLayoutView = (code: number) =>
             return <WiredExtraTextInputVariableView />;
         case WiredAddonLayoutCode.EXECUTE_IN_ORDER:
             return <WiredExtraExecuteInOrderView />;
+        case WiredAddonLayoutCode.CHEST_ITEM_TYPE_SCANNER:
+            return <WiredExtraChestItemTypeScannerView />;
         case WiredAddonLayoutCode.FURNI_NAME_PLACEHOLDER:
             return <WiredExtraTextOutputFurniNameView />;
         case WiredAddonLayoutCode.CUSTOM_CONTRACT:

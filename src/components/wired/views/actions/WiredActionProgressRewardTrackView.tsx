@@ -5,9 +5,10 @@ import { useWired } from '../../../../hooks';
 import { WiredSourcesSelector } from '../WiredSourcesSelector';
 import { slotUserSource } from '../WiredSourceSlots';
 import { getCustomVariableItemId } from '../WiredVariablePickerData';
-import { variableTokenFromId, WIRED_FIXED_HOLDER_SOURCE, WiredValueOrVariableField } from '../WiredValueOrVariableField';
-import { clampProgressAmount, PROGRESS_ACHIEVEMENT_MAX_AMOUNT } from './WiredActionProgressAchievementView';
+import { variableTokenFromId, WIRED_FIXED_HOLDER_SOURCE, WiredValueOrVariableField, wiredValueTargetKey } from '../WiredValueOrVariableField';
+import { readWiredVariableToken, toWiredVariableId, wiredVariableIdList } from '../WiredVariableIds';
 import { WiredActionBaseView } from './WiredActionBaseView';
+import { Checkbox } from '../../../../common/Checkbox';
 
 /**
  * Habbo's progress-reward-track action (`wf_act_progress_reward_track`): moves one task of a reward
@@ -17,16 +18,26 @@ import { WiredActionBaseView } from './WiredActionBaseView';
  * The hotel decides which tracks wired may move.
  */
 
-export const REWARD_TRACK_ID_MAX_LENGTH = 64;
+/** AIR: both ids are `TextInputParam("", 100, null, -1, "a-zA-Z0-9_")`. */
+export const REWARD_TRACK_ID_MAX_LENGTH = 100;
+
+/** The score the server keeps a reward track task to (WiredHotelProgress.MAX_AMOUNT). */
+export const REWARD_TRACK_MAX_AMOUNT = 1_000_000;
+
+export const clampRewardTrackAmount = (value: number): number =>
+    Number.isFinite(value) ? Math.min(REWARD_TRACK_MAX_AMOUNT, Math.max(1, Math.trunc(value))) : 1;
 
 // The official reward track reads its value variable on a global or a context holder only.
 const GLOBAL_TARGET = -10;
 const CONTEXT_TARGET = -20;
 
-export const normalizeRewardTrackId = (value: string): string => (value ?? '').replace(/[^\p{L}\p{N}_.-]/gu, '').slice(0, REWARD_TRACK_ID_MAX_LENGTH);
+export const normalizeRewardTrackId = (value: string): string => (value ?? '').replace(/[^a-zA-Z0-9_]/g, '').slice(0, REWARD_TRACK_ID_MAX_LENGTH);
+
+/** AIR's reset box: `TextInputParam("", 100, null, -1, "^\t")`, anything but a tab. */
+export const normalizeResetRewardTrackId = (value: string): string => (value ?? '').replace(/\t/g, '').slice(0, REWARD_TRACK_ID_MAX_LENGTH);
 
 export const WiredActionProgressRewardTrackView: FC<{}> = () => {
-    const { trigger = null, setIntParams = null, setStringParam = null, setSourceTypes = null } = useWired();
+    const { trigger = null, setIntParams = null, setStringParam = null, setSourceTypes = null, setVariableIds = null } = useWired();
     const [trackId, setTrackId] = useState('');
     const [taskId, setTaskId] = useState('');
     const [addToExisting, setAddToExisting] = useState(false);
@@ -42,21 +53,23 @@ export const WiredActionProgressRewardTrackView: FC<{}> = () => {
 
         const [track = '', task = '', variableId = ''] = (trigger.stringData ?? '').split('\t');
 
-        setTrackId(normalizeRewardTrackId(track));
-        setTaskId(normalizeRewardTrackId(task));
+        // A box saved under the older rules shows its ids as stored; editing them applies AIR's characters.
+        setTrackId(track.slice(0, REWARD_TRACK_ID_MAX_LENGTH));
+        setTaskId(task.slice(0, REWARD_TRACK_ID_MAX_LENGTH));
         setAddToExisting((trigger.intData?.[0] ?? 0) !== 0);
         setIsVariable(trigger.intData?.[1] === 1);
-        setAmount(String(clampProgressAmount(trigger.intData?.[2] ?? 1)));
+        setAmount(String(clampRewardTrackAmount(trigger.intData?.[2] ?? 1)));
         setValueTarget(trigger.intData?.[3] === CONTEXT_TARGET ? CONTEXT_TARGET : GLOBAL_TARGET);
-        setValueToken(variableTokenFromId(variableId));
+        // AIR: the amount's variable is the first variable id; an older server wrote its id as a third field.
+        setValueToken(readWiredVariableToken(trigger.variableIds, 0, variableTokenFromId(variableId)));
         setUserSource(slotUserSource(trigger));
     }, [trigger]);
 
     const save = () => {
-        const variableId = isVariable ? getCustomVariableItemId(valueToken) : 0;
-
-        setStringParam(isVariable ? `${trackId}\t${taskId}\t${variableId}` : `${trackId}\t${taskId}`);
-        setIntParams([addToExisting ? 1 : 0, isVariable ? 1 : 0, clampProgressAmount(parseInt(amount, 10)), valueTarget]);
+        // AIR ProgressRewardTrack: `track\ttask` as the string, the amount's variable as the variable id.
+        setStringParam(`${trackId}\t${taskId}`);
+        setVariableIds(wiredVariableIdList(isVariable ? toWiredVariableId(wiredValueTargetKey(valueTarget), valueToken) : ''));
+        setIntParams([addToExisting ? 1 : 0, isVariable ? 1 : 0, clampRewardTrackAmount(parseInt(amount, 10)), valueTarget]);
         setSourceTypes({ furni: [], users: [userSource] });
     };
 
@@ -89,7 +102,7 @@ export const WiredActionProgressRewardTrackView: FC<{}> = () => {
                 />
             </div>
             <label className="flex items-center gap-1">
-                <input type="checkbox" className="form-check-input" checked={addToExisting} onChange={(event) => setAddToExisting(event.target.checked)} />
+                <Checkbox checked={addToExisting} onCheckedChange={(nextChecked) => setAddToExisting(nextChecked)} />
                 <Text>{localizeWithFallback('wiredfurni.params.reward_track.add_to_existing_score', 'Add to the existing score')}</Text>
             </label>
             <div className="flex flex-col gap-1">

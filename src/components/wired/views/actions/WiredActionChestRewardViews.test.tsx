@@ -78,12 +78,15 @@ describe('chest reward wired actions', () => {
         trigger = { stringData: 'hi', intData: [0, 5, 1, -20, 1, 13], userSourceTypes: [200], variableIds: ['44'] };
         render(<WiredActionGiveCurrencyFromChestView />);
 
-        expect((screen.getByLabelText('chest extra') as HTMLSelectElement).value).toBe('13');
+        // The extra option sits in a collapsible section that starts closed (and hidden).
+        fireEvent.click(screen.getByRole('button', { name: 'Earnings category:' }));
+
+        expect(screen.getByRole('combobox', { name: 'chest extra' })).toHaveTextContent('Agency');
         expect(baseProps.validate()).toBe(true);
         baseProps.save();
 
         expect(setIntParams).toHaveBeenCalledWith([0, 5, 1, -20, 1, 13]);
-        expect(setVariableIds).toHaveBeenCalledWith(['44']);
+        expect(setVariableIds).toHaveBeenCalledWith(['ctx:44']);
         expect(setSourceTypes).toHaveBeenCalledWith({ furni: [100], users: [200] });
     });
 
@@ -109,15 +112,15 @@ describe('chest reward wired actions', () => {
         expect(within(popup).getByText('wiredfurni.params.sources.merged.title.variables')).toBeTruthy();
         expect(within(popup).getByText('wiredfurni.params.sources.global')).toBeTruthy();
         // Only the room and context holders the server reads, no same-holder option.
-        expect(within(popup).getAllByRole('button', { name: /^(global|context|furni|user)$/ }).map((button) => button.textContent)).toHaveLength(2);
+        expect(within(popup).getAllByRole('button', { name: /^wiredfurni\.params\.sourcetype\.(global|context|furni|users)$/ }).map((button) => button.textContent)).toHaveLength(2);
         expect(within(popup).queryByRole('checkbox')).toBeNull();
-        fireEvent.click(within(popup).getByRole('button', { name: 'context' }));
+        fireEvent.click(within(popup).getByRole('button', { name: 'wiredfurni.params.sourcetype.context' }));
         fireEvent.click(within(screen.getByRole('dialog')).getByText('combo'));
         expect(field).toHaveValue('combo');
         baseProps.save();
 
         expect(setIntParams).toHaveBeenLastCalledWith([0, 3, 1, -20, 0, 11]);
-        expect(setVariableIds).toHaveBeenLastCalledWith(['10']);
+        expect(setVariableIds).toHaveBeenLastCalledWith(['ctx:10']);
     });
 
     it('amount: refuses 0 and a variable without a value; the field is disabled when the box gives everything', () => {

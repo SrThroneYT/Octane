@@ -4,6 +4,8 @@ import { Text } from '../../../../common';
 import { useWired } from '../../../../hooks';
 import { OctaneInput } from '../../../../layout';
 import { WiredExtraBaseView } from './WiredExtraBaseView';
+import { Checkbox } from '../../../../common/Checkbox';
+import { Radio } from '../../../../common/Radio';
 
 const AVAILABILITY_ROOM = 0;
 const AVAILABILITY_PERMANENT = 10;
@@ -53,6 +55,8 @@ interface WiredExtraVariableViewProps
     availabilityRoomText: string;
     availabilityRadioName: string;
     showSharedAvailability?: boolean;
+    /** AIR: a user variable sends [availability, hasValue], a furni variable [hasValue, availability]. */
+    availabilityFirst?: boolean;
 }
 
 export const WiredExtraVariableView: FC<WiredExtraVariableViewProps> = props =>
@@ -82,14 +86,18 @@ export const WiredExtraVariableView: FC<WiredExtraVariableViewProps> = props =>
         if(!trigger) return;
 
         setVariableName(normalizeVariableName(trigger.stringData));
-        setHasValue((trigger.intData.length > 0) ? (trigger.intData[0] === 1) : false);
-        setAvailability(normalizeAvailability((trigger.intData.length > 1) ? trigger.intData[1] : props.availabilityRoomValue));
-    }, [ normalizeAvailability, props.availabilityRoomValue, trigger ]);
+        const [ hasValueIndex, availabilityIndex ] = props.availabilityFirst ? [ 1, 0 ] : [ 0, 1 ];
+
+        setHasValue((trigger.intData.length > hasValueIndex) ? (trigger.intData[hasValueIndex] === 1) : false);
+        setAvailability(normalizeAvailability((trigger.intData.length > availabilityIndex) ? trigger.intData[availabilityIndex] : props.availabilityRoomValue));
+    }, [ normalizeAvailability, props.availabilityFirst, props.availabilityRoomValue, trigger ]);
 
     const save = () =>
     {
         setStringParam(normalizeVariableName(variableName));
-        setIntParams([ hasValue ? 1 : 0, normalizeAvailability(availability) ]);
+        const nextAvailability = normalizeAvailability(availability);
+
+        setIntParams(props.availabilityFirst ? [ nextAvailability, hasValue ? 1 : 0 ] : [ hasValue ? 1 : 0, nextAvailability ]);
     };
 
     // Official (user variables only): a stored variable switched to one that is not stored loses its data, so the
@@ -98,7 +106,8 @@ export const WiredExtraVariableView: FC<WiredExtraVariableViewProps> = props =>
     {
         if(!props.showSharedAvailability || !trigger) return null;
 
-        const saved = normalizeAvailability((trigger.intData.length > 1) ? trigger.intData[1] : props.availabilityRoomValue);
+        const availabilityIndex = props.availabilityFirst ? 0 : 1;
+        const saved = normalizeAvailability((trigger.intData.length > availabilityIndex) ? trigger.intData[availabilityIndex] : props.availabilityRoomValue);
         const next = normalizeAvailability(availability);
 
         if(!isStoredAvailability(saved) || isStoredAvailability(next)) return null;
@@ -120,7 +129,7 @@ export const WiredExtraVariableView: FC<WiredExtraVariableViewProps> = props =>
                 <div className="flex flex-col gap-1">
                     <Text>{ LocalizeText('wiredfurni.params.variables.settings') }</Text>
                     <label className="flex items-center gap-1 cursor-pointer">
-                        <input checked={ hasValue } className="form-check-input" type="checkbox" onChange={ event => setHasValue(event.target.checked) } />
+                        <Checkbox checked={ hasValue } onCheckedChange={(nextChecked) => setHasValue(nextChecked)} />
                         <Text>{ LocalizeText('wiredfurni.params.variables.settings.has_value') }</Text>
                     </label>
                 </div>
@@ -128,16 +137,16 @@ export const WiredExtraVariableView: FC<WiredExtraVariableViewProps> = props =>
                 <div className="flex flex-col gap-1">
                     <Text>{ LocalizeText('wiredfurni.params.variables.availability') }</Text>
                     <label className="flex items-center gap-1 cursor-pointer">
-                        <input checked={ (availability === props.availabilityRoomValue) } className="form-check-input" name={ props.availabilityRadioName } type="radio" onChange={ () => setAvailability(props.availabilityRoomValue) } />
+                        <Radio checked={ (availability === props.availabilityRoomValue) } name={ props.availabilityRadioName } onCheckedChange={() => setAvailability(props.availabilityRoomValue)} />
                         <Text>{ roomAvailabilityText }</Text>
                     </label>
                     <label className="flex items-center gap-1 cursor-pointer">
-                        <input checked={ (availability === AVAILABILITY_PERMANENT) } className="form-check-input" name={ props.availabilityRadioName } type="radio" onChange={ () => setAvailability(AVAILABILITY_PERMANENT) } />
+                        <Radio checked={ (availability === AVAILABILITY_PERMANENT) } name={ props.availabilityRadioName } onCheckedChange={() => setAvailability(AVAILABILITY_PERMANENT)} />
                         <Text>{ LocalizeText('wiredfurni.params.variables.availability.10') }</Text>
                     </label>
                     { !!props.showSharedAvailability &&
                         <label className="flex items-center gap-1 cursor-pointer">
-                            <input checked={ (availability === AVAILABILITY_SHARED) } className="form-check-input" name={ props.availabilityRadioName } type="radio" onChange={ () => setAvailability(AVAILABILITY_SHARED) } />
+                            <Radio checked={ (availability === AVAILABILITY_SHARED) } name={ props.availabilityRadioName } onCheckedChange={() => setAvailability(AVAILABILITY_SHARED)} />
                             <Text>{ LocalizeText('wiredfurni.params.variables.availability.11') }</Text>
                         </label> }
                 </div>
@@ -148,7 +157,7 @@ export const WiredExtraVariableView: FC<WiredExtraVariableViewProps> = props =>
 
 export const WiredExtraUserVariableView: FC<{}> = () =>
 {
-    return <WiredExtraVariableView availabilityRadioName="wiredUserVariableAvailability" availabilityRoomText={ LocalizeText('wiredfurni.params.variables.availability.0') } availabilityRoomValue={ AVAILABILITY_ROOM } showSharedAvailability={ true } />;
+    return <WiredExtraVariableView availabilityRadioName="wiredUserVariableAvailability" availabilityRoomText={ LocalizeText('wiredfurni.params.variables.availability.0') } availabilityRoomValue={ AVAILABILITY_ROOM } showSharedAvailability={ true } availabilityFirst={ true } />;
 };
 
 

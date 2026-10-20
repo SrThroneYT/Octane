@@ -44,6 +44,14 @@ export const isUsingAdvancedSettings = (trigger: Triggerable | null, wiredType: 
 };
 
 /**
+ * A condition saved on "any": its quantifier sits in the advanced section, so the editor opens with it expanded, as
+ * the official one does for a quantifier other than 0. Our editor always draws that section, so this does not wait
+ * for the definition's advanced mode the way the source rule above does.
+ */
+export const opensOnConditionQuantifier = (trigger: Triggerable | null, wiredType: string): boolean =>
+    wiredType === 'condition' && !!trigger?.quantifierType && (trigger.quantifierCode ?? 0) !== 0;
+
+/**
  * The elements whose official advancedAlwaysVisible() returns true, by holder and code (AIR roomevents/wired_setup:
  * StuffTypeMatches, input source quantity, HasVariable, VariableValue, VariableAge, ChestHasAmount and its item-type
  * child; ReceiveLinkMessage; CarryUsers, VariablePlaceholderAddon, the chest item type scanner and the furni name

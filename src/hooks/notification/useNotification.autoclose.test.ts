@@ -1,3 +1,4 @@
+/* @vitest-environment jsdom */
 import { describe, expect, it } from 'vitest';
 import { NotificationAlertItem } from '../../api';
 import { getAutoCloseSeconds, prependSingleAlert } from './useNotification';

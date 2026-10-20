@@ -1,6 +1,6 @@
 import { CreateLinkEvent, DisconnectMessageComposer, GetCommunication, HabboClubExtendConfirmMessageComposer } from '@octane/renderer';
 import { FC, useCallback, useMemo, useState } from 'react';
-import { ClearRememberLogin, FriendlyTime, GetConfigurationValue, GetRememberLogin, LocalizeText, localizeWithFallback, SendMessageComposer } from '../../api';
+import { clearAccessToken, ClearRememberLogin, FriendlyTime, GetConfigurationValue, GetRememberLogin, LocalizeText, localizeWithFallback, SendMessageComposer } from '../../api';
 import earningsIcon from '../../assets/images/purse-swf/icons/1747_icon_earnings_png$5e39e03f65fbbb9a85bedd0d577dc12d307477063.png';
 import hcIcon from '../../assets/images/purse-swf/icons/1801_hc_icon_png$2f8b554609e9c5cbbdc46bcbe5764be5-210881771.png';
 import logoutIcon from '../../assets/images/purse-swf/icons/1936_logout_icon_png$6a29fdff1e5e3cdd3c6290cec5c962b4-234470554.png';
@@ -10,6 +10,8 @@ import { ClearStoredChatHistory, usePurse } from '../../hooks';
 import { ClubExtendView } from './views/ClubExtendView';
 import { CurrencyView } from './views/CurrencyView';
 import { SeasonalView } from './views/SeasonalView';
+import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 export const PurseView: FC<{}> = (props) => {
     const { purse = null, hcDisabled = false } = usePurse();
@@ -105,6 +107,7 @@ export const PurseView: FC<{}> = (props) => {
         }
 
         ClearRememberLogin();
+        clearAccessToken();
         ClearStoredChatHistory();
         if (window.OctaneConfig) window.OctaneConfig['sso.ticket'] = '';
 
@@ -142,81 +145,80 @@ export const PurseView: FC<{}> = (props) => {
                     </div>
                     <div className="octane-purse__col octane-purse__col--primary subscription-container">
                         {!hcDisabled && (
-                            <button
+                            <Hint content={clubLabel}><BaseButton
                                 type="button"
                                 className="octane-purse__btn octane-purse__btn--join octane-purse-subscription club-text"
                                 onClick={openClub}
-                                title={clubLabel}
                             >
                                 <img src={hcIcon} alt="" className="octane-purse__btn-img" />
                                 <span>{clubLabel}</span>
-                            </button>
+                            </BaseButton></Hint>
                         )}
-                        <button
+                        <Hint content={earningsLabel}><BaseButton
                             type="button"
                             className="octane-purse__btn octane-purse__btn--earnings octane-purse-subscription club-text"
                             onClick={openEarnings}
-                            title={earningsLabel}
                         >
                             <img src={earningsIcon} alt="" className="octane-purse__btn-img" />
                             <span>{earningsLabel}</span>
-                        </button>
+                        </BaseButton></Hint>
                     </div>
                     <div className="octane-purse__divider" aria-hidden="true" />
                     <div className="octane-purse__col octane-purse__col--actions">
-                        <button
+                        <Hint content={helpLabel}><BaseButton
                             type="button"
                             className="octane-purse__btn octane-purse__btn--help octane-purse-right-button help"
                             onClick={(event) => {
                                 event.stopPropagation();
                                 CreateLinkEvent('help/show');
                             }}
-                            title={helpLabel}
                         >
                             <span>{helpLabel}</span>
-                        </button>
-                        <button
-                            type="button"
-                            className="octane-purse__btn octane-purse__btn--icon octane-purse__btn--logout octane-purse-right-button disconnect"
-                            onClick={handleLogout}
-                            title="Log out"
-                        >
-                            <img src={logoutIcon} alt="" className="octane-purse__btn-img" />
-                        </button>
-                        <button
-                            type="button"
-                            className="octane-purse__btn octane-purse__btn--icon octane-purse__btn--settings octane-purse-right-button settings"
-                            onClick={(event) => {
-                                event.stopPropagation();
-                                setSettingsMenuOpen((value) => !value);
-                            }}
-                            title={LocalizeText('widget.memenu.settings.title')}
-                        >
-                            <img src={settingsIcon} alt="" className="octane-purse__btn-img" />
-                        </button>
+                        </BaseButton></Hint>
+                        <Hint content="Log out">
+                            <BaseButton aria-label="Log out"
+                                type="button"
+                                className="octane-purse__btn octane-purse__btn--icon octane-purse__btn--logout octane-purse-right-button disconnect"
+                                onClick={handleLogout}
+                            >
+                                <img src={logoutIcon} alt="" className="octane-purse__btn-img" />
+                            </BaseButton>
+                        </Hint>
+                        <Hint content={LocalizeText('widget.memenu.settings.title')}>
+                            <BaseButton aria-label={LocalizeText('widget.memenu.settings.title')}
+                                type="button"
+                                className="octane-purse__btn octane-purse__btn--icon octane-purse__btn--settings octane-purse-right-button settings"
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    setSettingsMenuOpen((value) => !value);
+                                }}
+                            >
+                                <img src={settingsIcon} alt="" className="octane-purse__btn-img" />
+                            </BaseButton>
+                        </Hint>
                     </div>
                 </div>
             </div>
             {showExtendPromo && (
-                <button
+                <BaseButton
                     type="button"
                     className="octane-purse-extend-promo"
                     onClick={() => SendMessageComposer(new HabboClubExtendConfirmMessageComposer())}
                 >
                     <img src={hcIcon} alt="" />
                     <span>{localizeWithFallback('club.bar.hc.expiring', 'Save credits by renewing HC now!')}</span>
-                </button>
+                </BaseButton>
             )}
             <ClubExtendView />
             {settingsMenuOpen && (
                 <div className="octane-purse-menu">
-                    <button type="button" className="octane-purse-menu__item" onClick={() => openSettingsSection('')}>
+                    <BaseButton type="button" className="octane-purse-menu__item" onClick={() => openSettingsSection('')}>
                         {localizeWithFallback('widget.memenu.settings.title', 'Settings')}
-                    </button>
-                    <button type="button" className="octane-purse-menu__item" onClick={() => openSettingsSection('privacy')}>
+                    </BaseButton>
+                    <BaseButton type="button" className="octane-purse-menu__item" onClick={() => openSettingsSection('privacy')}>
                         {localizeWithFallback('purse.settings.game_privacy', 'Game Privacy')}
-                    </button>
-                    <button
+                    </BaseButton>
+                    <BaseButton
                         type="button"
                         className="octane-purse-menu__item"
                         onClick={() => {
@@ -225,8 +227,8 @@ export const PurseView: FC<{}> = (props) => {
                         }}
                     >
                         {translateLabel}
-                    </button>
-                    <button
+                    </BaseButton>
+                    <BaseButton
                         type="button"
                         className="octane-purse-menu__item"
                         onClick={() => {
@@ -235,10 +237,10 @@ export const PurseView: FC<{}> = (props) => {
                         }}
                     >
                         {localizeWithFallback('purse.settings.account', 'Account Management')}
-                    </button>
-                    <button type="button" className="octane-purse-menu__item octane-purse-menu__item--disabled" disabled>
+                    </BaseButton>
+                    <BaseButton type="button" className="octane-purse-menu__item octane-purse-menu__item--disabled" disabled>
                         {localizeWithFallback('purse.settings.wordfilter', 'Word Filter')}
-                    </button>
+                    </BaseButton>
                 </div>
             )}
             {otherCurrencies.length > 0 && (

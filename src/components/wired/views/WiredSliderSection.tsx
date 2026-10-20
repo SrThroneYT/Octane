@@ -1,4 +1,5 @@
 import { FC, useEffect, useState } from 'react';
+import { formatWiredNumber, restrictWiredNumberInput, validateWiredNumberInput, WiredNumberInputError, wiredNumberInputMessage } from '../../../api/wired/WiredNumberInput';
 import { Slider, Text } from '../../../common';
 
 interface WiredSliderSectionProps {
@@ -21,19 +22,38 @@ interface WiredSliderSectionProps {
 
 const identity = (value: number) => value;
 
-/** The official createSliderSection: a titled slider, with an editable number in the header by default. */
-export const WiredSliderSection: FC<WiredSliderSectionProps> = props => {
-    const { title, value, min, max, step = 1, numberInput = true, toDisplay = identity, fromDisplay = identity, displayStep = 1, onChange } = props;
+/**
+ * The official createSliderSection: a titled slider, with an editable number in the header by default.
+ * The number is checked as AIR's NumberInputPreset checks it, on every change: a valid number moves the
+ * slider at once, anything else keeps what was typed, turns the field invalidInputBackgroundColor and
+ * shows the wiredfurni.params.number_input.* warning above it; nothing is clamped or rounded.
+ */
+export const WiredSliderSection: FC<WiredSliderSectionProps> = (props) => {
+    const { title, value, min, max, step = 1, numberInput = true, toDisplay = identity, fromDisplay = identity, onChange } = props;
     const clamp = (next: number) => Math.max(min, Math.min(max, Math.round(next / step) * step));
-    const [typed, setTyped] = useState(String(toDisplay(value)));
+    const [typed, setTyped] = useState(formatWiredNumber(toDisplay(value)));
+    const [error, setError] = useState<WiredNumberInputError | null>(null);
+    const range = { min, max, step, toDisplay, fromDisplay };
 
-    useEffect(() => setTyped(String(toDisplay(value))), [ toDisplay, value ]);
+    useEffect(() => {
+        setTyped(formatWiredNumber(toDisplay(value)));
+        setError(null);
+    }, [toDisplay, value]);
 
-    const commit = (text: string) => {
-        const shown = parseFloat(text.replace(',', '.'));
+    const onType = (text: string) => {
+        const restricted = restrictWiredNumberInput(text, range);
+        const result = validateWiredNumberInput(restricted, range);
 
-        if (Number.isFinite(shown)) onChange(clamp(fromDisplay(shown)));
-        else setTyped(String(toDisplay(value)));
+        setTyped(restricted);
+
+        if ('error' in result) {
+            setError(result.error);
+            return;
+        }
+
+        setError(null);
+
+        if (result.value !== value) onChange(result.value);
     };
 
     return (
@@ -41,19 +61,25 @@ export const WiredSliderSection: FC<WiredSliderSectionProps> = props => {
             <div className="flex items-center justify-between gap-2">
                 <Text bold>{title}</Text>
                 {numberInput && (
-                    <input
-                        className="form-control form-control-sm text-center"
-                        step={displayStep}
-                        style={{ width: 64 }}
-                        type="number"
-                        value={typed}
-                        onBlur={event => commit(event.target.value)}
-                        onChange={event => setTyped(event.target.value)}
-                        onKeyDown={event => event.key === 'Enter' && commit((event.target as HTMLInputElement).value)}
-                    />
+                    <div className="relative">
+                        <input
+                            aria-invalid={!!error}
+                            className={`form-control form-control-sm text-center octane-wired__number-input ${error ? 'is-invalid' : ''}`}
+                            inputMode="decimal"
+                            style={{ width: 64 }}
+                            type="text"
+                            value={typed}
+                            onChange={(event) => onType(event.target.value)}
+                        />
+                        {error && (
+                            <div className="octane-wired__value-input-error" role="alert">
+                                {wiredNumberInputMessage(error)}
+                            </div>
+                        )}
+                    </div>
                 )}
             </div>
-            <Slider max={max} min={min} step={step} value={value} onChange={next => onChange(clamp(Array.isArray(next) ? next[0] : Number(next)))} />
+            <Slider max={max} min={min} step={step} value={value} onChange={(next) => onChange(clamp(Array.isArray(next) ? next[0] : Number(next)))} />
         </div>
     );
 };

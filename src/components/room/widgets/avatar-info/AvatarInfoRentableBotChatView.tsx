@@ -2,6 +2,8 @@ import { BotSkillSaveComposer } from '@octane/renderer';
 import { FC, useState } from 'react';
 import { BotSkillsEnum, GetConfigurationValue, LocalizeText, OpenUrl, RoomWidgetUpdateRentableBotChatEvent, SendMessageComposer } from '../../../../api';
 import { AvatarInfoBotSkillButtonsView, AvatarInfoBotSkillWindowView } from './AvatarInfoBotSkillWindowView';
+import { BaseButton } from '../../../../common/BaseButton';
+import { Checkbox } from '../../../../common/Checkbox';
 
 interface AvatarInfoRentableBotChatViewProps {
     chatEvent: RoomWidgetUpdateRentableBotChatEvent;
@@ -47,16 +49,11 @@ export const AvatarInfoRentableBotChatView: FC<AvatarInfoRentableBotChatViewProp
             />
             <label className="air-bot-skill-row">
                 <span className="air-bot-skill-label">{LocalizeText('bot.skill.chatter.configuration.automatic.chat')}</span>
-                <input
-                    checked={automaticChat}
-                    className="air-bot-skill-checkbox"
-                    type="checkbox"
-                    onChange={(event) => setAutomaticChat(event.target.checked)}
-                />
+                <Checkbox checked={automaticChat} onCheckedChange={ nextChecked => setAutomaticChat(nextChecked) } />
             </label>
             <label className="air-bot-skill-row">
                 <span className="air-bot-skill-label">{LocalizeText('bot.skill.chatter.configuration.markov')}</span>
-                <input checked={mixSentences} className="air-bot-skill-checkbox" type="checkbox" onChange={(event) => setMixSentences(event.target.checked)} />
+                <Checkbox checked={mixSentences} onCheckedChange={ nextChecked => setMixSentences(nextChecked) } />
             </label>
             <label className="air-bot-skill-row">
                 <span className="air-bot-skill-label">{LocalizeText('bot.skill.chatter.configuration.chat.delay')}</span>
@@ -68,14 +65,14 @@ export const AvatarInfoRentableBotChatView: FC<AvatarInfoRentableBotChatViewProp
                     onChange={(event) => setChatDelay(event.target.value.replace(/[^0-9]/g, ''))}
                 />
             </label>
-            <button
+            <BaseButton
                 className="air-bot-skill-help-link"
                 disabled={!helpUrl}
                 type="button"
                 onClick={() => OpenUrl(helpUrl)}
             >
                 {LocalizeText('bot.skill.chatter.configuration.help.link')}
-            </button>
+            </BaseButton>
             <AvatarInfoBotSkillButtonsView cancelLabel={LocalizeText('cancel')} saveLabel={LocalizeText('save')} onCancel={onClose} onSave={save} />
         </AvatarInfoBotSkillWindowView>
     );

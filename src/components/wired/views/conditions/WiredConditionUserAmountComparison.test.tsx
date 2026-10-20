@@ -46,20 +46,20 @@ describe('the amount dialog shared by the credits, duckets, diamonds and item-co
     afterEach(cleanup);
 
     it('keeps a six-code comparison the server now honours instead of coercing it to equal', () => {
-        trigger = { intData: [0, 5, 250, 0, 0], stringData: '' };
+        trigger = { intData: [0, 5, 250, 0], stringData: '' };
         render(<WiredConditionTeamHasScoreView scoped={false} />);
         fireEvent.click(screen.getByText('Save'));
 
-        expect(setIntParams).toHaveBeenCalledWith([1, 5, 250, 0, 0]);
+        expect(setIntParams).toHaveBeenCalledWith([1, 5, 250, 0]);
     });
 
     it('lets the builder pick another operator', () => {
-        trigger = { intData: [0, 5, 10, 0, 0], stringData: '' };
+        trigger = { intData: [0, 5, 10, 0], stringData: '' };
         render(<WiredConditionTeamHasScoreView scoped={false} />);
         fireEvent.click(screen.getByText('<'));
         fireEvent.click(screen.getByText('Save'));
 
-        expect(setIntParams).toHaveBeenCalledWith([1, 0, 10, 0, 0]);
+        expect(setIntParams).toHaveBeenCalledWith([1, 0, 10, 0]);
     });
 
     it('an unsaved box starts at "at least", which is what the boxes always did', () => {
@@ -67,6 +67,6 @@ describe('the amount dialog shared by the credits, duckets, diamonds and item-co
         render(<WiredConditionTeamHasScoreView scoped={false} />);
         fireEvent.click(screen.getByText('Save'));
 
-        expect(setIntParams).toHaveBeenCalledWith([1, 5, 0, 0, 0]);
+        expect(setIntParams).toHaveBeenCalledWith([1, 5, 0, 0]);
     });
 });

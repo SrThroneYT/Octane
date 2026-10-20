@@ -49,13 +49,16 @@ import {
     NotificationConfirmItem,
     PlaySound,
     ProductImageUtility,
-    WIRED_CHEST_REWARD_LINK,
     TradingNotificationType
 } from '../../api';
 import { rememberReceivedBadgeRarity } from '../../api/badges/badgeRarity';
 import { AchievementNotificationBubbleItem } from '../../api/notification/AchievementNotificationBubbleItem';
 import { localizeWithFallback } from '../../api/utils/localizeWithFallback';
+import { countSimpleAlert } from '../../api/notification/SimpleAlertCounter';
+import { wiredRewardResultAlert } from '../../api/wired/WiredRewardResult';
+import { WIRED_TRADE_ERROR_ICON, wiredTradeErrorMessage } from '../../api/inventory/WiredTradingUtilities';
 import { useMessageEvent } from '../events';
+import { receiveWiredReward } from '../rooms/widgets/wiredRewardStore';
 import { useHotelAlertToastStore } from './hotelAlertToastStore';
 
 const cleanText = (text: string) => (text && text.length ? text.replace(/\\r/g, '\r') : '');
@@ -153,6 +156,8 @@ const useNotificationStore = () => {
             timeoutSeconds: number = null,
             data: Map<string, string> = null
         ) => {
+            countSimpleAlert();
+
             if (!title || !title.length) title = LocalizeText('notifications.broadcast.title');
 
             if (!type || !type.length) type = NotificationAlertType.DEFAULT;
@@ -416,33 +421,22 @@ const useNotificationStore = () => {
         );
     });
 
-    // WiredTradeError: a refused trade action.
+    // WiredTradeError: a refused trade action, with AIR's trading error icon (e.g. 5, more than the requirements ask).
     useMessageEvent<WiredTradeErrorEvent>(WiredTradeErrorEvent, (event) => {
         const parser = event.getParser();
 
-        showSingleBubble(
-            LocalizeText(
-                'wired_transactions.notification.trade_error',
-                ['error'],
-                [LocalizeText(`wired_transactions.notification.trade_error.${ parser.tradeErrorId }`)],
-            ),
-            NotificationBubbleType.INFO,
-        );
+        showSingleBubble(wiredTradeErrorMessage(parser.tradeErrorId, LocalizeText), NotificationBubbleType.INFO, WIRED_TRADE_ERROR_ICON);
     });
 
-    // WiredTransactionSuccess. Reward contents that do not open by themselves get the click-to-popup text and
-    // open the reward popup (FurnitureWiredChestRewardView) when the notification is clicked.
+    // WiredTransactionSuccess. AIR RewardNotificationController keeps every reward under its own id: one that opens by
+    // itself opens its popup (FurnitureWiredChestRewardView) now, the others get the click-to-popup text whose link
+    // opens that reward, not whichever came last.
     useMessageEvent<WiredTransactionSuccessEvent>(WiredTransactionSuccessEvent, (event) => {
         const parser = event.getParser();
-        const clickToPopup = parser.hasRewardContents && !parser.openByDefault;
+        const rewardLink = receiveWiredReward(parser);
         const key = `wired_transactions.notification.success.${ parser.successType }`;
 
-        showSingleBubble(
-            LocalizeText(clickToPopup ? `${ key }.click_to_popup` : key),
-            NotificationBubbleType.INFO,
-            null,
-            clickToPopup ? WIRED_CHEST_REWARD_LINK : null,
-        );
+        showSingleBubble(LocalizeText(rewardLink ? `${ key }.click_to_popup` : key), NotificationBubbleType.INFO, null, rewardLink);
     });
 
     useMessageEvent<BadgeReceivedEvent>(BadgeReceivedEvent, (event) => {
@@ -724,35 +718,10 @@ const useNotificationStore = () => {
     });
 
     useMessageEvent<WiredRewardResultMessageEvent>(WiredRewardResultMessageEvent, (event) => {
-        const parser = event.getParser();
+        // Official: a product, a badge, or a refusal with its reason; no reason is dropped.
+        const { titleKey, bodyKey } = wiredRewardResultAlert(event.getParser().reason);
 
-        switch (parser.reason) {
-            case WiredRewardResultMessageEvent.PRODUCT_DONATED_CODE:
-            case WiredRewardResultMessageEvent.BADGE_DONATED_CODE:
-                simpleAlert(
-                    LocalizeText('wiredfurni.rewardsuccess.body'),
-                    NotificationAlertType.DEFAULT,
-                    null,
-                    null,
-                    LocalizeText('wiredfurni.rewardsuccess.title')
-                );
-                return;
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-            case 8:
-                simpleAlert(
-                    LocalizeText(`wiredfurni.rewardfailed.reason.${parser.reason}`),
-                    NotificationAlertType.DEFAULT,
-                    null,
-                    null,
-                    LocalizeText('wiredfurni.rewardfailed.title')
-                );
-                return;
-        }
+        simpleAlert(LocalizeText(bodyKey), NotificationAlertType.DEFAULT, null, null, LocalizeText(titleKey));
     });
 
     const onRoomEnterEvent = useCallback(() => {

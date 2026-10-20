@@ -2,6 +2,7 @@ import { AddLinkEventTracker, ILinkEventTracker, OctaneLogger, RemoveLinkEventTr
 import { FC, useEffect, useRef, useState } from 'react';
 import { GetConfigurationValue, OpenUrl, resolveHabboPageUrl, SanitizePageHtml } from '../../api';
 import { OctaneCardContentView, OctaneCardHeaderView, OctaneCardView } from '../../common';
+import { getClickedAnchor } from './getClickedAnchor';
 
 const NEW_LINE_REGEX = /\n\r|\n|\r/gm;
 
@@ -67,16 +68,18 @@ export const OctanepediaView: FC<{}> = (props) => {
 
     useEffect(() => {
         const handle = (event: MouseEvent) => {
-            if (!(event.target instanceof HTMLAnchorElement)) return;
+            const anchor = getClickedAnchor(event.target);
+
+            if (!anchor) return;
 
             // Only the links inside this window: the listener sits on the document, so without
             // this check it opened every link in the client (the profile's unblock link, chat
             // links...) in a new browser page, even with Octanepedia closed.
-            if (!elementRef.current?.contains(event.target)) return;
+            if (!elementRef.current?.contains(anchor)) return;
 
             event.preventDefault();
 
-            const link = event.target.href;
+            const link = anchor.href;
 
             if (!link || !link.length) return;
 

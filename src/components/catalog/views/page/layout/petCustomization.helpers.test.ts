@@ -1,3 +1,4 @@
+/* @vitest-environment jsdom */
 import { describe, expect, it } from 'vitest';
 import { FurniCategory } from '../../../../../api';
 import { buildPetCustomizationPreviewFigure } from './petCustomization.helpers';

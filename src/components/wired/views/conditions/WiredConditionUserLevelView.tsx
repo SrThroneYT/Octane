@@ -1,38 +1,44 @@
 import { FC, useEffect, useState } from 'react';
-import { localizeWithFallback, WiredFurniType } from '../../../../api';
-import { Slider, Text } from '../../../../common';
+import { LocalizeText, localizeWithFallback, WiredFurniType } from '../../../../api';
+import { Text } from '../../../../common';
 import { useWired } from '../../../../hooks';
-import { WiredComparisonOperator } from '../WiredComparisonOperator';
+import { WiredSliderSection } from '../WiredSliderSection';
 import { WiredSourcesSelector } from '../WiredSourcesSelector';
 import { WiredConditionBaseView } from './WiredConditionBaseView';
+import { Radio } from '../../../../common/Radio';
 
 const MIN_LEVEL = 1;
-const MAX_LEVEL = 100;
-const QUANTIFIER_ALL = 0;
-const QUANTIFIER_ANY = 1;
+const MAX_LEVEL = 30;
+
+/** AIR LevelMatches comparisons: 0 lower than, 1 equal to, 2 higher than. */
+const COMPARISONS = [0, 1, 2];
+const COMPARISON_EQUAL = 1;
 
 /**
- * Compares the user's account level (the profile level, as `@level`), as the AIR editor does: a level and a
- * comparison, no variable. A variable stored by older saves is dropped on the next save; the server no longer reads it.
+ * Compares the user's account level (the profile level, as `@level`), as the AIR editor does: a 1..30 level slider
+ * with its number input, then the three-way comparison. A variable stored by older saves is dropped on the next save;
+ * the server no longer reads it.
  */
 export const WiredConditionUserLevelView: FC<{}> = () => {
-    const { trigger = null, setIntParams = null, setStringParam = null } = useWired();
+    // Official layout: [level, comparison], the users in the official source slot; the quantifier is the base view's.
+    const { trigger = null, setIntParams = null, setStringParam = null, setSourceTypes = null } = useWired();
     const [level, setLevel] = useState(MIN_LEVEL);
-    const [comparison, setComparison] = useState(1);
+    const [comparison, setComparison] = useState(COMPARISON_EQUAL);
     const [userSource, setUserSource] = useState(0);
-    const [quantifier, setQuantifier] = useState(QUANTIFIER_ALL);
 
     useEffect(() => {
         if (!trigger) return;
 
+        const storedComparison = trigger.intData?.[1];
+
         setLevel(trigger.intData?.length > 0 ? trigger.intData[0] : MIN_LEVEL);
-        setComparison(trigger.intData?.length > 1 ? trigger.intData[1] : 1);
-        setUserSource(trigger.intData?.length > 2 ? trigger.intData[2] : 0);
-        setQuantifier(trigger.intData?.length > 3 && trigger.intData[3] === QUANTIFIER_ANY ? QUANTIFIER_ANY : QUANTIFIER_ALL);
+        setComparison(COMPARISONS.includes(storedComparison) ? storedComparison : COMPARISON_EQUAL);
+        setUserSource(trigger.userSourceTypes?.[0] ?? 0);
     }, [trigger]);
 
     const save = () => {
-        setIntParams([level, comparison, userSource, quantifier]);
+        setIntParams([level, comparison]);
+        setSourceTypes({ furni: [], users: [userSource] });
         setStringParam('');
     };
 
@@ -44,24 +50,23 @@ export const WiredConditionUserLevelView: FC<{}> = () => {
             footer={<WiredSourcesSelector showUsers={true} userSource={userSource} onChangeUsers={setUserSource} />}
         >
             <div className="flex flex-col gap-2">
+                <WiredSliderSection
+                    max={MAX_LEVEL}
+                    min={MIN_LEVEL}
+                    title={localizeWithFallback('wiredfurni.params.level_selection', `Level: ${level}`, ['level'], [String(level)])}
+                    value={level}
+                    onChange={setLevel}
+                />
+
                 <div className="flex flex-col gap-1">
-                    <Text bold>
-                        {localizeWithFallback('wiredfurni.params.level_selection', 'Level')}: {level}
-                    </Text>
-                    <Slider max={MAX_LEVEL} min={MIN_LEVEL} value={level} onChange={(value) => setLevel(value)} />
+                    <Text bold>{LocalizeText('wiredfurni.params.comparison_selection')}</Text>
+                    {COMPARISONS.map((value) => (
+                        <label key={value} className="flex items-center gap-1">
+                            <Radio checked={comparison === value} name="wiredUserLevelComparison" onCheckedChange={() => setComparison(value)} />
+                            <Text>{LocalizeText(`wiredfurni.params.comparison.${value}`)}</Text>
+                        </label>
+                    ))}
                 </div>
-
-                <WiredComparisonOperator name="wiredUserLevelComparison" value={comparison} onChange={setComparison} />
-
-                <label className="flex items-center gap-1 cursor-pointer">
-                    <input
-                        checked={quantifier === QUANTIFIER_ANY}
-                        className="form-check-input"
-                        type="checkbox"
-                        onChange={(event) => setQuantifier(event.target.checked ? QUANTIFIER_ANY : QUANTIFIER_ALL)}
-                    />
-                    <Text>{localizeWithFallback('wiredfurni.params.level.any_user', 'One user is enough (otherwise every user must match)')}</Text>
-                </label>
             </div>
         </WiredConditionBaseView>
     );

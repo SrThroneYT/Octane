@@ -3,6 +3,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { ButtonHTMLAttributes, PropsWithChildren } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { selectOption } from '../../test-utils/selectOption';
 
 const mocks = vi.hoisted(() => ({
     send: vi.fn(),
@@ -86,14 +87,19 @@ describe('WiredRoomLogsView', () => {
         expect(screen.getByText('of 1')).toBeTruthy();
     });
 
-    it('shows a write-to-logs line under its own source and at its own level', () => {
+    it('shows a write-to-logs line under the Wired source and at its own level, in AIR\'s numbering', () => {
         render(<WiredRoomLogsView onClose={() => undefined} />);
 
-        deliverPage({ totalEntries: 2, currentPage: 1, entries: [entry(1, 0, 8, 'door opened'), entry(2, 3, 8, 'boss escaped')] });
+        // AIR: levels 0 INFO, 1 WARN, 2 ERROR, 3 DEBUG; sources 0 System, 1 Wired.
+        deliverPage({ totalEntries: 3, currentPage: 1, entries: [entry(1, 3, 1, 'door opened'), entry(2, 2, 1, 'boss escaped'), entry(3, 1, 0, 'cut')] });
 
-        expect(screen.getAllByText('WIRED_LOG').length).toBeGreaterThanOrEqual(2);
-        expect(screen.getAllByText('DEBUG').length).toBeGreaterThanOrEqual(1);
-        expect(screen.getAllByText('ERROR').length).toBeGreaterThanOrEqual(1);
+        const cellsOf = (text: string) => screen.getAllByText(text).filter((element) => element.tagName !== 'OPTION');
+
+        expect(cellsOf('Wired')).toHaveLength(2);
+        expect(cellsOf('System')).toHaveLength(1);
+        expect(cellsOf('DEBUG')).toHaveLength(1);
+        expect(cellsOf('ERROR')).toHaveLength(1);
+        expect(cellsOf('WARN')).toHaveLength(1);
     });
 
     it('a filter change asks for page 1 with the new filters and the page echoes them back into the menus', () => {
@@ -102,17 +108,17 @@ describe('WiredRoomLogsView', () => {
         mocks.send.mockClear();
         vi.advanceTimersByTime(400);
 
-        const [sourceSelect, levelSelect] = screen.getAllByRole('combobox') as HTMLSelectElement[];
+        const [sourceSelect, levelSelect] = screen.getAllByRole('combobox');
 
-        fireEvent.change(levelSelect, { target: { value: '1' } });
+        selectOption(levelSelect, 'WARN');
 
         expect(mocks.send).toHaveBeenCalledTimes(1);
         expect(mocks.send.mock.calls[0][0].getMessageArray()).toEqual([1, 50, 1, -1, '']);
 
-        deliverPage({ totalEntries: 1, currentPage: 1, entries: [entry(3, 1, 0, 'cap hit')], logLevelFilter: 1, logSourceFilter: 3 });
+        deliverPage({ totalEntries: 1, currentPage: 1, entries: [entry(3, 1, 1, 'cap hit')], logLevelFilter: 0, logSourceFilter: 1 });
 
-        expect(levelSelect.value).toBe('1');
-        expect(sourceSelect.value).toBe('3');
+        expect(levelSelect).toHaveTextContent('INFO');
+        expect(sourceSelect).toHaveTextContent('Wired');
     });
 
     it('auto refresh re-asks for the shown page with its own filters every 2.5 s and stops when unticked', () => {
@@ -135,14 +141,14 @@ describe('WiredRoomLogsView', () => {
         mocks.send.mockClear();
         vi.advanceTimersByTime(400);
 
-        fireEvent.click(screen.getByTitle('Next page'));
-        fireEvent.click(screen.getByTitle('Last page'));
+        fireEvent.click(screen.getByLabelText('Next page'));
+        fireEvent.click(screen.getByLabelText('Last page'));
 
         expect(mocks.send).toHaveBeenCalledTimes(1);
         expect(mocks.send.mock.calls[0][0].getMessageArray()[0]).toBe(2);
 
         vi.advanceTimersByTime(400);
-        fireEvent.click(screen.getByTitle('Last page'));
+        fireEvent.click(screen.getByLabelText('Last page'));
         expect(mocks.send).toHaveBeenCalledTimes(2);
         expect(mocks.send.mock.calls[1][0].getMessageArray()[0]).toBe(3);
     });

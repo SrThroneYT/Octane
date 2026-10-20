@@ -20,6 +20,7 @@ export class WiredAddonLayoutCode
     public static VARIABLE_PLACEHOLDER: number = 15;
     public static VARIABLE_CAPTURER: number = 16;
     public static EXECUTE_IN_ORDER: number = 17;
+    public static CHEST_ITEM_TYPE_SCANNER: number = 18;
     public static FURNI_NAME_PLACEHOLDER: number = 19;
     public static CUSTOM_CONTRACT: number = 20;
     public static PROJECTILE: number = 21;

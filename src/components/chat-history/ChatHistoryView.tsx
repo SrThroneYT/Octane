@@ -3,6 +3,7 @@ import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { ChatEntryType } from '../../api';
 import { useChatHistory } from '../../hooks';
 import { ChatHistoryBubbleView } from './ChatHistoryBubbleView';
+import { BaseButton } from '../../common/BaseButton';
 
 export const ChatHistoryView: FC<{}> = (props) => {
     const [isVisible, setIsVisible] = useState(false);
@@ -75,7 +76,7 @@ export const ChatHistoryView: FC<{}> = (props) => {
                     ))}
                 </div>
             </div>
-            <button className="octane-chat-history-handle" type="button" onClick={() => setIsVisible(false)} />
+            <BaseButton className="octane-chat-history-handle" type="button" onClick={() => setIsVisible(false)} />
         </div>
     );
 };

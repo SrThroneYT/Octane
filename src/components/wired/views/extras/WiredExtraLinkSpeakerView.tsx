@@ -3,6 +3,7 @@ import { localizeWithFallback, WiredFurniType } from '../../../../api';
 import { Text } from '../../../../common';
 import { useWired } from '../../../../hooks';
 import { WiredExtraBaseView } from './WiredExtraBaseView';
+import { Checkbox } from '../../../../common/Checkbox';
 
 /**
  * Official Link Speaker add-on (2003): its picked WIRED Links join the send link boxes of its stack, for the kinds
@@ -31,11 +32,11 @@ export const WiredExtraLinkSpeakerView: FC<{}> = () =>
             <div className="flex flex-col gap-1">
                 <Text bold>{ localizeWithFallback('wiredfurni.params.link_speaker.speak_for', 'Speak for:') }</Text>
                 <label className="flex cursor-pointer items-center gap-1">
-                    <input checked={ message } className="form-check-input" type="checkbox" onChange={ event => setMessage(event.target.checked) } />
+                    <Checkbox checked={ message } onCheckedChange={ nextChecked => setMessage(nextChecked) } />
                     <Text small>{ localizeWithFallback('wiredfurni.params.link_speaker.message', 'Message') }</Text>
                 </label>
                 <label className="flex cursor-pointer items-center gap-1">
-                    <input checked={ dataframe } className="form-check-input" type="checkbox" onChange={ event => setDataframe(event.target.checked) } />
+                    <Checkbox checked={ dataframe } onCheckedChange={ nextChecked => setDataframe(nextChecked) } />
                     <Text small>{ localizeWithFallback('wiredfurni.params.link_speaker.dataframe', 'Dataframe') }</Text>
                 </label>
             </div>

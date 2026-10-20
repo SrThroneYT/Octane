@@ -143,10 +143,10 @@ describe('WiredValueOrVariableInput popup (AIR ValueOrVariablePopupPreset)', () 
         expect(text.indexOf('wiredfurni.params.sources.merged.title.variables')).toBeLessThan(text.indexOf('wiredfurni.params.variables.reference_value.same_holder'));
         // The checkbox group comes before the picker's tab row.
         const checkbox = within(popup).getByRole('checkbox');
-        const firstTab = within(popup).getByTitle('wiredfurni.variable_picker.tab.all');
+        const firstTab = within(popup).getByRole('button', { name: 'wiredfurni.variable_picker.tab.all' });
 
         expect(checkbox.compareDocumentPosition(firstTab) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-        expect(within(popup).getAllByTitle(/wiredfurni\.params\.sourcetype\./)).toHaveLength(4);
+        expect(within(popup).getAllByRole('button', { name: /wiredfurni\.params\.sourcetype\./ })).toHaveLength(4);
     });
 
     it('locks the source and the type selector while the same holder is used', () => {
@@ -165,7 +165,7 @@ describe('WiredValueOrVariableInput popup (AIR ValueOrVariablePopupPreset)', () 
         const popup = screen.getByRole('dialog');
 
         expect(within(popup).getByTestId('source')).toHaveAttribute('data-locked', 'true');
-        for (const button of within(popup).getAllByTitle(/wiredfurni\.params\.sourcetype\./)) expect(button).toBeDisabled();
+        for (const button of within(popup).getAllByRole('button', { name: /wiredfurni\.params\.sourcetype\./ })) expect(button).toBeDisabled();
         fireEvent.click(within(popup).getByRole('checkbox'));
         expect(handlers.onSameHolderChange).toHaveBeenCalledWith(false);
     });
@@ -174,7 +174,7 @@ describe('WiredValueOrVariableInput popup (AIR ValueOrVariablePopupPreset)', () 
         renderInput({ target: 'global', sameHolder: true });
         openPopup();
         expect(within(screen.getByRole('dialog')).getByRole('checkbox')).toBeChecked();
-        expect(within(screen.getByRole('dialog')).getByRole('checkbox')).toBeDisabled();
+        expect(within(screen.getByRole('dialog')).getByRole('checkbox')).toHaveAttribute('aria-disabled', 'true');
         cleanup();
 
         const handlers = renderInput({ target: 'user', sameHolder: false });
@@ -188,11 +188,11 @@ describe('WiredValueOrVariableInput popup (AIR ValueOrVariablePopupPreset)', () 
         const handlers = renderInput();
 
         openPopup();
-        fireEvent.click(within(screen.getByRole('dialog')).getByTitle('wiredfurni.params.sourcetype.furni'));
+        fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'wiredfurni.params.sourcetype.furni' }));
         expect(handlers.onTargetChange).toHaveBeenCalledWith('furni');
         expect(handlers.onTokenChange).toHaveBeenLastCalledWith('');
 
-        fireEvent.click(within(screen.getByRole('dialog')).getByTitle('wiredfurni.variable_picker.tab.all'));
+        fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'wiredfurni.variable_picker.tab.all' }));
         fireEvent.click(screen.getAllByRole('option').find((option) => option.textContent === 'coins'));
         expect(handlers.onIsVariableChange).toHaveBeenLastCalledWith(true);
         expect(handlers.onTokenChange).toHaveBeenLastCalledWith(coins.token);

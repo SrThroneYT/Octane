@@ -1,8 +1,10 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { localizeWithFallback, WiredFurniType } from '../../../../api';
 import { Text } from '../../../../common';
-import { useWired } from '../../../../hooks';
+import { useWired, useWiredToolsState } from '../../../../hooks';
 import {
+    availableTimeUtilModes,
+    ITimeUtilVariableCapabilities,
     isTimeUtilSubVariableSelected,
     ITimeUtilSubVariable,
     normalizeTimeUtilMask,
@@ -10,13 +12,15 @@ import {
     setTimeUtilSubVariableSelected,
     TIME_UTIL_ADVANCED_SUB_VARIABLES,
     TIME_UTIL_MODE_VALUE,
-    TIME_UTIL_MODES,
     TIME_UTIL_SUB_VARIABLES,
     isTimeUtilModeWritable,
     timeUtilPartName,
     timeUtilTimestampName
 } from './timeUtilitiesParams';
 import { WiredExtraBaseView } from './WiredExtraBaseView';
+import { Checkbox } from '../../../../common/Checkbox';
+import { Select } from '../../../../common/Select';
+import { BaseButton } from '../../../../common/BaseButton';
 
 const MODE_FALLBACKS = ['Variable value', 'Creation time', 'Last update time'];
 const SUB_VARIABLE_KEY = 'wiredfurni.params.time_util.subvariable.';
@@ -27,12 +31,30 @@ export const WiredExtraTimeUtilitiesView: FC<{}> = () => {
     const [mode, setMode] = useState(TIME_UTIL_MODE_VALUE);
     const [isCalendarOpen, setIsCalendarOpen] = useState(true);
     const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+    const [storedMode, setStoredMode] = useState(TIME_UTIL_MODE_VALUE);
+    const { userVariableDefinitions = [], furniVariableDefinitions = [], roomVariableDefinitions = [], contextVariableDefinitions = [] } = useWiredToolsState() ?? {};
+    // The room's variables as the official ruleset lists them: room variables have no creation time.
+    const variables = useMemo<ITimeUtilVariableCapabilities[]>(
+        () => [
+            ...[...userVariableDefinitions, ...furniVariableDefinitions, ...contextVariableDefinitions].map((definition) => ({
+                hasValue: !!definition.hasValue,
+                canReadCreationTime: true,
+                canReadLastUpdateTime: true
+            })),
+            ...roomVariableDefinitions.map((definition) => ({ hasValue: !!definition.hasValue, canReadCreationTime: false, canReadLastUpdateTime: true }))
+        ],
+        [userVariableDefinitions, furniVariableDefinitions, roomVariableDefinitions, contextVariableDefinitions]
+    );
+    const modes = useMemo(() => availableTimeUtilModes(variables, storedMode), [variables, storedMode]);
 
     useEffect(() => {
         const intData = trigger?.intData ?? [];
 
         setMask(normalizeTimeUtilMask(intData[0] ?? 0));
-        setMode(normalizeTimeUtilMode(intData[1] ?? TIME_UTIL_MODE_VALUE));
+        const nextMode = normalizeTimeUtilMode(intData[1] ?? TIME_UTIL_MODE_VALUE);
+
+        setMode(nextMode);
+        setStoredMode(nextMode);
     }, [trigger]);
 
     const save = () => {
@@ -47,12 +69,7 @@ export const WiredExtraTimeUtilitiesView: FC<{}> = () => {
             {subVariables.map((subVariable) => (
                 <div key={subVariable.id} className="octane-wired__levelup-subvariable-row">
                     <label className="octane-wired__levelup-subvariable-label">
-                        <input
-                            checked={isTimeUtilSubVariableSelected(mask, subVariable.id)}
-                            className="form-check-input"
-                            type="checkbox"
-                            onChange={(event) => setMask((value) => setTimeUtilSubVariableSelected(value, subVariable.id, event.target.checked))}
-                        />
+                        <Checkbox checked={isTimeUtilSubVariableSelected(mask, subVariable.id)} onCheckedChange={(nextChecked) => setMask((value) => setTimeUtilSubVariableSelected(value, subVariable.id, nextChecked))} />
                         <Text>{localizeWithFallback(`${SUB_VARIABLE_KEY}${subVariable.id}`, subVariable.label)}</Text>
                     </label>
                     <input className="octane-wired__levelup-subvariable-token" readOnly tabIndex={-1} type="text" value={timeUtilPartName(mode, subVariable.name)} />
@@ -66,20 +83,19 @@ export const WiredExtraTimeUtilitiesView: FC<{}> = () => {
             <div className="octane-wired__levelup">
                 <div className="octane-wired__levelup-section">
                     <Text bold>{localizeWithFallback('wiredfurni.params.choose_type', 'Read the variable as:')}</Text>
-                    <div className="flex flex-col gap-1">
-                        {TIME_UTIL_MODES.map((option) => (
-                            <label key={option} className="flex items-center gap-2">
-                                <input
-                                    checked={mode === option}
-                                    className="form-check-input"
-                                    name="wiredTimeUtilMode"
-                                    type="radio"
-                                    onChange={() => setMode(option)}
-                                />
-                                <Text>{localizeWithFallback(`wiredfurni.params.time_util.mode.${option}`, MODE_FALLBACKS[option])}</Text>
-                            </label>
+                    {/* Official: a dropdown of the modes the room's variables can be read as. */}
+                    <Select
+                        aria-label={localizeWithFallback('wiredfurni.params.choose_type', 'Read the variable as:')}
+                        className="form-select form-select-sm w-full"
+                        value={mode}
+                        onChange={(event) => setMode(normalizeTimeUtilMode(parseInt(event.target.value, 10)))}
+                    >
+                        {modes.map((option) => (
+                            <option key={option} value={option}>
+                                {localizeWithFallback(`wiredfurni.params.time_util.mode.${option}`, MODE_FALLBACKS[option])}
+                            </option>
                         ))}
-                    </div>
+                    </Select>
                     <Text small>
                         {isTimeUtilModeWritable(mode)
                             ? localizeWithFallback('wiredfurni.params.time_util.writable_info', 'Writing a part moves the variable by that part.')
@@ -96,20 +112,20 @@ export const WiredExtraTimeUtilitiesView: FC<{}> = () => {
                 <div className="octane-wired__divider" />
 
                 <div className="octane-wired__levelup-section">
-                    <button type="button" className="octane-wired__levelup-section-header" onClick={() => setIsCalendarOpen((value) => !value)}>
+                    <BaseButton type="button" className="octane-wired__levelup-section-header" onClick={() => setIsCalendarOpen((value) => !value)}>
                         <Text bold>{localizeWithFallback('wiredfurni.params.create_subvariables', 'Create sub-variables:')}</Text>
                         <span className={`octane-wired__levelup-chevron ${isCalendarOpen ? 'is-open' : ''}`}>^</span>
-                    </button>
+                    </BaseButton>
                     {isCalendarOpen && renderSubVariables(TIME_UTIL_SUB_VARIABLES)}
                 </div>
 
                 <div className="octane-wired__divider" />
 
                 <div className="octane-wired__levelup-section">
-                    <button type="button" className="octane-wired__levelup-section-header" onClick={() => setIsAdvancedOpen((value) => !value)}>
+                    <BaseButton type="button" className="octane-wired__levelup-section-header" onClick={() => setIsAdvancedOpen((value) => !value)}>
                         <Text bold>{localizeWithFallback('wiredfurni.params.create_subvariables.advanced', 'Advanced sub-variables:')}</Text>
                         <span className={`octane-wired__levelup-chevron ${isAdvancedOpen ? 'is-open' : ''}`}>^</span>
-                    </button>
+                    </BaseButton>
                     {isAdvancedOpen && (
                         <>
                             <Text small>

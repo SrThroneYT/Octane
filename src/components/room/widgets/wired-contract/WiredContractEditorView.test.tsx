@@ -1,4 +1,6 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { IWiredContractContents } from '@octane/renderer';
 import { PropsWithChildren } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -8,7 +10,7 @@ vi.mock('../../../../common', () => ({
     OctaneCardView: ({ children, style }: PropsWithChildren<{ style?: object }>) => <div style={ style }>{ children }</div>,
     OctaneCardContentView: ({ children }: PropsWithChildren) => <div>{ children }</div>,
     OctaneCardHeaderView: ({ headerText }: { headerText: string }) => <h1>{ headerText }</h1>,
-    LayoutFurniImageView: () => <span>furni image</span>
+    LayoutFurniIconImageView: () => <span>furni image</span>
 }));
 vi.mock('../../../../common/native-text/NativeText', () => ({ NativeText: ({ text }: { text: string }) => <span>{ text }</span> }));
 vi.mock('../../../mod-tools/native/NativeSkin', () => ({ parseNativeSkin: () => ({}) }));
@@ -59,6 +61,21 @@ describe('AIR payment / trade / reward contract editor', () =>
 
         fireEvent.click(ready());
         expect(onSave).toHaveBeenCalledWith({ ...payment(), paymentMode: 0, receiveText: 'Two cookies', layoutType: 'games' });
+    });
+
+    it('skins the Base UI radios and checkboxes the editor renders with the Ubuntu style', () =>
+    {
+        renderEditor(payment());
+        const css = readFileSync(join(process.cwd(), 'src/css/room/WiredContract.css'), 'utf8');
+
+        // The radio drawn is a Base UI <i class="octane-radio"> (its input is hidden): the skin has to target that.
+        const radio = screen.getByRole('radio', { name: 'wiredcontracts.payment_contract.mode.1' });
+        expect(radio.tagName).toBe('I');
+        expect(radio).toHaveClass('octane-radio');
+        expect(radio.closest('.wired-contract__choice')).not.toBeNull();
+        expect(css).toContain('.wired-contract__choice .octane-radio[data-checked]');
+        expect(css).toContain('.wired-contract__choice .octane-checkbox[data-checked]');
+        expect(css).not.toMatch(/wired-contract__choice\s*>\s*input/);
     });
 
     it('holds three payment options and five elements a rule, as AIR does', () =>

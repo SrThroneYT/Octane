@@ -6,6 +6,7 @@ import {
     encodeProjectileTokens,
     isProjectileVariableEnabled,
     normalizeProjectileParams,
+    PROJECTILE_INTERNAL_VARIABLES,
     PROJECTILE_PARAM_COUNT,
     PROJECTILE_PARAM_CURVE_STRENGTH,
     PROJECTILE_PARAM_DIRECTIONAL_SYSTEM,
@@ -76,6 +77,18 @@ describe('projectile add-on params', () => {
         expect(isProjectileVariableEnabled(0b1000010, 2)).toBe(false);
         expect(toggleProjectileVariable(0, 6, true)).toBe(64);
         expect(toggleProjectileVariable(127, 0, false)).toBe(126);
+    });
+
+    it("orders the mask bits as AIR's sub-variable ids, with AIR's spellings", () => {
+        expect(PROJECTILE_INTERNAL_VARIABLES).toEqual([
+            '@projectile.animation.tiles_travelled',
+            '@projectile.animation.user_collisions',
+            '@projectile.animation.furni_collisions',
+            '@projectile.animation.position.x',
+            '@projectile.animation.position.y',
+            '@projectile.animation.position.altitude',
+            '@projectile.animation.is_travelling'
+        ]);
     });
 });
 

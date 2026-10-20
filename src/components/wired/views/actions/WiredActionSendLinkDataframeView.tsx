@@ -24,6 +24,9 @@ import { WiredSourcesSelector } from '../WiredSourcesSelector';
 import { WiredVariablePicker } from '../WiredVariablePicker';
 import { buildWiredVariablePickerEntries, IWiredVariablePickerEntry, normalizeVariableTokenFromWire, WiredVariablePickerTarget } from '../WiredVariablePickerData';
 import { WiredActionBaseView } from './WiredActionBaseView';
+import { Checkbox } from '../../../../common/Checkbox';
+import { NumberInput } from '../../../../common/NumberInput';
+import { Select } from '../../../../common/Select';
 
 const LINK_SOURCES = [
     { value: 100, label: 'wiredfurni.params.sources.furni.100' },
@@ -142,14 +145,15 @@ export const WiredActionSendLinkDataframeView: FC<{}> = () =>
             save={ save }
             validate={ validate }
             widthModifier={ 1.4 }
+            allowScrolling
             footer={ <WiredSourcesSelector showFurni={ true } furniSource={ endpointSource } furniSources={ LINK_SOURCES } furniTitle={ localizeWithFallback('wiredfurni.params.link.endpoints', 'WIRED Links') } onChangeFurni={ setEndpointSource } /> }
         >
             { invalid && <Text small className="text-[#ad3434]">{ localizeWithFallback('wiredfurni.error.link.invalid_dataframe', 'The dataframe configuration is invalid.') }</Text> }
             <div className="flex items-center justify-between gap-2">
                 <Text bold>{ localizeWithFallback('wiredfurni.params.link.row_count', 'Row count') }</Text>
-                <select className="form-select form-select-sm w-[70px]" value={ rows.length } onChange={ event => setCount(parseInt(event.target.value, 10)) }>
+                <Select className="form-select form-select-sm w-[70px]" value={ rows.length } onChange={ event => setCount(parseInt(event.target.value, 10)) }>
                     { Array.from({ length: LINK_DATAFRAME_MAX_ROWS + 1 }, (_, count) => <option key={ count } value={ count }>{ count }</option>) }
-                </select>
+                </Select>
             </div>
             <div className="flex max-h-[55vh] flex-col gap-2 overflow-y-auto">
                 { rows.map((row, index) =>
@@ -163,11 +167,11 @@ export const WiredActionSendLinkDataframeView: FC<{}> = () =>
                             <div className="flex items-center gap-1">
                                 <Text small>{ localizeWithFallback('wiredfurni.params.link.key', 'Key') }</Text>
                                 <input className="form-control form-control-sm grow" maxLength={ LINK_DATAFRAME_MAX_KEY_LENGTH } type="text" value={ row.key } onChange={ event => updateRow(index, { key: event.target.value }) } />
-                                <select className="form-select form-select-sm w-[120px]" value={ modeChoice(row) } onChange={ event => updateRow(index, { mode: parseInt(event.target.value, 10) }) }>
+                                <Select className="form-select form-select-sm w-[120px]" value={ modeChoice(row) } onChange={ event => updateRow(index, { mode: parseInt(event.target.value, 10) }) }>
                                     <option value={ LINK_SEND_NUMBER }>{ localizeWithFallback('wiredfurni.params.link.source.number', 'Number') }</option>
                                     <option value={ LINK_SEND_VARIABLE_TEXT }>{ localizeWithFallback('wiredfurni.params.link.source.variable_text', 'Variable text') }</option>
                                     <option value={ LINK_SEND_MESSAGE }>{ localizeWithFallback('wiredfurni.params.link.source.message', 'Custom message') }</option>
-                                </select>
+                                </Select>
                             </div>
                             { (row.mode === LINK_SEND_MESSAGE) && (
                                 <div className="flex items-center gap-1">
@@ -179,21 +183,21 @@ export const WiredActionSendLinkDataframeView: FC<{}> = () =>
                                 <div className="flex flex-col gap-1">
                                     { (row.mode !== LINK_SEND_VARIABLE_TEXT) && (
                                         <label className="flex cursor-pointer items-center gap-1">
-                                            <input checked={ row.mode === LINK_SEND_VARIABLE_VALUE } className="form-check-input" type="checkbox" onChange={ event => updateRow(index, { mode: event.target.checked ? LINK_SEND_VARIABLE_VALUE : LINK_SEND_NUMBER }) } />
+                                            <Checkbox checked={ row.mode === LINK_SEND_VARIABLE_VALUE } onCheckedChange={ nextChecked => updateRow(index, { mode: nextChecked ? LINK_SEND_VARIABLE_VALUE : LINK_SEND_NUMBER }) } />
                                             <Text small>{ localizeWithFallback('wiredfurni.params.link.source.variable_value', 'Variable value') }</Text>
                                         </label>
                                     ) }
                                     { !usesVariable && (
                                         <div className="flex items-center gap-1">
                                             <Text small>{ localizeWithFallback('wiredfurni.params.link.value', 'Value') }</Text>
-                                            <input className="form-control form-control-sm grow" type="number" value={ row.literal } onChange={ event => updateRow(index, { literal: Math.max(-2147483648, Math.min(2147483647, parseInt(event.target.value || '0', 10) || 0)) }) } />
+                                            <NumberInput className="form-control form-control-sm grow" value={ row.literal } onChange={ event => updateRow(index, { literal: Math.max(-2147483648, Math.min(2147483647, parseInt(event.target.value || '0', 10) || 0)) }) } />
                                         </div>
                                     ) }
                                     { usesVariable && (
                                         <>
-                                            <select className="form-select form-select-sm" value={ row.target } onChange={ event => updateRow(index, { target: parseInt(event.target.value, 10), variableId: '' }) }>
+                                            <Select className="form-select form-select-sm" value={ row.target } onChange={ event => updateRow(index, { target: parseInt(event.target.value, 10), variableId: '' }) }>
                                                 { TARGETS.map(entry => <option key={ entry.value } value={ entry.value }>{ localizeWithFallback(entry.key, entry.picker) }</option>) }
-                                            </select>
+                                            </Select>
                                             <WiredVariablePicker entries={ entriesByTarget[target.picker] as IWiredVariablePickerEntry[] } recentScope="link-dataframe-send" selectedToken={ row.variableId } onSelect={ entry => updateRow(index, { variableId: entry.token }) } onClear={ () => updateRow(index, { variableId: '' }) } />
                                             { (row.target === LINK_TARGET_FURNI) && <WiredSourcesSelector showFurni={ true } furniSource={ row.furniSource } furniSources={ ROW_FURNI_SOURCES } furniTitle={ localizeWithFallback('wiredfurni.params.link.source_furni', 'Variable source furni') } onChangeFurni={ value => updateRow(index, { furniSource: value }) } /> }
                                             { (row.target === LINK_TARGET_USER) && <WiredSourcesSelector showUsers={ true } userSource={ row.userSource } userSources={ ROW_USER_SOURCES } usersTitle={ localizeWithFallback('wiredfurni.params.link.source_users', 'Variable source users') } onChangeUsers={ value => updateRow(index, { userSource: value }) } /> }

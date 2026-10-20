@@ -14,11 +14,9 @@ import {
     flattenWiredVariablePickerEntries,
     normalizeVariableTokenFromWire
 } from '../WiredVariablePickerData';
+import { readWiredVariableToken, toWiredVariableId, wiredVariableIdList } from '../WiredVariableIds';
 import { WiredConditionBaseView } from './WiredConditionBaseView';
-
-interface WiredConditionHasVariableViewProps {
-    negative?: boolean;
-}
+import { BaseButton } from '../../../../common/BaseButton';
 
 type ConditionVariableTargetType = 'user' | 'furni' | 'context';
 
@@ -34,8 +32,6 @@ const TARGET_FURNI = 1;
 const TARGET_CONTEXT = 2;
 const SOURCE_TRIGGER = 0;
 const SOURCE_SELECTED = 100;
-const QUANTIFIER_ALL = 0;
-const QUANTIFIER_ANY = 1;
 
 const TARGET_BUTTONS: Array<{ key: ConditionVariableTargetType; icon: string; disabled?: boolean }> = [
     { key: 'furni', icon: furniVariableIcon },
@@ -93,15 +89,15 @@ const getSourceTitle = (targetType: ConditionVariableTargetType) => {
     }
 };
 
-export const WiredConditionHasVariableView: FC<WiredConditionHasVariableViewProps> = ({ negative = false }) => {
-    // Official layout: [variable target, our quantifier], the furni and users in the official source slots.
-    const { trigger = null, furniIds = [], setFurniIds = null, setIntParams = null, setStringParam = null, setSourceTypes = null } = useWired();
+export const WiredConditionHasVariableView: FC = () => {
+    // Official layout: [variable target], the furni and users in the official source slots; the quantifier
+    // (labelled `.neg` for the not twin, as the server marks it) is the base view's.
+    const { trigger = null, furniIds = [], setFurniIds = null, setIntParams = null, setStringParam = null, setSourceTypes = null, setVariableIds = null } = useWired();
     const { userVariableDefinitions = [], furniVariableDefinitions = [], contextVariableDefinitions = [] } = useWiredTools();
     const [targetType, setTargetType] = useState<ConditionVariableTargetType>('user');
     const [variableToken, setVariableToken] = useState('');
     const [userSource, setUserSource] = useState(SOURCE_TRIGGER);
     const [furniSource, setFurniSource] = useState(SOURCE_TRIGGER);
-    const [quantifier, setQuantifier] = useState(QUANTIFIER_ALL);
 
     const availableUserSources = useAvailableUserSources(trigger, USER_SOURCES);
     const orderedUserSources = useMemo(() => sortWiredSourceOptions(availableUserSources, 'users'), [availableUserSources]);
@@ -143,13 +139,12 @@ export const WiredConditionHasVariableView: FC<WiredConditionHasVariableViewProp
         const nextTargetType = normalizeTargetType(intData.length > 0 ? fromOfficialVariableTarget(intData[0]) : TARGET_USER);
         const nextUserSource = trigger.userSourceTypes?.[0] ?? SOURCE_TRIGGER;
         const nextFurniSource = trigger.furniSourceTypes?.[0] ?? ((trigger.selectedItems?.length ?? 0) > 0 ? SOURCE_SELECTED : SOURCE_TRIGGER);
-        const nextQuantifier = intData.length > 1 && intData[1] === QUANTIFIER_ANY ? QUANTIFIER_ANY : QUANTIFIER_ALL;
 
         setTargetType(nextTargetType);
-        setVariableToken(normalizeVariableTokenFromWire(trigger.stringData || ''));
+        // AIR: the variable is the first variable id; an older server wrote the token as the string.
+        setVariableToken(readWiredVariableToken(trigger.variableIds, 0, normalizeVariableTokenFromWire((trigger.stringData || '').split('\t')[0])));
         setUserSource(nextUserSource);
         setFurniSource(nextFurniSource);
-        setQuantifier(nextQuantifier);
     }, [trigger]);
 
     useEffect(() => {
@@ -160,8 +155,9 @@ export const WiredConditionHasVariableView: FC<WiredConditionHasVariableViewProp
     }, [orderedUserSources, targetType, userSource]);
 
     const save = () => {
-        setStringParam(variableToken);
-        setIntParams([toOfficialVariableTarget(getTargetValue(targetType)), quantifier]);
+        setStringParam('');
+        setVariableIds(wiredVariableIdList(toWiredVariableId(targetType, variableToken)));
+        setIntParams([toOfficialVariableTarget(getTargetValue(targetType))]);
         setSourceTypes({ furni: [furniSource], users: [userSource] });
 
         if (requiresFurni <= WiredFurniType.STUFF_SELECTION_OPTION_NONE) setFurniIds([]);
@@ -185,21 +181,6 @@ export const WiredConditionHasVariableView: FC<WiredConditionHasVariableViewProp
             footerCollapsible={false}
             footer={
                 <div className="flex flex-col gap-2">
-                    <div className="flex flex-col gap-1">
-                        <Text bold>{LocalizeText('wiredfurni.params.quantifier_selection')}</Text>
-                        {[QUANTIFIER_ALL, QUANTIFIER_ANY].map((value) => (
-                            <label key={value} className="flex items-center gap-1">
-                                <input
-                                    checked={quantifier === value}
-                                    className="form-check-input"
-                                    name={`wiredConditionHasVariableQuantifier-${negative ? 'neg' : 'pos'}`}
-                                    type="radio"
-                                    onChange={() => setQuantifier(value)}
-                                />
-                                <Text>{LocalizeText(`wiredfurni.params.quantifier.variables.${value}`)}</Text>
-                            </label>
-                        ))}
-                    </div>
                     <WiredFurniSelectionSourceRow
                         title={getSourceTitle(targetType)}
                         titleIsLiteral={true}
@@ -231,7 +212,7 @@ export const WiredConditionHasVariableView: FC<WiredConditionHasVariableViewProp
                     <Text>{LocalizeText('wiredfurni.params.variables.variable_selection')}</Text>
                     <div className="octane-wired__give-var-targets">
                         {TARGET_BUTTONS.map((button) => (
-                            <button
+                            <BaseButton
                                 key={button.key}
                                 type="button"
                                 disabled={button.disabled}
@@ -239,7 +220,7 @@ export const WiredConditionHasVariableView: FC<WiredConditionHasVariableViewProp
                                 onClick={() => handleTargetChange(button.key)}
                             >
                                 <img src={button.icon} alt={button.key} />
-                            </button>
+                            </BaseButton>
                         ))}
                     </div>
                 </div>

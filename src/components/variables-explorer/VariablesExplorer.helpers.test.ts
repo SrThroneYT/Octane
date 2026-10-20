@@ -1,3 +1,4 @@
+/* @vitest-environment jsdom */
 import { describe, expect, it } from 'vitest';
 import { explorerHolderDescription, holderInfoLines, lookupTarget, resolvedEntityId, toVariableDefinition, variableProperties } from './VariablesExplorer.helpers';
 

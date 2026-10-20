@@ -1,3 +1,4 @@
+/* @vitest-environment jsdom */
 import { describe, expect, it, vi } from 'vitest';
 import { BuilderFurniPlaceableStatus } from '../../api/catalog/BuilderFurniPlaceableStatus';
 import { CatalogType } from '../../api/catalog/CatalogType';
@@ -235,6 +236,11 @@ describe('resolveBuilderFurniPlaceableStatus', () => {
 
     it('returns MISSING_OFFER when offer is null', () => {
         expect(resolveBuilderFurniPlaceableStatus({ ...baseInput, offer: null })).toBe(BuilderFurniPlaceableStatus.MISSING_OFFER);
+    });
+
+    it('returns NOT_ROOM_OWNER for the room owner in playtest (the hotel rule beyond AIR)', () => {
+        expect(resolveBuilderFurniPlaceableStatus({ ...baseInput, playTestRestricted: true })).toBe(BuilderFurniPlaceableStatus.NOT_ROOM_OWNER);
+        expect(resolveBuilderFurniPlaceableStatus({ ...baseInput, playTestRestricted: false })).toBe(BuilderFurniPlaceableStatus.OKAY);
     });
 
     it('returns NOT_IN_ROOM when roomSession is null', () => {

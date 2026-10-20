@@ -1,3 +1,4 @@
+/* @vitest-environment jsdom */
 import { describe, expect, it } from 'vitest';
 import { HousekeepingTabId } from './HousekeepingActionType';
 import { HOUSEKEEPING_TABS, isHousekeepingTabOpen } from './HousekeepingConfig';

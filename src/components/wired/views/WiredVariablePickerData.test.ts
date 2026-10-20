@@ -7,6 +7,7 @@ import {
     isSmartVariableKey,
     isWiredVariableNodeDisabled,
     IWiredVariableNode,
+    normalizeInternalVariableKey,
     WIRED_VARIABLE_TYPE_DYNAMIC,
     WIRED_VARIABLE_TYPE_INTERNAL,
     WIRED_VARIABLE_TYPE_USER,
@@ -116,7 +117,9 @@ describe('Wired variable picker echo filter', () => {
         expect(user.find((entry) => entry.label === 'level.xp')?.selectable).toBe(true);
         expect(user.find((entry) => entry.label === 'temp')?.selectable).toBe(false);
         expect(user.find((entry) => entry.label === '@index')?.selectable).toBe(true);
-        expect(context.every((entry) => !entry.selectable)).toBe(true);
+        // AIR's echo lists context variables too; a context echo reads its built-in in the running stack.
+        expect(context.find((entry) => entry.label === '@selector_furni_count')?.selectable).toBe(true);
+        expect(context.find((entry) => entry.label === 'turn')?.selectable).toBe(true);
     });
 });
 
@@ -158,5 +161,54 @@ describe('Wired variable picker sub-variables', () => {
         // Every box that runs in a stack can pick a pointer like any other variable.
         const give = buildWiredVariablePickerEntries('user', 'give', definitions).filter((entry) => entry.kind === 'custom');
         expect(give.every((entry) => entry.selectable)).toBe(true);
+    });
+});
+
+describe('Wired variable picker: AIR internal and smart variables', () => {
+    const labels = (target: 'furni' | 'user' | 'context', usage: 'change-reference' | 'change-destination') =>
+        flattenWiredVariablePickerEntries(buildWiredVariablePickerEntries(target, usage, []))
+            .filter((entry) => entry.selectable)
+            .map((entry) => entry.label);
+
+    it('offers the packed @position and @occupation as AIR', () => {
+        expect(labels('furni', 'change-destination')).toEqual(expect.arrayContaining(['@position', '@occupation']));
+        expect(labels('user', 'change-destination')).toContain('@position');
+        expect(labels('user', 'change-destination')).not.toContain('@occupation');
+    });
+
+    it('lists the smart variables read-only, under AIR names', () => {
+        const furni = labels('furni', 'change-reference');
+
+        expect(furni).toEqual(expect.arrayContaining(['~chest.capacity', '~area_hide.width', '~recolorable_furni.color.rgb.red']));
+        expect(labels('furni', 'change-destination')).not.toContain('~chest.capacity');
+        expect(labels('user', 'change-reference')).toEqual(expect.arrayContaining(['~pet.level', '~horse.is_riding', '~plant.is_dead']));
+        expect(normalizeInternalVariableKey('~recolorable_furni.color.rgb.g')).toBe('~recolorable_furni.color.rgb.green');
+    });
+
+    it('offers the link source room and the transaction failure reason in the context', () => {
+        expect(labels('context', 'change-reference')).toEqual(expect.arrayContaining(['@event.link.source_room_id', '@event.transaction_failed.reason']));
+    });
+
+    it('lists the clock parts on furni, only the pulse count writable', () => {
+        expect(labels('furni', 'change-reference')).toEqual(expect.arrayContaining(['~clock.state', '~clock.pulse_count', '~clock.is_game_aware']));
+        expect(labels('furni', 'change-destination')).toContain('~clock.pulse_count');
+        expect(labels('furni', 'change-destination')).not.toContain('~clock.state');
+    });
+
+    it('lists the plant shape, colour and harvest flag read-only', () => {
+        expect(labels('user', 'change-reference')).toEqual(expect.arrayContaining(['~plant.shape', '~plant.color', '~plant.can_harvest']));
+        expect(labels('user', 'change-destination')).not.toContain('~plant.shape');
+    });
+
+    it('offers the habbicon to write and the transaction parts to read', () => {
+        expect(labels('user', 'change-destination')).toContain('@habbicon');
+        expect(labels('user', 'change-reference')).toEqual(expect.arrayContaining(['@transaction.in_trade', '@transaction.state', '@transaction.current_multiplier']));
+        expect(labels('user', 'change-destination')).not.toContain('@transaction.state');
+    });
+
+    it('offers the event habbicon and what a completed transaction moved in the context', () => {
+        expect(labels('context', 'change-reference')).toEqual(
+            expect.arrayContaining(['@event.habbicon', '@event.transaction_complete.multiplier', '@event.transaction_complete.withdrawal.coins_count'])
+        );
     });
 });

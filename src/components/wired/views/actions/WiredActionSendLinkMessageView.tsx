@@ -6,6 +6,7 @@ import { useNotification, useWired } from '../../../../hooks';
 import { WiredPlaceholderInsert } from '../WiredPlaceholderInsert';
 import { WiredSourcesSelector } from '../WiredSourcesSelector';
 import { WiredActionBaseView } from './WiredActionBaseView';
+import { Radio } from '../../../../common/Radio';
 
 const FROM_TRIGGER = 0;
 const CUSTOM_MESSAGE = 1;
@@ -65,7 +66,7 @@ export const WiredActionSendLinkMessageView: FC<{}> = () =>
                 <Text bold>{ localizeWithFallback('wiredfurni.params.link.message_source', 'Message source') }</Text>
                 { [ FROM_TRIGGER, CUSTOM_MESSAGE ].map(value => (
                     <label key={ value } className="flex cursor-pointer items-center gap-1">
-                        <input checked={ source === value } className="form-check-input" name="sendLinkMessageSource" type="radio" onChange={ () => setSource(value) } />
+                        <Radio checked={ source === value } name="sendLinkMessageSource" onCheckedChange={ () => setSource(value) } />
                         <Text small>{ (value === FROM_TRIGGER) ? localizeWithFallback('wiredfurni.params.link.from_trigger', 'From WIRED trigger') : localizeWithFallback('wiredfurni.params.link.custom_message', 'Custom message') }</Text>
                     </label>
                 )) }

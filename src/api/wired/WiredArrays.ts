@@ -80,8 +80,6 @@ export const WIRED_ARRAY_SCOPE_ANY_INDEX = 0;
 export const WIRED_ARRAY_SCOPE_SPECIFIC_INDEX = 1;
 export const WIRED_ARRAY_CRITERIA_ALL = 0;
 export const WIRED_ARRAY_CRITERIA_ANY = 1;
-export const WIRED_ARRAY_QUANTIFIER_ALL = 0;
-export const WIRED_ARRAY_QUANTIFIER_ANY = 1;
 export const WIRED_ARRAY_RESULT_ALL = 0;
 export const WIRED_ARRAY_RESULT_AT_LEAST_ONE = 1;
 export const WIRED_ARRAY_RESULT_NOT_ALL = 2;
@@ -366,7 +364,6 @@ export interface IWiredCheckArrayPayload extends IWiredArrayPayloadBase {
     criteria: IWiredArrayCriterion[];
     criteriaMode: number;
     index: IWiredArrayAddress;
-    quantifier: number;
     resultMode: number;
     resultReference: IWiredArrayReference;
     searchScope: number;
@@ -384,7 +381,6 @@ export const parseWiredCheckArrayPayload = (stringData: string): IWiredCheckArra
         criteria: normalizeWiredArrayCriteria(raw.criteria),
         criteriaMode: asInt(raw.criteriaMode, WIRED_ARRAY_CRITERIA_ALL),
         index: normalizeWiredArrayAddress(raw.index),
-        quantifier: asInt(raw.quantifier, WIRED_ARRAY_QUANTIFIER_ALL),
         resultMode: asInt(raw.resultMode, WIRED_ARRAY_RESULT_AT_LEAST_ONE),
         resultReference: normalizeWiredArrayReference(raw.resultReference),
         searchScope: asInt(raw.searchScope, WIRED_ARRAY_SCOPE_ANY_INDEX),
@@ -403,7 +399,6 @@ export const serializeWiredCheckArrayPayload = (payload: IWiredCheckArrayPayload
         itemIds: payload.itemIds,
         metadataVersion: payload.metadataVersion,
         ownerSource: payload.ownerSource,
-        quantifier: payload.quantifier,
         resultMode: payload.resultMode,
         resultReference: payload.resultReference,
         searchScope: payload.searchScope,
@@ -423,8 +418,7 @@ export const wiredCheckArrayIntParams = (payload: IWiredCheckArrayPayload): numb
     payload.resultMode,
     WIRED_ARRAY_COMPARISON_EQUALS,
     payload.stateCheck,
-    payload.stateComparison,
-    payload.quantifier
+    payload.stateComparison
 ];
 
 export interface IWiredArrayCapturePayload extends IWiredArrayPayloadBase {

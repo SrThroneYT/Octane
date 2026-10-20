@@ -1,31 +1,24 @@
 import { FC, useEffect, useState } from 'react';
-import { LocalizeText, WiredFurniType } from '../../../../api';
-import { Text } from '../../../../common';
+import { WiredFurniType } from '../../../../api';
 import { useWired } from '../../../../hooks';
 import { WiredHandItemField } from '../WiredHandItemField';
 import { WiredSourcesSelector } from '../WiredSourcesSelector';
 import { WiredConditionBaseView } from './WiredConditionBaseView';
 
-interface WiredConditionActorHasHandItemViewProps {
-    negative?: boolean;
-}
-
-export const WiredConditionActorHasHandItemView: FC<WiredConditionActorHasHandItemViewProps> = ({ negative = false }) => {
+export const WiredConditionActorHasHandItemView: FC = () => {
     const [handItemId, setHandItemId] = useState(-1);
-    const [quantifier, setQuantifier] = useState(0);
-    // Official layout: [hand item (0 any), our quantifier], the users in the official source slot.
+    // Official layout: [hand item (0 any)], the users in the official source slot; the quantifier is the base view's.
     const { trigger = null, setIntParams = null, setSourceTypes = null } = useWired();
     const [userSource, setUserSource] = useState<number>(() => trigger?.userSourceTypes?.[0] ?? 0);
 
     const save = () => {
-        setIntParams([handItemId, quantifier]);
+        setIntParams([handItemId]);
         setSourceTypes({ furni: [], users: [userSource] });
     };
 
     useEffect(() => {
         setHandItemId(trigger.intData.length > 0 ? trigger.intData[0] : 0);
         setUserSource(trigger.userSourceTypes?.[0] ?? 0);
-        setQuantifier(trigger.intData[1] === 1 ? 1 : 0);
     }, [trigger]);
 
     return (
@@ -35,21 +28,6 @@ export const WiredConditionActorHasHandItemView: FC<WiredConditionActorHasHandIt
             save={save}
             footer={<WiredSourcesSelector showUsers={true} userSource={userSource} onChangeUsers={setUserSource} />}
         >
-            <div className="flex flex-col gap-1">
-                <Text bold>{LocalizeText('wiredfurni.params.quantifier_selection')}</Text>
-                {[0, 1].map((value) => (
-                    <label key={value} className="flex items-center gap-1">
-                        <input
-                            checked={quantifier === value}
-                            className="form-check-input"
-                            name="handItemQuantifier"
-                            type="radio"
-                            onChange={() => setQuantifier(value)}
-                        />
-                        <Text>{LocalizeText(`wiredfurni.params.quantifier.users${negative ? '.neg' : ''}.${value}`)}</Text>
-                    </label>
-                ))}
-            </div>
             <WiredHandItemField handItemId={handItemId} onChange={setHandItemId} showCopyButton={true} />
         </WiredConditionBaseView>
     );

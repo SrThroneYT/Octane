@@ -1,5 +1,7 @@
 import {
     ConditionDefinition,
+    FurnitureFloorRemoveEvent,
+    FurnitureWallRemoveEvent,
     GetRoomEngine,
     GetSessionDataManager,
     IFurnitureData,
@@ -7,6 +9,7 @@ import {
     OpenMessageComposer,
     RoomObjectCategory,
     RoomObjectVariable,
+    RoomSessionEvent,
     Triggerable,
     TriggerDefinition,
     UpdateActionMessageComposer,
@@ -39,15 +42,22 @@ import {
     localizeWithFallback,
     NotificationBubbleType,
     pasteTriggerableData,
+    removeFurniFromWiredPicks,
+    resolveWiredQuantifier,
     resetTriggerableData,
     SendMessageComposer,
     WiredClipboardEntry,
     wiredClipboardKeyOf,
     WiredFurniType,
+    isDualFurniPickingMode,
     WiredSelectionVisualizer,
-    withServerDefaultIntParams
+    wiredPickIdOf,
+    wiredPickIndexOf,
+    withoutWallPick,
+    withServerDefaultIntParams,
+    withTriggerableData
 } from '../../api';
-import { useMessageEvent } from '../events';
+import { useMessageEvent, useOctaneEvent } from '../events';
 import { useNotification } from '../notification';
 import { useLiveState } from '../useLiveState';
 import { useWiredTools } from '../wired-tools/useWiredTools';
@@ -66,10 +76,12 @@ const useWiredState = () => {
     // the save passes back what the box sent.
     const [, setSourceTypes, sourceTypesRef] = useLiveState<{ furni: number[]; users: number[] } | null>(null);
     // The official second pick list (stuffIds2); null sends back what the box sent.
-    const [, setFurniIds2, furniIds2Ref] = useLiveState<number[] | null>(null);
+    const [furniIds2, setFurniIds2, furniIds2Ref] = useLiveState<number[] | null>(null);
     // The official definition variable ids; null sends back what the box sent.
     const [, setVariableIds, variableIdsRef] = useLiveState<string[] | null>(null);
     const [, setSelectorOptions, selectorOptionsRef] = useLiveState<{ filter: boolean; invert: boolean } | null>(null);
+    // The condition's all (0) / any (1) choice from the quantifier section; null sends back what the box sent.
+    const [quantifierCode, setQuantifierCode, quantifierCodeRef] = useLiveState<number | null>(null);
     const [allowsFurni, setAllowsFurni] = useState<number>(WiredFurniType.STUFF_SELECTION_OPTION_NONE);
     const selectByType = false;
     const [neighborhoodTiles, setNeighborhoodTiles] = useState<{ x: number; y: number }[] | null>(null);
@@ -156,7 +168,7 @@ const useWiredState = () => {
                         intParams,
                         stringParam,
                         furniIds,
-                        trigger.quantifierCode ?? 0,
+                        resolveWiredQuantifier(quantifierCodeRef.current, trigger.quantifierCode),
                         furniSources,
                         userSources,
                         variableIds,
@@ -315,7 +327,7 @@ const useWiredState = () => {
                     const toRemove = prevValue.filter((id) => isSameGroup(id));
                     const remaining = prevValue.filter((id) => !toRemove.includes(id));
 
-                    WiredSelectionVisualizer.clearSelectionShaderFromFurni(toRemove);
+                    for (const id of toRemove) WiredSelectionVisualizer.hide(id);
 
                     return remaining;
                 }
@@ -341,7 +353,8 @@ const useWiredState = () => {
                 }
 
                 const addedIds = newIds.filter((id) => !prevValue.includes(id));
-                if (addedIds.length) WiredSelectionVisualizer.applySelectionShaderToFurni(addedIds);
+                // Tinted as the list being edited, as a single click is.
+                for (const id of addedIds) WiredSelectionVisualizer.show(id);
 
                 return newIds;
             });
@@ -375,19 +388,23 @@ const useWiredState = () => {
             }
         }
 
+        // Official: a wall item is picked as its negative id. A wall pick a box stored before (its own id) is
+        // still found, so clicking it unpicks it.
+        const pickId = wiredPickIdOf(objectId, category);
+
         setFurniIds((prevValue) => {
             const newFurniIds = [...prevValue];
 
-            const index = prevValue.indexOf(objectId);
+            const index = wiredPickIndexOf(prevValue, objectId, category);
 
             if (index >= 0) {
-                newFurniIds.splice(index, 1);
+                const [removed] = newFurniIds.splice(index, 1);
 
-                WiredSelectionVisualizer.hide(objectId);
+                WiredSelectionVisualizer.hide(removed);
             } else if (newFurniIds.length < trigger.maximumItemSelectionCount) {
-                newFurniIds.push(objectId);
+                newFurniIds.push(pickId);
 
-                WiredSelectionVisualizer.show(objectId);
+                WiredSelectionVisualizer.show(pickId);
             }
 
             return newFurniIds;
@@ -430,21 +447,38 @@ const useWiredState = () => {
     }, [saveWired]);
 
     /**
+     * The open box as the editor has it now: what the view last pushed into the hook, and what the
+     * box sent for anything its view does not set itself.
+     */
+    const currentTriggerableEntry = useCallback((current: Triggerable): WiredClipboardEntry => {
+        const isSelector = current instanceof WiredSelectorDefinition;
+
+        return {
+            key: wiredClipboardKeyOf(current),
+            intParams: [...(intParamsRef.current ?? [])],
+            stringParam: stringParamRef.current ?? '',
+            furniIds: [...(furniIdsRef.current ?? [])],
+            delayInPulses: actionDelayRef.current ?? 0,
+            furniIds2: [...(furniIds2Ref.current ?? current.selectedItems2 ?? [])],
+            furniSourceTypes: [...(sourceTypesRef.current?.furni ?? current.furniSourceTypes ?? [])],
+            userSourceTypes: [...(sourceTypesRef.current?.users ?? current.userSourceTypes ?? [])],
+            variableIds: [...(variableIdsRef.current ?? current.variableIds ?? [])],
+            quantifierCode: current instanceof ConditionDefinition ? resolveWiredQuantifier(quantifierCodeRef.current, current.quantifierCode) : 0,
+            selectorFilter: selectorOptionsRef.current?.filter ?? (isSelector ? !!current.isFilter : false),
+            selectorInvert: selectorOptionsRef.current?.invert ?? (isSelector ? !!current.isInvert : false)
+        };
+    }, []);
+
+    /**
      * Copies the box's current settings (what the view just pushed into the hook) to the
-     * clipboard slot of its holder and code.
+     * clipboard slot of its holder and code: everything the official ClipboardWiredEntry holds.
      */
     const copyWiredToClipboard = useCallback(() => {
         const current = triggerRef.current;
 
         if (!current) return;
 
-        const entry: WiredClipboardEntry = {
-            key: wiredClipboardKeyOf(current),
-            intParams: [...(intParamsRef.current ?? [])],
-            stringParam: stringParamRef.current ?? '',
-            furniIds: [...(furniIdsRef.current ?? [])],
-            delayInPulses: actionDelayRef.current ?? 0
-        };
+        const entry = currentTriggerableEntry(current);
 
         setClipboard((prevValue) => {
             const next = new Map(prevValue);
@@ -453,7 +487,7 @@ const useWiredState = () => {
 
             return next;
         });
-    }, []);
+    }, [currentTriggerableEntry]);
 
     /** The clipboard entry that fits the open box, if any. */
     const clipboardEntry = trigger ? (clipboard.get(wiredClipboardKeyOf(trigger)) ?? null) : null;
@@ -486,14 +520,82 @@ const useWiredState = () => {
         setTrigger(resetTriggerableData(current));
     }, [setTrigger]);
 
-    /** Drops every furni pick of the open box. */
+    /**
+     * Drops every furni pick of the open box, from both lists (official clearPicks). The views keep
+     * the second list themselves, so the box comes back without picks and the views re-read it; the
+     * rest of what the view had pushed into the hook stays.
+     */
     const clearWiredPicks = useCallback(() => {
-        setFurniIds((prevValue) => {
-            if (prevValue && prevValue.length) WiredSelectionVisualizer.clearSelectionShaderFromFurni(prevValue);
+        const current = triggerRef.current;
 
-            return [];
-        });
-    }, [setFurniIds]);
+        if (!current) return;
+
+        const entry = currentTriggerableEntry(current);
+
+        WiredSelectionVisualizer.clearSelectionShaderFromFurni([...entry.furniIds, ...(entry.furniIds2 ?? [])]);
+        setTrigger(withTriggerableData(current, { ...entry, furniIds: [], furniIds2: [] }));
+    }, [currentTriggerableEntry, setTrigger]);
+
+    /** Official close: the window goes and its picks lose their highlight. */
+    const closeWired = useCallback(() => {
+        if (!triggerRef.current) return;
+
+        WiredSelectionVisualizer.clearAllSelectionShaders();
+        setPasteIntoMode(false);
+        setTrigger(null);
+    }, [setPasteIntoMode, setTrigger]);
+
+    // Official onRoomExit: leaving the room closes the editor.
+    useOctaneEvent<RoomSessionEvent>(RoomSessionEvent.ENDED, () => closeWired());
+
+    // Official stuffRemoved: a removed furni closes the editor when it is the open box, and otherwise
+    // leaves both pick lists.
+    useMessageEvent<FurnitureFloorRemoveEvent>(FurnitureFloorRemoveEvent, (event) => {
+        const current = triggerRef.current;
+
+        if (!current) return;
+
+        const removedId = event.getParser().itemId;
+        const result = removeFurniFromWiredPicks(current.id, furniIdsRef.current ?? [], furniIds2Ref.current ?? current.selectedItems2 ?? [], removedId);
+
+        if (result.closesEditor) {
+            closeWired();
+            return;
+        }
+
+        if (!result.changed) return;
+
+        WiredSelectionVisualizer.hide(removedId);
+
+        // The lists change in place, so nothing the view holds unsaved is reset.
+        setFurniIds(result.furniIds);
+
+        if (furniIds2Ref.current !== null || result.furniIds2.length !== (current.selectedItems2 ?? []).length) setFurniIds2(result.furniIds2);
+    });
+
+    // A removed wall item leaves the picks in either form (negative as AIR picks it, or the id boxes stored before).
+    useMessageEvent<FurnitureWallRemoveEvent>(FurnitureWallRemoveEvent, (event) => {
+        const current = triggerRef.current;
+
+        if (!current) return;
+
+        const removedId = event.getParser().itemId;
+
+        if (current.id === removedId) return;
+
+        const furniIds = furniIdsRef.current ?? [];
+        const furniIds2 = furniIds2Ref.current ?? current.selectedItems2 ?? [];
+        const nextFurniIds = withoutWallPick(furniIds, removedId);
+        const nextFurniIds2 = withoutWallPick(furniIds2, removedId);
+
+        if (nextFurniIds.length === furniIds.length && nextFurniIds2.length === furniIds2.length) return;
+
+        WiredSelectionVisualizer.hide(-removedId);
+        WiredSelectionVisualizer.hide(removedId);
+        setFurniIds(nextFurniIds);
+
+        if (furniIds2Ref.current !== null || nextFurniIds2.length !== furniIds2.length) setFurniIds2(nextFurniIds2);
+    });
 
     useMessageEvent<WiredValidationErrorEvent>(WiredValidationErrorEvent, (event) => {
         const parser = event.getParser();
@@ -501,7 +603,8 @@ const useWiredState = () => {
         if (parser.info && parser.info.length) {
             const message = /^[a-z0-9_.]+$/i.test(parser.info) ? localizeWiredError(parser.info, parser.parameters ?? []) : parser.info;
 
-            simpleAlert(message, null, null, null, LocalizeText('wiredfurni.title'));
+            // Official: the save failed alert is titled wiredfurni.error.title.
+            simpleAlert(message, null, null, null, localizeWithFallback('wiredfurni.error.title', 'Update failed'));
         }
     });
 
@@ -549,10 +652,15 @@ const useWiredState = () => {
     useEffect(() => {
         if (!trigger) return;
 
+        // Official RoomObjectHighLighter: a box with dual furni picking tints its first picks apart from the second.
+        WiredSelectionVisualizer.setDualPickingMode(isDualFurniPickingMode(trigger.inputSourcesConf));
+
         const interval = setInterval(() => WiredSelectionVisualizer.refresh(), 250);
 
         return () => {
             clearInterval(interval);
+            WiredSelectionVisualizer.setDualPickingMode(false);
+            WiredSelectionVisualizer.setEditingPickList(1);
             setTimeout(() => {
                 if (!triggerRef.current) WiredSelectionVisualizer.clearAllSelectionShaders();
             }, 300);
@@ -579,6 +687,7 @@ const useWiredState = () => {
             setFurniIds2(null);
             setVariableIds(null);
             setSelectorOptions(null);
+            setQuantifierCode(null);
             setAllowedInteractionTypes(null);
             setAllowedInteractionErrorKey(null);
             setAllowedFurniCheckState(null);
@@ -607,6 +716,8 @@ const useWiredState = () => {
         getSelectorOptions,
         resetWiredToDefault,
         clearWiredPicks,
+        closeWired,
+        furniIds2,
         selectObjectForWired,
         setNeighborhoodTiles,
         setNeighborhoodInvert,
@@ -614,6 +725,8 @@ const useWiredState = () => {
         setFurniIds2,
         setVariableIds,
         setSelectorOptions,
+        quantifierCode,
+        setQuantifierCode,
         setAllowedInteractionTypes,
         setAllowedInteractionErrorKey,
         setAllowedFurniCheck

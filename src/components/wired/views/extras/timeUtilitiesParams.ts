@@ -66,3 +66,23 @@ export const isTimeUtilSubVariableSelected = (mask: number, id: number) => (mask
 
 export const setTimeUtilSubVariableSelected = (mask: number, id: number, selected: boolean) =>
     normalizeTimeUtilMask(selected ? mask | (1 << id) : mask & ~(1 << id));
+
+/** What a room variable can be read as, for the mode dropdown. */
+export interface ITimeUtilVariableCapabilities {
+    hasValue: boolean;
+    canReadCreationTime: boolean;
+    canReadLastUpdateTime: boolean;
+}
+
+const TIME_UTIL_MODE_CAPABILITY: Record<number, (variable: ITimeUtilVariableCapabilities) => boolean> = {
+    [TIME_UTIL_MODE_VALUE]: (variable) => variable.hasValue,
+    [TIME_UTIL_MODE_CREATION_TIME]: (variable) => variable.canReadCreationTime,
+    [TIME_UTIL_MODE_LAST_UPDATE_TIME]: (variable) => variable.canReadLastUpdateTime
+};
+
+/**
+ * Official VariableTimeUtilAddon: the dropdown only offers a mode some variable of the room can be read
+ * as (all of them when the room has none), and always the stored mode.
+ */
+export const availableTimeUtilModes = (variables: ITimeUtilVariableCapabilities[], current: number): number[] =>
+    TIME_UTIL_MODES.filter((mode) => mode === current || !variables.length || variables.some(TIME_UTIL_MODE_CAPABILITY[mode]));

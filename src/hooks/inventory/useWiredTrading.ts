@@ -14,10 +14,11 @@ import {
     WiredTradeOpenEvent,
 } from '@octane/renderer';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { localizeWithFallback, SendMessageComposer } from '../../api';
+import { localizeWithFallback, SendMessageComposer, wiredTradeInitialSecondsLeft } from '../../api';
 import { registerSharedHook, useSharedHook } from '@/state/useSharedHook';
 import { useMessageEvent } from '../events';
 import { useNotification } from '../notification';
+import { useInventoryFurni } from './useInventoryFurni';
 
 /**
  * The client-side trade states of AIR WiredTradingModel. The server sends no state (WiredTradeItems 705 only carries
@@ -47,6 +48,7 @@ const useWiredTradingState = () => {
     const [multiplier, setMultiplier] = useState(1);
     const [autoMultiplierMax, setAutoMultiplierMax] = useState(0);
     const [showRequirements, setShowRequirements] = useState(false);
+    const [requirementsHighlight, setRequirementsHighlight] = useState(0);
 
     const [state, setState] = useState(WIRED_TRADING_STATE_CLOSED);
     const [canAccept, setCanAccept] = useState(false);
@@ -59,6 +61,7 @@ const useWiredTradingState = () => {
     const [countdown, setCountdown] = useState(0);
 
     const { simpleAlert = null } = useNotification();
+    const { setGroupItems = null, activate = null, deactivate = null } = useInventoryFurni();
 
     const secondsLeftRef = useRef(0);
     secondsLeftRef.current = secondsLeft;
@@ -85,6 +88,10 @@ const useWiredTradingState = () => {
         // A second trade only replaces an open one when the server says so.
         if (isOpen && !parser.overridePreviousTrade) return;
 
+        // AIR WiredTradingModel.onWiredTradeInitiate: a trade that replaces the open one (Initiate Transaction stacked on
+        // Cancel Transaction) swaps the requirements in the same window and highlights them.
+        if (isOpen) setRequirementsHighlight((value) => value + 1);
+
         setRequirementType(parser.requirementType);
         setYouGetText(parser.youGetText);
         setLayoutType(parser.layoutType);
@@ -94,7 +101,7 @@ const useWiredTradingState = () => {
         setMultiplier(parser.multiplier);
         setAutoMultiplierMax(parser.autoMultiplierMax);
         setShowRequirements(parser.showRequirementsImmediate);
-        setSecondsLeft(parser.timeoutSeconds);
+        setSecondsLeft(wiredTradeInitialSecondsLeft(parser.timeoutSeconds));
         setCanAccept(false);
         setExtra(0);
         setOfferedItems([]);
@@ -151,16 +158,49 @@ const useWiredTradingState = () => {
 
     useMessageEvent<WiredTradeCompletedEvent>(WiredTradeCompletedEvent, () => reset());
 
-    // The trade time-out from WiredTradeOpen (84) runs locally.
+    // The furni come from the inventory, as in a user trade: while the trade is open the furni list is live, so the
+    // server's refresh after every offer (the offered items leave the inventory) reaches the grid.
     useEffect(() => {
-        if (!isOpen) return;
+        if (!isOpen || !activate) return;
+
+        const id = activate();
+
+        return () => deactivate(id);
+    }, [isOpen, activate, deactivate]);
+
+    // What is on the table is locked in the inventory grid until the server's refresh takes it out, so the same item
+    // can not be offered twice (AIR locks the offered items in the furni view the same way).
+    useEffect(() => {
+        if (!setGroupItems) return;
+
+        const tableIds = isOpen ? offeredItems.map((item) => item.ref) : [];
+
+        setGroupItems((previous) => {
+            let changed = false;
+            const next = previous.map((group) => {
+                const copy = group.clone();
+
+                if (!copy.lockItemIds(tableIds)) return group;
+
+                changed = true;
+                return copy;
+            });
+
+            return changed ? next : previous;
+        });
+    }, [isOpen, offeredItems, setGroupItems]);
+
+    // The trade time-out from WiredTradeOpen (84) runs locally; a trade without one has none to run.
+    const hasTimeout = secondsLeft >= 0;
+    useEffect(() => {
+        if (!isOpen || !hasTimeout) return;
 
         const handle = window.setInterval(() => {
             setSecondsLeft(Math.max(0, secondsLeftRef.current - 1));
         }, 1000);
 
         return () => window.clearInterval(handle);
-    }, [isOpen]);
+    }, [isOpen, hasTimeout]);
 
     useEffect(() => {
         if (state !== WIRED_TRADING_STATE_COUNTDOWN) return;
@@ -219,6 +259,7 @@ const useWiredTradingState = () => {
         autoMultiplierMax,
         showRequirements,
         setShowRequirements,
+        requirementsHighlight,
         state,
         canAccept,
         extra,

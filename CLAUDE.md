@@ -45,7 +45,8 @@ read that before starting anything non-trivial.
 | Dev server | `yarn start` |
 | Production build | `yarn build` |
 | Serve production build | `yarn preview` (defaults to http://localhost:4173) |
-| Lint | `yarn eslint` |
+| Lint | `yarn lint` (Biome) |
+| Hook-order lint (CI gate) | `yarn lint:hooks` |
 | Type-check (TS 7 native, fast) | `yarn typecheck` |
 | Test (Vitest, once) | `yarn test` |
 | Test (watch) | `yarn test:watch` |
@@ -106,11 +107,39 @@ login/WebGL, so they're not usable for in-game verification.
 ## Stack snapshot
 
 - React 19.2.5, `react-dom` 19.2.5, `@types/react` 19.2.x.
-- TypeScript: TS 6 for build, **TS 7 native preview** (`@typescript/native-preview`,
-  invoked via `tsgo`) for the `typecheck` script.
+- TypeScript: TS 6 (`typescript`) for the tools that need its JavaScript API (`@typescript-eslint/parser`,
+  peer `<6.1`), and **TS 7** (the `typescript7` alias of `typescript@7`, run as
+  `node node_modules/typescript7/bin/tsc`) for the `typecheck` script.
+- UI primitives: Base UI (`@base-ui/react`, imported per subpath). Radix UI is no longer a
+  dependency. Use the `src/common/` wrappers instead of native controls or hand-rolled
+  ARIA widgets:
+  `Checkbox`, `Radio` (a controlled one-item `RadioGroup`, drop-in for
+  `<input type="radio" checked onChange>`), `Select` (drop-in for `<select>` + `<option>`,
+  change event keeps `target.value`), `NumberInput` (drop-in for `type="number"`, event keeps
+  `target.value` / `target.valueAsNumber`, role spinbutton, hover/focus up-down overlay), `Slider`, `FloatingPopover`,
+  `TabBar`, `InlineDialog` (dialog mounted inline; `modal="trap-focus"` for the catalog confirms), `CollapsibleSection`, `Tooltip`,
+  `ToggleButton` (every `aria-pressed` two-state button, incl. `InfiniteGrid.Item`), `ListSelect` (Base UI Select with the
+  caller's own trigger/classes, for custom drop menus), `SuggestInput` (text input + Autocomplete list, replaces `<datalist>`),
+  `Slider` with `orientation="vertical"`. `Hint` (in `common/Tooltip.tsx`) gives an icon-only control a tooltip without a
+  wrapper element: use it instead of a `title` attribute and keep an `aria-label`. A `div role="button"` is never right:
+  use `BaseButton` / `ToggleButton` (unless the region contains its own button).
+  Radios that share a `name` keep native group behaviour (arrow keys, one tab stop).
+  `<button>` is `BaseButton` (Base UI Button, still a native `<button>`; it sets `type="button"` unless a
+  `type` is passed, so form submit buttons need an explicit `type="submit"`). Deliberately native: text
+  `<input>` and `<textarea>` (Base UI `Input` is a plain input; there is no textarea primitive), and the
+  draggable-window dialogs (`UserSettingsView`, `LayoutMiniCameraView`: Dialog.Popup needs a Dialog.Portal,
+  which mounts one render late, but `DraggableWindow` looks up its handle and measures its size once at
+  mount, and the camera preview effect needs its canvas at mount).
+  Skin them through the `octane-*` classes (`.octane-checkbox[data-checked]`,
+  `.octane-radio`, `.octane-select-trigger`, `.octane-number-input`): CSS written for
+  `input[type=...]` / `select` must be mirrored onto those classes. Base UI roots render as
+  `<i>` so a window's generic `span` / `input` rules do not hit them. In tests, read
+  `aria-checked` / `aria-disabled` (not `.checked` / `.disabled`), pick options with
+  `src/test-utils/selectOption.ts`, and use `getByRole('checkbox'|'radio', { name })` rather
+  than `getByLabelText` for wrapped boxes (the label also matches the hidden input).
 - Vite 8 + `@vitejs/plugin-react` 6 + `babel-plugin-react-compiler` 1.0.
-- ESLint 10 + `typescript-eslint` 8 + `eslint-plugin-react-hooks@7` +
-  `eslint-plugin-react-compiler`.
+- Biome for lint and format; ESLint 10 + `@typescript-eslint/parser` 8 + `eslint-plugin-react-hooks@7`
+  only for the Rules of Hooks gate (`yarn lint:hooks`).
 - TanStack Query 5 (`@tanstack/react-query` + devtools).
 - Zustand 5.
 - Vitest 3 + jsdom + `@testing-library/react` + `@testing-library/jest-dom`.
@@ -361,7 +390,7 @@ into `configurePreviewServer` so `yarn preview` keeps working.
 | Renderer snapshot consumer hooks (`useSessionSnapshots`) | `useSessionInfo` (userFigure / userRespectRemaining / petRespectRemaining via `useUserDataSnapshot`), `useChatWidget.ownUserId` (via `useUserDataSnapshot`), `AvatarInfoWidgetAvatarView` Ignore/Unignore (via `useIsUserIgnored`), `ModToolsView` selected-user presence dot (via `useRoomUserListSnapshot` — green when still in the active room, gray when they've left). The 8 hooks (userData / activeRoomSession / ignoredUsers / groupBadges / soundVolumes / roomUserList / isUserIgnored / groupBadge) keep their typeof-guard defensive fallbacks for stale-renderer paths. |
 | Reactive event-driven local state (companion to snapshots — when there is no manager-snapshot to read from yet) | `AvatarInfoWidgetAvatarView` Give/Remove Rights — local `controllerLevel` initialized from `avatarInfo.targetRoomControllerLevel`, kept reactive via `useMessageEvent<FlatControllerAddedEvent>` / `FlatControllerRemovedEvent` filtered by `parser.data.userId === avatarInfo.webID`, plus optimistic bump on click so the moderate submenu flips immediately. Same shape as `useIsUserIgnored` but the source is the renderer event bus, not a snapshot getter — use this when adding a manager-side snapshot for the same data isn't justified. |
 | `useOctaneEventState` + companions (Reducer, ExternalSnapshot) | `OfferView`, `useAvatarInfoWidget` (figure/badges/group reducer), `useInventoryFurni` (pure reducers + fragments useRef) |
-| `useOctaneQuery` + `useOctaneEventInvalidator` | `OfferView`, `CatalogLayoutRoomAdsView`, `ModToolsChatlogView`, `CfhChatlogView`, `useGiftConfiguration`, `useUserGroups`, `useClubOffers(windowId)`, `useSellablePetPalette(breed)`, `useMarketplaceConfiguration`, `useClubGifts` (with invalidator) |
+| `useOctaneQuery` + `useOctaneEventInvalidator` | `CatalogLayoutRoomAdsView`, `ModToolsChatlogView`, `CfhChatlogView`, `useGiftConfiguration`, `useUserGroups`, `useClubOffers(windowId)`, `useSellablePetPalette(breed)`, `useMarketplaceConfiguration`, `useClubGifts` (with invalidator) |
 | Zustand | `NavigatorRoomCreatorView` (`useRoomCreatorStore`), `WiredCreatorToolsView` (`useWiredCreatorToolsUiStore` — every panel-lifecycle-relevant flag, snapshot, selection, highlight, inline editor, picker chain hoisted; what's left in the component as `useState` is genuinely transient: keepSelected, globalClock, roomEnteredAt, selectedMonitorErrorType, selectedMonitorLogDetails) |
 | God-hook split (state + actions + shim) | `doorbell`, `poll`, `furni-chooser`, `user-chooser`, `friend-request`, `chat-input` |
 | God-hook split (Zustand-backed shared source + state filter + actions filter + shim) | `wired-tools`, `translation`, `notification`, `friends`, `catalog` (three-way: `useCatalogData` / `useCatalogUiState` / `useCatalogActions` — all 48 consumers migrated, deprecated `useCatalog` shim removed) |
@@ -468,11 +497,14 @@ See `docs/ARCHITECTURE.md` "Recently fixed" for fix shapes.
   `src/components/wired/views/extras/WiredExtraVariableFxView.tsx` (prop `category`) on the pure tables and
   param/token codecs in `src/api/wired/WiredVariableFx.ts`, which mirror the server's `WiredVariableFxStyles` /
   `WiredExtraVariableFx`. The four server packets (`WiredVariableFxConfigs/ConfigsRemoved/Status/StatusRemoved`)
-  feed `src/hooks/wired/wiredVariableFxStore.ts` through `useWiredVariableFxEvents`; the room draws them as DOM
-  overlays from `src/components/room/widgets/wired-fx/WiredVariableFxOverlayView.tsx` (mounted in `RoomView`,
-  ticker-positioned over avatars/furni like `ObjectLocationView`, boss bars fixed at the top; css in
-  `src/css/room/WiredVariableFx.css`). Only `custom:<id>` variable tokens are offered for overrides/audience,
-  since that is what the server resolves.
+  feed `src/hooks/wired/wiredVariableFxStore.ts` through `useWiredVariableFxEvents`; `WiredVariableFxView`
+  (`src/components/room/widgets/wired-fx/`, mounted in `RoomView`, renders nothing) drives
+  `useWiredVariableFxRoomDrawing` / `wiredVariableFxRoomDrawing.ts`, which decide visibility and hand each holder its
+  stack through `IRoomEngine.setRoomObjectVariableFx`. The renderer draws it as AIR does, a sprite in the avatar / pet /
+  furni visualization (`Octane-Renderer/packages/room/src/object/visualization/variablefx/`, 150 ms fade in, 350 ms
+  out); each value is painted on a canvas by `src/api/wired/WiredVariableFxVisualizer.ts` over the pure layout in
+  `WiredVariableFxDrawing.ts`. `src/css/room/WiredVariableFx.css` only holds the editor rule. Only `custom:<id>`
+  variable tokens are offered for overrides/audience, since that is what the server resolves.
 - Wired setup quick menu (`src/components/wired/views/WiredBaseView.tsx`, the ≡ button): copy / paste /
   paste-into / clear picks / reset / save-without-closing, backed by `useWired` (`clipboardEntry`,
   `copyWiredToClipboard`, `pasteWiredFromClipboard`, `resetWiredToDefault`, `clearWiredPicks`,

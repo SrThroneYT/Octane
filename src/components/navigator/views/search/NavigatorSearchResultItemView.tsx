@@ -58,6 +58,8 @@ export const NavigatorSearchResultItemView: FC<NavigatorSearchResultItemViewProp
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
+        // The info button inside the row has its own keys; only the row itself visits the room.
+        if (event.target !== event.currentTarget) return;
         if (event.key !== 'Enter' && event.key !== ' ') return;
 
         event.preventDefault();

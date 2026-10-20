@@ -2,7 +2,8 @@
     width: min(300px, calc(100vw - 16px));
     min-width: 0;
     max-width: calc(100vw - 16px);
-    background: #efefef;
+    /* The style's colours come in as variables (api/wired/WiredStyle.ts); the fallbacks are Illumina. */
+    background: var(--wired-frame, #e2e2e2);
     border: 1px solid #8d8d8d !important;
     border-radius: 6px !important;
     box-shadow: inset 0 0 0 1px #fff !important;
@@ -78,7 +79,7 @@
 
     .octane-wired__content {
         position: relative;
-        background: #efefef !important;
+        background: var(--wired-frame, #e2e2e2) !important;
         border: 0 !important;
         box-shadow: none !important;
         padding: 0 !important;
@@ -178,10 +179,11 @@
         background: linear-gradient(180deg, #ffffff 0%, #dcdcdc 100%);
     }
 
+    .octane-wired__menu-positioner {
+        z-index: 3;
+    }
+
     .octane-wired__menu-list {
-        position: absolute;
-        top: 20px;
-        right: 0;
         min-width: 190px;
         padding: 2px;
         border: 1px solid #000;
@@ -206,11 +208,13 @@
         cursor: pointer;
     }
 
-    .octane-wired__menu-item:hover:not(:disabled) {
+    .octane-wired__menu-item:hover:not(:disabled),
+    .octane-wired__menu-item[data-highlighted]:not([data-disabled]) {
         background: #dbeaf4;
     }
 
-    .octane-wired__menu-item:disabled {
+    .octane-wired__menu-item:disabled,
+    .octane-wired__menu-item[data-disabled] {
         color: #9a9488;
         cursor: default;
     }
@@ -228,9 +232,10 @@
         gap: 1px;
     }
 
+    /* IlluminaHeaderPreset: the kind in 11 px bold, the name in headerNameFontSize bold, 0x494949. */
     .octane-wired__summary-kind {
         color: #000;
-        font-size: 10px;
+        font-size: 11px;
         font-weight: 700;
         letter-spacing: 0.08em;
         line-height: 1;
@@ -255,8 +260,8 @@
     }
 
     .octane-wired__summary-title {
-        color: #4a4a4a !important;
-        font-size: 15px !important;
+        color: #494949 !important;
+        font-size: var(--wired-header-name-size, 12px) !important;
         font-weight: 700 !important;
         line-height: 1.02;
         text-align: left !important;
@@ -288,16 +293,61 @@
         font-size: 12px;
     }
 
+    /* Illumina ruler: a 0xAAAAAA line over a white highlight at alpha 0xAF. */
     .octane-wired__divider,
     hr {
         height: 1px;
         border: 0;
-        background: #bababa;
-        box-shadow: 0 1px 0 #fff;
+        background: var(--wired-splitter, #aaaaaa);
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.69);
         margin: 0 !important;
     }
 
+    .octane-wired__sections {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 0;
+    }
+
+    .octane-wired__sections:empty {
+        display: none;
+    }
+
+    /*
+     * element.allowScrolling (WiredUIBuilder.build: ListScrollParams(maxHeight = screen height / 1.8,
+     * stickyHeader, stickyFooter)): the header and the Ready / Cancel row stay put, the sections
+     * between them scroll, and the whole list is capped at 100vh / 1.8.
+     */
+    &.octane-wired--scrolling .octane-wired__content {
+        display: flex;
+        flex-direction: column;
+        max-height: calc(100vh / 1.8);
+    }
+
+    &.octane-wired--scrolling .octane-wired__summary,
+    &.octane-wired--scrolling .octane-wired__divider--actions,
+    &.octane-wired--scrolling .octane-wired__actions {
+        flex: 0 0 auto;
+    }
+
+    &.octane-wired--scrolling .octane-wired__body {
+        flex: 1 1 auto;
+        min-height: 0;
+        max-height: none;
+        overflow: hidden;
+    }
+
+    &.octane-wired--scrolling .octane-wired__sections {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
     .form-check-input,
+    .octane-checkbox,
+    .octane-radio,
     input[type='checkbox'],
     input[type='radio'] {
         width: 18px;
@@ -313,11 +363,14 @@
         position: relative;
     }
 
+    .octane-radio,
     input[type='radio'] {
         border-radius: 50%;
     }
 
     .form-check-input:focus,
+    .octane-checkbox:focus,
+    .octane-radio:focus,
     input[type='checkbox']:focus,
     input[type='radio']:focus {
         outline: 1px solid #4b7ea1;
@@ -325,6 +378,7 @@
     }
 
     .form-check-input[type='radio']:checked,
+    .octane-radio[data-checked],
     input[type='radio']:checked {
         background:
             radial-gradient(circle at center, #4a4a4a 0 34%, transparent 38%),
@@ -333,6 +387,7 @@
     }
 
     .form-check-input[type='checkbox']:checked,
+    .octane-checkbox[data-checked],
     input[type='checkbox']:checked {
         background: linear-gradient(180deg, #d9d9d9 0%, #c8c8c8 100%);
         border-color: #767676;
@@ -340,6 +395,8 @@
 
     .form-check-input[type='checkbox']:checked::before,
     .form-check-input[type='checkbox']:checked::after,
+    .octane-checkbox[data-checked]::before,
+    .octane-checkbox[data-checked]::after,
     input[type='checkbox']:checked::before,
     input[type='checkbox']:checked::after {
         content: '';
@@ -354,11 +411,13 @@
     }
 
     .form-check-input[type='checkbox']:checked::before,
+    .octane-checkbox[data-checked]::before,
     input[type='checkbox']:checked::before {
         transform: translate(-50%, -50%) rotate(45deg);
     }
 
     .form-check-input[type='checkbox']:checked::after,
+    .octane-checkbox[data-checked]::after,
     input[type='checkbox']:checked::after {
         transform: translate(-50%, -50%) rotate(-45deg);
     }
@@ -377,6 +436,7 @@
     .form-select,
     input[type='text'],
     input[type='number'],
+    .octane-number-input,
     textarea {
         min-height: 24px;
         border: 1px solid #8d8d8d !important;
@@ -444,6 +504,13 @@
         display: flex;
         flex-direction: column;
         gap: 4px;
+    }
+
+    /* AdvancedSettingsWrapperPreset: the advanced rows sit on the style's advanced background. */
+    .octane-wired__advanced-body {
+        margin-top: 4px;
+        padding: var(--wired-section-spacing, 5px) var(--wired-section-margin, 5px);
+        background: var(--wired-advanced-background, #cccccc);
     }
 
     .octane-wired__advanced-body[hidden] {
@@ -917,7 +984,7 @@
     color: #2f5f7a !important;
 }
 
-.octane-wired :where(select, input[type='text'], input[type='number'], textarea) {
+.octane-wired :where(select, .octane-select-trigger, input[type='text'], input[type='number'], .octane-number-input, textarea) {
     min-height: 22px;
     border: 1px solid #8b8b8b !important;
     border-radius: 3px !important;
@@ -927,7 +994,7 @@
     font-size: 11px !important;
 }
 
-.octane-wired :where(select, input[type='text'], input[type='number'], textarea):focus {
+.octane-wired :where(select, .octane-select-trigger, input[type='text'], input[type='number'], .octane-number-input, textarea):focus {
     border-color: #5c8fa8 !important;
     box-shadow: 0 0 0 2px rgba(92, 143, 168, 0.24), inset 0 1px 0 rgba(0, 0, 0, 0.14) !important;
     outline: none !important;
@@ -958,6 +1025,17 @@
     box-shadow: none !important;
 }
 
+
+.octane-wired.octane-wired__vpicker-positioner {
+    z-index: 5000;
+    width: auto;
+    max-width: none;
+    overflow: visible;
+    background: transparent;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
 
 /*
  * AIR variable picker (WIN63-202610131318-860371703, uibuilder/presets/newvariablepicker). Colours, tab widths and the
@@ -1047,7 +1125,7 @@
 }
 
 .octane-wired__vpicker-expanded {
-    position: fixed;
+    position: relative;
     box-sizing: border-box;
     padding-bottom: 1px;
     pointer-events: auto;
@@ -1184,8 +1262,9 @@
 }
 
 /* WiredStyle.invalidInputBackgroundColor (IlluminaWiredStyle: 0xffc6c9). */
-.octane-wired__value-input.is-invalid {
-    background: #ffc6c9;
+.octane-wired__value-input.is-invalid,
+.octane-wired .octane-wired__number-input.is-invalid {
+    background: #ffc6c9 !important;
 }
 
 .octane-wired__value-input.is-disabled {
@@ -1321,42 +1400,91 @@
 
 
 /*
- * Official wired window skins, colour for colour from the AIR client's wired_style_*.xml layouts:
- * volter (dark), ubuntu (light warm) and volter_blue (the yellow one; that is its name). "default"
- * carries no override and is the look above. Each block only restates what the layout defines:
- * window background, ruler (divider) colour, text colour, input background, the source-button box
- * and the menu items; the rest keeps the base rules.
+ * Official wired window styles (AIR uibuilder/styles and their wired_style_*.xml templates). The
+ * colours arrive as variables from api/wired/WiredStyle.ts; these blocks restate what each template
+ * draws differently. Illumina is the base look above. Volter is the dark one; volter_yellow,
+ * volter_blue and volter_green are forced for three prototype furni and draw the sections inside a
+ * rounded inner border (border style 13) on the background colour, with the header and the buttons
+ * on the frame colour.
  */
+.octane-wired.octane-wired--volter {
+    font-family: Volter, monospace;
+
+    /* The Volter templates draw every text in the 9 px Volter font (13 px lines). */
+    .octane-wired__body,
+    .octane-wired__section .font-bold:not(.octane-wired__summary-title),
+    .octane-wired__summary-description,
+    .octane-wired__furni-selector-description,
+    .octane-wired__picker-label,
+    .octane-wired__source-row,
+    .octane-wired__advanced-toggle,
+    .octane-wired__header-button,
+    .octane-wired__button,
+    .form-control,
+    .form-select,
+    input[type='text'],
+    input[type='number'],
+    textarea {
+        font-size: 9px !important;
+        line-height: 13px;
+    }
+
+    .octane-wired__summary {
+        min-height: 0;
+        padding: 26px 5px 5px;
+        background: transparent;
+        color: var(--wired-text);
+    }
+
+    .octane-wired__summary-line {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    .octane-wired__summary-icon {
+        flex: 0 0 auto;
+        width: 13px;
+        height: 14px;
+        image-rendering: pixelated;
+    }
+
+    .octane-wired__summary-title {
+        font-family: Volter, monospace;
+        font-weight: 700 !important;
+        font-size: var(--wired-header-name-size, 9px) !important;
+        line-height: 13px;
+        color: var(--wired-text) !important;
+        text-shadow: none;
+    }
+
+    .octane-wired__divider,
+    hr {
+        box-shadow: none;
+    }
+}
+
 .octane-wired.octane-wired--style-volter {
     /* container colour 0x3d3d3d, ruler 0x232323, text white, source box 0x181818, mini button 0x333333, menu item 0x626262 */
-    background: #3d3d3d;
     border-color: #232323 !important;
     box-shadow: inset 0 0 0 1px #4a4a4a !important;
     color: #fff;
 
-    .octane-wired__header .nitro-card-title {
+    .octane-wired__header .octane-card-title {
         color: #fff !important;
         text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
     }
 
-    .octane-wired__header .nitro-card-close-button {
+    .octane-wired__header .octane-card-close-button {
         border-color: #181818;
         background: linear-gradient(180deg, #626262 0%, #333333 100%);
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
     }
 
-    .octane-wired__header .nitro-card-close-button::before,
-    .octane-wired__header .nitro-card-close-button::after {
+    .octane-wired__header .octane-card-close-button::before,
+    .octane-wired__header .octane-card-close-button::after {
         background: #e8e8e8;
-    }
-
-    .octane-wired__content {
-        background: #3d3d3d !important;
-    }
-
-    .octane-wired__summary {
-        background: linear-gradient(180deg, #333333 0%, #2a2a2a 100%);
-        color: #fff;
     }
 
     .octane-wired__summary-kind,
@@ -1371,13 +1499,9 @@
         text-shadow: none;
     }
 
-    .octane-wired__divider,
-    hr {
-        background: #232323;
-        box-shadow: 0 1px 0 #4a4a4a;
-    }
-
     .form-check-input,
+    .octane-checkbox,
+    .octane-radio,
     input[type='checkbox'],
     input[type='radio'] {
         border-color: #181818;
@@ -1386,6 +1510,7 @@
     }
 
     .form-check-input[type='radio']:checked,
+    .octane-radio[data-checked],
     input[type='radio']:checked {
         background:
             radial-gradient(circle at center, #f4f4f4 0 34%, transparent 38%),
@@ -1394,13 +1519,16 @@
     }
 
     .form-check-input[type='checkbox']:checked,
+    .octane-checkbox[data-checked],
     input[type='checkbox']:checked {
         background: linear-gradient(180deg, #7a7a7a 0%, #5a5a5a 100%);
         border-color: #181818;
     }
 
     .form-check-input[type='checkbox']:checked::before,
+    .octane-checkbox[data-checked]::before,
     .form-check-input[type='checkbox']:checked::after,
+    .octane-checkbox[data-checked]::after,
     input[type='checkbox']:checked::before,
     input[type='checkbox']:checked::after {
         background: #f4f4f4;
@@ -1410,8 +1538,9 @@
     .form-select,
     input[type='text'],
     input[type='number'],
+    .octane-number-input,
     textarea {
-        border-color: #181818 !important;
+        border-color: #ffffff !important;
         background: #2b2b2b !important;
         color: #fff !important;
         box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.4);
@@ -1426,105 +1555,70 @@
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
         color: #fff !important;
     }
-}
 
-.octane-wired.octane-wired--style-ubuntu {
-    /* container colour 0xe9e9e1, ruler 0xb5b5b5, text 0x222222, menu item 0xb2b2b2, 10px il_regular text */
-    background: #e9e9e1;
-    border-color: #b5b5b5 !important;
-    box-shadow: inset 0 0 0 1px #f6f6f2 !important;
-    color: #222;
-
-    .octane-wired__header .nitro-card-title,
-    .octane-wired__summary-kind,
-    .octane-wired__summary-title,
-    .octane-wired__advanced-toggle {
-        color: #222 !important;
+    .octane-wired__menu-list {
+        background: #626262;
     }
 
-    .octane-wired__content {
-        background: #e9e9e1 !important;
-    }
-
-    .octane-wired__summary {
-        background: linear-gradient(180deg, #e2e2da 0%, #d6d6cc 100%);
-        color: #222;
-    }
-
-    .octane-wired__divider,
-    hr {
-        background: #b5b5b5;
-        box-shadow: 0 1px 0 #f6f6f2;
-    }
-
-    .form-control,
-    .form-select,
-    input[type='text'],
-    input[type='number'],
-    textarea {
-        border-color: #b5b5b5 !important;
-        background: #ffffff !important;
-        color: #222 !important;
-    }
-
-    .octane-wired__button,
-    .octane-wired__picker-button,
-    .octane-slider-button {
-        border-color: #b2b2b2 !important;
-        background: linear-gradient(180deg, #fbfbf8 0%, #e9e9e1 46%, #d9d9d1 47%, #ecece4 100%) !important;
-        color: #222 !important;
+    .octane-wired__menu-item {
+        color: #fff;
     }
 }
 
-.octane-wired.octane-wired--style-volter_blue {
-    /* container colour 0xf4d763, ruler 0x222222, text 0x222222, input white, source box 0xffeda5, mini button 0xffeda5, menu item 0xdddddd */
-    background: #f4d763;
+.octane-wired.octane-wired--inner-border {
+    /* Text and ruler 0x222222, inputs white with a 0x222222 border, source boxes and mini buttons 0xffeda5, menu items 0xdddddd. */
     border-color: #222222 !important;
-    box-shadow: inset 0 0 0 1px #ffeda5 !important;
+    box-shadow: none !important;
     color: #222;
 
-    .octane-wired__header .nitro-card-title,
+    .octane-wired__header .octane-card-title {
+        color: #fff !important;
+        text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+    }
+
+    .octane-wired__sections {
+        padding: 8px 9px;
+        border: 1px solid #000;
+        border-radius: 7px;
+        background: var(--wired-background);
+        box-shadow: -1px -1px 0 1px rgba(0, 0, 0, 0.22);
+    }
+
+    /* InnerBorderFramePreset: no ruler above the first section, none above the buttons. */
+    .octane-wired__sections > .octane-wired__divider:first-child,
+    .octane-wired__divider--actions {
+        display: none;
+    }
+
     .octane-wired__summary-kind,
     .octane-wired__summary-title,
-    .octane-wired__advanced-toggle {
+    .octane-wired__advanced-toggle,
+    .octane-wired__picker-label,
+    .form-check-label,
+    label {
         color: #222 !important;
-        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
-    }
-
-    .octane-wired__header .nitro-card-close-button {
-        border-color: #222222;
-        background: linear-gradient(180deg, #ffeda5 0%, #f4d763 100%);
-    }
-
-    .octane-wired__content {
-        background: #f4d763 !important;
-    }
-
-    .octane-wired__summary {
-        background: linear-gradient(180deg, #f8e28a 0%, #f0cf55 100%);
-        color: #222;
-    }
-
-    .octane-wired__divider,
-    hr {
-        background: #222222;
-        box-shadow: 0 1px 0 #ffeda5;
+        text-shadow: none;
     }
 
     .form-check-input,
+    .octane-checkbox,
+    .octane-radio,
     input[type='checkbox'],
     input[type='radio'] {
         border-color: #222222;
         background: #ffffff;
+        box-shadow: none;
     }
 
     .form-check-input[type='radio']:checked,
+    .octane-radio[data-checked],
     input[type='radio']:checked {
         background: radial-gradient(circle at center, #222222 0 34%, transparent 38%), #ffffff;
         border-color: #222222;
     }
 
     .form-check-input[type='checkbox']:checked,
+    .octane-checkbox[data-checked],
     input[type='checkbox']:checked {
         background: #ffeda5;
         border-color: #222222;
@@ -1534,10 +1628,12 @@
     .form-select,
     input[type='text'],
     input[type='number'],
+    .octane-number-input,
     textarea {
         border-color: #222222 !important;
         background: #ffffff !important;
         color: #222 !important;
+        box-shadow: none;
     }
 
     .octane-wired__button,
@@ -1545,9 +1641,20 @@
     .octane-wired__selection-toggle,
     .octane-slider-button {
         border-color: #222222 !important;
-        background: linear-gradient(180deg, #ffeda5 0%, #f8e28a 46%, #f0cf55 47%, #f4d763 100%) !important;
+        background: #ffeda5 !important;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
         color: #222 !important;
     }
+
+    .octane-wired__menu-list {
+        background: #dddddd;
+    }
+}
+
+/* The yellow frame (style 2) is light: its title stays dark. */
+.octane-wired.octane-wired--style-volter_yellow .octane-wired__header .octane-card-title {
+    color: #222 !important;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 /* Delay section: title, seconds field and the Standard / Precise mode button (AIR ActionDelaySection). */

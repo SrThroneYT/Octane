@@ -1,6 +1,6 @@
 import { FurnitureStackHeightComposer, FurnitureStackHeightEvent, GetRoomEngine, RoomEngineTriggerWidgetEvent } from '@octane/renderer';
 import { useEffect, useState } from 'react';
-import { CanManipulateFurniture, GetRoomSession, SendMessageComposer } from '../../../../api';
+import { CanManipulateFurniture, GetRoomSession, IsPlayTestRestricted, SendMessageComposer } from '../../../../api';
 import { useMessageEvent, useOctaneEvent } from '../../../events';
 import { useFurniRemovedEvent } from '../../engine';
 
@@ -43,7 +43,10 @@ const useFurnitureStackHeightWidgetState = () => {
     });
 
     useOctaneEvent<RoomEngineTriggerWidgetEvent>(RoomEngineTriggerWidgetEvent.REQUEST_STACK_HEIGHT, (event) => {
-        if (!CanManipulateFurniture(GetRoomSession(), event.objectId, event.category)) return;
+        const roomSession = GetRoomSession();
+
+        // Playtest keeps the helper's height (the hotel's own rule beyond AIR), as the server does.
+        if (IsPlayTestRestricted(roomSession) || !CanManipulateFurniture(roomSession, event.objectId, event.category)) return;
 
         const roomObject = GetRoomEngine().getRoomObject(event.roomId, event.objectId, event.category);
 

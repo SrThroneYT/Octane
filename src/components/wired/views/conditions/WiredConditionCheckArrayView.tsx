@@ -10,8 +10,6 @@ import {
     WIRED_ARRAY_CONDITION_MODE_STATE,
     WIRED_ARRAY_CRITERIA_ALL,
     WIRED_ARRAY_CRITERIA_ANY,
-    WIRED_ARRAY_QUANTIFIER_ALL,
-    WIRED_ARRAY_QUANTIFIER_ANY,
     WIRED_ARRAY_RESULT_ALL,
     WIRED_ARRAY_RESULT_AT_LEAST_ONE,
     WIRED_ARRAY_RESULT_EXACTLY,
@@ -43,6 +41,9 @@ import {
     wiredArrayValueAsAddress
 } from '../arrays/WiredArrayValueField';
 import { WiredConditionBaseView } from './WiredConditionBaseView';
+import { Checkbox } from '../../../../common/Checkbox';
+import { Radio } from '../../../../common/Radio';
+import { Select } from '../../../../common/Select';
 
 const RESULT_OPTIONS: Array<{ fallback: string; value: number }> = [
     { fallback: 'every entry matches', value: WIRED_ARRAY_RESULT_ALL },
@@ -77,7 +78,6 @@ export const WiredConditionCheckArrayView: FC<{}> = () => {
             conditionMode: readInt(2, next.conditionMode),
             criteriaMode: readInt(4, next.criteriaMode),
             ownerSource: readInt(1, next.ownerSource),
-            quantifier: readInt(9, next.quantifier),
             resultMode: readInt(5, next.resultMode),
             searchScope: readInt(3, next.searchScope),
             stateCheck: readInt(7, next.stateCheck),
@@ -121,7 +121,7 @@ export const WiredConditionCheckArrayView: FC<{}> = () => {
                 {ownerSources.length > 0 && (
                     <div className="flex flex-col gap-1">
                         <Text bold>{localizeWithFallback('wiredfurni.params.arrays.owner', 'Whose array')}</Text>
-                        <select
+                        <Select
                             className="form-select form-select-sm"
                             value={payload.ownerSource}
                             onChange={(event) => setPayload({ ...payload, ownerSource: parseInt(event.target.value, 10) })}
@@ -131,29 +131,17 @@ export const WiredConditionCheckArrayView: FC<{}> = () => {
                                     {localizeWithFallback(source.label, WIRED_ARRAY_OWNER_SOURCE_FALLBACKS[source.value])}
                                 </option>
                             ))}
-                        </select>
+                        </Select>
                     </div>
                 )}
 
                 <div className="flex gap-2">
                     <label className="flex items-center gap-1 cursor-pointer">
-                        <input
-                            checked={isMatch}
-                            className="form-check-input"
-                            name="wiredCheckArrayMode"
-                            type="radio"
-                            onChange={() => setPayload({ ...payload, conditionMode: WIRED_ARRAY_CONDITION_MODE_MATCH })}
-                        />
+                        <Radio checked={isMatch} name="wiredCheckArrayMode" onCheckedChange={() => setPayload({ ...payload, conditionMode: WIRED_ARRAY_CONDITION_MODE_MATCH })} />
                         <Text>{localizeWithFallback('wiredfurni.params.arrays.check.entries', 'Its entries')}</Text>
                     </label>
                     <label className="flex items-center gap-1 cursor-pointer">
-                        <input
-                            checked={!isMatch}
-                            className="form-check-input"
-                            name="wiredCheckArrayMode"
-                            type="radio"
-                            onChange={() => setPayload({ ...payload, conditionMode: WIRED_ARRAY_CONDITION_MODE_STATE })}
-                        />
+                        <Radio checked={!isMatch} name="wiredCheckArrayMode" onCheckedChange={() => setPayload({ ...payload, conditionMode: WIRED_ARRAY_CONDITION_MODE_STATE })} />
                         <Text>{localizeWithFallback('wiredfurni.params.arrays.check.state', 'Its state')}</Text>
                     </label>
                 </div>
@@ -162,23 +150,11 @@ export const WiredConditionCheckArrayView: FC<{}> = () => {
                     <>
                         <div className="flex gap-2">
                             <label className="flex items-center gap-1 cursor-pointer">
-                                <input
-                                    checked={!isSpecificIndex}
-                                    className="form-check-input"
-                                    name="wiredCheckArrayScope"
-                                    type="radio"
-                                    onChange={() => setPayload({ ...payload, searchScope: WIRED_ARRAY_SCOPE_ANY_INDEX })}
-                                />
+                                <Radio checked={!isSpecificIndex} name="wiredCheckArrayScope" onCheckedChange={() => setPayload({ ...payload, searchScope: WIRED_ARRAY_SCOPE_ANY_INDEX })} />
                                 <Text>{localizeWithFallback('wiredfurni.params.arrays.check.anywhere', 'Anywhere')}</Text>
                             </label>
                             <label className="flex items-center gap-1 cursor-pointer">
-                                <input
-                                    checked={isSpecificIndex}
-                                    className="form-check-input"
-                                    name="wiredCheckArrayScope"
-                                    type="radio"
-                                    onChange={() => setPayload({ ...payload, searchScope: WIRED_ARRAY_SCOPE_SPECIFIC_INDEX })}
-                                />
+                                <Radio checked={isSpecificIndex} name="wiredCheckArrayScope" onCheckedChange={() => setPayload({ ...payload, searchScope: WIRED_ARRAY_SCOPE_SPECIFIC_INDEX })} />
                                 <Text>{localizeWithFallback('wiredfurni.params.arrays.check.at_index', 'At one index')}</Text>
                             </label>
                         </div>
@@ -200,19 +176,14 @@ export const WiredConditionCheckArrayView: FC<{}> = () => {
                         />
 
                         <label className="flex items-center gap-1 cursor-pointer">
-                            <input
-                                checked={payload.criteriaMode === WIRED_ARRAY_CRITERIA_ANY}
-                                className="form-check-input"
-                                type="checkbox"
-                                onChange={(event) => setPayload({ ...payload, criteriaMode: event.target.checked ? WIRED_ARRAY_CRITERIA_ANY : WIRED_ARRAY_CRITERIA_ALL })}
-                            />
+                            <Checkbox checked={payload.criteriaMode === WIRED_ARRAY_CRITERIA_ANY} onCheckedChange={(nextChecked) => setPayload({ ...payload, criteriaMode: nextChecked ? WIRED_ARRAY_CRITERIA_ANY : WIRED_ARRAY_CRITERIA_ALL })} />
                             <Text>{localizeWithFallback('wiredfurni.params.arrays.criteria.any', 'An entry counts if any rule fits')}</Text>
                         </label>
 
                         {!isSpecificIndex && (
                             <div className="flex flex-col gap-1">
                                 <Text bold>{localizeWithFallback('wiredfurni.params.arrays.check.result', 'Passes when')}</Text>
-                                <select
+                                <Select
                                     className="form-select form-select-sm"
                                     value={payload.resultMode}
                                     onChange={(event) => setPayload({ ...payload, resultMode: parseInt(event.target.value, 10) })}
@@ -222,7 +193,7 @@ export const WiredConditionCheckArrayView: FC<{}> = () => {
                                             {localizeWithFallback(`wiredfurni.params.arrays.check.result.${option.value}`, option.fallback)}
                                         </option>
                                     ))}
-                                </select>
+                                </Select>
                             </div>
                         )}
 
@@ -242,7 +213,7 @@ export const WiredConditionCheckArrayView: FC<{}> = () => {
                     <>
                         <div className="flex flex-col gap-1">
                             <Text bold>{localizeWithFallback('wiredfurni.params.arrays.check.state.what', 'Check')}</Text>
-                            <select
+                            <Select
                                 className="form-select form-select-sm"
                                 value={payload.stateCheck}
                                 onChange={(event) => setPayload({ ...payload, stateCheck: parseInt(event.target.value, 10) })}
@@ -252,14 +223,14 @@ export const WiredConditionCheckArrayView: FC<{}> = () => {
                                         {localizeWithFallback(`wiredfurni.params.arrays.check.state.${option.value}`, option.fallback)}
                                     </option>
                                 ))}
-                            </select>
+                            </Select>
                         </div>
 
                         {wiredArrayStateNeedsReference(payload.stateCheck) && (
                             <>
                                 <div className="flex flex-col gap-1">
                                     <Text bold>{localizeWithFallback('wiredfurni.params.arrays.criteria.comparison', 'Is')}</Text>
-                                    <select
+                                    <Select
                                         className="form-select form-select-sm"
                                         style={{ maxWidth: 96 }}
                                         value={payload.stateComparison}
@@ -270,7 +241,7 @@ export const WiredConditionCheckArrayView: FC<{}> = () => {
                                                 {wiredArrayComparisonSymbol(comparison)}
                                             </option>
                                         ))}
-                                    </select>
+                                    </Select>
                                 </div>
                                 <WiredArrayValueField
                                     constantMin={0}
@@ -284,17 +255,6 @@ export const WiredConditionCheckArrayView: FC<{}> = () => {
                     </>
                 )}
 
-                {ownerSources.length > 0 && (
-                    <label className="flex items-center gap-1 cursor-pointer">
-                        <input
-                            checked={payload.quantifier === WIRED_ARRAY_QUANTIFIER_ANY}
-                            className="form-check-input"
-                            type="checkbox"
-                            onChange={(event) => setPayload({ ...payload, quantifier: event.target.checked ? WIRED_ARRAY_QUANTIFIER_ANY : WIRED_ARRAY_QUANTIFIER_ALL })}
-                        />
-                        <Text>{localizeWithFallback('wiredfurni.params.arrays.quantifier.any', 'One owner passing is enough')}</Text>
-                    </label>
-                )}
             </div>
         </WiredConditionBaseView>
     );

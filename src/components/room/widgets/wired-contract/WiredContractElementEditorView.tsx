@@ -14,8 +14,11 @@ import {
     wiredContractCandidates,
     wiredContractItemKey
 } from '../../../../api/wired/WiredContract';
-import { LayoutFurniImageView } from '../../../../common';
+import { LayoutFurniIconImageView } from '../../../../common';
 import { ContractFooter, ContractFrame, ContractSection, ContractSkin, ContractText } from './WiredContractEditorView';
+import { BaseButton } from '../../../../common/BaseButton';
+import { NumberInput } from '../../../../common/NumberInput';
+import { Radio } from '../../../../common/Radio';
 
 /** AIR TableView rows are 20px; only the rows in view (and a few around them) are drawn. */
 const ROW_HEIGHT = 20;
@@ -73,16 +76,16 @@ export const WiredContractElementEditorView: FC<WiredContractElementEditorViewPr
                     <ContractSection title={ LocalizeText('wiredcontracts.element.type') }>
                         { [ WIRED_CONTRACT_COIN, WIRED_CONTRACT_FURNI ].map(value =>
                             <label className="wired-contract__choice" key={ value }>
-                                <input type="radio" name="wired-contract-element-type" checked={ type === value } onChange={ () => setType(value) } />
+                                <Radio name="wired-contract-element-type" checked={ type === value } onCheckedChange={ () => setType(value) } />
                                 <ContractText text={ LocalizeText(`wiredcontracts.element.type.${ value }`) } />
                             </label>) }
                     </ContractSection>
                     <ContractSection title={ LocalizeText('wiredcontracts.element.amount') }>
-                        <input className="wired-contract__input wired-contract__amount" type="number" min={ 1 } max={ WIRED_CONTRACT_MAX_COINS } aria-label={ LocalizeText('wiredcontracts.element.amount') } value={ amount } onChange={ event => setAmount(event.target.value) } />
+                        <NumberInput className="wired-contract__input wired-contract__amount" min={ 1 } max={ WIRED_CONTRACT_MAX_COINS } aria-label={ LocalizeText('wiredcontracts.element.amount') } value={ amount } onChange={ event => setAmount(event.target.value) } />
                     </ContractSection>
                 </div>
                 <ContractSection title={ LocalizeText('wiredcontracts.element.itemtype.selection') } disabled={ type !== WIRED_CONTRACT_FURNI }
-                    headerOption={ selected && <span className="wired-contract__selected-icon"><LayoutFurniImageView productType={ selected.isWallItem ? FurnitureType.WALL : FurnitureType.FLOOR } productClassId={ selected.typeId } extraData={ selected.legacyPosterId } direction={ 2 } /></span> }>
+                    headerOption={ selected && <span className="wired-contract__selected-icon"><LayoutFurniIconImageView productType={ selected.isWallItem ? FurnitureType.WALL : FurnitureType.FLOOR } productClassId={ selected.typeId } extraData={ selected.legacyPosterId } /></span> }>
                     <label className="wired-contract__named">
                         <ContractText text={ LocalizeText('wiredcontracts.element.itemtype.furni_code') } />
                         <input className="wired-contract__input wired-contract__named-input" type="text" readOnly aria-label={ LocalizeText('wiredcontracts.element.itemtype.furni_code') } placeholder={ LocalizeText('wiredcontracts.element.itemtype.furni_code.placeholder') } value={ selectedCandidate?.code ?? '' } />
@@ -99,13 +102,13 @@ export const WiredContractElementEditorView: FC<WiredContractElementEditorViewPr
                         <div className="wired-contract__item-scroll" onScroll={ event => setScrollTop(event.currentTarget.scrollTop) }>
                             <div role="listbox" aria-label={ LocalizeText('wiredcontracts.element.itemtype.selection') } style={ { height: filtered.length * ROW_HEIGHT, position: 'relative' } }>
                                 { visible.map((candidate, index) =>
-                                    <button role="option" type="button" key={ wiredContractItemKey(candidate.itemType) } className="wired-contract__item-row"
+                                    <BaseButton role="option" type="button" key={ wiredContractItemKey(candidate.itemType) } className="wired-contract__item-row"
                                         aria-selected={ wiredContractItemKey(candidate.itemType) === wiredContractItemKey(selected) } data-even={ (first + index) % 2 === 0 }
                                         style={ { top: (first + index) * ROW_HEIGHT } } onClick={ () => setSelected(candidate.itemType) }>
                                         <span>{ candidate.name }</span>
                                         <span>{ candidate.code }</span>
                                         <span>{ LocalizeText(candidate.itemType.isWallItem ? 'inventory.filter.placement.wall' : 'inventory.filter.placement.floor') }</span>
-                                    </button>) }
+                                    </BaseButton>) }
                             </div>
                         </div>
                     </div>

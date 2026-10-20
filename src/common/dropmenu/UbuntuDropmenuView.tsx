@@ -1,5 +1,6 @@
 import { KeyboardEvent, ReactNode, useEffect, useId, useRef, useState } from 'react';
 import arrowImage from '../../assets/images/habbo-skin/slices/dropmenu-arrow.png';
+import { BaseButton } from '../BaseButton';
 
 export interface UbuntuDropmenuOption<T>
 {
@@ -89,10 +90,10 @@ export const UbuntuDropmenuView = <T extends string | number>({ label, value, op
 
     return (
         <div ref={ rootRef } className={ `ubuntu-dropmenu ${ className }`.trim() }>
-            <button type="button" role="combobox" className="ubuntu-dropmenu__field" aria-label={ label } aria-expanded={ open } aria-controls={ `${ id }-list` } disabled={ disabled } onClick={ toggle } onKeyDown={ onKeyDown }>
+            <BaseButton type="button" role="combobox" className="ubuntu-dropmenu__field" aria-label={ label } aria-expanded={ open } aria-controls={ `${ id }-list` } disabled={ disabled } onClick={ toggle } onKeyDown={ onKeyDown }>
                 <span className="ubuntu-dropmenu__caption">{ options[selectedIndex]?.label ?? '' }</span>
                 <img className="ubuntu-dropmenu__arrow" src={ arrowImage } alt="" />
-            </button>
+            </BaseButton>
             { open &&
                 <ul id={ `${ id }-list` } role="listbox" aria-label={ label } className="ubuntu-dropmenu__list">
                     { options.map((option, index) =>

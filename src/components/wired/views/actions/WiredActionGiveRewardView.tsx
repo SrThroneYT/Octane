@@ -1,16 +1,19 @@
 import { FC, useEffect, useState } from 'react';
-import { FaPlus, FaTrash } from 'react-icons/fa';
+import { FaTrash } from 'react-icons/fa';
 import { LocalizeText, localizeWithFallback, WiredFurniType } from '../../../../api';
-import { Button, Slider, Text } from '../../../../common';
+import { Button, Text } from '../../../../common';
 import { useWired } from '../../../../hooks';
 import { OctaneInput } from '../../../../layout';
 import { WiredSourcesSelector } from '../WiredSourcesSelector';
 import { slotUserSource } from '../WiredSourceSlots';
 import { WiredActionBaseView } from './WiredActionBaseView';
+import { Checkbox } from '../../../../common/Checkbox';
+import { Radio } from '../../../../common/Radio';
+import { Select } from '../../../../common/Select';
 
 type RewardType = 'badge' | 'credits' | 'pixels' | 'diamonds' | 'points' | 'furni' | 'respect';
 
-interface RewardEntry {
+export interface RewardEntry {
     rewardType: RewardType;
     rewardValue: string;
     probability: number;
@@ -19,6 +22,21 @@ interface RewardEntry {
 
 const DEFAULT_PROBABILITY = 100;
 const DEFAULT_POINTS_TYPE = 5;
+/** Official GiveReward: at most 20 rewards, codes of at most 100 characters. */
+const MAX_REWARDS = 20;
+const MAX_CODE_LENGTH = 100;
+const MIN_PRIZE_LIMIT = 1;
+const MAX_PRIZE_LIMIT = 1000;
+
+// Official: hard-coded English options, 2 per row.
+const REWARD_INTERVALS: { value: number; label: string }[] = [
+    { value: 0, label: 'Once' },
+    { value: 1, label: '1 / n Days' },
+    { value: 2, label: '1 / n Hours' },
+    { value: 3, label: '1 / n Mins' }
+];
+
+const clampPrizeLimit = (value: number) => (Number.isFinite(value) ? Math.max(MIN_PRIZE_LIMIT, Math.min(MAX_PRIZE_LIMIT, Math.floor(value))) : MIN_PRIZE_LIMIT);
 
 const REWARD_TYPES: { value: RewardType; key: string; label: string }[] = [
     { value: 'badge', key: 'wiredfurni.params.reward.type.badge', label: 'Badge' },
@@ -119,17 +137,49 @@ const parseRewardEntry = (rawType: string, rawCode: string, rawProbability: stri
     return { rewardType: 'furni', rewardValue: rawCode, probability: parsedProbability, pointsType: DEFAULT_POINTS_TYPE };
 };
 
+const encodeRewardCode = (reward: RewardEntry, rewardValue: string) => {
+    if (reward.rewardType === 'badge') return rewardValue;
+    if (reward.rewardType === 'points') return `points${Math.max(0, reward.pointsType)}#${rewardValue}`;
+
+    return `${reward.rewardType}#${rewardValue}`;
+};
+
+/** The official GiveReward validation, on our typed rows: null when the rewards can be saved. */
+export const validateRewards = (rewards: RewardEntry[], unique: boolean): string | null => {
+    let sum = 0;
+
+    for (const reward of rewards) {
+        const rewardValue = reward.rewardValue.trim();
+
+        if (!rewardValue) continue;
+
+        if (rewardValue.includes(',')) return "Product/badge codes must not contain ',' characters.";
+        if (rewardValue.includes(';')) return "Product/badge codes must not contain ';' characters.";
+        if (encodeRewardCode(reward, rewardValue).length > MAX_CODE_LENGTH) return `Product/badge codes cannot contain more than ${MAX_CODE_LENGTH} characters.`;
+
+        if (unique) continue;
+
+        if (!Number.isFinite(reward.probability)) return 'Make sure are probabilities are numbers.';
+        if (reward.probability < 1 || reward.probability > 100) return 'Make sure all probabilities are numbers between 1 and 100.';
+
+        sum += Math.floor(reward.probability);
+    }
+
+    return sum > 100 ? `The sum of probabilities cannot exceed 100. You now have ${sum}.` : null;
+};
+
 export const WiredActionGiveRewardView: FC<{}> = (props) => {
     const [limitEnabled, setLimitEnabled] = useState(false);
     const [rewardTime, setRewardTime] = useState(1);
     const [uniqueRewards, setUniqueRewards] = useState(false);
     const [rewardsLimit, setRewardsLimit] = useState(1);
-    const [limitationInterval, setLimitationInterval] = useState(1);
+    const [limitationInterval, setLimitationInterval] = useState('1');
+    const [error, setError] = useState<string | null>(null);
     const [rewards, setRewards] = useState<RewardEntry[]>([]);
     const { trigger = null, setIntParams = null, setStringParam = null, setSourceTypes = null } = useWired();
     const [userSource, setUserSource] = useState<number>(() => slotUserSource(trigger));
 
-    const addReward = () => setRewards((rewards) => [...rewards, createReward()]);
+    const addReward = () => setRewards((rewards) => (rewards.length >= MAX_REWARDS ? rewards : [...rewards, createReward()]));
     const hasCustomCurrencyReward = rewards.some((reward) => reward.rewardType === 'points');
 
     const removeReward = (index: number) => {
@@ -146,33 +196,35 @@ export const WiredActionGiveRewardView: FC<{}> = (props) => {
         setRewards((prevValue) => prevValue.map((reward, rewardIndex) => (rewardIndex === index ? updater(reward) : reward)));
     };
 
+    const validate = () => {
+        const nextError = validateRewards(rewards, uniqueRewards);
+
+        setError(nextError);
+
+        return !nextError;
+    };
+
     const save = () => {
-        let stringRewards = [];
+        const stringRewards: string[] = [];
 
         for (const reward of rewards) {
             const rewardValue = reward.rewardValue.trim();
 
             if (!rewardValue) continue;
 
-            const probability = Math.max(0, Number.isFinite(reward.probability) ? reward.probability : DEFAULT_PROBABILITY);
-            const rewardCode = (() => {
-                if (reward.rewardType === 'badge') return rewardValue;
-                if (reward.rewardType === 'points') return `points${Math.max(0, reward.pointsType)}#${rewardValue}`;
+            const probability = Number.isFinite(reward.probability) ? Math.floor(reward.probability) : 0;
+            const rewardsString = [reward.rewardType === 'badge' ? '0' : '1', encodeRewardCode(reward, rewardValue), (uniqueRewards ? DEFAULT_PROBABILITY : probability).toString()];
 
-                return `${reward.rewardType}#${rewardValue}`;
-            })();
-
-            const rewardsString = [reward.rewardType === 'badge' ? '0' : '1', rewardCode, (uniqueRewards ? DEFAULT_PROBABILITY : probability).toString()];
             stringRewards.push(rewardsString.join(','));
         }
 
-        if (stringRewards.length > 0) {
-            setStringParam(stringRewards.join(';'));
-            // Official layout: [interval, unique, limit (0 when not set), n (at least 1)]; the user
-            // source is the official source slot.
-            setIntParams([rewardTime, uniqueRewards ? 1 : 0, limitEnabled ? rewardsLimit : 0, Math.max(1, limitationInterval)]);
-            setSourceTypes({ furni: [], users: [userSource] });
-        }
+        const interval = parseInt(limitationInterval, 10);
+
+        // Official: always saved, also without rewards. Layout [interval, unique, limit (0 when not
+        // set), n (at least 1)]; the user source is the official source slot.
+        setStringParam(stringRewards.join(';'));
+        setIntParams([rewardTime, uniqueRewards ? 1 : 0, limitEnabled ? rewardsLimit : 0, interval >= 1 ? interval : 1]);
+        setSourceTypes({ furni: [], users: [userSource] });
     };
 
     useEffect(() => {
@@ -192,11 +244,15 @@ export const WiredActionGiveRewardView: FC<{}> = (props) => {
 
         if (readRewards.length === 0) readRewards.push(createReward());
 
-        setRewardTime(trigger.intData.length > 0 ? trigger.intData[0] : 0);
+        const interval = trigger.intData.length > 0 ? trigger.intData[0] : 0;
+        const limit = trigger.intData.length > 2 ? trigger.intData[2] : 0;
+
+        setRewardTime(interval);
         setUniqueRewards(trigger.intData.length > 1 ? trigger.intData[1] === 1 : false);
-        setRewardsLimit(trigger.intData.length > 2 ? trigger.intData[2] : 0);
-        setLimitationInterval(trigger.intData.length > 3 ? Math.max(1, trigger.intData[3]) : 1);
-        setLimitEnabled(trigger.intData.length > 2 ? trigger.intData[2] > 0 : false);
+        setRewardsLimit(limit > 0 ? clampPrizeLimit(limit) : MIN_PRIZE_LIMIT);
+        setLimitationInterval(interval > 0 && trigger.intData.length > 3 ? String(Math.max(1, trigger.intData[3])) : '1');
+        setLimitEnabled(limit > 0);
+        setError(null);
         setUserSource(slotUserSource(trigger));
         setRewards(readRewards);
     }, [trigger]);
@@ -206,61 +262,64 @@ export const WiredActionGiveRewardView: FC<{}> = (props) => {
             hasSpecialInput={true}
             requiresFurni={WiredFurniType.STUFF_SELECTION_OPTION_NONE}
             save={save}
+            validate={validate}
             footer={<WiredSourcesSelector showUsers={true} userSource={userSource} onChangeUsers={setUserSource} />}
         >
-            <div className="flex items-center gap-1">
-                <input
-                    checked={limitEnabled}
-                    className="form-check-input"
-                    id="limitEnabled"
-                    type="checkbox"
-                    onChange={(event) => setLimitEnabled(event.target.checked)}
-                />
-                <Text>{LocalizeText('wiredfurni.params.prizelimit', ['amount'], [limitEnabled ? rewardsLimit.toString() : ''])}</Text>
-            </div>
-            {!limitEnabled && (
-                <Text center small className="p-1 rounded bg-muted">
-                    Reward limit not set. Make sure rewards are badges or non-tradeable items.
-                </Text>
-            )}
-            {limitEnabled && <Slider max={1000} min={1} value={rewardsLimit} onChange={(event) => setRewardsLimit(event)} />}
-            <hr className="m-0 bg-dark" />
             <div className="flex flex-col gap-1">
-                <Text bold>How often can a user be rewarded?</Text>
-                <div className="flex gap-1">
-                    <select className="w-full form-select form-select-sm" value={rewardTime} onChange={(e) => setRewardTime(Number(e.target.value))}>
-                        <option value="0">Once</option>
-                        <option value="3">Once every {limitationInterval} minutes</option>
-                        <option value="2">Once every {limitationInterval} hours</option>
-                        <option value="1">Once every {limitationInterval} days</option>
-                    </select>
-                    {rewardTime > 0 && (
-                        <OctaneInput type="number" value={limitationInterval} onChange={(event) => setLimitationInterval(Number(event.target.value))} />
-                    )}
+                <Text bold>Reward limit</Text>
+                <div className="flex items-center gap-1">
+                    <Checkbox checked={limitEnabled} id="limitEnabled" aria-label="Reward limit" onCheckedChange={(nextChecked) => setLimitEnabled(nextChecked)} />
+                    <Text>{LocalizeText('wiredfurni.params.prizelimit', ['amount'], [''])}</Text>
+                    <OctaneInput
+                        aria-label="Prize limit"
+                        className="w-[60px]"
+                        max={MAX_PRIZE_LIMIT}
+                        min={MIN_PRIZE_LIMIT}
+                        type="number"
+                        value={rewardsLimit}
+                        onChange={(event) => setRewardsLimit(clampPrizeLimit(Number(event.target.value)))}
+                    />
+                </div>
+                {!limitEnabled && (
+                    <Text small className="text-[#cc0000]">
+                        Reward limit not set. Make sure rewards are badges or non-tradeable items.
+                    </Text>
+                )}
+            </div>
+            <div className="flex flex-col gap-1">
+                <Text bold>How often can a user be rewarded</Text>
+                <div className="grid grid-cols-2 gap-x-2 gap-y-1 w-fit">
+                    {REWARD_INTERVALS.map((option) => (
+                        <label key={option.value} className="flex items-center gap-1 cursor-pointer">
+                            <Radio checked={rewardTime === option.value} name="rewardInterval" onCheckedChange={() => setRewardTime(option.value)} />
+                            <Text>{option.label}</Text>
+                        </label>
+                    ))}
+                </div>
+                <div className="flex items-center gap-1">
+                    <Text>n =</Text>
+                    <OctaneInput
+                        aria-label="n ="
+                        className="w-[60px]"
+                        disabled={rewardTime === 0}
+                        maxLength={4}
+                        value={limitationInterval}
+                        onChange={(event) => setLimitationInterval(event.target.value.replace(/[^0-9]/g, '').slice(0, 4))}
+                    />
                 </div>
             </div>
-            <hr className="m-0 bg-dark" />
-            <div className="flex items-center gap-1">
-                <input
-                    checked={uniqueRewards}
-                    className="form-check-input"
-                    id="uniqueRewards"
-                    type="checkbox"
-                    onChange={(e) => setUniqueRewards(e.target.checked)}
-                />
-                <Text>{localizeWithFallback('wiredfurni.params.reward.unique', 'Unique rewards')}</Text>
+            <div className="flex flex-col gap-1">
+                <Text bold>Unique Rewards</Text>
+                <div className="flex items-center gap-1">
+                    <Checkbox checked={uniqueRewards} id="uniqueRewards" aria-label="Unique Rewards?" onCheckedChange={(nextChecked) => setUniqueRewards(nextChecked)} />
+                    <Text>Unique Rewards?</Text>
+                </div>
+                <Text small>If checked each reward will be given once to each user. Probabilities are not in use.</Text>
             </div>
-            <Text center small className="p-1 rounded bg-muted">
-                {localizeWithFallback(
-                    'wiredfurni.params.reward.unique.info',
-                    'If checked each reward will be given once to each user. This will disable the probabilities option.'
-                )}
-            </Text>
-            <hr className="m-0 bg-dark" />
             <div className="flex items-center justify-between">
                 <Text bold>Rewards</Text>
-                <Button variant="success" onClick={addReward}>
-                    <FaPlus className="fa-icon" />
+                <Button disabled={rewards.length >= MAX_REWARDS} variant="secondary" onClick={addReward}>
+                    Add reward
                 </Button>
             </div>
             <div className="flex flex-col gap-2">
@@ -271,7 +330,7 @@ export const WiredActionGiveRewardView: FC<{}> = (props) => {
                         return (
                             <div key={index} className="flex flex-col gap-1 p-1 rounded bg-muted">
                                 <div className="flex items-center gap-1">
-                                    <select
+                                    <Select
                                         aria-label="Reward type"
                                         className="min-w-0 grow form-select form-select-sm"
                                         value={reward.rewardType}
@@ -284,7 +343,7 @@ export const WiredActionGiveRewardView: FC<{}> = (props) => {
                                                 {localizeWithFallback(entry.key, entry.label)}
                                             </option>
                                         ))}
-                                    </select>
+                                    </Select>
                                     {index > 0 && (
                                         <Button variant="danger" onClick={() => removeReward(index)}>
                                             <FaTrash className="fa-icon" />
@@ -343,6 +402,11 @@ export const WiredActionGiveRewardView: FC<{}> = (props) => {
                         );
                     })}
             </div>
+            {error && (
+                <Text small className="text-red-500" data-testid="give-reward-error">
+                    {error}
+                </Text>
+            )}
             {hasCustomCurrencyReward && (
                 <Text center small className="p-1 rounded bg-muted">
                     Extra Currency uses Amount as the quantity and Currency Type as the purse type id. Example: amount 200 + type 105.

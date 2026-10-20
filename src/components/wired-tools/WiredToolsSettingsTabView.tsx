@@ -10,6 +10,9 @@ import {
 } from '../../api';
 import { Button, Text } from '../../common';
 import { useNotification, useRoom, useWiredTools } from '../../hooks';
+import { Checkbox } from '../../common/Checkbox';
+import { Select } from '../../common/Select';
+import { buildTimezoneOptions } from '../../api/wired/WiredTimezones';
 
 const WIRED_ACCESS_EVERYONE = 1;
 const WIRED_ACCESS_USERS_WITH_RIGHTS = 2;
@@ -29,61 +32,35 @@ export interface WiredToolsSettingsTabViewProps {
 const toggleMaskBit = (mask: number, bit: number): number => (mask & bit ? mask & ~bit : mask | bit);
 const normalizeAccessMask = (mask: number): number => ((mask & WIRED_ACCESS_GROUP_MEMBERS) !== 0 ? mask | WIRED_ACCESS_GROUP_ADMINS : mask);
 
+/**
+ * Official WiredMenuSettingsTab: one checkbox per room controller level, bit `1 << level`, labelled
+ * `wiredmenu.settings.permission_level.<level>` (0 everyone, 1 rights, 2 group members, 3 group admins).
+ */
+const permissionOption = (bit: number, fallback: string): RoomAccessOption => ({
+    bit,
+    label: localizeWithFallback(`wiredmenu.settings.permission_level.${Math.log2(bit)}`, fallback)
+});
+
 const buildInspectOptions = (): RoomAccessOption[] => [
-    { bit: WIRED_ACCESS_EVERYONE, label: 'Everyone' },
-    { bit: WIRED_ACCESS_USERS_WITH_RIGHTS, label: 'Users with rights' },
-    { bit: WIRED_ACCESS_GROUP_MEMBERS, label: 'Group members' },
-    { bit: WIRED_ACCESS_GROUP_ADMINS, label: 'Group admins' }
+    permissionOption(WIRED_ACCESS_EVERYONE, 'Everyone'),
+    permissionOption(WIRED_ACCESS_USERS_WITH_RIGHTS, 'Users with rights'),
+    permissionOption(WIRED_ACCESS_GROUP_MEMBERS, 'Group members'),
+    permissionOption(WIRED_ACCESS_GROUP_ADMINS, 'Group admins')
 ];
 
 const buildModifyOptions = (): RoomAccessOption[] => [
-    { bit: WIRED_ACCESS_USERS_WITH_RIGHTS, label: 'Users with rights' },
-    { bit: WIRED_ACCESS_GROUP_MEMBERS, label: 'Group members' },
-    { bit: WIRED_ACCESS_GROUP_ADMINS, label: 'Group admins' }
+    permissionOption(WIRED_ACCESS_USERS_WITH_RIGHTS, 'Users with rights'),
+    permissionOption(WIRED_ACCESS_GROUP_MEMBERS, 'Group members'),
+    permissionOption(WIRED_ACCESS_GROUP_ADMINS, 'Group admins')
 ];
 
-/**
- * The timezones the room can pick: the hotel's own list from `wired.timezones` (comma separated)
- * when it has one, otherwise everything the browser knows, with the room's current zone and the
- * hotel's server zone always present.
- */
-export const buildTimezoneOptions = (current: string, hotelZone: string, configured: string): string[] => {
-    const zones: string[] = [];
-    const add = (zone: string) => {
-        const trimmed = (zone || '').trim();
-
-        if (trimmed && !zones.includes(trimmed)) zones.push(trimmed);
-    };
-
-    add(current);
-    add(hotelZone);
-
-    const fromConfig = (configured || '')
-        .split(',')
-        .map((zone) => zone.trim())
-        .filter(Boolean);
-
-    if (fromConfig.length) {
-        fromConfig.forEach(add);
-    } else {
-        try {
-            const supported = (Intl as unknown as { supportedValuesOf?: (key: string) => string[] }).supportedValuesOf?.('timeZone') ?? [];
-
-            supported.forEach(add);
-        } catch {
-            // An older browser without the list still offers the zones it was given.
-        }
-    }
-
-    add('UTC');
-
-    return zones;
-};
+// The list lives with the wired api so the time / date conditions offer the same zones.
+export { buildTimezoneOptions };
 
 export const WiredToolsSettingsTabView: FC<WiredToolsSettingsTabViewProps> = ({ onOpenSelfDonation = null }) => {
     const { roomSession = null } = useRoom();
     const { showConfirm = null } = useNotification();
-    const { accountPreferences, roomSettings, saveRoomSettings, saveRoomTimezone, reloadRoomWired, rollbackRoomWired, updateAccountPreferences } =
+    const { accountPreferences, roomSettings, saveRoomSettings, saveRoomTimezone, reloadRoomWired, rollbackRoomWired, setPlayTestMode, updateAccountPreferences } =
         useWiredTools();
 
     const canManageSettings = roomSettings.canManageSettings;
@@ -115,21 +92,31 @@ export const WiredToolsSettingsTabView: FC<WiredToolsSettingsTabViewProps> = ({ 
         saveRoomSettings(nextInspectMask, normalizedModifyMask);
     };
 
-    const confirmRoomState = (messageKey: string, fallback: string, action: () => void) => {
+    // Official: reload goes at once; roll back asks first, titled by its own button.
+    const reloadRoomState = () => {
+        if (!canChangeRoomState) return;
+
+        reloadRoomWired();
+    };
+
+    const rollbackRoomState = () => {
         if (!canChangeRoomState) return;
 
         if (!showConfirm) {
-            action();
+            rollbackRoomWired();
             return;
         }
 
         showConfirm(
-            localizeWithFallback(messageKey, fallback),
-            action,
+            localizeWithFallback(
+                'wiredmenu.settings.room_state.roll_back.warning',
+                'Roll back the wired of this room? Every box is re-read from storage and edits that were never saved are lost.'
+            ),
+            rollbackRoomWired,
             null,
             LocalizeText('generic.ok'),
             LocalizeText('generic.cancel'),
-            LocalizeText('generic.alert.title')
+            localizeWithFallback('wiredmenu.settings.room_state.roll_back', 'Rollback')
         );
     };
 
@@ -139,7 +126,7 @@ export const WiredToolsSettingsTabView: FC<WiredToolsSettingsTabViewProps> = ({ 
 
         return (
             <label key={option.label} className={`flex items-center gap-2 text-[12px] ${disabled ? 'text-[#8c877d]' : 'text-[#222]'}`}>
-                <input checked={checked} className="form-check-input mt-0" disabled={disabled} type="checkbox" onChange={() => onToggle(option.bit)} />
+                <Checkbox checked={checked} className="mt-0" disabled={disabled} onCheckedChange={() => onToggle(option.bit)} />
                 <span>{option.label}</span>
             </label>
         );
@@ -147,25 +134,25 @@ export const WiredToolsSettingsTabView: FC<WiredToolsSettingsTabViewProps> = ({ 
 
     return (
         <div className="p-3 min-h-[360px] flex flex-col gap-3">
-            <Text bold>Room settings:</Text>
+            <Text bold>{localizeWithFallback('wiredmenu.settings.room_settings', 'Room settings:')}</Text>
             <div className="grid grid-cols-2 gap-3">
                 <div className="rounded bg-[#dfddd7] p-3 flex flex-col gap-2">
                     <Text bold small>
-                        Who can modify Wired:
+                        {localizeWithFallback('wiredmenu.settings.room_settings.modify_rights', 'Who can modify Wired:')}
                     </Text>
                     {modifyOptions.map((option) => renderAccessOption(option, roomSettings.modifyMask, updateModifyMask))}
                 </div>
                 <div className="rounded bg-[#dfddd7] p-3 flex flex-col gap-2">
                     <Text bold small>
-                        Who can inspect Wired:
+                        {localizeWithFallback('wiredmenu.settings.room_settings.read_rights', 'Who can inspect Wired:')}
                     </Text>
                     {inspectOptions.map((option) => renderAccessOption(option, roomSettings.inspectMask, updateInspectMask))}
                 </div>
                 <div className="rounded bg-[#dfddd7] p-3 flex flex-col gap-2">
                     <Text bold small>
-                        Timezone:
+                        {localizeWithFallback('wiredmenu.settings.room_settings.timezone', 'Timezone:')}
                     </Text>
-                    <select
+                    <Select
                         aria-label="Timezone"
                         className="w-full rounded border border-[#9d998e] bg-[#f4f0e8] px-2 py-[6px] text-[12px] text-[#555] disabled:opacity-70"
                         disabled={!roomSettings.isLoaded || !canManageSettings}
@@ -177,92 +164,70 @@ export const WiredToolsSettingsTabView: FC<WiredToolsSettingsTabViewProps> = ({ 
                                 {zone === serverTimeZone ? `${zone} (hotel)` : zone}
                             </option>
                         ))}
-                    </select>
+                    </Select>
                 </div>
                 <div className="rounded bg-[#dfddd7] p-3 flex flex-col gap-2">
                     <Text bold small>
-                        Room state:
+                        {localizeWithFallback('wiredmenu.settings.room_settings.room_state', 'Room state:')}
                     </Text>
                     <div className="flex gap-2">
                         <Button
                             classNames={['flex-1']}
                             disabled={!canChangeRoomState}
                             variant="secondary"
-                            onClick={() =>
-                                confirmRoomState(
-                                    'wiredmenu.settings.room_state.reload.warning',
-                                    'Reload the wired of this room? Every box is wired up again from the furniture as it stands now.',
-                                    reloadRoomWired
-                                )
-                            }
+                            onClick={reloadRoomState}
                         >
-                            Reload
+                            {localizeWithFallback('wiredmenu.settings.room_state.reload', 'Reload')}
                         </Button>
                         <Button
                             classNames={['flex-1']}
                             disabled={!canChangeRoomState}
                             variant="danger"
-                            onClick={() =>
-                                confirmRoomState(
-                                    'wiredmenu.settings.room_state.rollback.warning',
-                                    'Roll back the wired of this room? Every box is re-read from storage and edits that were never saved are lost.',
-                                    rollbackRoomWired
-                                )
-                            }
+                            onClick={rollbackRoomState}
                         >
-                            Rollback
+                            {localizeWithFallback('wiredmenu.settings.room_state.roll_back', 'Rollback')}
                         </Button>
                     </div>
                 </div>
             </div>
             <div className="flex flex-col gap-2">
-                <Text bold>Account preferences:</Text>
+                <Text bold>{localizeWithFallback('wiredmenu.settings.preferences', 'Account preferences:')}</Text>
                 <div className="rounded bg-[#dfddd7] p-3 flex flex-col gap-2">
                     <Text bold small>
-                        General:
+                        {localizeWithFallback('wiredmenu.settings.preferences.general', 'General:')}
                     </Text>
                     <label className="flex items-center gap-2 text-[12px] text-[#222]">
-                        <input
-                            checked={accountPreferences.showToolbarButton}
-                            className="form-check-input mt-0"
-                            type="checkbox"
-                            onChange={(event) => updateAccountPreferences({ showToolbarButton: event.target.checked })}
-                        />
-                        <span>Show wired menu in toolbar</span>
+                        <Checkbox checked={accountPreferences.showToolbarButton} className="mt-0" onCheckedChange={(nextChecked) => updateAccountPreferences({ showToolbarButton: nextChecked })} />
+                        <span>{localizeWithFallback('wiredmenu.settings.preferences.toolbar', 'Show wired menu in toolbar')}</span>
                     </label>
                     <label className="flex items-center gap-2 text-[12px] text-[#222]">
-                        <input
-                            checked={accountPreferences.showInspectButton}
-                            className="form-check-input mt-0"
-                            type="checkbox"
-                            onChange={(event) => updateAccountPreferences({ showInspectButton: event.target.checked })}
-                        />
-                        <span>Furni/user inspect button</span>
+                        <Checkbox checked={accountPreferences.showInspectButton} className="mt-0" onCheckedChange={(nextChecked) => updateAccountPreferences({ showInspectButton: nextChecked })} />
+                        <span>{localizeWithFallback('wiredmenu.settings.preferences.inspect_button', 'Furni/user inspect button')}</span>
                     </label>
                     <label className="flex items-center gap-2 text-[12px] text-[#222]">
-                        <input
-                            checked={accountPreferences.showSystemNotifications}
-                            className="form-check-input mt-0"
-                            type="checkbox"
-                            onChange={(event) => updateAccountPreferences({ showSystemNotifications: event.target.checked })}
-                        />
-                        <span>Show all system notifications</span>
+                        <Checkbox checked={accountPreferences.playTestMode} className="mt-0" onCheckedChange={(nextChecked) => setPlayTestMode(nextChecked)} />
+                        <span>{localizeWithFallback('wiredmenu.settings.preferences.playtest', 'Enable playtesting mode')}</span>
                     </label>
                     <label className="flex items-center gap-2 text-[12px] text-[#222]">
-                        <span>{localizeWithFallback('wiredmenu.settings.preferences.wired_style', 'Wired style:')}</span>
-                        <select
+                        <Checkbox checked={accountPreferences.showSystemNotifications} className="mt-0" onCheckedChange={(nextChecked) => updateAccountPreferences({ showSystemNotifications: nextChecked })} />
+                        <span>{localizeWithFallback('wiredmenu.settings.preferences.show_all_errors', 'Show all system notifications')}</span>
+                    </label>
+                    <label className="flex items-center gap-2 text-[12px] text-[#222]">
+                        <span>{localizeWithFallback('wiredmenu.settings.preferences.wired_style', 'Wired UI style:')}</span>
+                        <Select
                             className="form-select form-select-sm"
                             value={accountPreferences.wiredStyle}
                             onChange={(event) => updateAccountPreferences({ wiredStyle: normalizeWiredStyle(event.target.value) })}
                         >
-                            {WIRED_STYLE_OPTIONS.map((style) => (
-                                <option key={style} value={style}>
+                            {/* Official: "Default (Illumina)" first, stored as "", then the selectable styles. */}
+                            {[WIRED_STYLE_DEFAULT, ...WIRED_STYLE_OPTIONS].map((style) => (
+                                <option key={style || 'default'} value={style}>
                                     {style === WIRED_STYLE_DEFAULT
-                                        ? localizeWithFallback('wiredmenu.settings.preferences.wired_style.default', 'Default (%name%)', ['name'], ['Octane'])
+                                        ? localizeWithFallback('wiredmenu.settings.preferences.wired_style.default', 'Default (%name%)', ['name'], [wiredStyleTitle('illumina')])
                                         : wiredStyleTitle(style)}
                                 </option>
                             ))}
-                        </select>
+                        </Select>
                     </label>
                 </div>
             </div>

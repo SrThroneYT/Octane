@@ -1,9 +1,11 @@
 import '@testing-library/jest-dom/vitest';
 
 // Set up a container for React portals (used by OctaneCardView's DraggableWindow)
-const draggableWindowsContainer = document.createElement('div');
-draggableWindowsContainer.id = 'draggable-windows-container';
-document.body.appendChild(draggableWindowsContainer);
+if (typeof document !== 'undefined') {
+    const draggableWindowsContainer = document.createElement('div');
+    draggableWindowsContainer.id = 'draggable-windows-container';
+    document.body.appendChild(draggableWindowsContainer);
+}
 
 // jsdom doesn't ship ResizeObserver, but LayoutRoomPreviewerView (and
 // any component that resizes a canvas to its container) constructs

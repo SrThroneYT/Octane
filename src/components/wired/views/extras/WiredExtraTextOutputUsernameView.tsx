@@ -6,13 +6,15 @@ import { OctaneInput } from '../../../../layout';
 import { CLICKED_USER_SOURCE_VALUE, REACHED_USER_SOURCE_VALUE, WiredSourcesSelector } from '../WiredSourcesSelector';
 import { WiredExtraBaseView } from './WiredExtraBaseView';
 import { WiredPlaceholderPreview } from './WiredPlaceholderPreview';
+import { Radio } from '../../../../common/Radio';
 
 const TYPE_SINGLE = 1;
 const TYPE_MULTIPLE = 2;
 const DEFAULT_PLACEHOLDER_NAME = '';
-const DEFAULT_DELIMITER = ', ';
+// AIR: the delimiter starts empty and takes at most 5 characters; a longer one of an old box is cut on its next save.
+const DEFAULT_DELIMITER = '';
 const MAX_PLACEHOLDER_NAME_LENGTH = 32;
-const MAX_DELIMITER_LENGTH = 16;
+const MAX_DELIMITER_LENGTH = 5;
 const PLACEHOLDER_WRAPPER_PATTERN = /^\$\((.*)\)$/;
 
 const normalizePlaceholderType = (value: number) => (value === TYPE_MULTIPLE ? TYPE_MULTIPLE : TYPE_SINGLE);
@@ -75,7 +77,10 @@ export const WiredExtraTextOutputUsernameView: FC<{}> = () => {
     const save = () => {
         setIntParams([normalizePlaceholderType(placeholderType) === TYPE_MULTIPLE ? 1 : 0]);
         setSourceTypes({ furni: [], users: [normalizeUserSource(userSource)] });
-        setStringParam(`${normalizePlaceholderName(placeholderName)}\t${normalizeDelimiter(delimiter)}`);
+        // AIR: the name alone, or `name\tdelimiter` when every name is written.
+        const name = normalizePlaceholderName(placeholderName);
+
+        setStringParam(placeholderType === TYPE_MULTIPLE ? `${name}\t${normalizeDelimiter(delimiter)}` : name);
     };
 
     return (
@@ -100,23 +105,11 @@ export const WiredExtraTextOutputUsernameView: FC<{}> = () => {
                 <div className="flex flex-col gap-1">
                     <Text>{LocalizeText('wiredfurni.params.texts.placeholder_type')}</Text>
                     <label className="flex items-center gap-1 cursor-pointer">
-                        <input
-                            checked={placeholderType === TYPE_SINGLE}
-                            className="form-check-input"
-                            name="wiredTextOutputUsernameType"
-                            type="radio"
-                            onChange={() => setPlaceholderType(TYPE_SINGLE)}
-                        />
+                        <Radio checked={placeholderType === TYPE_SINGLE} name="wiredTextOutputUsernameType" onCheckedChange={() => setPlaceholderType(TYPE_SINGLE)} />
                         <Text>{LocalizeText('wiredfurni.params.texts.placeholder_type.1')}</Text>
                     </label>
                     <label className="flex items-center gap-1 cursor-pointer">
-                        <input
-                            checked={placeholderType === TYPE_MULTIPLE}
-                            className="form-check-input"
-                            name="wiredTextOutputUsernameType"
-                            type="radio"
-                            onChange={() => setPlaceholderType(TYPE_MULTIPLE)}
-                        />
+                        <Radio checked={placeholderType === TYPE_MULTIPLE} name="wiredTextOutputUsernameType" onCheckedChange={() => setPlaceholderType(TYPE_MULTIPLE)} />
                         <Text>{LocalizeText('wiredfurni.params.texts.placeholder_type.2')}</Text>
                     </label>
                 </div>

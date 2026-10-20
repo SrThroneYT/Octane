@@ -4,6 +4,8 @@ import { FaPlus, FaStickyNote, FaTrash } from 'react-icons/fa';
 import { formatHousekeepingDateTime, HousekeepingApi, housekeepingFailureKey, IHousekeepingList, IHousekeepingUser, LocalizeText } from '../../../../api';
 import { useHousekeeping, useHousekeepingConfirm } from '../../../../hooks';
 import { HOUSEKEEPING_INPUT_CLASS, HousekeepingButton, HousekeepingEmptyState, HousekeepingSection } from '../common/HousekeepingParts';
+import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 const NOTES_LIST = 'user.notes';
 const NOTE_MAX = 500;
@@ -98,15 +100,14 @@ export const HousekeepingUserNotesView: FC<{ user: IHousekeepingUser }> = ({ use
                                 <span className="font-semibold">{cell(row, 'staff') || '-'}</span>
                                 <span>{formatHousekeepingDateTime((parseInt(cell(row, 'time')) || 0) * 1000)}</span>
                                 {isOwn && (
-                                    <button
+                                    <Hint content={LocalizeText('housekeeping.user.notes.delete')}><BaseButton aria-label={LocalizeText('housekeeping.user.notes.delete')}
                                         className="ml-auto text-zinc-400 hover:text-rose-600 disabled:opacity-40"
                                         disabled={isActionPending}
-                                        title={LocalizeText('housekeeping.user.notes.delete')}
                                         type="button"
                                         onClick={() => remove(noteId)}
                                     >
                                         <FaTrash size={9} />
-                                    </button>
+                                    </BaseButton></Hint>
                                 )}
                             </div>
                         </div>

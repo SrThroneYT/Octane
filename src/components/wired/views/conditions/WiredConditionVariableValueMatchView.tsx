@@ -16,7 +16,10 @@ import {
     flattenWiredVariablePickerEntries,
     normalizeVariableTokenFromWire
 } from '../WiredVariablePickerData';
+import { readWiredVariableToken, toWiredVariableId, wiredVariableIdList } from '../WiredVariableIds';
 import { WiredConditionBaseView } from './WiredConditionBaseView';
+import { BaseButton } from '../../../../common/BaseButton';
+import { Radio } from '../../../../common/Radio';
 
 type VariableTargetType = 'user' | 'furni' | 'global' | 'context';
 type ReferenceMode = 'constant' | 'variable';
@@ -38,8 +41,6 @@ const REFERENCE_VARIABLE = 1;
 const SOURCE_TRIGGER = 0;
 const SOURCE_SELECTED = 100;
 const SOURCE_SECONDARY_SELECTED = 101;
-const QUANTIFIER_ALL = 0;
-const QUANTIFIER_ANY = 1;
 
 const TARGET_BUTTONS: Array<{ key: VariableTargetType; icon: string; disabled?: boolean }> = [
     { key: 'furni', icon: furniVariableIcon },
@@ -86,10 +87,7 @@ const parseIds = (value: string): number[] => {
     return [...ids];
 };
 
-const serializeIds = (ids: number[]) => (ids?.length ? ids.filter((id) => id > 0).join(';') : '');
 const parseStringData = (value: string) => (value?.length ? value.split('\t', -1) : []);
-const serializeStringData = (destinationVariableToken: string, referenceVariableToken: string, referenceFurniIds: number[]) =>
-    `${destinationVariableToken || ''}\t${referenceVariableToken || ''}\t${serializeIds(referenceFurniIds)}`;
 
 const normalizeTargetType = (value: number): VariableTargetType => {
     switch (value) {
@@ -153,8 +151,9 @@ const isContextTarget = (targetType: VariableTargetType) => targetType === 'cont
 
 export const WiredConditionVariableValueMatchView: FC<{}> = () => {
     // Official layout: [target, comparison, operandIsVariable, operandHigh, operandLow, operandTarget, sameHolder,
-    // our reference user source, our reference furni source, our quantifier], the furni and users in the official slots.
-    const { trigger = null, furniIds = [], setAllowsFurni = null, setFurniIds = null, setIntParams = null, setStringParam = null, setSourceTypes = null } = useWired();
+    // our reference user source, our reference furni source], the furni and users in the official slots; the quantifier
+    // is the base view's.
+    const { trigger = null, furniIds = [], setAllowsFurni = null, setFurniIds = null, setIntParams = null, setStringParam = null, setSourceTypes = null, setVariableIds = null, setFurniIds2 = null } = useWired();
     const [sameHolder, setSameHolder] = useState(false);
     const { userVariableDefinitions = [], furniVariableDefinitions = [], roomVariableDefinitions = [], contextVariableDefinitions = [] } = useWiredTools();
     const [targetType, setTargetType] = useState<VariableTargetType>('user');
@@ -168,7 +167,6 @@ export const WiredConditionVariableValueMatchView: FC<{}> = () => {
     const [furniSource, setFurniSource] = useState(SOURCE_TRIGGER);
     const [referenceUserSource, setReferenceUserSource] = useState(SOURCE_TRIGGER);
     const [referenceFurniSource, setReferenceFurniSource] = useState(SOURCE_TRIGGER);
-    const [quantifier, setQuantifier] = useState(QUANTIFIER_ALL);
     const [destinationFurniIds, setDestinationFurniIds] = useState<number[]>([]);
     const [referenceFurniIds, setReferenceFurniIds] = useState<number[]>([]);
     const [selectionMode, setSelectionMode] = useState<SelectionMode>('destination');
@@ -239,19 +237,10 @@ export const WiredConditionVariableValueMatchView: FC<{}> = () => {
         return resolveSourceOptions(orderedUserSources, referenceSelectedSourceValue, userSourceFallbackOptions);
     }, [orderedUserSources, referenceSelectedSourceValue, referenceTargetType, userSourceFallbackOptions]);
 
+    // AIR tints by pick list: the checked picks (stuffIds) the first tint, the reference picks (the second
+    // picks, source 101) the blue one.
     const syncHighlights = useCallback((nextDestinationIds: number[], nextReferenceIds: number[]) => {
-        if (highlightedIds.current.length) {
-            WiredSelectionVisualizer.clearSelectionShaderFromFurni(highlightedIds.current);
-            WiredSelectionVisualizer.clearSecondarySelectionShaderFromFurni(highlightedIds.current);
-        }
-
-        const secondarySet = new Set(nextReferenceIds);
-        const primaryOnlyIds = nextDestinationIds.filter((id) => !secondarySet.has(id));
-
-        if (primaryOnlyIds.length) WiredSelectionVisualizer.applySelectionShaderToFurni(primaryOnlyIds);
-        if (nextReferenceIds.length) WiredSelectionVisualizer.applySecondarySelectionShaderToFurni(nextReferenceIds);
-
-        highlightedIds.current = Array.from(new Set([...nextDestinationIds, ...nextReferenceIds]));
+        highlightedIds.current = WiredSelectionVisualizer.showPickLists(highlightedIds.current, nextDestinationIds, nextReferenceIds);
     }, []);
 
     const switchSelection = useCallback(
@@ -273,25 +262,32 @@ export const WiredConditionVariableValueMatchView: FC<{}> = () => {
     useEffect(() => {
         if (!trigger) return;
 
-        const stringParts = parseStringData(trigger.stringData);
+        // AIR: variable ids [variable, reference], the reference holders in source slot 1 and its picks as the second
+        // picks; an older server wrote the tokens and the reference picks as the string and the reference sources as
+        // ints 7 and 8.
+        const fromIds = !!trigger.variableIds?.length;
+        const stringParts = fromIds ? [] : parseStringData(trigger.stringData);
         const nextTargetType = normalizeTargetType(trigger.intData.length > 0 ? fromOfficialVariableTarget(trigger.intData[0]) : TARGET_USER);
         const nextReferenceTargetType = normalizeTargetType(trigger.intData.length > 5 ? fromOfficialVariableTarget(trigger.intData[5]) : TARGET_USER);
         const nextDestinationFurniIds = [...(trigger.selectedItems ?? [])];
-        const nextReferenceFurniIds = parseIds(stringParts.length > 2 ? stringParts[2] : '');
+        const nextReferenceFurniIds = fromIds ? [...(trigger.selectedItems2 ?? [])] : parseIds(stringParts.length > 2 ? stringParts[2] : '');
 
         setTargetType(nextTargetType);
-        setVariableToken(normalizeVariableTokenFromWire(stringParts.length > 0 ? stringParts[0] : ''));
+        setVariableToken(readWiredVariableToken(trigger.variableIds, 0, normalizeVariableTokenFromWire(stringParts.length > 0 ? stringParts[0] : '')));
         setComparison(trigger.intData.length > 1 ? fromOfficialComparison(trigger.intData[1]) : 2);
         setReferenceMode((trigger.intData.length > 2 ? trigger.intData[2] : REFERENCE_CONSTANT) === REFERENCE_VARIABLE ? 'variable' : 'constant');
         setReferenceConstantValueInput((trigger.intData.length > 4 ? trigger.intData[4] : 0).toString());
         setSameHolder(trigger.intData[6] === 1);
         setReferenceTargetType(nextReferenceTargetType);
-        setReferenceVariableToken(normalizeVariableTokenFromWire(stringParts.length > 1 ? stringParts[1] : ''));
+        setReferenceVariableToken(readWiredVariableToken(trigger.variableIds, 1, normalizeVariableTokenFromWire(stringParts.length > 1 ? stringParts[1] : '')));
         setUserSource(trigger.userSourceTypes?.[0] ?? SOURCE_TRIGGER);
         setFurniSource(trigger.furniSourceTypes?.[0] ?? (nextDestinationFurniIds.length ? SOURCE_SELECTED : SOURCE_TRIGGER));
-        setReferenceUserSource(trigger.intData.length > 7 ? trigger.intData[7] : SOURCE_TRIGGER);
-        setReferenceFurniSource(trigger.intData.length > 8 ? trigger.intData[8] : nextReferenceFurniIds.length ? SOURCE_SECONDARY_SELECTED : SOURCE_TRIGGER);
-        setQuantifier(trigger.intData.length > 9 ? (trigger.intData[9] === QUANTIFIER_ANY ? QUANTIFIER_ANY : QUANTIFIER_ALL) : QUANTIFIER_ALL);
+        setReferenceUserSource(trigger.intData.length > 7 ? trigger.intData[7] : (trigger.userSourceTypes?.[1] ?? SOURCE_TRIGGER));
+        setReferenceFurniSource(
+            trigger.intData.length > 8
+                ? trigger.intData[8]
+                : (trigger.furniSourceTypes?.[1] ?? (nextReferenceFurniIds.length ? SOURCE_SECONDARY_SELECTED : SOURCE_TRIGGER))
+        );
         setDestinationFurniIds(nextDestinationFurniIds);
         setReferenceFurniIds(nextReferenceFurniIds);
         setSelectionMode('destination');
@@ -304,6 +300,8 @@ export const WiredConditionVariableValueMatchView: FC<{}> = () => {
     }, [furniIds, selectionMode]);
 
     useEffect(() => syncHighlights(destinationFurniIds, referenceFurniIds), [destinationFurniIds, referenceFurniIds, syncHighlights]);
+
+    useEffect(() => WiredSelectionVisualizer.setEditingPickList(selectionMode === 'reference' ? 2 : 1), [selectionMode]);
 
     useEffect(() => {
         if (selectionMode === 'destination' && !destinationSelectionEnabled && referenceSelectionEnabled) {
@@ -323,6 +321,8 @@ export const WiredConditionVariableValueMatchView: FC<{}> = () => {
 
     useEffect(() => {
         return () => {
+            WiredSelectionVisualizer.setEditingPickList(1);
+
             if (!highlightedIds.current.length) return;
 
             WiredSelectionVisualizer.clearSelectionShaderFromFurni(highlightedIds.current);
@@ -343,7 +343,13 @@ export const WiredConditionVariableValueMatchView: FC<{}> = () => {
 
         setDestinationFurniIds(nextDestinationFurniIds);
         setReferenceFurniIds(nextReferenceFurniIds);
-        setStringParam(serializeStringData(variableToken, referenceMode === 'variable' ? referenceVariableToken : '', nextReferenceFurniIds));
+        setStringParam('');
+        setVariableIds(
+            wiredVariableIdList(
+                toWiredVariableId(targetType, variableToken),
+                referenceMode === 'variable' ? toWiredVariableId(referenceTargetType, referenceVariableToken) : ''
+            )
+        );
         const constantValue = Number.isFinite(parsedReferenceConstantValue) ? parsedReferenceConstantValue : 0;
 
         setIntParams([
@@ -353,13 +359,11 @@ export const WiredConditionVariableValueMatchView: FC<{}> = () => {
             constantValue < 0 ? -1 : 0,
             constantValue,
             toOfficialVariableTarget(getTargetValue(referenceTargetType)),
-            sameHolderActive ? 1 : 0,
-            referenceUserSource,
-            referenceFurniSource,
-            quantifier
+            sameHolderActive ? 1 : 0
         ]);
-        setSourceTypes({ furni: [furniSource], users: [userSource] });
+        setSourceTypes({ furni: [furniSource, referenceFurniSource], users: [userSource, referenceUserSource] });
         setFurniIds(isFurniTarget(targetType) && furniSource === SOURCE_SELECTED ? [...nextDestinationFurniIds] : []);
+        setFurniIds2(referenceSelectionEnabled ? [...nextReferenceFurniIds] : []);
     };
 
     const validate = () => {
@@ -396,22 +400,6 @@ export const WiredConditionVariableValueMatchView: FC<{}> = () => {
             footerCollapsible={false}
             footer={
                 <div className="flex flex-col gap-2">
-                    <div className="flex flex-col gap-1">
-                        <Text bold>{LocalizeText('wiredfurni.params.quantifier_selection')}</Text>
-                        {[QUANTIFIER_ALL, QUANTIFIER_ANY].map((value) => (
-                            <label key={value} className="flex items-center gap-1">
-                                <input
-                                    checked={quantifier === value}
-                                    className="form-check-input"
-                                    name="wiredConditionVariableValueQuantifier"
-                                    type="radio"
-                                    onChange={() => setQuantifier(value)}
-                                />
-                                <Text>{LocalizeText(`wiredfurni.params.quantifier.variables.${value}`)}</Text>
-                            </label>
-                        ))}
-                    </div>
-
                     <WiredFurniSelectionSourceRow
                         title="wiredfurni.params.sources.merged.title.variables_destination"
                         options={destinationSourceOptions}
@@ -442,7 +430,7 @@ export const WiredConditionVariableValueMatchView: FC<{}> = () => {
                     <Text>{LocalizeText('wiredfurni.params.variables.variable_selection')}</Text>
                     <div className="octane-wired__give-var-targets">
                         {TARGET_BUTTONS.map((button) => (
-                            <button
+                            <BaseButton
                                 key={button.key}
                                 type="button"
                                 disabled={button.disabled}
@@ -450,7 +438,7 @@ export const WiredConditionVariableValueMatchView: FC<{}> = () => {
                                 onClick={() => handleTargetChange(button.key)}
                             >
                                 <img src={button.icon} alt={button.key} />
-                            </button>
+                            </BaseButton>
                         ))}
                     </div>
                 </div>
@@ -471,13 +459,7 @@ export const WiredConditionVariableValueMatchView: FC<{}> = () => {
                     <div className="flex flex-wrap gap-2">
                         {COMPARISON_OPTIONS.map((option) => (
                             <label key={option.value} className="flex items-center gap-1">
-                                <input
-                                    checked={comparison === option.value}
-                                    className="form-check-input"
-                                    name="wiredConditionVariableComparison"
-                                    type="radio"
-                                    onChange={() => setComparison(option.value)}
-                                />
+                                <Radio checked={comparison === option.value} name="wiredConditionVariableComparison" onCheckedChange={ () => setComparison(option.value) } />
                                 <Text>{option.label}</Text>
                             </label>
                         ))}

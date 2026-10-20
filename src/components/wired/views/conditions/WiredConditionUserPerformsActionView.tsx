@@ -1,10 +1,11 @@
 import { FC, useEffect, useState } from 'react';
 import { LocalizeText, readWiredUserAction, WiredFurniType, wiredUserActionExtra, WiredUserActionChoice } from '../../../../api';
-import { Text } from '../../../../common';
 import { useWired } from '../../../../hooks';
 import { WiredSourceOption, WiredSourcesSelector } from '../WiredSourcesSelector';
 import { WiredUserActionSection } from '../WiredUserActionSection';
 import { WiredConditionBaseView } from './WiredConditionBaseView';
+import { WiredConditionQuantifierSection } from './WiredConditionQuantifierSection';
+import { BaseButton } from '../../../../common/BaseButton';
 
 
 const USER_ACTION_SOURCES: WiredSourceOption[] = [
@@ -13,24 +14,16 @@ const USER_ACTION_SOURCES: WiredSourceOption[] = [
     { value: 201, label: 'wiredfurni.params.sources.users.201' }
 ];
 
-interface WiredConditionUserPerformsActionViewProps {
-    negative?: boolean;
-}
-
-export const WiredConditionUserPerformsActionView: FC<WiredConditionUserPerformsActionViewProps> = (props) => {
-    const { negative = false } = props;
+export const WiredConditionUserPerformsActionView: FC = () => {
     const [choice, setChoice] = useState<WiredUserActionChoice>(() => readWiredUserAction([], ''));
     const [userSource, setUserSource] = useState(0);
-    const [quantifier, setQuantifier] = useState(0);
     const [showAdvanced, setShowAdvanced] = useState(false);
-    // Official layout: [action, our quantifier], the extra in the string, the users in the official source slot.
+    // Official layout: [action], the extra in the string, the users in the official source slot, the quantifier
+    // in its slot (this view's advanced block).
     const { trigger = null, setIntParams = null, setStringParam = null, setSourceTypes = null } = useWired();
-    const quantifierKeyPrefix = negative ? 'wiredfurni.params.quantifier.users.neg' : 'wiredfurni.params.quantifier.users';
 
-    // Official: [action] and the sign / dance extra in the string; the user source and the quantifier
-    // follow in the int params until the conditions get their official slots.
     const save = () => {
-        setIntParams([choice.action, quantifier]);
+        setIntParams([choice.action]);
         setSourceTypes({ furni: [], users: [userSource] });
         setStringParam(wiredUserActionExtra(choice));
     };
@@ -38,8 +31,7 @@ export const WiredConditionUserPerformsActionView: FC<WiredConditionUserPerforms
     useEffect(() => {
         setChoice(readWiredUserAction(trigger?.intData ?? [], trigger?.stringData ?? ''));
         setUserSource(trigger?.userSourceTypes?.[0] ?? 0);
-        setQuantifier(trigger?.intData?.[1] === 1 ? 1 : 0);
-        setShowAdvanced((trigger?.userSourceTypes?.[0] ?? 0) !== 0 || trigger?.intData?.[1] === 1);
+        setShowAdvanced((trigger?.userSourceTypes?.[0] ?? 0) !== 0 || (trigger?.quantifierCode ?? 0) !== 0);
     }, [trigger]);
 
     return (
@@ -48,31 +40,15 @@ export const WiredConditionUserPerformsActionView: FC<WiredConditionUserPerforms
             requiresFurni={WiredFurniType.STUFF_SELECTION_OPTION_NONE}
             save={save}
             footerCollapsible={false}
+            showQuantifier={false}
             footer={
                 <div className="flex flex-col gap-2">
-                    <button className="btn btn-link p-0 align-self-start" type="button" onClick={() => setShowAdvanced((value) => !value)}>
+                    <BaseButton className="btn btn-link p-0 align-self-start" type="button" onClick={() => setShowAdvanced((value) => !value)}>
                         {LocalizeText(showAdvanced ? 'wiredfurni.params.sources.collapse' : 'wiredfurni.params.sources.expand')}
-                    </button>
+                    </BaseButton>
                     {showAdvanced && (
                         <>
-                            <div className="flex flex-col gap-1">
-                                <Text bold>{LocalizeText('wiredfurni.params.quantifier_selection')}</Text>
-                                {[0, 1].map((value) => {
-                                    return (
-                                        <div key={value} className="flex items-center gap-1">
-                                            <input
-                                                checked={quantifier === value}
-                                                className="form-check-input"
-                                                id={`userActionQuantifier${value}`}
-                                                name="userActionQuantifier"
-                                                type="radio"
-                                                onChange={() => setQuantifier(value)}
-                                            />
-                                            <Text>{LocalizeText(`${quantifierKeyPrefix}.${value}`)}</Text>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                            <WiredConditionQuantifierSection />
                             <WiredSourcesSelector showUsers={true} userSource={userSource} userSources={USER_ACTION_SOURCES} onChangeUsers={setUserSource} />
                         </>
                     )}

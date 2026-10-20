@@ -8,13 +8,15 @@ export interface WiredExtraBaseViewProps {
     hasSpecialInput: boolean;
     requiresFurni: number;
     save: () => void;
-    validate?: () => boolean;
+    validate?: () => boolean | string | void;
     cardStyle?: CSSProperties;
     footer?: ReactNode;
     footerCollapsible?: boolean;
     selectionPreview?: ReactNode;
     /** Official: some elements open wider. */
     widthModifier?: number;
+    /** Official allowScrolling: the sections scroll between a fixed header and footer. */
+    allowScrolling?: boolean;
     showSelection?: boolean;
     confirmSave?: () => { title: string; body: string } | null;
 }
@@ -31,6 +33,7 @@ export const WiredExtraBaseView: FC<PropsWithChildren<WiredExtraBaseViewProps>> 
         footerCollapsible = true,
         selectionPreview = null,
         widthModifier = 1,
+        allowScrolling = false,
         showSelection = true,
         confirmSave = null
     } = props;
@@ -52,6 +55,7 @@ export const WiredExtraBaseView: FC<PropsWithChildren<WiredExtraBaseViewProps>> 
             footerCollapsible={footerCollapsible}
             selectionPreview={selectionPreview}
             widthModifier={widthModifier}
+            allowScrolling={allowScrolling}
             showSelection={showSelection}
             confirmSave={confirmSave}
         >

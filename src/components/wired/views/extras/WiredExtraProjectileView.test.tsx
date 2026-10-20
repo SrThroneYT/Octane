@@ -1,14 +1,16 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { PropsWithChildren } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { selectOption } from '../../../../test-utils/selectOption';
 
 const setIntParams = vi.fn();
 const setStringParam = vi.fn();
-let trigger: { intData: number[]; stringData?: string } | null = null;
+const setVariableIds = vi.fn();
+let trigger: { intData: number[]; stringData?: string; variableIds?: string[] } | null = null;
 let baseProps: { save: () => void; showSelection?: boolean; validate?: () => boolean } | null = null;
 
 vi.mock('../../../../hooks', () => ({
-    useWired: () => ({ trigger, setIntParams, setStringParam }),
+    useWired: () => ({ trigger, setIntParams, setStringParam, setVariableIds }),
     useWiredTools: () => ({
         userVariableDefinitions: [{ itemId: 300, name: 'reload', availability: 0, hasValue: true }],
         furniVariableDefinitions: [],
@@ -61,6 +63,7 @@ describe('WiredExtraProjectileView', () => {
     beforeEach(() => {
         setIntParams.mockClear();
         setStringParam.mockClear();
+        setVariableIds.mockClear();
         baseProps = null;
         trigger = { intData: [], stringData: '' };
     });
@@ -82,23 +85,27 @@ describe('WiredExtraProjectileView', () => {
 
         render(<WiredExtraProjectileView />);
 
-        fireEvent.change(screen.getByRole('combobox', { name: 'System:' }), { target: { value: '1' } });
-        fireEvent.click(screen.getByLabelText("Visually change the shooter's direction"));
-        fireEvent.click(screen.getByLabelText('Do a little hop when shooting sideways'));
-        fireEvent.change(screen.getByRole('combobox', { name: 'Shooter:' }), { target: { value: '200' } });
+        selectOption(screen.getByRole('combobox', { name: 'System:' }), '8 directions, diffuse');
+        fireEvent.click(screen.getByRole('checkbox', { name: "Visually change the shooter's direction" }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Do a little hop when shooting sideways' }));
+        // The source labels are localization keys that resolve to '' in tests, so the option is picked by position.
+        fireEvent.click(screen.getByRole('combobox', { name: 'Shooter:' }));
+        const shooterOption = screen.getAllByRole('option')[1];
+        fireEvent.pointerDown(shooterOption);
+        fireEvent.click(shooterOption);
 
         fireEvent.click(screen.getByRole('button', { name: /Animation trajectory/ }));
-        fireEvent.click(screen.getByLabelText('Fly past the target'));
+        fireEvent.click(screen.getByRole('radio', { name: 'Fly past the target' }));
         fireEvent.change(screen.getByRole('spinbutton', { name: 'Tiles:' }), { target: { value: '-99' } });
 
         fireEvent.click(screen.getByRole('button', { name: /internal variables/ }));
-        fireEvent.click(screen.getByLabelText('@projectile.animation.position.y'));
-        fireEvent.click(screen.getByLabelText('@projectile.animation.user_collisions'));
+        fireEvent.click(screen.getByRole('checkbox', { name: '@projectile.animation.position.y' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: '@projectile.animation.user_collisions' }));
 
         baseProps.save();
 
-        // Distance tiles clamp to the server's -64; the mask is bits 1 and 6.
-        expect(setIntParams).toHaveBeenCalledWith([1, 1, 0, 0, 500, 0, 0, 0, 0, 0, 2, 66, 1, 1, 1, 0, -64, 0, 0, 0, 0, 0, 0, 200]);
+        // Distance tiles clamp to the server's -64; the mask is AIR's bits 4 (y) and 1 (user collisions).
+        expect(setIntParams).toHaveBeenCalledWith([1, 1, 0, 0, 500, 0, 0, 0, 0, 0, 2, 18, 1, 1, 1, 0, -64, 0, 0, 0, 0, 0, 0, 200]);
         expect(setStringParam).toHaveBeenCalledWith('');
     });
 
@@ -106,13 +113,13 @@ describe('WiredExtraProjectileView', () => {
         const { container } = render(<WiredExtraProjectileView />);
 
         fireEvent.click(screen.getByRole('button', { name: /Animation time/ }));
-        fireEvent.click(screen.getByLabelText('Scale the animation time with the distance'));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'Scale the animation time with the distance' }));
         fireEvent.change(screen.getByRole('spinbutton', { name: 'Time per tile (ms):' }), { target: { value: '0' } });
         fireEvent.click(container.querySelectorAll('input[name="projectileTimeValue"]')[1]);
 
         expect(baseProps.validate()).toBe(false);
 
-        fireEvent.change(screen.getByRole('combobox', { name: 'Time per tile (ms): variable type' }), { target: { value: '3' } });
+        selectOption(screen.getByRole('combobox', { name: 'Time per tile (ms): variable type' }), 'Global');
         fireEvent.click(screen.getByRole('button', { name: 'custom:500' }));
 
         expect(baseProps.validate()).toBe(true);
@@ -124,7 +131,9 @@ describe('WiredExtraProjectileView', () => {
         // The input stops at the server's 1 ms.
         expect(saved[4]).toBe(1);
         expect(saved[5]).toBe(3);
-        expect(setStringParam).toHaveBeenCalledWith('custom:500\t');
+        // AIR: the variables as variable ids [time, distance], no string.
+        expect(setStringParam).toHaveBeenCalledWith('');
+        expect(setVariableIds).toHaveBeenLastCalledWith(['room:500']);
     });
 
     it('carries the params and tokens it was handed through untouched', () => {
@@ -135,8 +144,18 @@ describe('WiredExtraProjectileView', () => {
         baseProps.save();
 
         expect(setIntParams).toHaveBeenCalledWith(stored);
-        expect(setStringParam).toHaveBeenCalledWith('custom:500\tcustom:500');
+        expect(setVariableIds).toHaveBeenLastCalledWith(['room:500', 'room:500']);
         expect(screen.getByRole('button', { name: /Shift the rotation by 6/ })).toBeTruthy();
+    });
+
+    it('reads the time and distance variables from the variable ids', () => {
+        const stored = [1, 3, 1, 1, 250, 3, 1, 1, 1, 75, 6, 5, 1, 1, 2, 1, -12, 0, 400, 0, 101, 0, 200, 0];
+        trigger = { intData: stored, stringData: '', variableIds: ['room:500', 'user:300'] };
+
+        render(<WiredExtraProjectileView />);
+        baseProps.save();
+
+        expect(setVariableIds).toHaveBeenLastCalledWith(['room:500', 'user:300']);
     });
 
     it('opens a box saved before the time was applied at the default time per tile', () => {

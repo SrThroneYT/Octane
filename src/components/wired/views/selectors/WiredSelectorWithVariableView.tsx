@@ -17,7 +17,10 @@ import {
     normalizeVariableTokenFromWire,
     WiredVariablePickerTarget
 } from '../WiredVariablePickerData';
+import { readWiredVariableToken, toWiredVariableId, wiredVariableIdList } from '../WiredVariableIds';
 import { WiredSelectorBaseView } from './WiredSelectorBaseView';
+import { Checkbox } from '../../../../common/Checkbox';
+import { Radio } from '../../../../common/Radio';
 
 type VariableTargetType = 'user' | 'furni' | 'global' | 'context';
 type ReferenceMode = 'constant' | 'variable';
@@ -131,7 +134,7 @@ export const WiredSelectorWithVariableView: FC<WiredSelectorWithVariableViewProp
     // Official layout: [comparison, reference (0 none, 1 value, 2 variable), value high, value low, reference
     // target, same holder]; the reference is read on the official source slots, filter / invert are the
     // official selector fields.
-    const { trigger = null, furniIds = [], setFurniIds = null, setIntParams = null, setStringParam = null, setSourceTypes = null, setSelectorOptions = null } = useWired();
+    const { trigger = null, furniIds = [], setFurniIds = null, setIntParams = null, setStringParam = null, setSourceTypes = null, setSelectorOptions = null, setVariableIds = null } = useWired();
     const [sameHolder, setSameHolder] = useState(false);
     const { userVariableDefinitions = [], furniVariableDefinitions = [], roomVariableDefinitions = [], contextVariableDefinitions = [] } = useWiredTools();
     const [variableToken, setVariableToken] = useState('');
@@ -218,8 +221,9 @@ export const WiredSelectorWithVariableView: FC<WiredSelectorWithVariableViewProp
         const stringParts = parseStringData(trigger.stringData);
         const nextReferenceFurniIds = [...(trigger.selectedItems ?? [])];
 
-        setVariableToken(normalizeVariableTokenFromWire(stringParts.length > 0 ? stringParts[0] : ''));
-        setReferenceVariableToken(normalizeVariableTokenFromWire(stringParts.length > 1 ? stringParts[1] : ''));
+        // AIR: variable ids [variable, reference variable]; an older server wrote both into the string.
+        setVariableToken(readWiredVariableToken(trigger.variableIds, 0, normalizeVariableTokenFromWire(stringParts.length > 0 ? stringParts[0] : '')));
+        setReferenceVariableToken(readWiredVariableToken(trigger.variableIds, 1, normalizeVariableTokenFromWire(stringParts.length > 1 ? stringParts[1] : '')));
         const d = trigger.intData;
         const reference = d.length > 1 ? d[1] : 0;
 
@@ -263,7 +267,13 @@ export const WiredSelectorWithVariableView: FC<WiredSelectorWithVariableViewProp
         const parsedReferenceConstantValue = parseInt(referenceConstantValueInput.trim(), 10);
 
         setReferenceFurniIds(nextReferenceFurniIds);
-        setStringParam(`${variableToken || ''}\t${selectByValue && referenceMode === 'variable' ? referenceVariableToken : ''}`);
+        setStringParam('');
+        setVariableIds(
+            wiredVariableIdList(
+                toWiredVariableId(selectorTarget, variableToken),
+                selectByValue && referenceMode === 'variable' ? toWiredVariableId(referenceTargetType, referenceVariableToken) : ''
+            )
+        );
         const constantValue = Number.isFinite(parsedReferenceConstantValue) ? parsedReferenceConstantValue : 0;
 
         setIntParams([
@@ -314,13 +324,7 @@ export const WiredSelectorWithVariableView: FC<WiredSelectorWithVariableViewProp
                 <div className="octane-wired__divider" />
 
                 <label className="flex items-center gap-2">
-                    <input
-                        className="form-check-input"
-                        type="checkbox"
-                        checked={selectByValue}
-                        disabled={!canSelectByValue}
-                        onChange={(event) => setSelectByValue(event.target.checked)}
-                    />
+                    <Checkbox checked={selectByValue} disabled={!canSelectByValue} onCheckedChange={ nextChecked => setSelectByValue(nextChecked) } />
                     <Text small>{LocalizeText('wiredfurni.params.variables.value_settings.select_by_value')}</Text>
                 </label>
 
@@ -331,13 +335,7 @@ export const WiredSelectorWithVariableView: FC<WiredSelectorWithVariableViewProp
                         <div className="flex flex-wrap items-center gap-2">
                             {COMPARISON_OPTIONS.map((option) => (
                                 <label key={option.value} className="flex items-center gap-1">
-                                    <input
-                                        checked={comparison === option.value}
-                                        className="form-check-input"
-                                        type="radio"
-                                        disabled={valueSelectionDisabled}
-                                        onChange={() => setComparison(option.value)}
-                                    />
+                                    <Radio checked={comparison === option.value} disabled={valueSelectionDisabled} onCheckedChange={ () => setComparison(option.value) } />
                                     <Text>{option.label}</Text>
                                 </label>
                             ))}
@@ -402,17 +400,12 @@ export const WiredSelectorWithVariableView: FC<WiredSelectorWithVariableViewProp
                 <Text bold>{LocalizeText('wiredfurni.params.selector_options_selector')}</Text>
 
                 <label className="flex items-center gap-2">
-                    <input
-                        className="form-check-input"
-                        type="checkbox"
-                        checked={filterExisting}
-                        onChange={(event) => setFilterExisting(event.target.checked)}
-                    />
+                    <Checkbox checked={filterExisting} onCheckedChange={ nextChecked => setFilterExisting(nextChecked) } />
                     <Text small>{LocalizeText('wiredfurni.params.selector_option.0')}</Text>
                 </label>
 
                 <label className="flex items-center gap-2">
-                    <input className="form-check-input" type="checkbox" checked={invert} onChange={(event) => setInvert(event.target.checked)} />
+                    <Checkbox checked={invert} onCheckedChange={ nextChecked => setInvert(nextChecked) } />
                     <Text small>{LocalizeText('wiredfurni.params.selector_option.1')}</Text>
                 </label>
             </div>

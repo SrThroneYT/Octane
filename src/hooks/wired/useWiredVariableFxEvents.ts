@@ -1,6 +1,8 @@
 import {
     RoomEngineEvent,
+    RoomEngineObjectEvent,
     RoomId,
+    RoomObjectCategory,
     RoomSessionEvent,
     WiredVariableFxConfigsEvent,
     WiredVariableFxConfigsRemovedEvent,
@@ -8,14 +10,18 @@ import {
     WiredVariableFxStatusRemovedEvent
 } from '@octane/renderer';
 import { useMessageEvent, useOctaneEvent } from '../events';
-import { useWiredVariableFxStore } from './wiredVariableFxStore';
+import { useWiredVariableFxStore, wiredVariableFxHolderKey } from './wiredVariableFxStore';
 
-/** Feeds the variable fx store from the four server packets and empties it with the room. */
+/**
+ * Feeds the variable fx store from the four server packets, tells it which avatar or floor furni the
+ * cursor is over (AIR's holder hover, for the fx that also show on hover) and empties it with the room.
+ */
 export const useWiredVariableFxEvents = () => {
     const applyConfigs = useWiredVariableFxStore((state) => state.applyConfigs);
     const removeConfigs = useWiredVariableFxStore((state) => state.removeConfigs);
     const applyStatuses = useWiredVariableFxStore((state) => state.applyStatuses);
     const removeStatuses = useWiredVariableFxStore((state) => state.removeStatuses);
+    const setHovered = useWiredVariableFxStore((state) => state.setHovered);
     const clear = useWiredVariableFxStore((state) => state.clear);
 
     useMessageEvent<WiredVariableFxConfigsEvent>(WiredVariableFxConfigsEvent, (event) => {
@@ -40,6 +46,13 @@ export const useWiredVariableFxEvents = () => {
         const parser = event.getParser();
 
         if (parser) removeStatuses(parser.keys);
+    });
+
+    useOctaneEvent<RoomEngineObjectEvent>([RoomEngineObjectEvent.MOUSE_ENTER, RoomEngineObjectEvent.MOUSE_LEAVE], (event) => {
+        if (RoomId.isRoomPreviewerId(event.roomId)) return;
+        if (event.category !== RoomObjectCategory.UNIT && event.category !== RoomObjectCategory.FLOOR) return;
+
+        setHovered(wiredVariableFxHolderKey(event.category === RoomObjectCategory.UNIT, event.objectId), event.type === RoomEngineObjectEvent.MOUSE_ENTER);
     });
 
     useOctaneEvent<RoomSessionEvent>(RoomSessionEvent.ENDED, () => clear());

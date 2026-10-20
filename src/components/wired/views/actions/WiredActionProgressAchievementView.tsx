@@ -4,8 +4,11 @@ import { Text } from '../../../../common';
 import { useAchievements, useWired } from '../../../../hooks';
 import { WiredSourcesSelector } from '../WiredSourcesSelector';
 import { getCustomVariableItemId } from '../WiredVariablePickerData';
-import { normalizeWiredValueTarget, variableTokenFromId, WiredValueOrVariableField } from '../WiredValueOrVariableField';
+import { normalizeWiredValueTarget, variableTokenFromId, WiredValueOrVariableField, wiredValueTargetKey } from '../WiredValueOrVariableField';
+import { readWiredVariableToken, toWiredVariableId, wiredVariableIdList } from '../WiredVariableIds';
 import { WiredActionBaseView } from './WiredActionBaseView';
+import { Radio } from '../../../../common/Radio';
+import { Select } from '../../../../common/Select';
 
 /**
  * Habbo's progress-achievement action (`wf_act_progress_achievement`): progresses one of the room's
@@ -18,15 +21,16 @@ import { WiredActionBaseView } from './WiredActionBaseView';
 
 export const PROGRESS_ACHIEVEMENT_MODE_RAISE_TO = 0;
 export const PROGRESS_ACHIEVEMENT_MODE_ADD = 1;
-export const PROGRESS_ACHIEVEMENT_MAX_AMOUNT = 1_000_000;
+/** AIR: `createValueOrVariableSection(..., 0, int max)`; the hotel's allowance still bounds what a user is given. */
+export const PROGRESS_ACHIEVEMENT_MAX_AMOUNT = 2_147_483_647;
 
 export const clampProgressAmount = (value: number): number =>
-    Number.isFinite(value) ? Math.min(PROGRESS_ACHIEVEMENT_MAX_AMOUNT, Math.max(1, Math.trunc(value))) : 1;
+    Number.isFinite(value) ? Math.min(PROGRESS_ACHIEVEMENT_MAX_AMOUNT, Math.max(0, Math.trunc(value))) : 0;
 
 const normalizeMode = (value: number): number => (value === PROGRESS_ACHIEVEMENT_MODE_RAISE_TO ? PROGRESS_ACHIEVEMENT_MODE_RAISE_TO : PROGRESS_ACHIEVEMENT_MODE_ADD);
 
 export const WiredActionProgressAchievementView: FC<{}> = () => {
-    const { trigger = null, setIntParams = null, setStringParam = null, setSourceTypes = null } = useWired();
+    const { trigger = null, setIntParams = null, setStringParam = null, setSourceTypes = null, setVariableIds = null } = useWired();
     const { enabledWiredAchievements = [] } = useAchievements();
     const [achievement, setAchievement] = useState('');
     const [mode, setMode] = useState(PROGRESS_ACHIEVEMENT_MODE_ADD);
@@ -49,7 +53,8 @@ export const WiredActionProgressAchievementView: FC<{}> = () => {
         setIsVariable(trigger.intData?.[1] === 1);
         setAmount(String(clampProgressAmount(trigger.intData?.[2] ?? 1)));
         setValueTarget(normalizeWiredValueTarget(trigger.intData?.[3] ?? 0));
-        setValueToken(variableTokenFromId(variableId));
+        // AIR: the amount's variable is the first variable id; an older server wrote its id after a tab.
+        setValueToken(readWiredVariableToken(trigger.variableIds, 0, variableTokenFromId(variableId)));
         setUserSource(trigger.userSourceTypes?.[0] ?? 0);
         setValueUserSource(trigger.userSourceTypes?.[1] ?? 0);
         setValueFurniSource(trigger.furniSourceTypes?.[0] ?? 0);
@@ -64,9 +69,9 @@ export const WiredActionProgressAchievementView: FC<{}> = () => {
     }, [enabledWiredAchievements, achievement]);
 
     const save = () => {
-        const variableId = isVariable ? getCustomVariableItemId(valueToken) : 0;
-
-        setStringParam(`${achievement}\t${variableId}`);
+        // AIR ProgressAchievement: the name as the string, the amount's variable as the variable id.
+        setStringParam(achievement);
+        setVariableIds(wiredVariableIdList(isVariable ? toWiredVariableId(wiredValueTargetKey(valueTarget), valueToken) : ''));
         setIntParams([mode, isVariable ? 1 : 0, clampProgressAmount(parseInt(amount, 10)), valueTarget]);
         setSourceTypes({ furni: [valueFurniSource], users: [userSource, valueUserSource] });
     };
@@ -84,14 +89,14 @@ export const WiredActionProgressAchievementView: FC<{}> = () => {
             <div className="flex flex-col gap-1">
                 <Text bold>{localizeWithFallback('wiredfurni.params.progress_achievement.name', 'Achievement')}</Text>
                 {options.length ? (
-                    <select className="form-select form-select-sm" value={achievement} onChange={(event) => setAchievement(event.target.value)}>
+                    <Select className="form-select form-select-sm" value={achievement} onChange={(event) => setAchievement(event.target.value)}>
                         {!achievement && <option value="">{localizeWithFallback('wiredfurni.params.progress_achievement.pick', 'Pick an achievement')}</option>}
                         {options.map((name) => (
                             <option key={name} value={name}>
                                 {name}
                             </option>
                         ))}
-                    </select>
+                    </Select>
                 ) : (
                     <Text small>
                         {localizeWithFallback(
@@ -105,7 +110,7 @@ export const WiredActionProgressAchievementView: FC<{}> = () => {
                 <Text bold>{localizeWithFallback('wiredfurni.params.progress_achievement.mode', 'Progress')}</Text>
                 {[PROGRESS_ACHIEVEMENT_MODE_ADD, PROGRESS_ACHIEVEMENT_MODE_RAISE_TO].map((value) => (
                     <label key={value} className="flex items-center gap-1">
-                        <input type="radio" className="form-check-input" name="progressAchievementMode" checked={mode === value} onChange={() => setMode(value)} />
+                        <Radio name="progressAchievementMode" checked={mode === value} onCheckedChange={() => setMode(value)} />
                         <Text>
                             {localizeWithFallback(
                                 `wiredfurni.params.progress_achievement.mode.${value}`,
@@ -118,8 +123,8 @@ export const WiredActionProgressAchievementView: FC<{}> = () => {
             <div className="flex flex-col gap-1">
                 <Text bold>{localizeWithFallback('wiredfurni.params.progress_achievement.score', 'Amount')}</Text>
                 {/* AIR ProgressAchievement: createValueOrVariableSection(0, mergedSourceOptions(0), score, 0, int max); the
-                    claimed merged slot 0 (furni 0 + users 1) is the value's holder in the popup. The server keeps the
-                    amount to 1..1000000 (clampProgressAmount on save). */}
+                    claimed merged slot 0 (furni 0 + users 1) is the value's holder in the popup. The amount is 0..int max
+                    as AIR (clampProgressAmount on save). */}
                 <WiredValueOrVariableField
                     holderSource={{
                         furniSource: valueFurniSource,
@@ -130,6 +135,7 @@ export const WiredActionProgressAchievementView: FC<{}> = () => {
                     isVariable={isVariable}
                     label={localizeWithFallback('wiredfurni.params.progress_achievement.score', 'Amount')}
                     literal={amount}
+                    max={PROGRESS_ACHIEVEMENT_MAX_AMOUNT}
                     min={0}
                     target={valueTarget}
                     token={valueToken}

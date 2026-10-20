@@ -5,6 +5,7 @@ import { useWired } from '../../../../hooks';
 import { WiredSourcesSelector } from '../WiredSourcesSelector';
 import { slotUserSource } from '../WiredSourceSlots';
 import { WiredActionBaseView } from './WiredActionBaseView';
+import { Select } from '../../../../common/Select';
 
 /**
  * Habbo's "write to logs" (`wf_act_log`, and `wf_act_neg_log` for when the conditions fail): a
@@ -12,12 +13,12 @@ import { WiredActionBaseView } from './WiredActionBaseView';
  * Server: WiredEffectLog. Int params `[level]`, string param the message, the user source in its slot.
  */
 
-/** Habbo's four levels, in the order the room log window numbers them. */
+/** AIR's four levels (its dropdown and `WiredRoomLogListTableObject.COLORS`): 0 INFO, 1 WARN, 2 ERROR, 3 DEBUG. */
 export const WRITE_TO_LOGS_LEVELS: Array<{ fallback: string; value: number }> = [
-    { fallback: 'Debug', value: 0 },
-    { fallback: 'Info', value: 1 },
-    { fallback: 'Warning', value: 2 },
-    { fallback: 'Error', value: 3 }
+    { fallback: 'INFO', value: 0 },
+    { fallback: 'WARN', value: 1 },
+    { fallback: 'ERROR', value: 2 },
+    { fallback: 'DEBUG', value: 3 }
 ];
 
 export const WRITE_TO_LOGS_MESSAGE_MAX_LENGTH = 400;
@@ -55,13 +56,13 @@ export const WiredActionWriteToLogsView: FC<{}> = () => {
         >
             <div className="flex flex-col gap-1">
                 <Text bold>{localizeWithFallback('wiredfurni.params.write_to_logs.log_level.title', 'Log level')}</Text>
-                <select className="form-select form-select-sm" value={level} onChange={(event) => setLevel(normalizeLevel(parseInt(event.target.value, 10)))}>
+                <Select className="form-select form-select-sm" value={level} onChange={(event) => setLevel(normalizeLevel(parseInt(event.target.value, 10)))}>
                     {WRITE_TO_LOGS_LEVELS.map((entry) => (
                         <option key={entry.value} value={entry.value}>
                             {localizeWithFallback(`wiredfurni.params.write_to_logs.log_level.${entry.value}`, entry.fallback)}
                         </option>
                     ))}
-                </select>
+                </Select>
             </div>
             <div className="flex flex-col gap-1">
                 <Text bold>{localizeWithFallback('wiredfurni.params.write_to_logs.log_message.title', 'Message')}</Text>

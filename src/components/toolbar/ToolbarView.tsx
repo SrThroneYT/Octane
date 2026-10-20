@@ -13,8 +13,10 @@ import { useAchievements, useBuildHeight, useDailyTasks, useFriends, useHasPermi
 import { BottomDockLayout, resolveBottomDockLayout } from './bottomDockLayout';
 import { ToolbarItemView } from './ToolbarItemView';
 import { ToolbarMeView } from './ToolbarMeView';
+import { ToolbarProgressionView } from './ToolbarProgressionView';
 import { useGroupForumUnreadStore } from '../../state/groupForumUnreadStore';
 import { YouTubePlayerView } from './YouTubePlayerView';
+import { BaseButton } from '../../common/BaseButton';
 
 const containerVariants: Variants = {
     hidden: { transition: { staggerChildren: 0.015, staggerDirection: -1 } },
@@ -55,6 +57,7 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
 {
     const { isInRoom } = props;
     const [ isMeExpanded, setMeExpanded ] = useState(false);
+    const [ isProgressionExpanded, setProgressionExpanded ] = useState(false);
     const [ isTouchLayout, setIsTouchLayout ] = useState(false);
     const [ leftCollapsed, setLeftCollapsed ] = useState(() => readCollapsedPreference(LEFT_COLLAPSED_STORAGE_KEY));
     const [ rightCollapsed, setRightCollapsed ] = useState(() => readCollapsedPreference(RIGHT_COLLAPSED_STORAGE_KEY));
@@ -368,13 +371,13 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
                 variants={ leftNavVariants }
                 transition={ NAV_TRANSITION }
                 className={ `tb-nav-clip absolute bottom-0 left-0 z-[71] h-[46px] ${ railMaxWidthClass } items-center ${ desktopFlexClasses }` }>
-                <button
+                <BaseButton
                     type="button"
                     onClick={ () => setLeftCollapsed(value => !value) }
                     aria-label={ localizeWithFallback('toolbar.icons.toggle', 'Show/hide icons') }
                     className="tb-collapse pointer-events-auto">
                     <img src={ leftCollapsed ? collapseRightImg : collapseLeftImg } alt="" />
-                </button>
+                </BaseButton>
                 <motion.div
                     variants={ containerVariants }
                     className="tb-open-shell flex h-[46px] max-w-full items-start overflow-visible bg-transparent">
@@ -388,8 +391,32 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
                         <ToolbarItemView icon="rooms" onClick={ () => CreateLinkEvent('navigator/toggle') } className="tb-icon" />
                     </motion.div>
                     { isInRoom &&
-                        <motion.div variants={ itemVariants } className="tb-slot">
-                            <ToolbarItemView icon="progression" onClick={ () => CreateLinkEvent('achievements/toggle') } className="tb-icon" />
+                        <motion.div variants={ itemVariants } className="relative tb-slot tb-slot-progression">
+                            <AnimatePresence>
+                                { isProgressionExpanded &&
+                                    <motion.div
+                                        initial={ { opacity: 0, y: 6, scale: 0.97 } }
+                                        animate={ { opacity: 1, y: 0, scale: 1 } }
+                                        exit={ { opacity: 0, y: 6, scale: 0.97 } }
+                                        transition={ ME_POPOVER_TRANSITION }
+                                        className="pointer-events-auto absolute bottom-[calc(100%+8px)] left-0 z-50">
+                                        <ToolbarProgressionView
+                                            setExpanded={ setProgressionExpanded }
+                                            unseenAchievementCount={ getTotalUnseen }
+                                            unseenDailyTaskCount={ unseenDailyTaskCount }
+                                            unseenRewardTrackCount={ unseenRewardTrackCount } />
+                                    </motion.div> }
+                            </AnimatePresence>
+                            <ToolbarItemView
+                                icon="progression"
+                                onClick={ event =>
+                                {
+                                    setProgressionExpanded(value => !value);
+                                    event.stopPropagation();
+                                } }
+                                className="tb-icon" />
+                            { (unseenProgMenuCount > 0) &&
+                                <LayoutItemCountView count={ unseenProgMenuCount } className="pointer-events-none absolute -right-1 top-0" /> }
                         </motion.div> }
                     { GetConfigurationValue('game.center.enabled') &&
                         <motion.div variants={ itemVariants } className="tb-slot">
@@ -509,13 +536,13 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
                     <div className={ `h-full shrink-0 ${ desktopBlockClasses }` } id="toolbar-friend-bar-container-desktop" />
                     </>) }
                 </motion.div>
-                <button
+                <BaseButton
                     type="button"
                     onClick={ () => setRightCollapsed(value => !value) }
                     aria-label={ localizeWithFallback('toolbar.icons.toggle', 'Show/hide icons') }
                     className="tb-collapse pointer-events-auto">
                     <img src={ rightCollapsed ? collapseLeftImg : collapseRightImg } alt="" />
-                </button>
+                </BaseButton>
             </motion.div>
             <motion.div
                 initial="visible"

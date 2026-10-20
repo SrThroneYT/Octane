@@ -17,6 +17,9 @@ import { FC, Fragment, JSX, useCallback, useEffect, useMemo, useRef, useState } 
 import { localizeWithFallback, ProductImageUtility, SendMessageComposer } from '../../api';
 import { Button, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Text } from '../../common';
 import { useMessageEvent, useNotification, useRoom } from '../../hooks';
+import { Select } from '../../common/Select';
+import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 /** Rows per request. The preview and the detail window share one page size, so one response shape
  * serves both and there is never a question of which request a page belongs to. */
@@ -230,7 +233,12 @@ export const WiredChestsTabView: FC<{}> = () => {
                         <img
                             alt=""
                             className="max-h-[28px] max-w-[28px] object-contain"
-                            src={ProductImageUtility.getProductImageUrl(FurnitureType.FLOOR, item.spriteId, '')}
+                            // The server negates a wall item's sprite id: the two kinds have their own id ranges.
+                            src={ProductImageUtility.getProductImageUrl(
+                                item.spriteId < 0 ? FurnitureType.WALL : FurnitureType.FLOOR,
+                                Math.abs(item.spriteId),
+                                '',
+                            )}
                         />
                         <span className="text-[11px] tabular-nums">x{item.quantity}</span>
                     </div>
@@ -245,7 +253,7 @@ export const WiredChestsTabView: FC<{}> = () => {
                 <div className="bg-white rounded border border-[#b9b3a5] p-2 flex flex-col gap-2">
                     <div className="flex items-center justify-between gap-2">
                         <Text bold>{localizeWithFallback('wiredmenu.chests.room_logs.title', 'Room transaction log')}</Text>
-                        <select
+                        <Select
                             className="rounded border border-[#7f7f7f] bg-[#ece9e1] px-2 py-[2px] text-[11px] text-[#333]"
                             value={filter}
                             onChange={(event) => setFilter(parseInt(event.target.value, 10))}
@@ -255,7 +263,7 @@ export const WiredChestsTabView: FC<{}> = () => {
                                     {localizeWithFallback(option.key, option.fallback)}
                                 </option>
                             ))}
-                        </select>
+                        </Select>
                     </div>
                     {!!onlyChestId && (
                         <div className="flex items-center justify-between gap-2 rounded border border-[#c08a5a] bg-[#f7e6cf] px-2 py-1">
@@ -402,17 +410,16 @@ const WiredChestTransactionsWindow: FC<WiredChestTransactionsWindowProps> = (pro
                                     <Fragment key={row.transactionId}>
                                         <tr className="border-t border-[#e4e0d5]">
                                             <td className="px-2 py-1 tabular-nums">
-                                                <button
-                                                    type="button"
-                                                    className="underline decoration-dotted"
-                                                    title={localizeWithFallback(
+                                                <Hint content={localizeWithFallback(
                                                         'wiredmenu.chests.room_logs.only_this_chest',
                                                         'Only this chest',
-                                                    )}
+                                                    )}><BaseButton
+                                                    type="button"
+                                                    className="underline decoration-dotted"
                                                     onClick={() => onFilterChest(row.chestId)}
                                                 >
                                                     {row.chestId}
-                                                </button>
+                                                </BaseButton></Hint>
                                             </td>
                                             <td className="px-2 py-1">{formatTimestamp(row.timestamp)}</td>
                                             <td className="px-2 py-1">{typeLabel(row)}</td>
@@ -421,13 +428,13 @@ const WiredChestTransactionsWindow: FC<WiredChestTransactionsWindowProps> = (pro
                                             <td className="px-2 py-1 text-right tabular-nums">{row.withdrawn || '-'}</td>
                                             <td className="px-2 py-1 text-right tabular-nums">{row.deposited || '-'}</td>
                                             <td className="px-2 py-1 text-right">
-                                                <button
+                                                <BaseButton
                                                     className="rounded border border-[#7f7f7f] bg-[#ece9e1] px-2 py-[1px] text-[11px] text-[#333] hover:bg-[#e3ded2]"
                                                     type="button"
                                                     onClick={() => onToggleDetail(row.transactionId, row.hasDetails)}
                                                 >
                                                     {expandedId === row.transactionId ? '-' : '+'}
-                                                </button>
+                                                </BaseButton>
                                             </td>
                                         </tr>
                                         {expandedId === row.transactionId && (

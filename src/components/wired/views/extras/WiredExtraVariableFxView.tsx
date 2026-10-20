@@ -5,23 +5,25 @@ import {
     localizeWithFallback,
     readWiredVariableFxParams,
     readWiredVariableFxTokens,
+    resolveWiredVariableFxRenderer,
+    sanitizeWiredVariableFxAppearance,
     WIRED_FX_CATEGORY,
-    WIRED_FX_COLOR_DYNAMIC_LEVELLING,
-    WIRED_FX_COLOR_DYNAMIC_TEAM,
-    WIRED_FX_COLOR_NOT_APPLICABLE,
     WIRED_FX_ICONS,
     WIRED_FX_LEVEL_BARS,
     WIRED_FX_NUMBER_ALIGNMENTS,
     WIRED_FX_OVERRIDE_TARGET,
-    WIRED_FX_PALETTE,
     WIRED_FX_SEGMENTS_MAX,
     WIRED_FX_SHOW_DURATION_MAX_MS,
     WIRED_FX_SHOW_DURATION_MIN_MS,
     WIRED_FX_SHOW_MODE,
     WIRED_FX_SOURCE,
+    WIRED_FX_UPDATE,
     WIRED_FX_VISIBILITY,
-    WIRED_FX_WIDTHS,
+    WIRED_FX_WIDTH_NAMES,
     WiredFurniType,
+    wiredVariableFxAppearance,
+    wiredVariableFxColorLabel,
+    wiredVariableFxRendererOptions,
     wiredVariableFxRendererSupportsSegments,
     wiredVariableFxSegmentRenderer,
     wiredVariableFxStyles,
@@ -35,6 +37,8 @@ import { OctaneInput } from '../../../../layout';
 import { WiredVariablePicker } from '../WiredVariablePicker';
 import { buildWiredVariablePickerEntries, IWiredVariablePickerEntry, WiredVariablePickerTarget, withoutExecutionContextVariables } from '../WiredVariablePickerData';
 import { WiredExtraBaseView } from './WiredExtraBaseView';
+import { Checkbox } from '../../../../common/Checkbox';
+import { Select } from '../../../../common/Select';
 
 export interface WiredExtraVariableFxViewProps {
     category: number;
@@ -54,9 +58,17 @@ const VISIBILITY_OPTIONS = [
 ];
 
 const SHOW_MODE_OPTIONS = [
-    { value: WIRED_FX_SHOW_MODE.ALWAYS, key: 'wiredfurni.params.variablefx.show.always', fallback: 'Always' },
-    { value: WIRED_FX_SHOW_MODE.WHEN_CHANGES, key: 'wiredfurni.params.variablefx.show.when_changes', fallback: 'While the value changes' },
-    { value: WIRED_FX_SHOW_MODE.NEVER, key: 'wiredfurni.params.variablefx.show.never', fallback: 'Never (hidden)' }
+    { value: WIRED_FX_SHOW_MODE.ALWAYS, key: 'wiredfurni.params.variablefx.show_mode.always', fallback: 'Always visible' },
+    { value: WIRED_FX_SHOW_MODE.WHEN_CHANGES, key: 'wiredfurni.params.variablefx.show_mode.when_variable_changes', fallback: 'Visible when the variable updates' },
+    { value: WIRED_FX_SHOW_MODE.NEVER, key: 'wiredfurni.params.variablefx.show_mode.never', fallback: 'Visible on cursor hover' }
+];
+
+/** AIR's update mask checkboxes, in its order. */
+const UPDATE_MASK_OPTIONS = [
+    { bit: WIRED_FX_UPDATE.CREATED, key: 'wiredfurni.params.variablefx.update_mask.1', fallback: 'Variable created' },
+    { bit: WIRED_FX_UPDATE.INCREASED, key: 'wiredfurni.params.variablefx.update_mask.2', fallback: 'Variable increased' },
+    { bit: WIRED_FX_UPDATE.DECREASED, key: 'wiredfurni.params.variablefx.update_mask.3', fallback: 'Variable decreased' },
+    { bit: WIRED_FX_UPDATE.UNCHANGED, key: 'wiredfurni.params.variablefx.update_mask.4', fallback: 'Variable not changed' }
 ];
 
 const TARGET_OPTIONS = [
@@ -110,7 +122,11 @@ export const WiredExtraVariableFxView: FC<WiredExtraVariableFxViewProps> = (prop
 
     const usesRange = wiredVariableFxUsesRange(category);
     const styles = wiredVariableFxStyles(category);
-    const segmentRenderer = wiredVariableFxSegmentRenderer(category, params.styleId, params.categoryExtra);
+    const appearance = wiredVariableFxAppearance(category, params.styleId);
+    const rendererOptions = wiredVariableFxRendererOptions(category, params.styleId);
+    const rendererId = resolveWiredVariableFxRenderer(category, params.styleId, params.rendererId ?? -1);
+    const segmentRenderer = wiredVariableFxSegmentRenderer(category, params.styleId, params.categoryExtra, rendererId);
+    const updateMask = params.updateMask ?? 0;
     const supportsSegments = wiredVariableFxRendererSupportsSegments(segmentRenderer);
     const holderTarget: WiredVariablePickerTarget = params.source === WIRED_FX_SOURCE.FURNI ? 'furni' : 'user';
     const needsAudience = params.visibility === WIRED_FX_VISIBILITY.HAS_VARIABLE || params.visibility === WIRED_FX_VISIBILITY.HAS_VARIABLE_WITH_VALUE;
@@ -127,7 +143,10 @@ export const WiredExtraVariableFxView: FC<WiredExtraVariableFxViewProps> = (prop
     const audienceEntries = useMemo(() => customOnly(buildWiredVariablePickerEntries('user', 'change-reference', userVariableDefinitions)), [userVariableDefinitions]);
 
     useEffect(() => {
-        setParams(readWiredVariableFxParams(trigger?.intData ?? [], category));
+        const read = readWiredVariableFxParams(trigger?.intData ?? [], category);
+
+        // AIR's editor only offers the style's colours and widths; anything else becomes its default.
+        setParams({ ...read, ...sanitizeWiredVariableFxAppearance(category, read.styleId, read.colorId, read.widthId) });
         setTokens(readWiredVariableFxTokens(trigger?.stringData ?? ''));
         setRangeError(false);
     }, [trigger, category]);
@@ -144,20 +163,20 @@ export const WiredExtraVariableFxView: FC<WiredExtraVariableFxViewProps> = (prop
     };
 
     const save = () => {
-        setIntParams(writeWiredVariableFxParams(params));
+        setIntParams(writeWiredVariableFxParams({ ...params, rendererId }));
         setStringParam(writeWiredVariableFxTokens(tokens));
     };
 
     const select = (label: string, value: number, options: { value: number; key: string; fallback: string }[], onChange: (value: number) => void) => (
         <div className="flex flex-col gap-1">
             <Text bold>{label}</Text>
-            <select className="form-select form-select-sm" value={value} onChange={(event) => onChange(Number(event.target.value))}>
+            <Select className="form-select form-select-sm" value={value} onChange={(event) => onChange(Number(event.target.value))}>
                 {options.map((option) => (
                     <option key={option.value} value={option.value}>
                         {localizeWithFallback(option.key, option.fallback)}
                     </option>
                 ))}
-            </select>
+            </Select>
         </div>
     );
 
@@ -171,18 +190,18 @@ export const WiredExtraVariableFxView: FC<WiredExtraVariableFxViewProps> = (prop
     ) => (
         <div className="flex flex-col gap-1 octane-wired-fx-editor__override">
             <label className="flex items-center gap-1 cursor-pointer">
-                <input type="checkbox" className="form-check-input" checked={enabled} onChange={(event) => onChange(event.target.checked, target, token)} />
+                <Checkbox checked={enabled} onCheckedChange={(nextChecked) => onChange(nextChecked, target, token)} />
                 <Text bold>{label}</Text>
             </label>
             {enabled && (
                 <div className="flex flex-col gap-1 pl-4">
-                    <select className="form-select form-select-sm" value={target} onChange={(event) => onChange(enabled, Number(event.target.value), '')}>
+                    <Select className="form-select form-select-sm" value={target} onChange={(event) => onChange(enabled, Number(event.target.value), '')}>
                         {TARGET_OPTIONS.map((option) => (
                             <option key={option.value} value={option.value}>
                                 {localizeWithFallback(option.key, option.fallback)}
                             </option>
                         ))}
-                    </select>
+                    </Select>
                     <WiredVariablePicker
                         entries={target === WIRED_FX_OVERRIDE_TARGET.GLOBAL ? roomEntries : holderEntries}
                         recentScope={scope}
@@ -198,7 +217,7 @@ export const WiredExtraVariableFxView: FC<WiredExtraVariableFxViewProps> = (prop
     const categoryLabel = localizeWithFallback(title.key, title.fallback);
 
     return (
-        <WiredExtraBaseView hasSpecialInput={true} requiresFurni={WiredFurniType.STUFF_SELECTION_OPTION_NONE} save={save} validate={validate} widthModifier={1.45}>
+        <WiredExtraBaseView hasSpecialInput={true} requiresFurni={WiredFurniType.STUFF_SELECTION_OPTION_NONE} save={save} validate={validate} widthModifier={1.45} allowScrolling>
             <div className="flex flex-col gap-2 octane-wired-fx-editor">
                 <Text small={true}>
                     {localizeWithFallback(
@@ -244,22 +263,37 @@ export const WiredExtraVariableFxView: FC<WiredExtraVariableFxViewProps> = (prop
                 {select(localizeWithFallback('wiredfurni.params.variablefx.show', 'Show'), params.showMode, SHOW_MODE_OPTIONS, (showMode) => patch({ showMode }))}
 
                 {params.showMode === WIRED_FX_SHOW_MODE.WHEN_CHANGES && (
-                    <div className="flex items-center gap-1 pl-4">
-                        <Text>{localizeWithFallback('wiredfurni.params.variablefx.show_duration', 'for (ms)')}</Text>
-                        <OctaneInput
-                            type="number"
-                            inputSize="sm"
-                            data-testid="fx-show-duration"
-                            min={WIRED_FX_SHOW_DURATION_MIN_MS}
-                            max={WIRED_FX_SHOW_DURATION_MAX_MS}
-                            step={100}
-                            value={params.showDurationMs}
-                            onChange={(event) =>
-                                patch({
-                                    showDurationMs: Math.max(WIRED_FX_SHOW_DURATION_MIN_MS, Math.min(WIRED_FX_SHOW_DURATION_MAX_MS, toInt(event.target.value, WIRED_FX_SHOW_DURATION_MIN_MS)))
-                                })
-                            }
-                        />
+                    <div className="flex flex-col gap-1 pl-4" data-testid="fx-when-changes">
+                        <Text>{localizeWithFallback('wiredfurni.params.variablefx.update_mask', 'When the variable updates')}</Text>
+                        <div className="grid grid-cols-2 gap-1">
+                            {UPDATE_MASK_OPTIONS.map((option) => (
+                                <label key={option.bit} className="flex items-center gap-1 cursor-pointer">
+                                    <Checkbox checked={(updateMask & option.bit) !== 0} onCheckedChange={ nextChecked => patch({ updateMask: nextChecked ? updateMask | option.bit : updateMask & ~option.bit }) } />
+                                    <Text>{localizeWithFallback(option.key, option.fallback)}</Text>
+                                </label>
+                            ))}
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <Text>{localizeWithFallback('wiredfurni.params.variablefx.show_duration', 'Duration (milliseconds):')}</Text>
+                            <OctaneInput
+                                type="number"
+                                inputSize="sm"
+                                data-testid="fx-show-duration"
+                                min={WIRED_FX_SHOW_DURATION_MIN_MS}
+                                max={WIRED_FX_SHOW_DURATION_MAX_MS}
+                                step={100}
+                                value={params.showDurationMs}
+                                onChange={(event) =>
+                                    patch({
+                                        showDurationMs: Math.max(WIRED_FX_SHOW_DURATION_MIN_MS, Math.min(WIRED_FX_SHOW_DURATION_MAX_MS, toInt(event.target.value, WIRED_FX_SHOW_DURATION_MIN_MS)))
+                                    })
+                                }
+                            />
+                        </div>
+                        <label className="flex items-center gap-1 cursor-pointer">
+                            <Checkbox checked={!!params.showOnHover} data-testid="fx-mouse-hover" onCheckedChange={ nextChecked => patch({ showOnHover: nextChecked }) } />
+                            <Text>{localizeWithFallback('wiredfurni.params.variablefx.mouse_hover', 'Show on cursor hover')}</Text>
+                        </label>
                     </div>
                 )}
 
@@ -267,8 +301,16 @@ export const WiredExtraVariableFxView: FC<WiredExtraVariableFxViewProps> = (prop
                     localizeWithFallback('wiredfurni.params.variablefx.style', 'Style'),
                     params.styleId,
                     styles.map((entry) => ({ value: entry.styleId, key: entry.key, fallback: entry.fallback })),
-                    (styleId) => patch({ styleId })
+                    (styleId) => patch({ styleId, ...sanitizeWiredVariableFxAppearance(category, styleId, params.colorId, params.widthId) })
                 )}
+
+                {rendererOptions.length > 1 &&
+                    select(
+                        localizeWithFallback('wiredfurni.params.variablefx.renderer', 'Renderer'),
+                        rendererId,
+                        rendererOptions.map((value) => ({ value, key: `wiredfurni.params.variablefx.renderer.${value}`, fallback: String(value) })),
+                        (picked) => patch({ rendererId: picked })
+                    )}
 
                 {category === WIRED_FX_CATEGORY.LEVELLING_PROGRESS && params.styleId === 0 && (
                     <div className="pl-4">
@@ -281,22 +323,22 @@ export const WiredExtraVariableFxView: FC<WiredExtraVariableFxViewProps> = (prop
                 {showsIcon && (
                     <div className="flex flex-col gap-1">
                         <Text bold>{localizeWithFallback('wiredfurni.params.variablefx.icon', 'Icon')}</Text>
-                        <select className="form-select form-select-sm" data-testid="fx-icon" value={tokens.icon} onChange={(event) => patchTokens({ icon: event.target.value })}>
+                        <Select className="form-select form-select-sm" data-testid="fx-icon" value={tokens.icon} onChange={(event) => patchTokens({ icon: event.target.value })}>
                             <option value="">{localizeWithFallback('wiredfurni.params.variablefx.icon.none', 'None')}</option>
                             {WIRED_FX_ICONS.map((icon) => (
                                 <option key={icon} value={icon}>
                                     {localizeWithFallback(`wiredfurni.params.variablefx.icon.${icon}`, icon.replace(/_/g, ' '))}
                                 </option>
                             ))}
-                        </select>
+                        </Select>
                         {category === WIRED_FX_CATEGORY.NUMBER_DISPLAY && tokens.icon && (
-                            <select className="form-select form-select-sm" value={params.categoryExtra} onChange={(event) => patch({ categoryExtra: Number(event.target.value) })}>
+                            <Select className="form-select form-select-sm" value={params.categoryExtra} onChange={(event) => patch({ categoryExtra: Number(event.target.value) })}>
                                 {WIRED_FX_NUMBER_ALIGNMENTS.map((alignment, index) => (
                                     <option key={alignment} value={index}>
                                         {localizeWithFallback(`wiredfurni.params.variablefx.icon_alignment.${alignment}`, alignment)}
                                     </option>
                                 ))}
-                            </select>
+                            </Select>
                         )}
                     </div>
                 )}
@@ -304,26 +346,23 @@ export const WiredExtraVariableFxView: FC<WiredExtraVariableFxViewProps> = (prop
                 <div className="flex gap-2">
                     <div className="flex flex-col gap-1 flex-1">
                         <Text bold>{localizeWithFallback('wiredfurni.params.variablefx.color', 'Colour')}</Text>
-                        <select className="form-select form-select-sm" data-testid="fx-color" value={params.colorId} onChange={(event) => patch({ colorId: Number(event.target.value) })}>
-                            <option value={WIRED_FX_COLOR_NOT_APPLICABLE}>{localizeWithFallback('wiredfurni.params.variablefx.color.default', "The style's own")}</option>
-                            <option value={WIRED_FX_COLOR_DYNAMIC_LEVELLING}>{localizeWithFallback('wiredfurni.params.variablefx.color.levelling', 'By level (red to green)')}</option>
-                            <option value={WIRED_FX_COLOR_DYNAMIC_TEAM}>{localizeWithFallback('wiredfurni.params.variablefx.color.team', "The holder's team colour")}</option>
-                            {WIRED_FX_PALETTE.map((entry) => (
-                                <option key={entry.id} value={entry.id}>
-                                    {localizeWithFallback(entry.key, entry.fallback)}
+                        <Select className="form-select form-select-sm" data-testid="fx-color" value={params.colorId} onChange={(event) => patch({ colorId: Number(event.target.value) })}>
+                            {appearance.colors.map((colorId) => (
+                                <option key={colorId} value={colorId}>
+                                    {wiredVariableFxColorLabel(colorId, (key, fallback) => localizeWithFallback(key, fallback))}
                                 </option>
                             ))}
-                        </select>
+                        </Select>
                     </div>
                     <div className="flex flex-col gap-1 flex-1">
                         <Text bold>{localizeWithFallback('wiredfurni.params.variablefx.width', 'Width')}</Text>
-                        <select className="form-select form-select-sm" value={params.widthId} onChange={(event) => patch({ widthId: Number(event.target.value) })}>
-                            {WIRED_FX_WIDTHS.map((entry) => (
-                                <option key={entry.id} value={entry.id}>
-                                    {localizeWithFallback(entry.key, entry.fallback)}
+                        <Select className="form-select form-select-sm" data-testid="fx-width" value={params.widthId} onChange={(event) => patch({ widthId: Number(event.target.value) })}>
+                            {appearance.widths.map((widthId) => (
+                                <option key={widthId} value={widthId}>
+                                    {localizeWithFallback(`wiredfurni.params.variablefx.width.${widthId}`, WIRED_FX_WIDTH_NAMES[widthId] ?? String(widthId))}
                                 </option>
                             ))}
-                        </select>
+                        </Select>
                     </div>
                 </div>
 
@@ -383,6 +422,22 @@ export const WiredExtraVariableFxView: FC<WiredExtraVariableFxViewProps> = (prop
                         )}
                     </>
                 )}
+
+                <details className="flex flex-col gap-1">
+                    <summary>
+                        <Text bold>{localizeWithFallback('wiredfurni.params.variablefx.stack_order', 'Order in the fx stack')}</Text>
+                    </summary>
+                    <Text small={true}>
+                        {localizeWithFallback('wiredfurni.params.variablefx.stack_order.info', 'Higher values place this fx lower in the object\'s fx stack.')}
+                    </Text>
+                    <OctaneInput
+                        type="number"
+                        inputSize="sm"
+                        data-testid="fx-stack-order"
+                        value={params.stackOrder ?? 0}
+                        onChange={(event) => patch({ stackOrder: Math.max(-2147483648, Math.min(2147483647, toInt(event.target.value, 0))) })}
+                    />
+                </details>
 
                 {category === WIRED_FX_CATEGORY.LEVELLING_PROGRESS && (
                     <Text small={true}>

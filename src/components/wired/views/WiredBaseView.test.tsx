@@ -1,7 +1,7 @@
 /* @vitest-environment jsdom */
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { ButtonHTMLAttributes, PropsWithChildren } from 'react';
+import { ButtonHTMLAttributes, CSSProperties, PropsWithChildren } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
@@ -27,8 +27,12 @@ const mocks = vi.hoisted(() => ({
     roomSettings: { canModify: true },
     showSingleBubble: vi.fn(),
     showConfirm: vi.fn(),
+    simpleAlert: vi.fn(),
     sent: [] as unknown[],
-    links: [] as string[]
+    links: [] as string[],
+    floorItem: { name: 'Effect: Toggle state', className: 'wf_act_toggle_state' } as { name: string; className: string },
+    wiredStyle: '' as string,
+    activeWired: [] as number[]
 }));
 
 vi.mock('@octane/renderer', () => {
@@ -47,7 +51,7 @@ vi.mock('@octane/renderer', () => {
         ApplySnapshotMessageComposer,
         ConditionDefinition,
         GetRoomEngine: () => ({ areaSelectionManager: { clearHighlight: vi.fn(), deactivate: vi.fn() } }),
-        GetSessionDataManager: () => ({ getFloorItemData: () => ({ name: 'Effect: Toggle state' }) }),
+        GetSessionDataManager: () => ({ getFloorItemData: () => mocks.floorItem }),
         Triggerable,
         TriggerDefinition,
         WiredActionDefinition,
@@ -59,9 +63,11 @@ vi.mock('@octane/renderer', () => {
 
 vi.mock('../../../api', async () => {
     const header = await vi.importActual<typeof import('../../../api/wired/WiredHeaderButton')>('../../../api/wired/WiredHeaderButton');
+    const style = await vi.importActual<typeof import('../../../api/wired/WiredStyle')>('../../../api/wired/WiredStyle');
 
     return {
     ...header,
+    ...style,
     CreateLinkEvent: (link: string) => mocks.links.push(link),
     GetConfigurationValue: () => '',
     NotificationBubbleType: { INFO: 'info' },
@@ -70,13 +76,19 @@ vi.mock('../../../api', async () => {
     LocalizeText: (key: string) => key,
     localizeWithFallback: (key: string, fallback: string) => fallback,
     WiredFurniType: { STUFF_SELECTION_OPTION_NONE: 0 },
-    WiredSelectionVisualizer: { clearAllSelectionShaders: vi.fn(), clearSelectionShaderFromFurni: vi.fn(), applySelectionShaderToFurni: vi.fn() },
-    wiredStyleClassName: () => ''
+    WiredSelectionVisualizer: {
+        clearAllSelectionShaders: vi.fn(),
+        clearSelectionShaderFromFurni: vi.fn(),
+        applySelectionShaderToFurni: vi.fn(),
+        highlightActiveWired: (id: number) => mocks.activeWired.push(id),
+        unhighlightActiveWired: (id: number) => mocks.activeWired.splice(mocks.activeWired.indexOf(id), 1)
+    }
     };
 });
 
 vi.mock('../../../assets/images/wired/wired_bg_left.png', () => ({ default: 'left.png' }));
 vi.mock('../../../assets/images/wired/wired_bg_right.png', () => ({ default: 'right.png' }));
+vi.mock('../../../assets/images/wired/type/icon_action.png', () => ({ default: 'icon_action.png' }));
 
 vi.mock('../../../common', () => ({
     Button: ({ children, fullWidth: _fullWidth, classNames: _classNames, ...props }: PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement> & { fullWidth?: boolean; classNames?: string[] }>) => (
@@ -84,7 +96,11 @@ vi.mock('../../../common', () => ({
             {children}
         </button>
     ),
-    OctaneCardView: ({ children }: PropsWithChildren) => <div>{children}</div>,
+    OctaneCardView: ({ children, className, style }: PropsWithChildren<{ className?: string; style?: CSSProperties }>) => (
+        <div data-testid="wired-window" className={className} style={style}>
+            {children}
+        </div>
+    ),
     OctaneCardHeaderView: ({ headerText, children }: PropsWithChildren<{ headerText: string }>) => (
         <div>
             {headerText}
@@ -97,16 +113,24 @@ vi.mock('../../../common', () => ({
 
 vi.mock('../../../hooks', () => ({
     useWired: () => mocks.wired,
-    useNotification: () => ({ showSingleBubble: mocks.showSingleBubble, showConfirm: mocks.showConfirm }),
-    useWiredTools: () => ({ roomSettings: mocks.roomSettings, accountPreferences: { wiredStyle: 'default' } })
+    useNotification: () => ({ showSingleBubble: mocks.showSingleBubble, showConfirm: mocks.showConfirm, simpleAlert: mocks.simpleAlert }),
+    useWiredTools: () => ({ roomSettings: mocks.roomSettings, accountPreferences: { wiredStyle: mocks.wiredStyle } })
 }));
 
 vi.mock('./WiredFurniSelectorView', () => ({ WiredFurniSelectorView: () => null }));
 
-import { TriggerDefinition } from '@octane/renderer';
+import { TriggerDefinition, WiredActionDefinition } from '@octane/renderer';
 import { WiredBaseView } from './WiredBaseView';
 
-const openMenu = () => fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+const openMenu = () => {
+    const toggle = screen.getByRole('button', { name: 'Menu' });
+
+    // Base UI opens its menu on mousedown (a real click is pointerdown, mousedown, mouseup, click).
+    fireEvent.pointerDown(toggle);
+    fireEvent.mouseDown(toggle);
+    fireEvent.mouseUp(toggle);
+    fireEvent.click(toggle);
+};
 
 describe('WiredBaseView quick menu', () => {
     beforeEach(() => {
@@ -116,6 +140,8 @@ describe('WiredBaseView quick menu', () => {
         mocks.roomSettings.canModify = true;
         mocks.showSingleBubble.mockReset();
         mocks.showConfirm.mockReset();
+        mocks.simpleAlert.mockReset();
+        (mocks.wired as Record<string, unknown>).furniIds2 = null;
         mocks.sent.length = 0;
         mocks.links.length = 0;
     });
@@ -127,7 +153,7 @@ describe('WiredBaseView quick menu', () => {
         const { rerender } = render(<WiredBaseView hasSpecialInput={false} requiresFurni={0} save={save} wiredType="action" />);
 
         openMenu();
-        expect(screen.getByRole('menuitem', { name: 'Paste' })).toBeDisabled();
+        expect(screen.getByRole('menuitem', { name: 'Paste' })).toHaveAttribute('aria-disabled', 'true');
 
         fireEvent.click(screen.getByRole('menuitem', { name: 'Copy' }));
         expect(save).toHaveBeenCalledTimes(1);
@@ -175,8 +201,8 @@ describe('WiredBaseView quick menu', () => {
         mocks.roomSettings.canModify = false;
         render(<WiredBaseView hasSpecialInput={false} requiresFurni={0} save={vi.fn()} wiredType="action" />);
         openMenu();
-        expect(screen.getByRole('menuitem', { name: 'Copy' })).toBeDisabled();
-        expect(screen.getByRole('menuitem', { name: 'Save' })).toBeDisabled();
+        expect(screen.getByRole('menuitem', { name: 'Copy' })).toHaveAttribute('aria-disabled', 'true');
+        expect(screen.getByRole('menuitem', { name: 'Save' })).toHaveAttribute('aria-disabled', 'true');
     });
 
     it('has the official open-menu and close entries and splits the header name', () => {
@@ -190,6 +216,42 @@ describe('WiredBaseView quick menu', () => {
         openMenu();
         fireEvent.click(screen.getByRole('menuitem', { name: 'Close' }));
         expect(mocks.wired.setTrigger).toHaveBeenCalledWith(null);
+    });
+
+    it('clear picks pushes the view state first and is on while only the second list has picks', () => {
+        const save = vi.fn();
+        (mocks.wired as Record<string, unknown>).furniIds2 = [5];
+        render(<WiredBaseView hasSpecialInput={false} requiresFurni={0} save={save} wiredType="action" />);
+
+        openMenu();
+        fireEvent.click(screen.getByRole('menuitem', { name: 'Clear furni picks' }));
+        expect(save).toHaveBeenCalledTimes(1);
+        expect(mocks.wired.clearWiredPicks).toHaveBeenCalledTimes(1);
+    });
+
+    it('a refused validation shows the save failed alert instead of returning silently', () => {
+        render(<WiredBaseView hasSpecialInput={false} requiresFurni={0} save={vi.fn()} validate={() => false} wiredType="action" />);
+
+        fireEvent.click(screen.getByText('wiredfurni.ready'));
+        expect(mocks.wired.saveWired).not.toHaveBeenCalled();
+        expect(mocks.simpleAlert).toHaveBeenCalledTimes(1);
+        expect(mocks.simpleAlert.mock.calls[0][4]).toBe('Update failed');
+    });
+
+    it('shows the error text a view returns', () => {
+        render(<WiredBaseView hasSpecialInput={false} requiresFurni={0} save={vi.fn()} validate={() => 'Pick a variable first'} wiredType="action" />);
+
+        fireEvent.click(screen.getByText('wiredfurni.ready'));
+        expect(mocks.simpleAlert.mock.calls[0][0]).toBe('Pick a variable first');
+    });
+
+    it('scrolls between a fixed header and footer only when the element allows it', () => {
+        const { unmount } = render(<WiredBaseView hasSpecialInput={false} requiresFurni={0} save={vi.fn()} wiredType="action" />);
+
+        expect(screen.getByTestId('wired-window')).not.toHaveClass('octane-wired--scrolling');
+        unmount();
+        render(<WiredBaseView allowScrolling hasSpecialInput={false} requiresFurni={0} save={vi.fn()} wiredType="action" />);
+        expect(screen.getByTestId('wired-window')).toHaveClass('octane-wired--scrolling');
     });
 
     it('asks before saving a selector that inverts without filtering', () => {
@@ -228,5 +290,66 @@ describe('WiredBaseView advanced section', () => {
 
         expect(screen.getByText('source rows')).not.toBeVisible();
         expect(screen.getByRole('button', { name: 'wiredfurni.params.sources.expand' })).toBeInTheDocument();
+    });
+});
+
+describe('WiredBaseView styles', () => {
+    afterEach(() => {
+        cleanup();
+        mocks.floorItem = { name: 'Effect: Toggle state', className: 'wf_act_toggle_state' };
+        mocks.wiredStyle = '';
+    });
+
+    const renderAction = () => {
+        const original = mocks.wired.trigger;
+
+        mocks.wired.trigger = Object.assign(Object.create(WiredActionDefinition.prototype), { ...original, code: 0 });
+        render(<WiredBaseView hasSpecialInput={false} requiresFurni={0} save={vi.fn()} wiredType="action" />);
+        mocks.wired.trigger = original;
+    };
+
+    it('opens in Illumina by default, 240 wide, with the split header', () => {
+        renderAction();
+
+        const window = screen.getByTestId('wired-window');
+
+        expect(window).toHaveClass('octane-wired--style-illumina');
+        expect(window.style.width).toBe('240px');
+        expect(window.style.getPropertyValue('--wired-frame')).toBe('#e2e2e2');
+        expect(screen.getByText('EFFECT')).toBeInTheDocument();
+    });
+
+    it('wears the picked Volter style: type icon and the whole name on one line', () => {
+        mocks.wiredStyle = 'volter';
+        renderAction();
+
+        expect(screen.getByTestId('wired-window')).toHaveClass('octane-wired--style-volter', 'octane-wired--volter');
+        expect(screen.getByText('Effect: Toggle state')).toBeInTheDocument();
+        expect(screen.queryByText('EFFECT')).toBeNull();
+        expect(document.querySelector('.octane-wired__summary-icon')).toHaveAttribute('src', 'icon_action.png');
+    });
+
+    it('forces the proto style of its furni class over the pick, 256 wide', () => {
+        mocks.wiredStyle = 'illumina';
+        mocks.floorItem = { name: 'Effect: Toggle state', className: 'wf_ltdproto_act_toggle_state' };
+        renderAction();
+
+        const window = screen.getByTestId('wired-window');
+
+        expect(window).toHaveClass('octane-wired--style-volter_yellow', 'octane-wired--inner-border');
+        expect(window.style.width).toBe('256px');
+        expect(window.style.getPropertyValue('--wired-background')).toBe('#faea7c');
+    });
+});
+
+describe('WiredBaseView active box', () => {
+    afterEach(cleanup);
+
+    it('tints the open box and lets go of it when the window closes', () => {
+        const { unmount } = render(<WiredBaseView hasSpecialInput={false} requiresFurni={0} save={vi.fn()} wiredType="action" />);
+
+        expect(mocks.activeWired).toEqual([77]);
+        unmount();
+        expect(mocks.activeWired).toEqual([]);
     });
 });

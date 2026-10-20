@@ -77,7 +77,7 @@ vi.mock('@octane/renderer', () => {
 });
 
 import { ConditionDefinition, TriggerDefinition, WiredActionDefinition } from '@octane/renderer';
-import { pasteTriggerableData, resetTriggerableData, wiredClipboardKeyOf, withServerDefaultIntParams, withTriggerableData } from './WiredClipboard';
+import { pasteTriggerableData, removeFurniFromWiredPicks, resetTriggerableData, wiredClipboardKeyOf, withServerDefaultIntParams, withTriggerableData } from './WiredClipboard';
 
 const action = (code: number) => {
     const box = new (WiredActionDefinition as any)() as any;
@@ -163,7 +163,7 @@ describe('WiredClipboard', () => {
     });
 
     it('paste takes everything, paste-into keeps the picks and the delay', () => {
-        const entry = { key: 'action:7', intParams: [3], stringParam: 'copied', furniIds: [42], delayInPulses: 2 };
+        const entry = { key: 'action:7', intParams: [3], stringParam: 'copied', furniIds: [42], delayInPulses: 2, variableIds: ['user:5'] };
 
         const pasted = pasteTriggerableData(action(7), entry, false);
         expect(pasted.intData).toEqual([3]);
@@ -173,7 +173,50 @@ describe('WiredClipboard', () => {
         const merged = pasteTriggerableData(action(7), entry, true);
         expect(merged.intData).toEqual([3]);
         expect(merged.stringData).toBe('copied');
+        // The variables are settings too: they travel in the variable ids.
+        expect((merged as unknown as { _variableIds: string[] })._variableIds).toEqual(['user:5']);
         expect(merged.selectedItems).toEqual([900, 901]);
         expect(merged.delayInPulses).toBe(4);
+    });
+
+    it('paste restores the second picks, sources, variable ids and quantifier too (official ClipboardWiredEntry)', () => {
+        const condition = new (ConditionDefinition as any)() as any;
+        condition._type = 9;
+        condition._stuffIds2 = [1];
+        condition._quantifierCode = 0;
+
+        const entry = {
+            key: 'condition:9',
+            intParams: [2],
+            stringParam: '',
+            furniIds: [10],
+            delayInPulses: 0,
+            furniIds2: [11, 12],
+            furniSourceTypes: [100, 101],
+            userSourceTypes: [0],
+            variableIds: ['v1'],
+            quantifierCode: 1
+        };
+        const pasted = pasteTriggerableData(condition, entry, false) as any;
+
+        expect(pasted.selectedItems).toEqual([10]);
+        expect(pasted.selectedItems2).toEqual([11, 12]);
+        expect(pasted.furniSourceTypes).toEqual([100, 101]);
+        expect(pasted.userSourceTypes).toEqual([0]);
+        expect(pasted._variableIds).toEqual(['v1']);
+        expect(pasted.quantifierCode).toBe(1);
+        // copied, not shared
+        expect(pasted.selectedItems2).not.toBe(entry.furniIds2);
+    });
+
+    it('a removed furni closes the editor when it is the open box, else leaves both pick lists', () => {
+        expect(removeFurniFromWiredPicks(77, [1, 2], [3], 77).closesEditor).toBe(true);
+
+        const dropped = removeFurniFromWiredPicks(77, [1, 2], [2, 3], 2);
+        expect(dropped).toEqual({ closesEditor: false, furniIds: [1], furniIds2: [3], changed: true });
+
+        const untouched = removeFurniFromWiredPicks(77, [1], [3], 9);
+        expect(untouched.changed).toBe(false);
+        expect(untouched.furniIds).toEqual([1]);
     });
 });

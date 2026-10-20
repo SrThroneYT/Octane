@@ -22,7 +22,7 @@ const rowNames = () => screen.queryAllByRole('option').map((row) => row.textCont
 const row = (name: string) => screen.getAllByRole('option').find((option) => option.textContent === name);
 const hover = (name: string) => fireEvent.mouseEnter(row(name));
 const open = () => fireEvent.click(screen.getByRole('textbox'));
-const tab = (key: string) => fireEvent.click(screen.getByTitle(`wiredfurni.variable_picker.tab.${key}`));
+const tab = (key: string) => fireEvent.click(screen.getByRole('button', { name: `wiredfurni.variable_picker.tab.${key}` }));
 
 describe('Wired variable picker', () => {
     beforeEach(() => clearWiredVariablePickerHistory());
@@ -32,13 +32,13 @@ describe('Wired variable picker', () => {
         render(<WiredVariablePicker entries={entries} selectedToken="" onSelect={vi.fn()} />);
 
         open();
-        expect(screen.getByTitle('wiredfurni.variable_picker.tab.user_created')).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getByRole('button', { name: 'wiredfurni.variable_picker.tab.user_created' })).toHaveAttribute('aria-pressed', 'true');
         expect(rowNames()).toEqual(['my_score', 'flag']);
         cleanup();
 
         render(<WiredVariablePicker entries={entries} selectedToken={entries[2].token} onSelect={vi.fn()} />);
         open();
-        expect(screen.getByTitle('wiredfurni.variable_picker.tab.internal')).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getByRole('button', { name: 'wiredfurni.variable_picker.tab.internal' })).toHaveAttribute('aria-pressed', 'true');
     });
 
     it('nests the tree to any depth and selects a leaf', () => {
@@ -75,10 +75,11 @@ describe('Wired variable picker', () => {
         render(<WiredVariablePicker entries={entries} selectedToken="" onSelect={vi.fn()} />);
         open();
         fireEvent.change(screen.getByRole('textbox'), { target: { value: 'old event' } });
-        expect(screen.getByTitle('wiredfurni.variable_picker.tab.search')).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getByRole('button', { name: 'wiredfurni.variable_picker.tab.search' })).toHaveAttribute('aria-pressed', 'true');
         expect(rowNames()).toEqual(['event.variable_update.old_value']);
         fireEvent.change(screen.getByRole('textbox'), { target: { value: 'deposit' } });
-        expect(rowNames()).toEqual(['event']);
+        // The box variables and AIR's built-in @event.transaction_complete.deposit.* parts.
+        expect(rowNames()).toEqual(['event', '@event']);
     });
 
     it('takes the first search result on Enter and an exact name on Enter', () => {

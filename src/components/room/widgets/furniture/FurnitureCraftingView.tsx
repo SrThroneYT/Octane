@@ -12,6 +12,7 @@ import {
     OctaneCardView
 } from '../../../../common';
 import { useFurnitureCraftingWidget, useRoom } from '../../../../hooks';
+import { BaseButton } from '../../../../common/BaseButton';
 
 export const FurnitureCraftingView: FC<{}> = (props) => {
     const {
@@ -73,7 +74,7 @@ export const FurnitureCraftingView: FC<{}> = (props) => {
                             <AutoGrid columnCount={5}>
                                 {recipes.length > 0 &&
                                     recipes.map((item) => (
-                                        <LayoutGridItem
+                                        <LayoutGridItem component={BaseButton} type="button"
                                             key={item.name}
                                             itemActive={selectedRecipe && selectedRecipe.name === item.name}
                                             itemImage={item.iconUrl}
@@ -89,7 +90,7 @@ export const FurnitureCraftingView: FC<{}> = (props) => {
                                     ingredients.map((item) => (
                                         <LayoutGridItem
                                             key={item.name}
-                                            className={(!item.count ? 'opacity-0-5 ' : '') + 'cursor-default'}
+                                            className={(!item.count ? 'opacity-50 ' : '') + 'cursor-default'}
                                             itemCount={item.count}
                                             itemCountMinimum={0}
                                             itemImage={item.iconUrl}
@@ -120,7 +121,7 @@ export const FurnitureCraftingView: FC<{}> = (props) => {
                                                     elements.push(
                                                         <LayoutGridItem
                                                             key={i}
-                                                            className={(ingredientData.count - i <= 0 ? 'opacity-0-5 ' : '') + 'cursor-default'}
+                                                            className={(ingredientData.count - i <= 0 ? 'opacity-50 ' : '') + 'cursor-default'}
                                                             itemImage={ingredientData.iconUrl}
                                                         />
                                                     );

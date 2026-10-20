@@ -64,15 +64,18 @@ export const PROJECTILE_DISTANCE_NORMAL = 0;
 export const PROJECTILE_DISTANCE_OVERSHOOT = 1;
 export const PROJECTILE_DISTANCE_FIXED = 2;
 
-/** Bit order of the internal variables mask. */
+/**
+ * Bit order of the internal variables mask, AIR's sub-variable ids: 0 tiles travelled, 1 user collisions, 2 furni
+ * collisions, 3 x, 4 y, 5 altitude, 6 is travelling. The server moves masks of boxes saved in the older order.
+ */
 export const PROJECTILE_INTERNAL_VARIABLES: ReadonlyArray<string> = [
+    '@projectile.animation.tiles_travelled',
+    '@projectile.animation.user_collisions',
+    '@projectile.animation.furni_collisions',
     '@projectile.animation.position.x',
     '@projectile.animation.position.y',
     '@projectile.animation.position.altitude',
-    '@projectile.animation.is_traveling',
-    '@projectile.animation.tiles_traveled',
-    '@projectile.animation.furni_collisions',
-    '@projectile.animation.user_collisions'
+    '@projectile.animation.is_travelling'
 ];
 
 export const defaultProjectileParams = (): number[] => {

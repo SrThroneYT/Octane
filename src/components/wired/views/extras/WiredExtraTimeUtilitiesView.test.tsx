@@ -1,11 +1,13 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { PropsWithChildren } from 'react';
+import { selectOption } from '../../../../test-utils/selectOption';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { normalizeTimeUtilMask, normalizeTimeUtilMode, setTimeUtilSubVariableSelected, timeUtilPartName, timeUtilTimestampName } from './timeUtilitiesParams';
+import { availableTimeUtilModes, normalizeTimeUtilMask, normalizeTimeUtilMode, setTimeUtilSubVariableSelected, timeUtilPartName, timeUtilTimestampName } from './timeUtilitiesParams';
 
 const setIntParams = vi.fn();
 const setStringParam = vi.fn();
 let trigger: { stringData: string; intData: number[] } | null = null;
+let tools: Record<string, { hasValue: boolean }[]> = {};
 
 vi.mock('../../../../api', () => ({
     localizeWithFallback: (_key: string, fallback: string) => fallback,
@@ -13,7 +15,8 @@ vi.mock('../../../../api', () => ({
 }));
 
 vi.mock('../../../../hooks', () => ({
-    useWired: () => ({ trigger, setIntParams, setStringParam })
+    useWired: () => ({ trigger, setIntParams, setStringParam }),
+    useWiredToolsState: () => tools
 }));
 
 vi.mock('../../../../common', () => ({
@@ -54,6 +57,13 @@ describe('timeUtilitiesParams', () => {
         expect(timeUtilPartName(2, 'milliseconds_of_seconds')).toBe('last_update_time.milliseconds_of_seconds');
     });
 
+    it('offers only the modes the room variables can be read as, and the stored one', () => {
+        expect(availableTimeUtilModes([], 0)).toEqual([0, 1, 2]);
+        expect(availableTimeUtilModes([{ hasValue: false, canReadCreationTime: false, canReadLastUpdateTime: true }], 2)).toEqual([2]);
+        expect(availableTimeUtilModes([{ hasValue: false, canReadCreationTime: false, canReadLastUpdateTime: true }], 0)).toEqual([0, 2]);
+        expect(availableTimeUtilModes([{ hasValue: true, canReadCreationTime: true, canReadLastUpdateTime: true }], 0)).toEqual([0, 1, 2]);
+    });
+
     it('lists the timestamp itself only in the timestamp modes', () => {
         expect(timeUtilTimestampName(0)).toBeNull();
         expect(timeUtilTimestampName(1)).toBe('creation_time');
@@ -68,14 +78,15 @@ describe('WiredExtraTimeUtilitiesView', () => {
         setIntParams.mockClear();
         setStringParam.mockClear();
         trigger = { stringData: '', intData: [(1 << 4) | (1 << 24), 1] };
+        tools = {};
     });
 
     it('shows the saved selection and mode', () => {
         render(<WiredExtraTimeUtilitiesView />);
 
-        expect((screen.getByRole('radio', { name: 'Creation time' }) as HTMLInputElement).checked).toBe(true);
-        expect((screen.getByRole('checkbox', { name: 'Hour of the day' }) as HTMLInputElement).checked).toBe(true);
-        expect((screen.getByRole('checkbox', { name: 'Year' }) as HTMLInputElement).checked).toBe(false);
+        expect(screen.getByRole('combobox', { name: 'Read the variable as:' })).toHaveTextContent('Creation time');
+        expect(screen.getByRole('checkbox', { name: 'Hour of the day' })).toBeChecked();
+        expect(screen.getByRole('checkbox', { name: 'Year' })).not.toBeChecked();
         expect(screen.getByDisplayValue('creation_time.hour_of_day')).toBeTruthy();
         expect(screen.queryByRole('checkbox', { name: 'Days' })).toBeNull();
     });
@@ -87,7 +98,7 @@ describe('WiredExtraTimeUtilitiesView', () => {
         fireEvent.click(screen.getByRole('button', { name: /Advanced sub-variables/ }));
         fireEvent.click(screen.getByRole('checkbox', { name: 'Days' }));
         fireEvent.click(screen.getByRole('checkbox', { name: 'Months' }));
-        fireEvent.click(screen.getByRole('radio', { name: 'Last update time' }));
+        selectOption(screen.getByRole('combobox', { name: 'Read the variable as:' }), 'Last update time');
         fireEvent.click(screen.getByRole('button', { name: 'Save' }));
 
         expect(setIntParams).toHaveBeenCalledWith([(1 << 4) | (1 << 10) | (1 << 26), 2]);
@@ -100,7 +111,7 @@ describe('WiredExtraTimeUtilitiesView', () => {
         expect(screen.getByDisplayValue('creation_time')).toBeTruthy();
         expect(screen.getByText('The parts of a timestamp are read-only.')).toBeTruthy();
 
-        fireEvent.click(screen.getByRole('radio', { name: 'Variable value' }));
+        selectOption(screen.getByRole('combobox', { name: 'Read the variable as:' }), 'Variable value');
 
         expect(screen.queryByDisplayValue('creation_time')).toBeNull();
         expect(screen.getByDisplayValue('value.hour_of_day')).toBeTruthy();
@@ -113,5 +124,18 @@ describe('WiredExtraTimeUtilitiesView', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Save' }));
 
         expect(setIntParams).toHaveBeenCalledWith([0, 0]);
+    });
+
+    it('leaves out a mode no room variable can be read as', () => {
+        trigger = { stringData: '', intData: [0, 0] };
+        tools = { roomVariableDefinitions: [{ hasValue: true }] };
+        render(<WiredExtraTimeUtilitiesView />);
+
+        const select = screen.getByRole('combobox', { name: 'Read the variable as:' });
+
+        expect(select).toHaveTextContent('Variable value');
+        fireEvent.click(select);
+        expect(screen.queryByRole('option', { name: 'Creation time' })).toBeNull();
+        expect(screen.getByRole('option', { name: 'Last update time' })).toBeTruthy();
     });
 });

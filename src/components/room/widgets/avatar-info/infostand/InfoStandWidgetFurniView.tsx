@@ -70,6 +70,9 @@ import statXIcon from '../../../../../assets/images/infostand/stat-x.png';
 import statYIcon from '../../../../../assets/images/infostand/stat-y.png';
 import { ImagePositionEditorView } from './ImagePositionEditorView';
 import { infostandFurniOwnerText, infostandFurniPanelClass } from './infostandFurni.helpers';
+import { BaseButton } from '../../../../../common/BaseButton';
+import { NumberInput } from '../../../../../common/NumberInput';
+import { Hint } from '../../../../../common/Tooltip';
 
 interface InfoStandWidgetFurniViewProps {
     avatarInfo: AvatarInfoFurni;
@@ -108,18 +111,19 @@ const InfoStandStat: FC<{ icon: ReactNode; label: string; value: string | number
     const shown = copied ? '✓' : value;
 
     return (
-        <button
-            type="button"
-            className={`group flex items-center gap-1 min-w-0 w-full rounded px-0.5 border-0 bg-transparent cursor-pointer transition-colors duration-100 hover:bg-[#ffffff14] active:bg-[#ffffff24] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#7ec8e3] ${iconAfter ? 'justify-end' : 'justify-start'}`}
-            title={`${tooltip ?? label}: ${value} - ${localizeWithFallback('infostand.copy.tooltip', 'Click to copy')}`}
-            onClick={() => void CopyToClipboard(String(value)).then((ok) => setCopied(ok))}
-        >
-            {!iconAfter && icon}
-            <Text small textBreak variant="white" className={`transition-colors duration-100 ${copied ? '!text-[#7ec8e3]' : 'group-hover:!text-[#7ec8e3]'}`}>
-                {iconAfter ? `${shown}:` : `:${shown}`}
-            </Text>
-            {iconAfter && icon}
-        </button>
+        <Hint content={`${tooltip ?? label}: ${value} - ${localizeWithFallback('infostand.copy.tooltip', 'Click to copy')}`}>
+            <BaseButton
+                type="button"
+                className={`group flex items-center gap-1 min-w-0 w-full rounded px-0.5 border-0 bg-transparent cursor-pointer transition-colors duration-100 hover:bg-[#ffffff14] active:bg-[#ffffff24] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#7ec8e3] ${iconAfter ? 'justify-end' : 'justify-start'}`}
+                onClick={() => void CopyToClipboard(String(value)).then((ok) => setCopied(ok))}
+            >
+                {!iconAfter && icon}
+                <Text small textBreak variant="white" className={`transition-colors duration-100 ${copied ? '!text-[#7ec8e3]' : 'group-hover:!text-[#7ec8e3]'}`}>
+                    {iconAfter ? `${shown}:` : `:${shown}`}
+                </Text>
+                {iconAfter && icon}
+            </BaseButton>
+        </Hint>
     );
 };
 
@@ -407,10 +411,13 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
         }
 
         const isValidController = avatarInfo.roomControllerLevel >= RoomControllerLevel.GUEST;
+        // AIR InfoStandFurniView: playtest mode (wired menu preference) hides move, rotate, pick up and
+        // the rights-only use for owners and staff too; the free furni movements mode below still shows them.
+        const isPlayTest = !!roomSession?.playTestMode;
 
         let removeBackgroundAllowed = false;
 
-        if (isValidController || avatarInfo.isOwner || avatarInfo.isRoomOwner || avatarInfo.isAnyRoomController) {
+        if (!isPlayTest && (isValidController || avatarInfo.isOwner || avatarInfo.isRoomOwner || avatarInfo.isAnyRoomController)) {
             canMove = true;
             canRotate = !avatarInfo.isWallItem;
             if (avatarInfo.roomControllerLevel >= RoomControllerLevel.MODERATOR) godMode = true;
@@ -428,9 +435,10 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
 
         if (
             avatarInfo.usagePolicy === RoomWidgetFurniInfoUsagePolicyEnum.EVERYBODY ||
-            (avatarInfo.usagePolicy === RoomWidgetFurniInfoUsagePolicyEnum.CONTROLLER && isValidController) ||
-            (avatarInfo.extraParam === RoomWidgetEnumItemExtradataParameter.JUKEBOX && isValidController) ||
-            (avatarInfo.extraParam === RoomWidgetEnumItemExtradataParameter.USABLE_PRODUCT && isValidController)
+            (!isPlayTest &&
+                ((avatarInfo.usagePolicy === RoomWidgetFurniInfoUsagePolicyEnum.CONTROLLER && isValidController) ||
+                    (avatarInfo.extraParam === RoomWidgetEnumItemExtradataParameter.JUKEBOX && isValidController) ||
+                    (avatarInfo.extraParam === RoomWidgetEnumItemExtradataParameter.USABLE_PRODUCT && isValidController)))
         )
             canUse = true;
 
@@ -516,7 +524,7 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
         if (avatarInfo.isOwner || avatarInfo.isAnyRoomController) pickupMode = PICKUP_MODE_FULL;
         else if (avatarInfo.isRoomOwner || avatarInfo.roomControllerLevel >= RoomControllerLevel.GUILD_ADMIN) pickupMode = PICKUP_MODE_EJECT;
 
-        if (avatarInfo.isStickie) pickupMode = PICKUP_MODE_NONE;
+        if (avatarInfo.isStickie || isPlayTest) pickupMode = PICKUP_MODE_NONE;
 
         setPickupMode(pickupMode);
         setCanMove(canMove);
@@ -1033,7 +1041,7 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
                                 {(showEditFurni || showBuildtools) && (
                                     <div className="flex gap-1 w-full">
                                         {showEditFurni && (
-                                            <button
+                                            <BaseButton
                                                 className="flex-1 min-w-0 text-white text-xs bg-[#418db0] hover:bg-[#3789a8] border border-[#ffffff33] rounded px-2 py-1 cursor-pointer transition-colors"
                                                 onClick={() => {
                                                     CreateLinkEvent('furni-editor/show');
@@ -1042,17 +1050,17 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
                                                 }}
                                             >
                                                 {localizeWithFallback('infostand.button.edit_furni', 'Edit furni')}
-                                            </button>
+                                            </BaseButton>
                                         )}
                                         {showBuildtools && (
-                                            <button
+                                            <BaseButton
                                                 className="flex-1 min-w-0 text-white text-xs bg-[#2a2a3a] hover:bg-[#3a3a4a] border border-[#ffffff33] rounded px-2 py-1 cursor-pointer transition-colors"
                                                 onClick={() => setDropdownOpen(!dropdownOpen)}
                                             >
                                                 {dropdownOpen
                                                     ? localizeWithFallback('infostand.button.buildtools.close', 'Close Buildtools')
                                                     : localizeWithFallback('infostand.button.buildtools.open', 'Open Buildtools')}
-                                            </button>
+                                            </BaseButton>
                                         )}
                                     </div>
                                 )}
@@ -1116,17 +1124,7 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
                                                     <Text small variant="white">
                                                         {LocalizeText('stack.magic.tile.height.label')}
                                                     </Text>
-                                                    <input
-                                                        spellCheck={false}
-                                                        type="number"
-                                                        className="w-full text-xs bg-[#1a1a2a] text-white border border-[#ffffff44] rounded px-1 py-0.5"
-                                                        value={furniLocationZ !== null ? furniLocationZ.toString() : ''}
-                                                        onChange={handleHeightChange}
-                                                        onBlur={handleHeightBlur}
-                                                        min={0}
-                                                        max={40}
-                                                        step={0.1}
-                                                    />
+                                                    <NumberInput spellCheck={false} className="w-full text-xs bg-[#1a1a2a] text-white border border-[#ffffff44] rounded px-1 py-0.5" value={furniLocationZ !== null ? furniLocationZ.toString() : ''} onChange={handleHeightChange} onBlur={handleHeightBlur} min={0} max={40} step={0.1} />
                                                     <div className="flex justify-center gap-1">
                                                         <div className="flex flex-col items-center gap-[2px]">
                                                             <div
@@ -1237,7 +1235,7 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
                 </Column>
             </Column>
             <Flex gap={1} justifyContent="end">
-                {showInspectButton && (
+                {showInspectButton && !roomSession?.playTestMode && (
                     <Button variant="dark" onClick={() => openInspectionForFurni(avatarInfo.id, avatarInfo.category)}>
                         Inspect
                     </Button>

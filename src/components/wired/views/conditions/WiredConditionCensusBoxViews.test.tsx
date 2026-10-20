@@ -4,7 +4,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const setIntParams = vi.fn();
 const setStringParam = vi.fn();
-let trigger: { intData: number[]; stringData: string; selectedItems?: unknown[] } | null = null;
+const setSourceTypes = vi.fn();
+let trigger: {
+    intData: number[];
+    stringData: string;
+    selectedItems?: unknown[];
+    furniSourceTypes?: number[];
+    userSourceTypes?: number[];
+} | null = null;
 
 vi.mock('../../../../api', () => ({
     LocalizeText: (key: string) => key,
@@ -13,7 +20,7 @@ vi.mock('../../../../api', () => ({
 }));
 
 vi.mock('../../../../hooks', () => ({
-    useWired: () => ({ trigger, setIntParams, setStringParam })
+    useWired: () => ({ trigger, setIntParams, setStringParam, setSourceTypes })
 }));
 
 vi.mock('../../../../common', () => ({
@@ -75,40 +82,45 @@ describe('the six condition windows added with the 2026-09 census', () => {
     beforeEach(() => {
         setIntParams.mockClear();
         setStringParam.mockClear();
+        setSourceTypes.mockClear();
         trigger = { intData: [], stringData: '' };
     });
 
     afterEach(cleanup);
 
-    it('rank: sends [rank, comparison, userSource, quantifier] and reads them back', () => {
-        trigger = { intData: [5, 2, 200, 1], stringData: '' };
+    it('rank: sends [rank, comparison] with the users in the source slot and reads them back; the quantifier is not in the ints', () => {
+        trigger = { intData: [5, 2], stringData: '', userSourceTypes: [200] };
         render(<WiredConditionUserRankView />);
 
         expect(screen.getByTestId('users-200')).toBeTruthy();
         save();
 
-        expect(setIntParams).toHaveBeenCalledWith([5, 2, 200, 1]);
+        expect(setIntParams).toHaveBeenCalledWith([5, 2]);
+        expect(setSourceTypes).toHaveBeenCalledWith({ furni: [], users: [200] });
     });
 
-    it('rank: an untouched window sends rank 1, at least, the triggering user, every user', () => {
+    it('rank: an untouched window sends rank 1, at least, the triggering user', () => {
         render(<WiredConditionUserRankView />);
         save();
 
-        expect(setIntParams).toHaveBeenCalledWith([1, 5, 0, 0]);
+        expect(setIntParams).toHaveBeenCalledWith([1, 5]);
+        expect(setSourceTypes).toHaveBeenCalledWith({ furni: [], users: [0] });
     });
 
-    it('opacity: sends [opacity, comparison, furniSource] and defaults to 100, equal, picked furni', () => {
-        trigger = { intData: [40, 0, 200], stringData: '' };
+    it('opacity: sends [opacity, comparison] with the furni in the source slot; defaults to 100, equal, picked furni', () => {
+        trigger = { intData: [40, 0], stringData: '', furniSourceTypes: [200] };
         const { unmount } = render(<WiredConditionFurniOpacityView />);
         expect(screen.getByTestId('furni-200')).toBeTruthy();
         save();
-        expect(setIntParams).toHaveBeenCalledWith([40, 0, 200]);
+        expect(setIntParams).toHaveBeenCalledWith([40, 0]);
+        expect(setSourceTypes).toHaveBeenCalledWith({ furni: [200], users: [] });
         unmount();
 
         trigger = { intData: [], stringData: '' };
         render(<WiredConditionFurniOpacityView />);
         save();
-        expect(setIntParams).toHaveBeenLastCalledWith([100, 1, 100]);
+        expect(setIntParams).toHaveBeenLastCalledWith([100, 1]);
+        expect(setSourceTypes).toHaveBeenLastCalledWith({ furni: [100], users: [] });
     });
 
     it('cooldown: sends [seconds], never below one second', () => {
@@ -133,15 +145,16 @@ describe('the six condition windows added with the 2026-09 census', () => {
         expect(setStringParam).toHaveBeenCalledWith('');
     });
 
-    it('highscore points: sends [points, comparison, userSource, quantifier] and needs a scoreboard', () => {
-        trigger = { intData: [500, 5, 0, 1], stringData: '', selectedItems: [] };
+    it('highscore points: sends [points, comparison] with the users in the source slot and needs a scoreboard', () => {
+        trigger = { intData: [500, 5], stringData: '', selectedItems: [], userSourceTypes: [201] };
         const { unmount } = render(<WiredConditionUserHighscorePointsView />);
         expect(screen.getByTestId('valid').textContent).toBe('false');
         save();
-        expect(setIntParams).toHaveBeenCalledWith([500, 5, 0, 1]);
+        expect(setIntParams).toHaveBeenCalledWith([500, 5]);
+        expect(setSourceTypes).toHaveBeenCalledWith({ furni: [], users: [201] });
         unmount();
 
-        trigger = { intData: [500, 5, 0, 1], stringData: '', selectedItems: [{ id: 1 }] };
+        trigger = { intData: [500, 5], stringData: '', selectedItems: [{ id: 1 }] };
         render(<WiredConditionUserHighscorePointsView />);
         expect(screen.getByTestId('valid').textContent).toBe('true');
     });

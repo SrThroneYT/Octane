@@ -9,7 +9,7 @@ export interface WiredActionBaseViewProps {
     hasSpecialInput: boolean;
     requiresFurni: number;
     save: () => void;
-    validate?: () => boolean;
+    validate?: () => boolean | string | void;
     cardStyle?: CSSProperties;
     hideDelay?: boolean;
     footer?: ReactNode;
@@ -17,6 +17,8 @@ export interface WiredActionBaseViewProps {
     selectionPreview?: ReactNode;
     /** Official: some elements open wider. */
     widthModifier?: number;
+    /** Official allowScrolling: the sections scroll between a fixed header and footer. */
+    allowScrolling?: boolean;
 }
 
 export const WiredActionBaseView: FC<PropsWithChildren<WiredActionBaseViewProps>> = (props) => {
@@ -31,7 +33,8 @@ export const WiredActionBaseView: FC<PropsWithChildren<WiredActionBaseViewProps>
         footer = null,
         footerCollapsible = true,
         selectionPreview = null,
-        widthModifier = 1
+        widthModifier = 1,
+        allowScrolling = false
     } = props;
     const { trigger = null, actionDelay = 0, setActionDelay = null } = useWired();
 
@@ -51,6 +54,7 @@ export const WiredActionBaseView: FC<PropsWithChildren<WiredActionBaseViewProps>
             footerCollapsible={footerCollapsible}
             selectionPreview={selectionPreview}
             widthModifier={widthModifier}
+            allowScrolling={allowScrolling}
             delaySection={
                 hideDelay ? null : (
                     // Official: the delay comes after the furni picks.

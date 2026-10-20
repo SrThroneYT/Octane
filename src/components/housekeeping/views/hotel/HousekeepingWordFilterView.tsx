@@ -3,6 +3,8 @@ import { FaFilter, FaPlus, FaSearch, FaSync, FaTrash } from 'react-icons/fa';
 import { HOUSEKEEPING_WORDFILTER_REPLACEMENT_MAX, HousekeepingApi, housekeepingFailureKey, IHousekeepingList, LocalizeText } from '../../../../api';
 import { useHousekeeping, useHousekeepingConfirm } from '../../../../hooks';
 import { HOUSEKEEPING_INPUT_CLASS, HousekeepingButton, HousekeepingEmptyState, HousekeepingPill, HousekeepingSection } from '../common/HousekeepingParts';
+import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 const WORDFILTER_LIST = 'hotel.wordfilter';
 
@@ -166,15 +168,14 @@ export const HousekeepingWordFilterView: FC = () => {
                                             </div>
                                         </td>
                                         <td className="px-1 py-0.5">
-                                            <button
+                                            <Hint content={LocalizeText('housekeeping.hotel.wordfilter.remove')}><BaseButton aria-label={LocalizeText('housekeeping.hotel.wordfilter.remove')}
                                                 className="text-zinc-400 hover:text-rose-600 disabled:opacity-40"
                                                 disabled={isActionPending}
-                                                title={LocalizeText('housekeeping.hotel.wordfilter.remove')}
                                                 type="button"
                                                 onClick={() => remove(entry)}
                                             >
                                                 <FaTrash size={9} />
-                                            </button>
+                                            </BaseButton></Hint>
                                         </td>
                                     </tr>
                                 );

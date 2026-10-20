@@ -128,7 +128,7 @@ export const InventoryView: FC<{}> = () => {
     const [mainFilter, setMainFilter] = useState<string>(FURNI_MAIN_FILTER.ALL);
     const [typeFilter, setTypeFilter] = useState<string>('any');
     const { isTrading = false, stopTrading = null } = useInventoryTrade();
-    const { isOpen: isWiredTrading = false } = useWiredTrading();
+    const { isOpen: isWiredTrading = false, cancel: cancelWiredTrade = null } = useWiredTrading();
     const { getCount = null } = useInventoryUnseenTracker();
     const { groupItems = [] } = useInventoryFurni();
     const { badgeCodes = [] } = useInventoryBadges();
@@ -193,8 +193,11 @@ export const InventoryView: FC<{}> = () => {
         });
     }, [badgeCodes, appliedSearch, mainFilter, typeFilter, badgeMetadata]);
 
+    // AIR WiredTradingModel.closingInventoryView: closing the inventory ends a wired trade (the offer goes back); left
+    // open, the window would only pop up again while the trade runs.
     const onClose = () => {
         if (isTrading) stopTrading();
+        else if (isWiredTrading && cancelWiredTrade) cancelWiredTrade();
         setIsVisible(false);
     };
 
@@ -269,7 +272,7 @@ export const InventoryView: FC<{}> = () => {
     return (
         <>
             <OctaneCardView
-                className={`octane-inventory-window max-w-[calc(100vw-16px)] ${currentTab === TAB_BADGES ? 'has-badge-controls' : currentTab === TAB_PETS ? 'has-pet-controls' : ''}`}
+                className={`octane-inventory-window max-w-[calc(100vw-16px)] ${!isTrading && isWiredTrading ? 'is-wired-trading' : currentTab === TAB_BADGES ? 'has-badge-controls' : currentTab === TAB_PETS ? 'has-pet-controls' : ''}`}
                 frameStyle={3}
                 resizeAxis="vertical"
                 uniqueKey="inventory"

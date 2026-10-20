@@ -4,6 +4,7 @@ import { LocalizeText, SendMessageComposer, WiredFurniType } from '../../../../a
 import { Button, Text } from '../../../../common';
 import { useWired, useWiredTools } from '../../../../hooks';
 import { WiredExtraBaseView } from './WiredExtraBaseView';
+import { Checkbox } from '../../../../common/Checkbox';
 
 /** The official category checkboxes (AIR {@code §_-jt§}), in int param order. */
 export const WIRED_ADDON_SHARING_CATEGORIES = [
@@ -57,7 +58,7 @@ const WiredExtraVariableAddonSharingView: FC<WiredExtraVariableAddonSharingViewP
                     <Text bold>{ LocalizeText('wiredfurni.params.variables.addon_sharing.categories') }</Text>
                     { WIRED_ADDON_SHARING_CATEGORIES.map((key, index) => (
                         <label key={ key } className="flex cursor-pointer items-center gap-1">
-                            <input checked={ categories[index] } className="form-check-input" type="checkbox" onChange={ event => toggle(index, event.target.checked) } />
+                            <Checkbox checked={ categories[index] } onCheckedChange={ nextChecked => toggle(index, nextChecked) } />
                             <Text small>{ LocalizeText(key) }</Text>
                         </label>
                     )) }

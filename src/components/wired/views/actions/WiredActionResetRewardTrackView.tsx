@@ -4,13 +4,14 @@ import { Text } from '../../../../common';
 import { useWired } from '../../../../hooks';
 import { WiredSourcesSelector } from '../WiredSourcesSelector';
 import { slotUserSource } from '../WiredSourceSlots';
-import { normalizeRewardTrackId, REWARD_TRACK_ID_MAX_LENGTH } from './WiredActionProgressRewardTrackView';
+import { normalizeResetRewardTrackId, REWARD_TRACK_ID_MAX_LENGTH } from './WiredActionProgressRewardTrackView';
 import { WiredActionBaseView } from './WiredActionBaseView';
 
 /**
  * Habbo's reset-reward-track action (`wf_act_reset_reward_track`): puts the chosen users' tasks of a
  * track back to zero. Points and claimed prizes stay. Server: WiredEffectResetRewardTrack. String
- * param the track id, no int params; the user source is the official slot.
+ * param the track id (AIR: anything but a tab, at most 100, and it may be left empty), no int params; the
+ * user source is the official slot.
  */
 export const WiredActionResetRewardTrackView: FC<{}> = () => {
     const { trigger = null, setIntParams = null, setStringParam = null, setSourceTypes = null } = useWired();
@@ -20,7 +21,7 @@ export const WiredActionResetRewardTrackView: FC<{}> = () => {
     useEffect(() => {
         if (!trigger) return;
 
-        setTrackId(normalizeRewardTrackId(trigger.stringData ?? ''));
+        setTrackId(normalizeResetRewardTrackId(trigger.stringData ?? ''));
         setUserSource(slotUserSource(trigger));
     }, [trigger]);
 
@@ -38,7 +39,6 @@ export const WiredActionResetRewardTrackView: FC<{}> = () => {
             hasSpecialInput={true}
             requiresFurni={WiredFurniType.STUFF_SELECTION_OPTION_NONE}
             save={save}
-            validate={() => trackId.length > 0}
         >
             <div className="flex flex-col gap-1">
                 <Text bold>{localizeWithFallback('wiredfurni.params.reward_track.reset.track', 'Reward track to reset')}</Text>
@@ -49,7 +49,7 @@ export const WiredActionResetRewardTrackView: FC<{}> = () => {
                         className="form-control form-control-sm"
                         maxLength={REWARD_TRACK_ID_MAX_LENGTH}
                         value={trackId}
-                        onChange={(event) => setTrackId(normalizeRewardTrackId(event.target.value))}
+                        onChange={(event) => setTrackId(normalizeResetRewardTrackId(event.target.value))}
                     />
                 </label>
             </div>

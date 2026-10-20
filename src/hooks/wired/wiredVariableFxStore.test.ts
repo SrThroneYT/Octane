@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { useWiredVariableFxStore } from './wiredVariableFxStore';
 
-const config = (configId: number) => ({
+const config = (configId: number, updateMask = 7) => ({
     configId,
     userFx: true,
     showMode: 0,
-    updateMask: 0,
+    updateMask,
     showOnMouseHover: false,
     showDurationMs: 3000,
     category: 1,
@@ -42,7 +42,8 @@ describe('wiredVariableFxStore', () => {
         const state = useWiredVariableFxStore.getState();
         expect(Object.keys(state.configs)).toEqual(['7', '8']);
         expect(Object.keys(state.statuses).sort()).toEqual(['7|user:20|u|100', '8|user:20|u|100']);
-        expect(state.statuses['7|user:20|u|100'].changedAt).toBe(1000);
+        expect(state.statuses['7|user:20|u|100'].createdAt).toBe(1000);
+        expect(state.statuses['7|user:20|u|100'].shownAt).toBe(1000);
         expect(state.statuses['7|user:20|u|100'].previousValue).toBeNull();
     });
 
@@ -54,7 +55,8 @@ describe('wiredVariableFxStore', () => {
         store.applyStatuses(false, [status(7, 100, 59)], 2000);
         let state = useWiredVariableFxStore.getState();
         expect(state.statuses['7|user:20|u|100'].status.value).toBe(59);
-        expect(state.statuses['7|user:20|u|100'].changedAt).toBe(2000);
+        expect(state.statuses['7|user:20|u|100'].shownAt).toBe(2000);
+        expect(state.statuses['7|user:20|u|100'].createdAt).toBe(1000);
         expect(state.statuses['7|user:20|u|100'].previousValue).toBe(60);
         expect(state.statuses['7|user:20|u|101'].status.value).toBe(20);
 
@@ -63,17 +65,36 @@ describe('wiredVariableFxStore', () => {
         expect(Object.keys(state.statuses)).toEqual(['7|user:20|u|100']);
     });
 
-    it('an initialize status keeps the old change time and a same value does not count as a change', () => {
+    it('only the updates the mask picks open the window, and an initialize status opens none', () => {
         const store = useWiredVariableFxStore.getState();
         store.applyConfigs([config(7)]);
         store.applyStatuses(true, [status(7, 100, 60)], 1000);
 
+        // The default mask (created, increased, decreased) leaves "set to the same value" out.
         store.applyStatuses(false, [status(7, 100, 60)], 2000);
-        expect(useWiredVariableFxStore.getState().statuses['7|user:20|u|100'].changedAt).toBe(1000);
+        expect(useWiredVariableFxStore.getState().statuses['7|user:20|u|100'].shownAt).toBe(1000);
 
         store.applyStatuses(false, [status(7, 100, 70, true)], 3000);
-        expect(useWiredVariableFxStore.getState().statuses['7|user:20|u|100'].changedAt).toBe(1000);
+        expect(useWiredVariableFxStore.getState().statuses['7|user:20|u|100'].shownAt).toBe(1000);
         expect(useWiredVariableFxStore.getState().statuses['7|user:20|u|100'].status.value).toBe(70);
+
+        // Only "decreased" (4): going up keeps the old window, going down opens a new one.
+        store.applyConfigs([config(7, 4)]);
+        store.applyStatuses(false, [status(7, 100, 80)], 4000);
+        expect(useWiredVariableFxStore.getState().statuses['7|user:20|u|100'].shownAt).toBe(1000);
+        store.applyStatuses(false, [status(7, 100, 50)], 5000);
+        expect(useWiredVariableFxStore.getState().statuses['7|user:20|u|100'].shownAt).toBe(5000);
+    });
+
+    it('keeps the holder under the cursor', () => {
+        const store = useWiredVariableFxStore.getState();
+
+        store.setHovered('u:100', true);
+        expect(useWiredVariableFxStore.getState().hoveredHolder).toBe('u:100');
+        store.setHovered('f:5', false);
+        expect(useWiredVariableFxStore.getState().hoveredHolder).toBe('u:100');
+        store.setHovered('u:100', false);
+        expect(useWiredVariableFxStore.getState().hoveredHolder).toBeNull();
     });
 
     it('removing a config drops its statuses and removing keys drops just those', () => {

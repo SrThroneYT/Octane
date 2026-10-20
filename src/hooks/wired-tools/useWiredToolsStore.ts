@@ -1,6 +1,7 @@
 import {
     CreateLinkEvent,
     GetSessionDataManager,
+    RoomRightsEvent,
     WiredMenuPermissionsSaveComposer,
     WiredRoomSettingsDataEvent,
     WiredRoomSettingsRequestComposer,
@@ -18,21 +19,30 @@ import {
     createPacketCooldownGate,
     decodeWiredMenuPreferences,
     LocalizeText,
+    localizeWithFallback,
     NotificationAlertType,
+    NotificationBubbleType,
     normalizeWiredStyle,
     SendMessageComposer,
     WIRED_STYLE_DEFAULT,
-    WiredStyleName
+    WiredStyleName,
+    wiredPlayTestNotificationKey
 } from '../../api';
 import { useMessageEvent } from '../events';
+import { useWiredPlayTest } from './useWiredPlayTest';
 import { useNotification } from '../notification';
 import { useRoom } from '../rooms';
 
 export interface IWiredAccountPreferences {
+    /**
+     * Official playtest mode: kept on the server with the other wired menu preferences
+     * (WiredMenuSettingsComposer playTestMode).
+     */
+    playTestMode: boolean;
     showInspectButton: boolean;
     showSystemNotifications: boolean;
     showToolbarButton: boolean;
-    /** The look of the wired box windows; one of WIRED_STYLE_OPTIONS. */
+    /** The look of the wired box windows: "" (default, illumina) or one of WIRED_STYLE_OPTIONS. */
     wiredStyle: WiredStyleName;
 }
 
@@ -134,6 +144,7 @@ const WIRED_VARIABLE_MANAGE_ACTION_CLEAR_ALL = 2;
 const WIRED_TOOLS_STORAGE_PREFIX = 'nitro.wired.tools.preferences';
 const getCurrentUnixTime = () => Math.floor(Date.now() / 1000);
 const DEFAULT_ACCOUNT_PREFERENCES: IWiredAccountPreferences = {
+    playTestMode: false,
     showToolbarButton: false,
     showInspectButton: false,
     showSystemNotifications: false,
@@ -164,7 +175,7 @@ const DEFAULT_ROOM_SETTINGS: IWiredRoomSettings = {
  */
 export const useWiredToolsStore = () => {
     const { roomSession = null } = useRoom();
-    const { simpleAlert = null } = useNotification();
+    const { simpleAlert = null, showSingleBubble = null } = useNotification();
     const [accountPreferences, setAccountPreferences] = useState<IWiredAccountPreferences>(DEFAULT_ACCOUNT_PREFERENCES);
     const accountPreferencesRef = useRef<IWiredAccountPreferences>(DEFAULT_ACCOUNT_PREFERENCES);
     // Once the server sent stored preferences, the local copy no longer overrides them.
@@ -318,7 +329,22 @@ export const useWiredToolsStore = () => {
     // The official client keeps the wired menu preferences on the server; the whisper switch rides
     // along in the same packet, so the last value the server sent is kept here.
     const wiredWhisperDisabledRef = useRef(false);
-    const playTestModeRef = useRef(false);
+
+    // Official onControllerMessageEvent: while playtest mode is on, every rights update in a room
+    // reminds the user, linked to the wired menu settings.
+    useMessageEvent<RoomRightsEvent>(RoomRightsEvent, () => {
+        if (!accountPreferencesRef.current.playTestMode) return;
+
+        showSingleBubble?.(
+            localizeWithFallback(
+                'wiredmenu.settings.preferences.notification.playtest',
+                'Info: you are currently in playtest mode. Disable in the Wired Menu (click)'
+            ),
+            NotificationBubbleType.INFO,
+            null,
+            'wiredmenu/open/settings'
+        );
+    });
 
     useMessageEvent<UserSettingsEvent>(UserSettingsEvent, (event) => {
         const parser = event.getParser();
@@ -329,10 +355,10 @@ export const useWiredToolsStore = () => {
 
         if (!stored) return;
 
-        playTestModeRef.current = stored.playTestMode;
         serverPreferencesAppliedRef.current = true;
         setAccountPreferences((prevValue) => ({
             ...prevValue,
+            playTestMode: stored.playTestMode,
             showToolbarButton: stored.showToolbarButton,
             showInspectButton: stored.showInspectButton,
             showSystemNotifications: stored.showSystemNotifications,
@@ -340,22 +366,62 @@ export const useWiredToolsStore = () => {
         }));
     });
 
-    const updateAccountPreferences = useCallback((partialPreferences: Partial<IWiredAccountPreferences>) => {
-        const next = { ...accountPreferencesRef.current, ...partialPreferences };
-
-        accountPreferencesRef.current = next;
-        setAccountPreferences(next);
+    const sendWiredMenuSettings = useCallback((preferences: IWiredAccountPreferences) => {
         SendMessageComposer(
             new WiredMenuSettingsComposer(
-                next.showToolbarButton,
-                next.showInspectButton,
-                playTestModeRef.current,
+                preferences.showToolbarButton,
+                preferences.showInspectButton,
+                preferences.playTestMode,
                 wiredWhisperDisabledRef.current,
-                next.showSystemNotifications,
-                next.wiredStyle
+                preferences.showSystemNotifications,
+                preferences.wiredStyle
             )
         );
     }, []);
+
+    const updateAccountPreferences = useCallback(
+        (partialPreferences: Partial<IWiredAccountPreferences>) => {
+            const next = { ...accountPreferencesRef.current, ...partialPreferences };
+
+            accountPreferencesRef.current = next;
+            setAccountPreferences(next);
+            sendWiredMenuSettings(next);
+        },
+        [sendWiredMenuSettings]
+    );
+
+    // Official setPlayTestMode(on, notify): the switch is saved with the other preferences and a
+    // notification, linked to the wired menu settings, says which way it went.
+    const setPlayTestMode = useCallback(
+        (playTestMode: boolean) => {
+            if (playTestMode === accountPreferencesRef.current.playTestMode) return;
+
+            updateAccountPreferences({ playTestMode });
+            showSingleBubble?.(
+                localizeWithFallback(wiredPlayTestNotificationKey(playTestMode), playTestMode ? 'Playtest mode enabled' : 'Playtest mode disabled'),
+                NotificationBubbleType.INFO,
+                null,
+                'wiredmenu/open/settings'
+            );
+        },
+        [updateAccountPreferences, showSingleBubble]
+    );
+
+    const togglePlayTestMode = useCallback(() => setPlayTestMode(!accountPreferencesRef.current.playTestMode), [setPlayTestMode]);
+
+    useWiredPlayTest(accountPreferences.playTestMode, togglePlayTestMode);
+
+    /**
+     * The whisper switch of the user settings travels in the same packet as the wired menu
+     * preferences, so it is saved here with the stored ones and is not lost by the next save.
+     */
+    const updateWiredWhisperDisabled = useCallback(
+        (disabled: boolean) => {
+            wiredWhisperDisabledRef.current = disabled;
+            sendWiredMenuSettings(accountPreferencesRef.current);
+        },
+        [sendWiredMenuSettings]
+    );
 
     // The official permissions packet carries the timezone too, so every save sends all three and
     // the server answers with the settings it kept.
@@ -760,6 +826,9 @@ export const useWiredToolsStore = () => {
         contextVariableDefinitions,
         areUserVariablesLoaded,
         updateAccountPreferences,
+        setPlayTestMode,
+        togglePlayTestMode,
+        updateWiredWhisperDisabled,
         saveRoomSettings,
         saveRoomTimezone,
         reloadRoomWired,

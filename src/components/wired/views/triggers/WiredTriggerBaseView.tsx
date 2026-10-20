@@ -6,12 +6,14 @@ export interface WiredTriggerBaseViewProps {
     hasSpecialInput: boolean;
     requiresFurni: number;
     save: () => void;
-    validate?: () => boolean;
+    validate?: () => boolean | string | void;
     footer?: ReactNode;
     footerCollapsible?: boolean;
     selectionPreview?: ReactNode;
     /** Official: some elements open wider. */
     widthModifier?: number;
+    /** Official allowScrolling: the sections scroll between a fixed header and footer. */
+    allowScrolling?: boolean;
 }
 
 export const WiredTriggerBaseView: FC<PropsWithChildren<WiredTriggerBaseViewProps>> = (props) => {
@@ -24,7 +26,8 @@ export const WiredTriggerBaseView: FC<PropsWithChildren<WiredTriggerBaseViewProp
         footer = null,
         footerCollapsible = true,
         selectionPreview = null,
-        widthModifier = 1
+        widthModifier = 1,
+        allowScrolling = false
     } = props;
 
     const onSave = () => save && save();
@@ -40,6 +43,7 @@ export const WiredTriggerBaseView: FC<PropsWithChildren<WiredTriggerBaseViewProp
             footerCollapsible={footerCollapsible}
             selectionPreview={selectionPreview}
             widthModifier={widthModifier}
+            allowScrolling={allowScrolling}
         >
             {children}
         </WiredBaseView>

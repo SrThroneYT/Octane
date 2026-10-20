@@ -2,9 +2,12 @@ import { FC, useCallback, useEffect, useState } from 'react';
 import { LocalizeText } from '../../../../api';
 import { Text } from '../../../../common';
 import { useWired } from '../../../../hooks';
+import { WiredIconRadioGroup } from '../WiredMoveIconRadios';
 import { WiredSelectorBaseView } from './WiredSelectorBaseView';
+import { Checkbox } from '../../../../common/Checkbox';
 
-const TEAM_TYPES = [0, 1, 2, 3, 4];
+// Official: "any team" on a row of its own, then the teams 1-4 in 2 columns.
+const TEAM_TYPES = [1, 2, 3, 4];
 
 export const WiredSelectorUsersTeamView: FC<{}> = () => {
     const [teamType, setTeamType] = useState(0);
@@ -32,18 +35,16 @@ export const WiredSelectorUsersTeamView: FC<{}> = () => {
             <div className="flex flex-col gap-2">
                 <div className="flex flex-col gap-1">
                     <Text bold>{LocalizeText('wiredfurni.params.team')}</Text>
-                    {TEAM_TYPES.map((value) => (
-                        <label key={value} className="flex items-center gap-1">
-                            <input
-                                checked={teamType === value}
-                                className="form-check-input"
-                                name="usersTeamSelector"
-                                type="radio"
-                                onChange={() => setTeamType(value)}
-                            />
-                            <Text>{LocalizeText(value === 0 ? 'wiredfurni.params.team.any' : `wiredfurni.params.team.${value}`)}</Text>
-                        </label>
-                    ))}
+                    <WiredIconRadioGroup
+                        columns={2}
+                        name="usersTeamSelector"
+                        options={[
+                            { value: 0, label: LocalizeText('wiredfurni.params.team.any'), newLine: true },
+                            ...TEAM_TYPES.map((value) => ({ value, label: LocalizeText(`wiredfurni.params.team.${value}`) }))
+                        ]}
+                        value={teamType}
+                        onChange={setTeamType}
+                    />
                 </div>
 
                 <hr className="m-0 bg-dark" />
@@ -51,17 +52,12 @@ export const WiredSelectorUsersTeamView: FC<{}> = () => {
                 <Text bold>{LocalizeText('wiredfurni.params.selector_options_selector')}</Text>
 
                 <label className="flex items-center gap-2">
-                    <input
-                        type="checkbox"
-                        className="form-check-input"
-                        checked={filterExisting}
-                        onChange={(event) => setFilterExisting(event.target.checked)}
-                    />
+                    <Checkbox checked={filterExisting} onCheckedChange={(nextChecked) => setFilterExisting(nextChecked)} />
                     <Text small>{LocalizeText('wiredfurni.params.selector_option.0')}</Text>
                 </label>
 
                 <label className="flex items-center gap-2">
-                    <input type="checkbox" className="form-check-input" checked={invert} onChange={(event) => setInvert(event.target.checked)} />
+                    <Checkbox checked={invert} onCheckedChange={(nextChecked) => setInvert(nextChecked)} />
                     <Text small>{LocalizeText('wiredfurni.params.selector_option.1')}</Text>
                 </label>
             </div>

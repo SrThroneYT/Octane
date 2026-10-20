@@ -15,8 +15,10 @@ import {
     getCustomVariableItemId,
     normalizeVariableTokenFromWire
 } from '../WiredVariablePickerData';
+import { fromWiredVariableId, toWiredVariableId, wiredVariableIdList } from '../WiredVariableIds';
 import { WiredActionBaseView } from './WiredActionBaseView';
 import { WiredActionDelaySection } from './WiredActionDelaySection';
+import { BaseButton } from '../../../../common/BaseButton';
 
 type VariableTargetType = 'user' | 'furni' | 'context';
 
@@ -64,7 +66,8 @@ export const WiredActionRemoveVariableView: FC<{}> = () => {
         setIntParams = null,
         setFurniIds = null,
         setStringParam = null,
-        setSourceTypes = null
+        setSourceTypes = null,
+        setVariableIds = null
     } = useWired();
     const { userVariableDefinitions = [], furniVariableDefinitions = [], contextVariableDefinitions = [] } = useWiredTools();
     const [selectedTargetType, setSelectedTargetType] = useState<VariableTargetType>('user');
@@ -132,8 +135,10 @@ export const WiredActionRemoveVariableView: FC<{}> = () => {
         const nextTargetType = normalizeTargetType(trigger.intData.length > 0 ? trigger.intData[0] : TARGET_USER);
 
         setSelectedTargetType(nextTargetType);
+        // AIR: the variable is the first variable id; an older server wrote its id as the string.
         setSelectedVariableToken(
-            normalizeVariableTokenFromWire(!Number.isNaN(parsedVariableItemId) && parsedVariableItemId > 0 ? String(parsedVariableItemId) : '')
+            fromWiredVariableId(trigger.variableIds?.[0] ?? '') ||
+                normalizeVariableTokenFromWire(!Number.isNaN(parsedVariableItemId) && parsedVariableItemId > 0 ? String(parsedVariableItemId) : '')
         );
         setUserSource(trigger.userSourceTypes?.[0] ?? 0);
         setFurniSource(trigger.furniSourceTypes?.[0] ?? ((trigger.selectedItems?.length ?? 0) > 0 ? SOURCE_SELECTED : 0));
@@ -141,9 +146,8 @@ export const WiredActionRemoveVariableView: FC<{}> = () => {
 
     const save = () => {
         const targetValue = getTargetValue(selectedTargetType);
-        const variableItemId = getCustomVariableItemId(selectedVariableToken);
-
-        setStringParam(variableItemId ? String(variableItemId) : '');
+        setStringParam('');
+        setVariableIds(wiredVariableIdList(toWiredVariableId(selectedTargetType, selectedVariableToken)));
         setIntParams([targetValue]);
         setSourceTypes({ furni: [furniSource], users: [userSource] });
         setFurniIds(selectedTargetType === 'furni' && furniSource === SOURCE_SELECTED ? [...furniIds] : []);
@@ -189,14 +193,14 @@ export const WiredActionRemoveVariableView: FC<{}> = () => {
                     <Text>{LocalizeText('wiredfurni.params.variables.variable_selection')}</Text>
                     <div className="octane-wired__give-var-targets">
                         {TARGET_BUTTONS.map((button) => (
-                            <button
+                            <BaseButton
                                 key={button.key}
                                 type="button"
                                 className={`octane-wired__give-var-target octane-wired__give-var-target--${button.key} ${selectedTargetType === button.key ? 'is-active' : ''}`}
                                 onClick={() => handleTargetTypeChange(button.key)}
                             >
                                 <img src={button.icon} alt={button.key} />
-                            </button>
+                            </BaseButton>
                         ))}
                     </div>
                 </div>

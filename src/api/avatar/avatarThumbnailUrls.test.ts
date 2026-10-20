@@ -1,3 +1,4 @@
+/* @vitest-environment jsdom */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { canvasToThumbnailUrl, centerCanvasIntoBox, ThumbnailUrlCache, THUMBNAIL_REVOKE_GRACE_MS, trimCanvasToOpaqueBounds } from './avatarThumbnailUrls';
 

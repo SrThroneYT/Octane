@@ -315,7 +315,9 @@ export class HabbiconAssetManager {
 // Mentions system — incoming events extend MessageEvent (they expose
 // getParser()); the request/mark composers are symbol-only constructors.
 export class MentionReceivedEvent extends MessageEvent {}
+export class FurnitureStackHeightEvent extends MessageEvent {}
 export class MentionsListEvent extends MessageEvent {}
+export class MentionsPageEvent extends MessageEvent {}
 
 // ---------------------------------------------------------------------------
 // Navigator event classes — MessageEvent subclasses needed by useNavigatorStore
@@ -360,7 +362,22 @@ export class BadgeReceivedEvent extends MessageEvent {}
 export class ChestNotificationEvent extends MessageEvent {}
 export class WiredTransactionFailEvent extends MessageEvent {}
 export class WiredTradeErrorEvent extends MessageEvent {}
+
+// Wired trade constants with the renderer's real values (WiredTradeOpenMessageParser / WiredTradeRuleParser).
+export const WIRED_TRADE_REQUIREMENT_ANY_COINS = 0;
+export const WIRED_TRADE_REQUIREMENT_ANY_FURNI = 1;
+export const WIRED_TRADE_REQUIREMENT_ANY = 2;
+export const WIRED_TRADE_REQUIREMENT_RULES = 4;
+export const WIRED_TRADE_RULES_NORMAL = 0;
+export const WIRED_TRADE_RULES_MULTIPLIER = 1;
+export const WIRED_TRADE_RULES_AUTO = 2;
+export const WIRED_TRADE_NODE_COINS = 0;
+export const WIRED_TRADE_NODE_FURNI = 1;
+export const WIRED_TRANSACTION_SUCCESS_REWARD = 2;
 export class WiredTransactionSuccessEvent extends MessageEvent {}
+export class FurnitureFloorRemoveEvent extends MessageEvent {}
+export class FurnitureWallRemoveEvent extends MessageEvent {}
+export class RoomRightsEvent extends MessageEvent {}
 export class ClubGiftNotificationEvent extends MessageEvent {}
 export class ClubGiftSelectedEvent extends MessageEvent {}
 export class ConnectionErrorEvent extends MessageEvent {}
@@ -381,8 +398,8 @@ export class RoomEnterEvent extends MessageEvent {}
 export class SimpleAlertMessageEvent extends MessageEvent {}
 export class UserBannedMessageEvent extends MessageEvent {}
 export class WiredRewardResultMessageEvent extends MessageEvent {
-    static readonly PRODUCT_DONATED_CODE = 7;
-    static readonly BADGE_DONATED_CODE = 8;
+    static readonly PRODUCT_DONATED_CODE = 6;
+    static readonly BADGE_DONATED_CODE = 7;
 }
 
 // RoomEnterEffect — used by useNotificationStore to check if the room-enter
@@ -392,7 +409,41 @@ export const RoomEnterEffect = {
     totalRunningTime: 0
 };
 
-export class RoomEngineObjectEvent extends StubClass {}
+export class RoomEngineTriggerWidgetEvent extends StubClass {
+    static readonly REQUEST_STACK_HEIGHT = 'RETWE_REQUEST_STACK_HEIGHT';
+    static readonly REQUEST_DIMMER = 'RETWE_REQUEST_DIMMER';
+    static readonly REQUEST_BACKGROUND_COLOR = 'RETWE_REQUEST_BACKGROUND_COLOR';
+    static readonly REQUEST_AREA_HIDE = 'RETWE_REQUEST_AREA_HIDE';
+}
+
+export class RoomEngineAreaHideStateEvent extends StubClass {
+    static readonly UPDATE_STATE_AREA_HIDE = 'RETWE_UPDATE_STATE_AREA_HIDE';
+}
+
+export class RoomAreaSelectionManager extends StubClass {
+    static readonly HIGHLIGHT_DARKEN = 'highlight_darken';
+}
+
+// Composers that keep their constructor arguments, so a test can read what was sent.
+export class SetObjectDataMessageComposer {
+    constructor(
+        public readonly objectId: number,
+        public readonly data: Map<string, string>
+    ) {}
+}
+export class FurnitureMultiStateComposer {
+    constructor(
+        public readonly itemId: number,
+        public readonly state: number = 0
+    ) {}
+}
+
+export class RoomEngineObjectEvent extends StubClass {
+    static readonly MOUSE_ENTER = 'REOE_MOUSE_ENTER';
+    static readonly MOUSE_LEAVE = 'REOE_MOUSE_LEAVE';
+    static readonly ADDED = 'REOE_ADDED';
+    static readonly REMOVED = 'REOE_REMOVED';
+}
 export const CreateLinkEvent = vi.fn();
 // EventDispatcher — real listener storage. UI_EVENT_DISPATCHER (`../../api`)
 // is a module-level `new EventDispatcher()` singleton, so hooks that dispatch
@@ -479,6 +530,7 @@ export class JoinQueueMessageComposer extends StubClass {}
 export class PurchaseSnowWarGameTokensOfferComposer extends StubClass {}
 export class Game2GetAccountGameStatusMessageComposer extends StubClass {}
 export class AddFavouriteRoomMessageComposer extends StubClass {}
+export class FurnitureStackHeightComposer extends StubClass {}
 export class AvatarEffectActivatedComposer extends StubClass {}
 export class AvatarEffectSelectedComposer extends StubClass {}
 export class DeleteFavouriteRoomMessageComposer extends StubClass {}
@@ -487,6 +539,7 @@ export class GetUserEventCatsMessageComposer extends StubClass {}
 export class GetUserFlatCatsMessageComposer extends StubClass {}
 export class NavigatorSearchComposer extends StubClass {}
 export class RequestMentionsComposer extends StubClass {}
+export class RequestMentionsPageComposer extends StubClass {}
 export class MarkMentionsReadComposer extends StubClass {}
 export class DeleteMentionComposer extends StubClass {}
 export class DesktopViewComposer extends StubClass {}
@@ -1054,6 +1107,47 @@ export class WiredVariableFxStatusEvent extends StubClass {}
 export class WiredVariableFxStatusRemovedEvent extends StubClass {}
 export const wiredVariableFxStatusKey = (status: { configId: number; variableId: string; userEntity: boolean; entityId: number }) =>
     `${status.configId}|${status.variableId}|${status.userEntity ? 'u' : 'f'}|${status.entityId}`;
+/** The renderer's port of AIR's variable fx painters: a deterministic stand-in that draws nothing. */
+export class VariableFxStatusData {
+    constructor(
+        public readonly value: number,
+        public readonly overrideMinValue: number | null = null,
+        public readonly overrideMaxValue: number | null = null,
+        public readonly extra: Record<string, string> = {},
+        public readonly isInitialize = false
+    ) {}
+
+    public static fromWire(status: { value: number; overrideMinValue: number | null; overrideMaxValue: number | null; extra: Record<string, string> }, initialize = false) {
+        return new VariableFxStatusData(status.value, status.overrideMinValue, status.overrideMaxValue, { ...status.extra }, initialize);
+    }
+}
+export class VariableFxVisualizer {
+    public frame: null = null;
+    public readonly statuses: VariableFxStatusData[] = [];
+
+    constructor(
+        public readonly config: unknown,
+        status: VariableFxStatusData
+    ) {
+        this.statuses.push(status);
+    }
+
+    public static fromWire(config: unknown, status: { value: number; overrideMinValue: number | null; overrideMaxValue: number | null; extra: Record<string, string> }, _now: number, initialize = false) {
+        return new VariableFxVisualizer(config, VariableFxStatusData.fromWire(status, initialize));
+    }
+
+    public updateData(status: VariableFxStatusData): void {
+        this.statuses.push(status);
+    }
+
+    public needsUpdate(): boolean {
+        return false;
+    }
+
+    public update(): boolean {
+        return false;
+    }
+}
 export class WiredMenuPermissionsSaveComposer extends RecordingComposer {}
 export class WiredRoomStateActionComposer extends RecordingComposer {}
 export class SelfDonationMessageComposer extends RecordingComposer {}

@@ -48,19 +48,9 @@ export const WiredActionFurniToFurniView: FC<{}> = () => {
 
     const { trigger = null, furniIds = [], setFurniIds, setFurniIds2, setIntParams, setStringParam, setSourceTypes, setAllowsFurni } = useWired();
 
+    // AIR tints by pick list: the furni to move (stuffIds) the first tint, the targets (stuffIds2) the blue one.
     const syncHighlights = useCallback((nextMoveIds: number[], nextTargetIds: number[]) => {
-        if (highlightedIds.current.length) {
-            WiredSelectionVisualizer.clearSelectionShaderFromFurni(highlightedIds.current);
-            WiredSelectionVisualizer.clearSecondarySelectionShaderFromFurni(highlightedIds.current);
-        }
-
-        const targetSet = new Set(nextTargetIds);
-        const moveOnlyIds = nextMoveIds.filter((id) => !targetSet.has(id));
-
-        if (moveOnlyIds.length) WiredSelectionVisualizer.applySelectionShaderToFurni(moveOnlyIds);
-        if (nextTargetIds.length) WiredSelectionVisualizer.applySecondarySelectionShaderToFurni(nextTargetIds);
-
-        highlightedIds.current = Array.from(new Set([...nextMoveIds, ...nextTargetIds]));
+        highlightedIds.current = WiredSelectionVisualizer.showPickLists(highlightedIds.current, nextMoveIds, nextTargetIds);
     }, []);
 
     const switchSelection = useCallback(
@@ -112,6 +102,10 @@ export const WiredActionFurniToFurniView: FC<{}> = () => {
     }, [moveFurniIds, targetFurniIds, syncHighlights]);
 
     useEffect(() => {
+        WiredSelectionVisualizer.setEditingPickList(selectionMode === 'target' ? 2 : 1);
+    }, [selectionMode]);
+
+    useEffect(() => {
         const canEditMove = moveSource === SOURCE_SELECTED;
         const canEditTarget = targetSource === SOURCE_SECONDARY_SELECTED;
 
@@ -131,6 +125,8 @@ export const WiredActionFurniToFurniView: FC<{}> = () => {
 
     useEffect(() => {
         return () => {
+            WiredSelectionVisualizer.setEditingPickList(1);
+
             if (!highlightedIds.current.length) return;
 
             WiredSelectionVisualizer.clearSelectionShaderFromFurni(highlightedIds.current);

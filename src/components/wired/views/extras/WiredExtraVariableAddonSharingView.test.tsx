@@ -47,7 +47,7 @@ describe('WiredExtraVariableAddonSharingView', () => {
 
         expect(screen.getByText('wiredfurni.params.variables.addon_import.usage_info')).toBeTruthy();
         const boxes = screen.getAllByRole('checkbox') as HTMLInputElement[];
-        expect(boxes.map(box => box.checked)).toEqual([true, false, true]);
+        expect(boxes.map(box => box.getAttribute('aria-checked') === 'true')).toEqual([true, false, true]);
         expect(screen.queryByRole('button')).toBeNull();
 
         fireEvent.click(boxes[1]);

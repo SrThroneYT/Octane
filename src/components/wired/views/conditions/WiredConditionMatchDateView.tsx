@@ -1,8 +1,12 @@
-import { ChangeEvent, FC, useEffect, useMemo, useState } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { LocalizeText, WiredFurniType } from '../../../../api';
 import { Text } from '../../../../common';
 import { useWired } from '../../../../hooks';
 import { WiredConditionBaseView } from './WiredConditionBaseView';
+import { resolveConditionTimezone, useWiredRoomTimezone, WiredConditionTimezoneSection } from './WiredConditionTimezoneSection';
+import { Checkbox } from '../../../../common/Checkbox';
+import { Radio } from '../../../../common/Radio';
+import { NumberInput } from '../../../../common/NumberInput';
 
 const MODE_SKIP = 0;
 const MODE_EXACT = 1;
@@ -24,7 +28,7 @@ const clampValue = (value: number, min: number, max: number) => {
     return Math.max(min, Math.min(max, Math.floor(value)));
 };
 
-const parseInputValue = (event: ChangeEvent<HTMLInputElement>, min: number, max: number) => {
+const parseInputValue = (event: { target: { value: string } }, min: number, max: number) => {
     return clampValue(parseInt(event.target.value || min.toString(), 10), min, max);
 };
 
@@ -38,15 +42,7 @@ const InlineNumberInput: FC<{ value: number; min: number; max: number; onChange:
     const { value = 0, min = 0, max = 0, onChange = null } = props;
 
     return (
-        <input
-            className="form-control form-control-sm text-center"
-            max={max}
-            min={min}
-            style={{ width: 72 }}
-            type="number"
-            value={value}
-            onChange={(event) => onChange(parseInputValue(event, min, max))}
-        />
+        <NumberInput className="form-control form-control-sm text-center" max={max} min={min} style={{ width: 72 }} value={value} onChange={(event) => onChange(parseInputValue(event, min, max))} />
     );
 };
 
@@ -81,37 +77,16 @@ const MatchDateSection: FC<MatchDateSectionProps> = (props) => {
         <div className="flex flex-col gap-2">
             <Text bold>{LocalizeText(titleKey)}</Text>
             <div className="flex items-center gap-1">
-                <input
-                    checked={mode === MODE_SKIP}
-                    className="form-check-input"
-                    id={`${sectionId}0`}
-                    name={sectionId}
-                    type="radio"
-                    onChange={() => onModeChange(MODE_SKIP)}
-                />
+                <Radio checked={mode === MODE_SKIP} id={`${sectionId}0`} name={sectionId} onCheckedChange={() => onModeChange(MODE_SKIP)} />
                 <Text>{LocalizeText('wiredfurni.params.time.skip')}</Text>
             </div>
             <div className="flex items-center gap-2">
-                <input
-                    checked={mode === MODE_EXACT}
-                    className="form-check-input"
-                    id={`${sectionId}1`}
-                    name={sectionId}
-                    type="radio"
-                    onChange={() => onModeChange(MODE_EXACT)}
-                />
+                <Radio checked={mode === MODE_EXACT} id={`${sectionId}1`} name={sectionId} onCheckedChange={() => onModeChange(MODE_EXACT)} />
                 <Text>{LocalizeText('wiredfurni.params.time.exact')}</Text>
                 <InlineNumberInput max={max} min={min} value={fromValue} onChange={onFromChange} />
             </div>
             <div className="flex items-center gap-2">
-                <input
-                    checked={mode === MODE_RANGE}
-                    className="form-check-input"
-                    id={`${sectionId}2`}
-                    name={sectionId}
-                    type="radio"
-                    onChange={() => onModeChange(MODE_RANGE)}
-                />
+                <Radio checked={mode === MODE_RANGE} id={`${sectionId}2`} name={sectionId} onCheckedChange={() => onModeChange(MODE_RANGE)} />
                 <Text>{LocalizeText('wiredfurni.params.time.range')}</Text>
                 <InlineNumberInput max={max} min={min} value={fromValue} onChange={onFromChange} />
                 <Text>-</Text>
@@ -122,7 +97,10 @@ const MatchDateSection: FC<MatchDateSectionProps> = (props) => {
 };
 
 export const WiredConditionMatchDateView: FC<{}> = () => {
-    const { trigger = null, setIntParams = null } = useWired();
+    const { trigger = null, setIntParams = null, setStringParam = null } = useWired();
+    const { roomZone } = useWiredRoomTimezone();
+    // The string param is the timezone; a box without one follows the room's.
+    const [timezone, setTimezone] = useState('');
     const currentYear = useMemo(() => new Date().getFullYear(), []);
     const [weekdayMask, setWeekdayMask] = useState(ALL_WEEKDAYS_MASK);
     const [dayMode, setDayMode] = useState(MODE_SKIP);
@@ -150,6 +128,7 @@ export const WiredConditionMatchDateView: FC<{}> = () => {
         setYearMode(toMode(d[1] === 1, yFrom, yTo));
         setYearFrom(yFrom);
         setYearTo(yTo);
+        setTimezone((trigger.stringData ?? '').trim());
     }, [currentYear, trigger]);
 
     const save = () => {
@@ -166,6 +145,7 @@ export const WiredConditionMatchDateView: FC<{}> = () => {
             clampValue(yearFrom, 0, 9999),
             clampValue(yearMode === MODE_RANGE ? yearTo : yearFrom, 0, 9999)
         ]);
+        setStringParam(resolveConditionTimezone(timezone, roomZone));
     };
 
     return (
@@ -179,12 +159,7 @@ export const WiredConditionMatchDateView: FC<{}> = () => {
 
                             return (
                                 <label key={value} className="flex items-center gap-1">
-                                    <input
-                                        checked={checked}
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        onChange={(event) => setWeekdayMask(toggleMaskValue(weekdayMask, value, event.target.checked))}
-                                    />
+                                    <Checkbox checked={checked} onCheckedChange={(nextChecked) => setWeekdayMask(toggleMaskValue(weekdayMask, value, nextChecked))} />
                                     <Text>{LocalizeText(`wiredfurni.params.time.weekday.${value}`)}</Text>
                                 </label>
                             );
@@ -211,12 +186,7 @@ export const WiredConditionMatchDateView: FC<{}> = () => {
 
                             return (
                                 <label key={value} className="flex items-center gap-1">
-                                    <input
-                                        checked={checked}
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        onChange={(event) => setMonthMask(toggleMaskValue(monthMask, value, event.target.checked))}
-                                    />
+                                    <Checkbox checked={checked} onCheckedChange={(nextChecked) => setMonthMask(toggleMaskValue(monthMask, value, nextChecked))} />
                                     <Text>{LocalizeText(`wiredfurni.params.time.month.${value}`)}</Text>
                                 </label>
                             );
@@ -235,6 +205,7 @@ export const WiredConditionMatchDateView: FC<{}> = () => {
                     onModeChange={setYearMode}
                     onToChange={(value) => setYearTo(clampValue(value, 0, 9999))}
                 />
+                <WiredConditionTimezoneSection value={timezone} onChange={setTimezone} />
             </div>
         </WiredConditionBaseView>
     );

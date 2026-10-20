@@ -5,7 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const setIntParams = vi.fn();
 const setStringParam = vi.fn();
 const setSourceTypes = vi.fn();
-let trigger: { stringData: string; intData: number[]; userSourceTypes?: number[]; furniSourceTypes?: number[] } | null = null;
+const setVariableIds = vi.fn();
+let trigger: { stringData: string; intData: number[]; variableIds?: string[]; userSourceTypes?: number[]; furniSourceTypes?: number[] } | null = null;
 let baseProps: { save: () => void; validate?: () => boolean } | null = null;
 const variable = (itemId: number, name: string, hasValue = true) => ({ itemId, name, availability: 0, hasValue, isReadOnly: false, variableType: 0 });
 const tools = {
@@ -30,7 +31,7 @@ vi.mock('../../../../common', () => ({
     Text: ({ children }: PropsWithChildren) => <span>{children}</span>
 }));
 vi.mock('../../../../hooks', () => ({
-    useWired: () => ({ trigger, setIntParams, setStringParam, setSourceTypes }),
+    useWired: () => ({ trigger, setIntParams, setStringParam, setSourceTypes, setVariableIds }),
     useWiredTools: () => tools
 }));
 vi.mock('../WiredSourcesSelector', () => ({
@@ -55,6 +56,7 @@ describe('WiredActionPlaceTemporaryFurniView spawn value (AIR place furni + Valu
         setIntParams.mockClear();
         setStringParam.mockClear();
         setSourceTypes.mockClear();
+        setVariableIds.mockClear();
         baseProps = null;
     });
 
@@ -67,7 +69,9 @@ describe('WiredActionPlaceTemporaryFurniView spawn value (AIR place furni + Valu
         baseProps.save();
 
         expect(setIntParams).toHaveBeenLastCalledWith([0, 0, 0, 0, 0, 0, 1, 0, -12, 0]);
-        expect(setStringParam).toHaveBeenLastCalledWith('7\t0');
+        // AIR: variable ids [spawn variable, value variable], no string.
+        expect(setStringParam).toHaveBeenLastCalledWith('');
+        expect(setVariableIds).toHaveBeenLastCalledWith(['furni:7']);
         expect(setSourceTypes).toHaveBeenLastCalledWith({ furni: [110, 0, 0], users: [0, 0] });
     });
 
@@ -81,13 +85,22 @@ describe('WiredActionPlaceTemporaryFurniView spawn value (AIR place furni + Valu
 
         expect(within(popup).getByText('wiredfurni.params.sources.merged.title.variables')).toBeTruthy();
         expect(within(popup).getByText('wiredfurni.params.sources.users.200')).toBeTruthy();
-        expect(within(popup).getAllByRole('button', { name: /^(global|context|furni|user)$/ })).toHaveLength(4);
+        expect(within(popup).getAllByRole('button', { name: /^wiredfurni\.params\.sourcetype\.(global|context|furni|users)$/ })).toHaveLength(4);
         expect(within(popup).queryByRole('checkbox')).toBeNull();
         baseProps.save();
 
         expect(setIntParams).toHaveBeenLastCalledWith([0, 0, 0, 0, 0, 0, 1, 1, 0, 1]);
-        expect(setStringParam).toHaveBeenLastCalledWith('7\t5');
+        expect(setVariableIds).toHaveBeenLastCalledWith(['furni:7', 'user:5']);
         expect(setSourceTypes).toHaveBeenLastCalledWith({ furni: [110, 0, 0], users: [0, 200] });
+    });
+
+    it('reads the variables from the variable ids', () => {
+        trigger = { stringData: '', intData: [0, 0, 0, 0, 0, 0, 1, 1, 0, 1], variableIds: ['furni:7', 'user:5'], userSourceTypes: [0, 200] };
+        render(<WiredActionPlaceTemporaryFurniView />);
+
+        expect(field()).toHaveValue('score');
+        baseProps.save();
+        expect(setVariableIds).toHaveBeenLastCalledWith(['furni:7', 'user:5']);
     });
 
     it('disables the value for a spawn variable without a value and does not validate it', () => {

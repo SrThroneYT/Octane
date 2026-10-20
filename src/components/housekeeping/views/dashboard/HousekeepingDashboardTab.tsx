@@ -1,4 +1,4 @@
-import { FC, FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { ElementType, FC, FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { FaBolt, FaChartLine, FaCircle, FaCrown, FaExclamationTriangle, FaHome, FaPaperPlane, FaServer, FaSync, FaTicketAlt, FaUsers } from 'react-icons/fa';
 import {
     formatCompactNumber,
@@ -14,6 +14,8 @@ import {
 import { useHousekeepingStore, useNotification } from '../../../../hooks';
 import { HousekeepingButton } from '../common/HousekeepingParts';
 import { HousekeepingStatsView } from './HousekeepingStatsView';
+import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 const AUTO_REFRESH_MS = 30_000;
 const STALE_AFTER_MS = 60_000;
@@ -46,10 +48,12 @@ const TONE_ICON: Record<NonNullable<StatCardProps['tone']>, string> = {
 const StatCard: FC<StatCardProps> = ({ icon, label, value, subtle, tone = 'sky', onClick }) => {
     const interactive = !!onClick;
 
+    const Root: ElementType = interactive ? BaseButton : 'div';
+
     return (
-        <div
+        <Root
             onClick={onClick}
-            className={`flex items-center gap-2.5 rounded-lg p-2.5 border bg-gradient-to-br shadow-sm ${TONE_BG[tone]} ${interactive ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
+            className={`flex w-full items-center gap-2.5 rounded-lg p-2.5 border bg-gradient-to-br text-left shadow-sm ${TONE_BG[tone]} ${interactive ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
         >
             <div className={`${TONE_ICON[tone]} shrink-0 rounded-md p-1.5`}>{icon}</div>
             <div className="flex flex-col grow min-w-0">
@@ -57,7 +61,7 @@ const StatCard: FC<StatCardProps> = ({ icon, label, value, subtle, tone = 'sky',
                 <span className="text-xl font-bold leading-tight tabular-nums">{value}</span>
                 {subtle && <span className="text-[10px] text-zinc-500 truncate">{subtle}</span>}
             </div>
-        </div>
+        </Root>
     );
 };
 
@@ -292,16 +296,14 @@ export const HousekeepingDashboardTab: FC = () => {
                     </h4>
                     <div className="flex flex-wrap gap-1">
                         {recentLookups.map((entry, index) => (
-                            <button
-                                key={`${entry.kind}-${entry.id}-${index}`}
+                            <Hint key={`${entry.kind}-${entry.id}-${index}`} content={`${entry.kind} #${entry.id}`}><BaseButton
                                 type="button"
                                 onClick={() => onRecentClick(entry)}
                                 className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] border transition-colors ${entry.kind === 'user' ? 'bg-sky-50 border-sky-200 text-sky-700 hover:bg-sky-100' : 'bg-violet-50 border-violet-200 text-violet-700 hover:bg-violet-100'}`}
-                                title={`${entry.kind} #${entry.id}`}
                             >
                                 <span className="opacity-60 font-bold">{entry.kind === 'user' ? 'U' : 'R'}</span>
                                 <span className="font-medium">{entry.label}</span>
-                            </button>
+                            </BaseButton></Hint>
                         ))}
                     </div>
                 </div>

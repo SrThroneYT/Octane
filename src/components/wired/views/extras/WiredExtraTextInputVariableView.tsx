@@ -12,8 +12,10 @@ import {
     isCustomVariableToken,
     normalizeVariableTokenFromWire
 } from '../WiredVariablePickerData';
+import { fromWiredVariableId, toWiredVariableId, wiredVariableIdList } from '../WiredVariableIds';
 import { WiredExtraBaseView } from './WiredExtraBaseView';
 import { WiredPlaceholderPreview } from './WiredPlaceholderPreview';
+import { Radio } from '../../../../common/Radio';
 
 interface IVariableDefinition {
     hasValue: boolean;
@@ -52,7 +54,7 @@ const normalizeCapturerName = (value: string) => {
 const escapeHtml = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
 export const WiredExtraTextInputVariableView: FC<{}> = () => {
-    const { trigger = null, setIntParams = null, setStringParam = null } = useWired();
+    const { trigger = null, setIntParams = null, setStringParam = null, setVariableIds = null } = useWired();
     const { contextVariableDefinitions = [] } = useWiredTools();
     const [variableToken, setVariableToken] = useState('');
     const [capturerName, setCapturerName] = useState(DEFAULT_CAPTURER_NAME);
@@ -85,7 +87,10 @@ export const WiredExtraTextInputVariableView: FC<{}> = () => {
     useEffect(() => {
         if (!trigger) return;
 
-        const [nextVariableToken, nextCapturerName] = splitStringData(trigger.stringData);
+        // AIR: the context variable as the first variable id, the name as the string; an older server wrote
+        // `variable\tname`.
+        const idToken = fromWiredVariableId(trigger.variableIds?.[0] ?? '');
+        const [nextVariableToken, nextCapturerName] = idToken ? [idToken, trigger.stringData ?? ''] : splitStringData(trigger.stringData);
 
         setVariableToken(normalizeVariableTokenFromWire(nextVariableToken));
         setCapturerName(normalizeCapturerName(nextCapturerName));
@@ -108,10 +113,9 @@ export const WiredExtraTextInputVariableView: FC<{}> = () => {
     const previewHtml = useMemo(() => LocalizeText('wiredfurni.params.texts.placeholder_preview', ['placeholder'], [escapeHtml(previewToken)]), [previewToken]);
 
     const save = () => {
-        const variableItemId = getCustomVariableItemId(variableToken);
-
         setIntParams([canUseTextDisplay && normalizeDisplayType(displayType) === DISPLAY_TEXTUAL ? 1 : 0]);
-        setStringParam(`${variableItemId ? String(variableItemId) : ''}\t${normalizeCapturerName(capturerName)}`);
+        setStringParam(normalizeCapturerName(capturerName));
+        setVariableIds(wiredVariableIdList(toWiredVariableId('context', variableToken)));
     };
 
     const validate = () => !!normalizeCapturerName(capturerName).length && getCustomVariableItemId(variableToken) > 0;
@@ -151,24 +155,11 @@ export const WiredExtraTextInputVariableView: FC<{}> = () => {
                 <div className="flex flex-col gap-1">
                     <Text>{LocalizeText('wiredfurni.params.texts.variable_input_type')}</Text>
                     <label className="flex items-center gap-1 cursor-pointer">
-                        <input
-                            checked={displayType === DISPLAY_NUMERIC}
-                            className="form-check-input"
-                            name="wiredTextInputVariableType"
-                            type="radio"
-                            onChange={() => setDisplayType(DISPLAY_NUMERIC)}
-                        />
+                        <Radio checked={displayType === DISPLAY_NUMERIC} name="wiredTextInputVariableType" onCheckedChange={() => setDisplayType(DISPLAY_NUMERIC)} />
                         <Text>{LocalizeText('wiredfurni.params.texts.variable_display_type.1')}</Text>
                     </label>
                     <label className="flex items-center gap-1 cursor-pointer">
-                        <input
-                            checked={displayType === DISPLAY_TEXTUAL}
-                            className="form-check-input"
-                            disabled={!canUseTextDisplay}
-                            name="wiredTextInputVariableType"
-                            type="radio"
-                            onChange={() => setDisplayType(DISPLAY_TEXTUAL)}
-                        />
+                        <Radio checked={displayType === DISPLAY_TEXTUAL} disabled={!canUseTextDisplay} name="wiredTextInputVariableType" onCheckedChange={() => setDisplayType(DISPLAY_TEXTUAL)} />
                         <Text>{LocalizeText('wiredfurni.params.texts.variable_display_type.2')}</Text>
                     </label>
                     <Text small>{LocalizeText('wiredfurni.params.texts.variable_display_type.2.info')}</Text>

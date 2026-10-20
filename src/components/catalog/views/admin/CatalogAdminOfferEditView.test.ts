@@ -1,3 +1,4 @@
+/* @vitest-environment jsdom */
 import { describe, expect, it } from 'vitest';
 import type { IPurchasableOffer } from '../../../../api';
 import * as OfferEditor from './CatalogAdminOfferEditView';

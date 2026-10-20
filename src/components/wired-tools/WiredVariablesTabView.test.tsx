@@ -88,7 +88,7 @@ describe('WiredVariablesTabView', () => {
         expect(screen.queryByRole('button', { name: 'Highlight' })).toBeNull();
         expect(screen.queryByRole('button', { name: 'Contents' })).toBeNull();
 
-        fireEvent.click(screen.getByTitle('User'));
+        fireEvent.click(screen.getByLabelText('User'));
 
         expect(onVariablesTypeChange).toHaveBeenCalledWith('user');
         expect(uiState.setVariablesType).not.toHaveBeenCalled();

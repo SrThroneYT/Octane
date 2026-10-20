@@ -18,7 +18,11 @@ import {
     normalizeVariableTokenFromWire,
     WiredVariablePickerTarget
 } from '../WiredVariablePickerData';
+import { readWiredVariableToken, toWiredVariableId, wiredVariableIdList } from '../WiredVariableIds';
 import { WiredExtraBaseView } from './WiredExtraBaseView';
+import { Radio } from '../../../../common/Radio';
+import { Select } from '../../../../common/Select';
+import { BaseButton } from '../../../../common/BaseButton';
 
 type VariableTargetType = 'user' | 'furni' | 'global' | 'context';
 type AmountMode = 'constant' | 'variable';
@@ -123,7 +127,7 @@ const resolveSourceOptions = (baseOptions: WiredSourceOption[], selectedValue: n
 };
 
 export const WiredExtraFilterByVariableView: FC<WiredExtraFilterByVariableViewProps> = ({ target }) => {
-    const { trigger = null, furniIds = [], setFurniIds = null, setIntParams = null, setStringParam = null, setSourceTypes = null } = useWired();
+    const { trigger = null, furniIds = [], setFurniIds = null, setIntParams = null, setStringParam = null, setSourceTypes = null, setVariableIds = null } = useWired();
     const { userVariableDefinitions = [], furniVariableDefinitions = [], roomVariableDefinitions = [], contextVariableDefinitions = [] } = useWiredTools();
     const [variableToken, setVariableToken] = useState('');
     const [sortBy, setSortBy] = useState(0);
@@ -199,8 +203,9 @@ export const WiredExtraFilterByVariableView: FC<WiredExtraFilterByVariableViewPr
         const stringParts = parseStringData(trigger.stringData);
         const nextReferenceFurniIds = [...(trigger.selectedItems ?? [])];
 
-        setVariableToken(normalizeVariableTokenFromWire(stringParts.length > 0 ? stringParts[0] : ''));
-        setReferenceVariableToken(normalizeVariableTokenFromWire(stringParts.length > 1 ? stringParts[1] : ''));
+        // AIR: variable ids [sorted variable, N variable]; an older server wrote both into the string.
+        setVariableToken(readWiredVariableToken(trigger.variableIds, 0, normalizeVariableTokenFromWire(stringParts.length > 0 ? stringParts[0] : '')));
+        setReferenceVariableToken(readWiredVariableToken(trigger.variableIds, 1, normalizeVariableTokenFromWire(stringParts.length > 1 ? stringParts[1] : '')));
         // Official layout: [N, sort, N from a variable, its target (official ids)]; the N variable's
         // sources in the official slots.
         const d = trigger.intData;
@@ -231,7 +236,10 @@ export const WiredExtraFilterByVariableView: FC<WiredExtraFilterByVariableViewPr
         const nextReferenceFurniIds = referenceSelectionEnabled ? [...furniIds] : [...referenceFurniIds];
 
         setReferenceFurniIds(nextReferenceFurniIds);
-        setStringParam(`${variableToken || ''}\t${amountMode === 'variable' ? referenceVariableToken : ''}`);
+        setStringParam('');
+        setVariableIds(
+            wiredVariableIdList(toWiredVariableId(target, variableToken), amountMode === 'variable' ? toWiredVariableId(referenceTargetType, referenceVariableToken) : '')
+        );
         setIntParams([
             Number.isFinite(parsedAmount) ? parsedAmount : 0,
             sortBy,
@@ -275,13 +283,13 @@ export const WiredExtraFilterByVariableView: FC<WiredExtraFilterByVariableViewPr
 
                 <div className="flex flex-col gap-1">
                     <Text>{LocalizeText('wiredfurni.params.variables.sort_by')}</Text>
-                    <select className="form-select form-select-sm" value={sortBy} onChange={(event) => setSortBy(parseInt(event.target.value, 10) || 0)}>
+                    <Select className="form-select form-select-sm" value={sortBy} onChange={(event) => setSortBy(parseInt(event.target.value, 10) || 0)}>
                         {SORT_OPTIONS.map((option) => (
                             <option key={option} value={option}>
                                 {LocalizeText(`wiredfurni.params.variables.sort_by.${option}`)}
                             </option>
                         ))}
-                    </select>
+                    </Select>
                 </div>
 
                 <div className="octane-wired__divider" />
@@ -289,7 +297,7 @@ export const WiredExtraFilterByVariableView: FC<WiredExtraFilterByVariableViewPr
                 <div className="octane-wired__give-var-section">
                     <div className="octane-wired__give-var-section-title">{LocalizeText('wiredfurni.params.setfilter')}</div>
                     <label className="octane-wired__change-var-radio">
-                        <input checked={amountMode === 'constant'} type="radio" onChange={() => setAmountMode('constant')} />
+                        <Radio checked={amountMode === 'constant'} onCheckedChange={() => setAmountMode('constant')} />
                         <Text>{LocalizeText('wiredfurni.params.variables.reference_value.set_value')}</Text>
                         <OctaneInput
                             className="octane-wired__give-var-number"
@@ -303,11 +311,11 @@ export const WiredExtraFilterByVariableView: FC<WiredExtraFilterByVariableViewPr
 
                     <div className="octane-wired__change-var-reference-block">
                         <label className="octane-wired__change-var-radio">
-                            <input checked={amountMode === 'variable'} type="radio" onChange={() => setAmountMode('variable')} />
+                            <Radio checked={amountMode === 'variable'} onCheckedChange={() => setAmountMode('variable')} />
                             <Text>{LocalizeText('wiredfurni.params.variables.reference_value.from_variable')}</Text>
                             <div className="octane-wired__give-var-targets">
                                 {TARGET_BUTTONS.map((button) => (
-                                    <button
+                                    <BaseButton
                                         key={`reference-${button.key}`}
                                         type="button"
                                         disabled={button.disabled || amountMode !== 'variable'}
@@ -315,7 +323,7 @@ export const WiredExtraFilterByVariableView: FC<WiredExtraFilterByVariableViewPr
                                         onClick={() => handleReferenceTargetChange(button.key)}
                                     >
                                         <img src={button.icon} alt={button.key} />
-                                    </button>
+                                    </BaseButton>
                                 ))}
                             </div>
                         </label>

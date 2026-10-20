@@ -1,3 +1,4 @@
+/* @vitest-environment jsdom */
 import { describe, expect, it, vi } from 'vitest';
 import { initialMessengerState, MessengerState, messengerReducer } from '../../../api';
 import { createMessengerActionsController, createMessengerHistoryController } from '.';

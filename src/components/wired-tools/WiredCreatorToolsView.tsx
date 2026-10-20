@@ -26,10 +26,15 @@ import {
     RoomUnitStatusEvent,
     UpdateFurniturePositionComposer,
     Vector3d,
+    WiredErrorLogsClearComposer,
+    WiredErrorLogsEvent,
+    WiredErrorLogsRequestComposer,
     WiredFurniRuntimeStateEvent,
     WiredFurniRuntimeStateRequestComposer,
     WiredMonitorDataEvent,
     WiredMonitorRequestComposer,
+    WiredRoomStatsEvent,
+    WiredRoomStatsRequestComposer,
     WiredUserInspectMoveComposer
 } from '@octane/renderer';
 import { FC, KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -43,6 +48,7 @@ import {
     LocalizeText,
     localizeWithFallback,
     NotificationAlertType,
+    NotificationBubbleType,
     canHighlightWiredBoxesFor,
     decodeUserVariableHolder,
     findUserVariableHolderData,
@@ -92,23 +98,32 @@ import {
     WIRED_FURNI_RUNTIME_ACTION_WRITE,
     getBuiltinTextConnectorLabel,
     WIRED_INSPECTION_REFRESH_MS,
-    WIRED_MONITOR_ACTION_CLEAR_LOGS,
     WIRED_MONITOR_ACTION_FETCH,
     WIRED_MONITOR_POLL_MS,
+    WIRED_MONITOR_ROOM_STATS_POLL_MS,
     WIRED_VARIABLES_IDLE_POLL_MS,
     WIRED_VARIABLES_LIVE_TABS,
     WIRED_VARIABLES_POLL_MS
 } from './WiredCreatorTools.constants';
 import {
+    buildMonitorLogs,
+    exceedsVariableHighlightLimit,
     formatMonitorHistoryOccurrence,
-    formatMonitorLatestOccurrence,
     formatMonitorSource,
     formatVariableTimestamp,
     getHotelDateTimeParts,
     getHotelTimeFormatter,
     isStackOnlyVariable,
     normalizeMonitorReason,
-    toVariableTextValues
+    resolveMonitorErrorDescription,
+    resolveMonitorRoomCounters,
+    splitMonitorStatLine,
+    toMonitorErrorLogs,
+    toVariableTextValues,
+    WIRED_MONITOR_CLEAR_LOGS_TIMEOUT_MS,
+    WIRED_MONITOR_COLOR,
+    WIRED_MONITOR_THRESHOLDS,
+    wiredMonitorColor
 } from './WiredCreatorTools.helpers';
 import {
     HotelDateTimeParts,
@@ -146,6 +161,8 @@ import { WiredVariableHolderPanelView } from './WiredVariableHolderPanelView';
 import { WiredVariablesTabView } from './WiredVariablesTabView';
 import { translateWiredMenuLink, wiredMenuTabKey } from './WiredMenuLinks';
 import { useWiredCreatorToolsUiStore } from './wiredCreatorToolsUiStore';
+import { Select } from '../../common/Select';
+import { BaseButton } from '../../common/BaseButton';
 import { isDerivedVariableItemId } from '../wired/views/WiredVariablePickerData';
 
 const WIRED_FURNI_GRAVITY_MODEL_KEY = 'wired_furni_gravity';
@@ -159,6 +176,9 @@ export const WiredCreatorToolsView: FC<{}> = () => {
     const inspectionType = useWiredCreatorToolsUiStore((s) => s.inspectionType);
     const setInspectionType = useWiredCreatorToolsUiStore((s) => s.setInspectionType);
     const variablesType = useWiredCreatorToolsUiStore((s) => s.variablesType);
+    const setVariablesType = useWiredCreatorToolsUiStore((s) => s.setVariablesType);
+    // AIR WiredMenuOverviewTab: a `variable_overview/<name>` link selects that variable once it is known.
+    const [pendingVariableName, setPendingVariableName] = useState('');
     const [keepSelected, setKeepSelected] = useState(false);
     const selectedFurni = useWiredCreatorToolsUiStore((s) => s.selectedFurni);
     const setSelectedFurni = useWiredCreatorToolsUiStore((s) => s.setSelectedFurni);
@@ -182,7 +202,11 @@ export const WiredCreatorToolsView: FC<{}> = () => {
     const monitorSnapshot = useWiredCreatorToolsUiStore((s) => s.monitorSnapshot);
     const setMonitorSnapshot = useWiredCreatorToolsUiStore((s) => s.setMonitorSnapshot);
     const resetMonitorSnapshot = useWiredCreatorToolsUiStore((s) => s.resetMonitorSnapshot);
+    const setMonitorRoomStats = useWiredCreatorToolsUiStore((s) => s.setMonitorRoomStats);
+    const setMonitorErrorLogs = useWiredCreatorToolsUiStore((s) => s.setMonitorErrorLogs);
     const [selectedMonitorErrorType, setSelectedMonitorErrorType] = useState<string>(null);
+    // AIR WiredMenuMonitorTab: "Clear all" stays disabled for CLEAR_LOGS_TIMEOUT after a clear.
+    const [isMonitorClearCoolingDown, setIsMonitorClearCoolingDown] = useState(false);
     const [selectedMonitorLogDetails, setSelectedMonitorLogDetails] = useState<MonitorLogDetails>(null);
     const isMonitorHistoryOpen = useWiredCreatorToolsUiStore((s) => s.isMonitorHistoryOpen);
     const setIsMonitorHistoryOpen = useWiredCreatorToolsUiStore((s) => s.setIsMonitorHistoryOpen);
@@ -275,6 +299,14 @@ export const WiredCreatorToolsView: FC<{}> = () => {
     const canHighlightConfiguredWireds = canHighlightWiredBoxesFor(objectInspection);
     const configuredWiredsKey = canHighlightConfiguredWireds ? objectInspection.configuredInWireds.join(',') : '';
 
+    useEffect(() => {
+        if (!isMonitorClearCoolingDown) return;
+
+        const timeout = window.setTimeout(() => setIsMonitorClearCoolingDown(false), WIRED_MONITOR_CLEAR_LOGS_TIMEOUT_MS);
+
+        return () => window.clearTimeout(timeout);
+    }, [isMonitorClearCoolingDown]);
+
     // AIR clears the box highlight when another object is inspected or the tab is left.
     useEffect(() => {
         setIsHighlightingConfiguredWireds(false);
@@ -290,7 +322,7 @@ export const WiredCreatorToolsView: FC<{}> = () => {
 
         return () => WiredSelectionVisualizer.clearVariableHighlightFromObjects(objects);
     }, [isHighlightingConfiguredWireds, configuredWiredsKey]);
-    const { simpleAlert = null, showConfirm = null } = useNotification();
+    const { simpleAlert = null, showConfirm = null, showSingleBubble = null } = useNotification();
 
     const getFurniLiveState = useCallback(
         (objectId: number, category: number): InspectionFurniLiveState => {
@@ -735,8 +767,22 @@ export const WiredCreatorToolsView: FC<{}> = () => {
             overloadConsecutiveWindowsThreshold: Number(parser.overloadConsecutiveWindowsThreshold ?? 0),
             heavyDelayedThresholdPercent: Number(parser.heavyDelayedThresholdPercent ?? 0),
             logs: [...(parser.logs ?? [])],
-            history: [...(parser.history ?? [])]
+            history: [...(parser.history ?? [])],
+            // The room stats (1891) and the error list (15) come in their own packets; the store keeps the last ones.
+            roomStats: null,
+            errors: []
         });
+    });
+
+    useMessageEvent<WiredRoomStatsEvent>(WiredRoomStatsEvent, (event) => {
+        const roomStats = event.getParser().roomStats;
+
+        setMonitorRoomStats(roomStats ? { ...roomStats } : null);
+    });
+
+    // AIR's error list (15): the answer to 1132 and to "Clear all" (1632).
+    useMessageEvent<WiredErrorLogsEvent>(WiredErrorLogsEvent, (event) => {
+        setMonitorErrorLogs(toMonitorErrorLogs(event.getParser().errors, Date.now()));
     });
 
     useMessageEvent<WiredFurniRuntimeStateEvent>(WiredFurniRuntimeStateEvent, (event) => {
@@ -934,6 +980,22 @@ export const WiredCreatorToolsView: FC<{}> = () => {
         return () => window.clearInterval(interval);
     }, [isVisible, activeTab, roomSession?.roomId, requestMonitorSnapshot]);
 
+    // AIR WiredMenuMonitorTab.requestData(): the room stats (1957) and error list (1132) requests go out every POLL_MONITOR_MS.
+    useEffect(() => {
+        if (!isVisible || activeTab !== 'monitor' || !roomSession?.roomId) return;
+
+        const requestRoomStats = () => {
+            SendMessageComposer(new WiredRoomStatsRequestComposer());
+            SendMessageComposer(new WiredErrorLogsRequestComposer());
+        };
+
+        requestRoomStats();
+
+        const interval = window.setInterval(requestRoomStats, WIRED_MONITOR_ROOM_STATS_POLL_MS);
+
+        return () => window.clearInterval(interval);
+    }, [isVisible, activeTab, roomSession?.roomId]);
+
     const isLiveVariablesTab = WIRED_VARIABLES_LIVE_TABS.includes(activeTab);
 
     useEffect(() => {
@@ -1077,6 +1139,7 @@ export const WiredCreatorToolsView: FC<{}> = () => {
                             const tab = parts[2] as WiredToolsTab;
 
                             if (TABS.some((entry) => entry.key === tab)) setActiveTab(tab);
+                            if (tab === 'variables' && parts.length > 3) setPendingVariableName(parts.slice(3).join('/'));
                         }
                         setIsVisible(true);
                         return;
@@ -1136,29 +1199,34 @@ export const WiredCreatorToolsView: FC<{}> = () => {
         );
     }, [roomSession, selectedUser, selectedUserActionVersion]);
 
+    // AIR WiredErrorInfoView: the name, then the text `wiredmenu.error_info.<id>`; our own rows (and an id without a text) use ours.
     const selectedMonitorErrorInfo = useMemo(() => {
         if (!selectedMonitorErrorType) return null;
 
-        return MONITOR_ERROR_INFO[selectedMonitorErrorType] ?? null;
-    }, [selectedMonitorErrorType]);
+        const ours = MONITOR_ERROR_INFO[selectedMonitorErrorType];
+        const errorId = selectedMonitorLogDetails?.errorId;
+        const official = errorId === undefined ? '' : localizeWithFallback(`wiredmenu.error_info.${errorId}`, '');
+        const description = resolveMonitorErrorDescription(official, ours?.description ?? []);
+
+        if (!ours && !description.length) return null;
+
+        return {
+            title: ours?.title ?? selectedMonitorErrorType,
+            severity: ours?.severity ?? 'ERROR',
+            description
+        };
+    }, [selectedMonitorErrorType, selectedMonitorLogDetails?.errorId]);
     const monitorRoomStats = useMemo(() => {
-        if (!roomSession) {
-            return {
-                roomFurniCount: 0,
-                roomItemLimit: 0,
-                wallFurniCount: 0,
-                permanentFurniVariables: 0
-            };
-        }
+        if (!roomSession) return resolveMonitorRoomCounters(null, { floorCount: 0, wallCount: 0, itemLimit: 0, permanentFurniVariables: 0 });
 
         const roomId = roomSession.roomId;
         const floorObjects = GetRoomEngine().getRoomObjects(roomId, RoomObjectCategory.FLOOR);
         const wallObjects = GetRoomEngine().getRoomObjects(roomId, RoomObjectCategory.WALL);
 
-        return {
-            roomFurniCount: floorObjects.length + wallObjects.length,
-            roomItemLimit: Number(roomSession.roomItemLimit ?? 0),
-            wallFurniCount: wallObjects.length,
+        return resolveMonitorRoomCounters(monitorSnapshot.roomStats, {
+            floorCount: floorObjects.length,
+            wallCount: wallObjects.length,
+            itemLimit: Number(roomSession.roomItemLimit ?? 0),
             permanentFurniVariables: [...floorObjects, ...wallObjects].reduce((total, roomObject) => {
                 if (!roomObject) return total;
 
@@ -1166,8 +1234,8 @@ export const WiredCreatorToolsView: FC<{}> = () => {
 
                 return total + (customVariables?.length ?? 0);
             }, 0)
-        };
-    }, [roomSession, globalClock]);
+        });
+    }, [roomSession, globalClock, monitorSnapshot.roomStats]);
     const selectedMonitorDetailSource = useMemo(() => {
         if (!selectedMonitorLogDetails) return '';
 
@@ -1176,73 +1244,104 @@ export const WiredCreatorToolsView: FC<{}> = () => {
     const monitorHistoryTypeOptions = useMemo(() => {
         return ['ALL', ...Array.from(new Set([...MONITOR_LOG_ORDER, ...monitorSnapshot.history.map((entry) => entry.type)]))];
     }, [monitorSnapshot.history]);
+    // Official VariableHolderPreviewer: preview_instruction_furni / preview_instruction_user.
     const previewPlaceholder = useMemo(() => {
         switch (inspectionType) {
             case 'furni':
-                return 'Select a furni';
+                return localizeWithFallback('wiredmenu.inspection.preview_furni_instruction', 'Select a furni');
             case 'user':
-                return 'Select a user';
+                return localizeWithFallback('wiredmenu.inspection.preview_user_instruction', 'Select a user');
             default:
-                return 'Nothing to display';
+                return localizeWithFallback('wiredmenu.table.empty', 'Nothing to display');
         }
     }, [inspectionType]);
     const monitorStats = useMemo<MonitorStat[]>(() => {
+        // Official statistics lines: localized HTML with the colour, amount and limit (WiredMenuMonitorTab).
+        const officialLine = (key: string, fallbackLabel: string, color: string, value: string, parameters: string[], replacements: string[]): MonitorStat => {
+            const line = localizeWithFallback(key, `${fallbackLabel}: <font color="#${color}">${value}</font>`, ['color', ...parameters], [color, ...replacements]);
+            const { label, value: shown } = splitMonitorStatLine(line);
+
+            return { label, value: shown || value, color: `#${color}` };
+        };
+        const amountLine = (key: string, fallbackLabel: string, amount: number, limit: number, thresholds: readonly [number, number]) =>
+            officialLine(key, fallbackLabel, wiredMonitorColor(amount, limit, thresholds), `${amount}/${limit}`, ['amount', 'limit'], [String(amount), String(limit)]);
+        const yesNo = (value: boolean) => (value ? localizeWithFallback('wiredmenu.bool.yes', 'Yes') : localizeWithFallback('wiredmenu.bool.no', 'No'));
+        const official = (usage: number, usageLimit: number, isHeavy: boolean, counters: ReturnType<typeof resolveMonitorRoomCounters>) => [
+            amountLine('wiredmenu.monitor.statistics.usage', 'Wired usage', usage, usageLimit, WIRED_MONITOR_THRESHOLDS.usage),
+            officialLine(
+                'wiredmenu.monitor.statistics.is_heavy',
+                'Is heavy',
+                isHeavy ? WIRED_MONITOR_COLOR.ORANGE : WIRED_MONITOR_COLOR.GREEN,
+                yesNo(isHeavy),
+                ['bool'],
+                [yesNo(isHeavy)]
+            ),
+            amountLine('wiredmenu.monitor.statistics.floorfurni', 'Floor furni', counters.floorCount, counters.floorLimit, WIRED_MONITOR_THRESHOLDS.furni),
+            amountLine('wiredmenu.monitor.statistics.wallfurni', 'Wall furni', counters.wallCount, counters.wallLimit, WIRED_MONITOR_THRESHOLDS.furni),
+            amountLine(
+                'wiredmenu.monitor.statistics.perm_furni_vars',
+                'Permanent furni vars',
+                counters.permanentFurniVariables,
+                counters.permanentFurniVariablesLimit,
+                WIRED_MONITOR_THRESHOLDS.variables
+            ),
+            // The user and global lines need the server's totals; an older server does not send them.
+            ...(counters.hasVariableTotals
+                ? [
+                      amountLine(
+                          'wiredmenu.monitor.statistics.perm_user_vars',
+                          'Permanent user vars',
+                          counters.permanentUserVariables,
+                          counters.permanentUserVariablesLimit,
+                          WIRED_MONITOR_THRESHOLDS.variables
+                      ),
+                      amountLine(
+                          'wiredmenu.monitor.statistics.perm_global_vars',
+                          'Permanent global vars',
+                          counters.permanentGlobalVariables,
+                          counters.permanentGlobalVariablesLimit,
+                          WIRED_MONITOR_THRESHOLDS.variables
+                      )
+                  ]
+                : [])
+        ];
+
         if (!roomSession) {
             return [
-                { label: 'Wired usage', value: '0/0' },
-                { label: 'Is heavy', value: 'No' },
-                { label: 'Room furni', value: '0/0' },
-                { label: 'Wall furni', value: '0/0' },
+                ...official(0, 0, false, monitorRoomStats),
                 { label: 'Delayed events', value: '0/0' },
                 { label: 'Average execution', value: '0ms' },
                 { label: 'Peak execution', value: '0ms' },
                 { label: 'Recursion', value: '0/0' },
-                { label: 'Killed remaining', value: '0s' },
-                { label: 'Permanent furni vars', value: '0/60' }
+                { label: 'Killed remaining', value: '0s' }
             ];
         }
 
-        const roomFurniValue =
-            monitorRoomStats.roomItemLimit > 0
-                ? `${monitorRoomStats.roomFurniCount}/${monitorRoomStats.roomItemLimit}`
-                : String(monitorRoomStats.roomFurniCount);
-        const wallFurniValue =
-            monitorRoomStats.roomItemLimit > 0
-                ? `${monitorRoomStats.wallFurniCount}/${monitorRoomStats.roomItemLimit}`
-                : String(monitorRoomStats.wallFurniCount);
-        const usageValue = `${monitorSnapshot.usageCurrentWindow}/${Math.max(0, monitorSnapshot.usageLimitPerWindow)}`;
         const delayedValue = `${monitorSnapshot.delayedEventsPending}/${Math.max(0, monitorSnapshot.delayedEventsLimit)}`;
 
+        // AIR reads usage and heavy from its room stats packet; until one arrives our monitor packet's are shown.
+        const roomStats = monitorSnapshot.roomStats;
+
+        // The official lines first; the rows after them are ours (the official tab has no such rows).
         return [
-            { label: 'Wired usage', value: usageValue },
-            { label: 'Is heavy', value: monitorSnapshot.isHeavy ? 'Yes' : 'No' },
-            { label: 'Room furni', value: roomFurniValue },
-            { label: 'Wall furni', value: wallFurniValue },
+            ...official(
+                roomStats ? Math.round(roomStats.usage) : monitorSnapshot.usageCurrentWindow,
+                Math.max(0, roomStats ? Math.round(roomStats.usageLimit) : monitorSnapshot.usageLimitPerWindow),
+                roomStats ? roomStats.isHeavy : monitorSnapshot.isHeavy,
+                monitorRoomStats
+            ),
             { label: 'Delayed events', value: delayedValue },
             { label: 'Average execution', value: `${monitorSnapshot.averageExecutionMs}ms` },
             { label: 'Peak execution', value: `${monitorSnapshot.peakExecutionMs}ms` },
             { label: 'Recursion', value: `${monitorSnapshot.recursionDepthCurrent}/${Math.max(0, monitorSnapshot.recursionDepthLimit)}` },
-            { label: 'Killed remaining', value: `${Math.max(0, monitorSnapshot.killedRemainingSeconds)}s` },
-            { label: 'Permanent furni vars', value: `${monitorRoomStats.permanentFurniVariables}/60` }
+            { label: 'Killed remaining', value: `${Math.max(0, monitorSnapshot.killedRemainingSeconds)}s` }
         ];
     }, [roomSession, monitorRoomStats, monitorSnapshot]);
-    const monitorLogs = useMemo<MonitorLog[]>(() => {
-        return MONITOR_LOG_ORDER.map((type) => {
-            const log = monitorSnapshot.logs.find((entry) => entry.type === type);
-            const fallbackInfo = MONITOR_ERROR_INFO[type];
-            const amount = Number(log?.amount ?? 0);
-
-            return {
-                type,
-                category: String(log?.severity ?? fallbackInfo?.severity ?? 'ERROR'),
-                amount: String(amount),
-                latest: amount > 0 ? formatMonitorLatestOccurrence(Number(log?.latestOccurrenceSeconds ?? 0), globalClock) : '/',
-                latestReason: normalizeMonitorReason(log?.latestReason),
-                latestSourceLabel: String(log?.latestSourceLabel ?? ''),
-                latestSourceId: Number(log?.latestSourceId ?? 0)
-            };
-        });
-    }, [monitorSnapshot.logs, globalClock]);
+    // AIR's error list (15) in the server's order, with the latest detail of each row from our monitor packet (5101).
+    const monitorLogs = useMemo<MonitorLog[]>(
+        () => buildMonitorLogs(monitorSnapshot.errors, monitorSnapshot.logs, globalClock),
+        [monitorSnapshot.errors, monitorSnapshot.logs, globalClock]
+    );
     const monitorHistoryRows = useMemo(() => {
         return monitorSnapshot.history.map((entry, index) => ({
             id: `${entry.type}-${entry.occurredAtSeconds}-${index}`,
@@ -1300,9 +1399,15 @@ export const WiredCreatorToolsView: FC<{}> = () => {
             {
                 title: 'Room counters',
                 lines: [
-                    `Room furni: ${monitorRoomStats.roomFurniCount}/${Math.max(0, monitorRoomStats.roomItemLimit) || 0}`,
-                    `Wall furni: ${monitorRoomStats.wallFurniCount}/${Math.max(0, monitorRoomStats.roomItemLimit) || 0}`,
-                    `Permanent furni vars: ${monitorRoomStats.permanentFurniVariables}/60 renderer-side custom variable entries currently attached to room items.`
+                    `Floor furni: ${monitorRoomStats.floorCount}/${monitorRoomStats.floorLimit}`,
+                    `Wall furni: ${monitorRoomStats.wallCount}/${monitorRoomStats.wallLimit}`,
+                    `Permanent furni vars: ${monitorRoomStats.permanentFurniVariables}/${monitorRoomStats.permanentFurniVariablesLimit}`,
+                    ...(monitorRoomStats.hasVariableTotals
+                        ? [
+                              `Permanent user vars: ${monitorRoomStats.permanentUserVariables}/${monitorRoomStats.permanentUserVariablesLimit}`,
+                              `Permanent global vars: ${monitorRoomStats.permanentGlobalVariables}/${monitorRoomStats.permanentGlobalVariablesLimit}`
+                          ]
+                        : [])
                 ]
             }
         ];
@@ -1832,6 +1937,18 @@ export const WiredCreatorToolsView: FC<{}> = () => {
         });
     }, [variableDefinitionsByType]);
     useEffect(() => {
+        if (!pendingVariableName) return;
+
+        for (const type of ['furni', 'user', 'global', 'context'] as VariablesElementType[]) {
+            if (!variableDefinitionsByType[type].some((definition) => definition.key === pendingVariableName)) continue;
+
+            setVariablesType(type);
+            setSelectedVariableKeys((prev) => ({ ...prev, [type]: pendingVariableName }));
+            setPendingVariableName('');
+            return;
+        }
+    }, [pendingVariableName, variableDefinitionsByType]);
+    useEffect(() => {
         setSelectedManagedVariableEntry(null);
     }, [variablesType, selectedVariableKeys[variablesType]]);
     useEffect(() => {
@@ -2115,6 +2232,16 @@ export const WiredCreatorToolsView: FC<{}> = () => {
 
         setIsVariableHighlightActive(false);
     }, [activeTab, canVariableHighlight, isVisible]);
+    // Official onAllVariableHolders: a variable with too many holders is not highlighted; a notification says so.
+    useEffect(() => {
+        if (!isVariableHighlightActive || !exceedsVariableHighlightLimit(variableHighlightTargets.length, !!selectedVariableDefinition?.hasValue)) return;
+
+        showSingleBubble?.(
+            localizeWithFallback('wiredmenu.variable_overview.highlight.error.too_many', 'Can not highlight this variable, it has too many holders'),
+            NotificationBubbleType.INFO
+        );
+        setIsVariableHighlightActive(false);
+    }, [isVariableHighlightActive, selectedVariableDefinition?.hasValue, showSingleBubble, variableHighlightTargets.length]);
     useEffect(() => {
         if (variableHighlightObjectsRef.current.length) {
             WiredSelectionVisualizer.clearVariableHighlightFromObjects(variableHighlightObjectsRef.current);
@@ -2516,16 +2643,21 @@ export const WiredCreatorToolsView: FC<{}> = () => {
     }, [selectedManagedVariableEntry, selectedManagedHolderVariableEntry, roomSettings.canModify, variablesType, removeUserVariable, removeFurniVariable]);
 
     const clearMonitorLogs = () => {
+        if (isMonitorClearCoolingDown) return;
+
+        setIsMonitorClearCoolingDown(true);
         setSelectedMonitorErrorType(null);
         setSelectedMonitorLogDetails(null);
         setIsMonitorHistoryOpen(false);
         setIsMonitorInfoOpen(false);
-        SendMessageComposer(new WiredMonitorRequestComposer(WIRED_MONITOR_ACTION_CLEAR_LOGS));
+        // AIR's "Clear all" (1632); the server answers with the cleared error list (15).
+        SendMessageComposer(new WiredErrorLogsClearComposer());
     };
 
     const openMonitorLogDetails = (type: string, details: Partial<MonitorLogDetails>) => {
         setSelectedMonitorErrorType(type);
         setSelectedMonitorLogDetails({
+            errorId: details.errorId,
             type,
             severity: String(details.severity ?? MONITOR_ERROR_INFO[type]?.severity ?? 'ERROR'),
             reason: normalizeMonitorReason(details.reason),
@@ -3295,6 +3427,8 @@ export const WiredCreatorToolsView: FC<{}> = () => {
                             onOpenMonitorInfo={() => setIsMonitorInfoOpen(true)}
                             onOpenMonitorHistory={() => setIsMonitorHistoryOpen(true)}
                             onOpenRoomLogs={() => setIsRoomLogsOpen(true)}
+                            isClearCoolingDown={isMonitorClearCoolingDown}
+                            canClearLogs={!!roomSettings.canModify}
                             onClearMonitorLogs={clearMonitorLogs}
                             onOpenMonitorLogDetails={openMonitorLogDetails}
                         />
@@ -3374,17 +3508,17 @@ export const WiredCreatorToolsView: FC<{}> = () => {
                         <div className="flex flex-wrap items-center gap-2 text-[12px]">
                             <span className="text-[#555]">Severity:</span>
                             {['ALL', 'WARNING', 'ERROR'].map((severity) => (
-                                <button
+                                <BaseButton
                                     key={severity}
                                     className={`rounded border px-2 py-[2px] ${monitorHistorySeverityFilter === severity ? 'border-[#4d7892] bg-[#dbeaf4] text-[#1a4d68]' : 'border-[#b8b2a4] bg-white text-[#555]'}`}
                                     type="button"
                                     onClick={() => setMonitorHistorySeverityFilter(severity as 'ALL' | 'ERROR' | 'WARNING')}
                                 >
                                     {severity}
-                                </button>
+                                </BaseButton>
                             ))}
                             <span className="ml-2 text-[#555]">Type:</span>
-                            <select
+                            <Select
                                 className="rounded border border-[#b8b2a4] bg-white px-2 py-[2px] text-[12px]"
                                 value={monitorHistoryTypeFilter}
                                 onChange={(event) => setMonitorHistoryTypeFilter(event.target.value)}
@@ -3394,7 +3528,7 @@ export const WiredCreatorToolsView: FC<{}> = () => {
                                         {type}
                                     </option>
                                 ))}
-                            </select>
+                            </Select>
                         </div>
                         <div className="grow overflow-y-auto border border-[#d1ccbf] rounded bg-white">
                             <table className="w-full text-[12px]">
@@ -3564,7 +3698,7 @@ export const WiredCreatorToolsView: FC<{}> = () => {
                     offsetTop={120}
                 >
                     <OctaneCardHeaderView
-                        headerText="Wired Error Information"
+                        headerText={localizeWithFallback('wiredmenu.error_info.title', 'Wired Error Information')}
                         onCloseClick={() => {
                             setSelectedMonitorErrorType(null);
                             setSelectedMonitorLogDetails(null);

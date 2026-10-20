@@ -1,19 +1,21 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { ButtonHTMLAttributes, InputHTMLAttributes, PropsWithChildren } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { selectOption } from '../../../../test-utils/selectOption';
 
 const setIntParams = vi.fn();
 const setStringParam = vi.fn();
 let trigger: { stringData: string; intData: number[] } | null = null;
 let save: (() => void) | null = null;
+let validate: (() => boolean) | null = null;
 
 vi.mock('../../../../hooks', () => ({
     useWired: () => ({ trigger, setIntParams, setStringParam, setSourceTypes: vi.fn() })
 }));
 
 vi.mock('../../../../common', () => ({
-    Button: ({ children, onClick }: PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement>>) => (
-        <button type="button" onClick={onClick}>
+    Button: ({ children, onClick, disabled }: PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement>>) => (
+        <button disabled={disabled} type="button" onClick={onClick}>
             {children}
         </button>
     ),
@@ -30,13 +32,14 @@ vi.mock('../WiredSourcesSelector', () => ({
 }));
 
 vi.mock('./WiredActionBaseView', () => ({
-    WiredActionBaseView: (props: PropsWithChildren<{ save: () => void }>) => {
+    WiredActionBaseView: (props: PropsWithChildren<{ save: () => void; validate?: () => boolean }>) => {
         save = props.save;
+        validate = props.validate ?? null;
         return <div>{props.children}</div>;
     }
 }));
 
-import { WiredActionGiveRewardView } from './WiredActionGiveRewardView';
+import { validateRewards, WiredActionGiveRewardView } from './WiredActionGiveRewardView';
 
 describe('WiredActionGiveRewardView', () => {
     afterEach(cleanup);
@@ -51,7 +54,7 @@ describe('WiredActionGiveRewardView', () => {
         trigger = { stringData: '', intData: [] };
         render(<WiredActionGiveRewardView />);
 
-        fireEvent.change(screen.getByLabelText('Reward type'), { target: { value: 'badge' } });
+        selectOption(screen.getByRole('combobox', { name: 'Reward type' }), 'Badge');
         fireEvent.change(screen.getByLabelText('Badge code'), { target: { value: 'ADM' } });
         act(() => save());
 
@@ -62,8 +65,59 @@ describe('WiredActionGiveRewardView', () => {
         trigger = { stringData: '0,NL1,50', intData: [0, 0, 0, 0, 0] };
         render(<WiredActionGiveRewardView />);
 
-        expect(screen.getByLabelText('Reward type')).toHaveValue('badge');
+        expect(screen.getByRole('combobox', { name: 'Reward type' })).toHaveTextContent('Badge');
         expect(screen.getByLabelText('Badge code')).toHaveValue('NL1');
         expect(screen.getByLabelText('Chance %')).toHaveValue(50);
+    });
+
+    it('saves the official ints, also without rewards', () => {
+        trigger = { stringData: '', intData: [] };
+        render(<WiredActionGiveRewardView />);
+
+        act(() => save());
+
+        expect(setStringParam).toHaveBeenCalledWith('');
+        expect(setIntParams).toHaveBeenCalledWith([0, 0, 0, 1]);
+    });
+
+    it('reads n only for a repeating interval and keeps the limit in the checkbox', () => {
+        trigger = { stringData: '1,furni#12,100', intData: [2, 0, 25, 6] };
+        render(<WiredActionGiveRewardView />);
+
+        expect(screen.getByLabelText('n =')).toHaveValue('6');
+        expect(screen.getByLabelText('Prize limit')).toHaveValue(25);
+        expect(screen.getByRole('checkbox', { name: 'Reward limit' })).toHaveAttribute('aria-checked', 'true');
+        act(() => save());
+        expect(setIntParams).toHaveBeenCalledWith([2, 0, 25, 6]);
+
+        cleanup();
+        trigger = { stringData: '', intData: [0, 0, 0, 6] };
+        render(<WiredActionGiveRewardView />);
+        expect(screen.getByLabelText('n =')).toHaveValue('1');
+        expect(screen.getByLabelText('n =')).toBeDisabled();
+    });
+
+    it('validates the probabilities as the official box does', () => {
+        const reward = (probability: number) => ({ rewardType: 'furni' as const, rewardValue: '12', probability, pointsType: 5 });
+
+        expect(validateRewards([reward(60), reward(40)], false)).toBeNull();
+        expect(validateRewards([reward(60), reward(50)], false)).toBe('The sum of probabilities cannot exceed 100. You now have 110.');
+        expect(validateRewards([reward(0)], false)).toBe('Make sure all probabilities are numbers between 1 and 100.');
+        expect(validateRewards([reward(0)], true)).toBeNull();
+        expect(validateRewards([{ ...reward(10), rewardType: 'badge', rewardValue: 'A'.repeat(101) }], false)).toContain('more than 100');
+    });
+
+    it('blocks the save on an invalid probability', () => {
+        trigger = { stringData: '1,furni#12,100;1,furni#13,50', intData: [0, 0, 0, 1] };
+        render(<WiredActionGiveRewardView />);
+
+        let valid = true;
+
+        act(() => {
+            valid = validate();
+        });
+
+        expect(valid).toBe(false);
+        expect(screen.getByText('The sum of probabilities cannot exceed 100. You now have 150.')).toBeInTheDocument();
     });
 });

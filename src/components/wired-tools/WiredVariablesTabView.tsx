@@ -3,7 +3,10 @@ import { localizeWithFallback } from '../../api';
 import { Button, Text } from '../../common';
 import { VARIABLES_ELEMENTS } from './WiredCreatorTools.constants';
 import { VariableDefinition, VariablesElementButton, VariablesElementType, VariableTextValue } from './WiredCreatorTools.types';
+import { wiredSourceTypeLabelKey } from './WiredCreatorTools.helpers';
 import { useWiredCreatorToolsUiStore } from './wiredCreatorToolsUiStore';
+import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 
 export interface WiredVariablesTabViewProps {
     variablePickerDefinitions: VariableDefinition[];
@@ -66,24 +69,22 @@ export const WiredVariablesTabView: FC<WiredVariablesTabViewProps> = ({
         <div className="p-3 min-h-[360px] flex gap-4">
             <div className="w-[205px] shrink-0 flex flex-col gap-3">
                 <div className="flex flex-col gap-1">
-                    <Text bold>Variable type:</Text>
+                    <Text bold>{localizeWithFallback('wiredmenu.variable_overview.type', 'Variable type:')}</Text>
                     <div className="flex gap-1">
                         {variableElements.map((element) => (
-                            <button
-                                key={element.key}
+                            <Hint key={element.key} content={localizeWithFallback(wiredSourceTypeLabelKey(element.key), element.label)}><BaseButton aria-label={localizeWithFallback(wiredSourceTypeLabelKey(element.key), element.label)}
                                 type="button"
                                 className={`w-[42px] h-[38px] rounded border flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,.7)] ${element.disabled ? 'border-[#b7b7b7] bg-[#e7e3da] opacity-60 cursor-not-allowed' : variablesType === element.key ? 'border-[#222] bg-[#d9d6cf]' : 'border-[#7f7f7f] bg-[#ece9e1]'}`}
                                 disabled={element.disabled}
                                 onClick={() => !element.disabled && setVariablesType(element.key)}
-                                title={element.label}
                             >
-                                <img alt={element.label} className="w-auto h-auto max-w-[22px] max-h-[22px] object-contain" src={element.icon} />
-                            </button>
+                                <img alt="" className="w-auto h-auto max-w-[22px] max-h-[22px] object-contain" src={element.icon} />
+                            </BaseButton></Hint>
                         ))}
                     </div>
                 </div>
                 <div className="flex flex-col gap-1 min-h-0 grow">
-                    <Text bold>Variable picker:</Text>
+                    <Text bold>{localizeWithFallback('wiredmenu.variable_overview.picker', 'Variable picker:')}</Text>
                     <div className="grow rounded border border-[#bdb8ab] bg-white overflow-hidden">
                         <div className="max-h-[408px] overflow-y-auto">
                             <table className="w-full text-[12px]">
@@ -109,16 +110,22 @@ export const WiredVariablesTabView: FC<WiredVariablesTabViewProps> = ({
                 </div>
                 <div className="flex flex-wrap gap-2">
                     {showHighlight && (
-                        <Button disabled={!canVariableHighlight} variant="secondary" onClick={() => setIsVariableHighlightActive((value) => !value)}>
-                            {isVariableHighlightActive ? 'Undo' : 'Highlight'}
-                        </Button>
+                        <Hint content={localizeWithFallback('wiredmenu.variable_overview.highlight_holders.tooltip', 'Highlight all users/furni inside the room that are holding this variable')}>
+                            <Button disabled={!canVariableHighlight} variant="secondary" onClick={() => setIsVariableHighlightActive((value) => !value)}>
+                                {isVariableHighlightActive
+                                    ? localizeWithFallback('wiredmenu.variable_overview.unhighlight_holders', 'Undo')
+                                    : localizeWithFallback('wiredmenu.variable_overview.highlight_holders', 'Highlight')}
+                            </Button>
+                        </Hint>
                     )}
-                    <Button disabled={!variableManageCanOpen} variant="secondary" onClick={onOpenManagePanel}>
-                        Manage
-                    </Button>
+                    <Hint content={localizeWithFallback('wiredmenu.variable_overview.manage.tooltip', 'Manage all users who are holding this variable')}>
+                        <Button disabled={!variableManageCanOpen} variant="secondary" onClick={onOpenManagePanel}>
+                            {localizeWithFallback('wiredmenu.variable_overview.manage', 'Manage')}
+                        </Button>
+                    </Hint>
                     {showArrayInspector && (
                         <Button disabled={!arrayInspectorCanOpen} variant="secondary" onClick={onOpenArrayInspector}>
-                            Contents
+                            {localizeWithFallback('wiredmenu.variable_overview.contents', 'Contents')}
                         </Button>
                     )}
                     <Button disabled={!canVariableClear} variant="secondary" onClick={onClearVariable}>
@@ -139,11 +146,11 @@ export const WiredVariablesTabView: FC<WiredVariablesTabViewProps> = ({
                     </div>
                 )}
                 <div className="flex flex-col gap-1">
-                    <Text bold>Properties:</Text>
+                    <Text bold>{localizeWithFallback('wiredmenu.variable_overview.properties', 'Properties:')}</Text>
                     <div className="rounded border border-[#bdb8ab] bg-white overflow-hidden">
                         <div className="grid grid-cols-[1fr_120px] border-b border-[#d8d4c8] bg-[#f5f2ea] px-3 py-2 text-[12px] font-bold text-[#333]">
-                            <span>Property</span>
-                            <span>Value</span>
+                            <span>{localizeWithFallback('wiredmenu.variable_overview.properties.column.property', 'Property')}</span>
+                            <span>{localizeWithFallback('wiredmenu.variable_overview.properties.column.value', 'Value')}</span>
                         </div>
                         <div className="max-h-[210px] overflow-y-auto">
                             <table className="w-full text-[12px]">
@@ -161,15 +168,15 @@ export const WiredVariablesTabView: FC<WiredVariablesTabViewProps> = ({
                 </div>
                 {showTextValues && (
                     <div className="flex flex-col gap-1 min-h-0 grow">
-                        <Text bold>Text values:</Text>
+                        <Text bold>{localizeWithFallback('wiredmenu.variable_overview.text_values', 'Text values:')}</Text>
                         <div className="grow rounded border border-[#bdb8ab] bg-white overflow-hidden">
                             <div className="grid grid-cols-[120px_1fr] border-b border-[#d8d4c8] bg-[#f5f2ea] px-3 py-2 text-[12px] font-bold text-[#333]">
-                                <span>Value</span>
-                                <span>Text</span>
+                                <span>{localizeWithFallback('wiredmenu.variable_overview.text.column.value', 'Value')}</span>
+                                <span>{localizeWithFallback('wiredmenu.variable_overview.text.column.text', 'Text')}</span>
                             </div>
                             {!selectedVariableTextValues.length && (
                                 <div className="h-[calc(100%-37px)] flex items-center justify-center text-[#b1aca2] text-[20px]">
-                                    <Text>Nothing to display</Text>
+                                    <Text>{localizeWithFallback('wiredmenu.table.empty', 'Nothing to display')}</Text>
                                 </div>
                             )}
                             {!!selectedVariableTextValues.length && (

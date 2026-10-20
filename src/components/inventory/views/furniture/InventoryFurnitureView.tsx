@@ -14,10 +14,12 @@ import {
 } from '../../../../api';
 import { LayoutLimitedEditionCompactPlateView, LayoutRarityLevelView, LayoutRoomPreviewerView } from '../../../../common';
 import { CatalogPostMarketplaceOfferEvent, DeleteItemConfirmEvent } from '../../../../events';
-import { useInventoryFurni, useInventoryUnseenTracker } from '../../../../hooks';
+import { useInventoryFurni, useInventoryUnseenTracker, usePlayTestRestricted } from '../../../../hooks';
 import { OctaneButton } from '../../../../layout';
 import { InventoryCategoryEmptyView } from '../InventoryCategoryEmptyView';
 import { InventoryFurnitureItemView } from './InventoryFurnitureItemView';
+import { BaseButton } from '../../../../common/BaseButton';
+import { Hint } from '../../../../common/Tooltip';
 
 const attemptPlaceMarketplaceOffer = (groupItem: GroupItem) => {
     const item = groupItem.getLastItem();
@@ -42,6 +44,7 @@ export const InventoryFurnitureView: FC<{
     const [isVisible, setIsVisible] = useState(false);
     const { groupItems = [], selectedItem = null, setSelectedItem = null, activate = null, deactivate = null } = useInventoryFurni();
     const { resetItems = null } = useInventoryUnseenTracker();
+    const playTestRestricted = usePlayTestRestricted();
 
     const [page, setPage] = useState(0);
     const pageCount = Math.floor(filteredGroupItems.length / 200) + 1;
@@ -140,9 +143,9 @@ export const InventoryFurnitureView: FC<{
                 {pageCount > 1 && (
                     <div className="octane-inventory-pages">
                         {Array.from({ length: pageCount }, (_, index) => (
-                            <button key={index} type="button" aria-current={index === currentPage ? 'page' : undefined} onClick={() => setPage(index)}>
+                            <BaseButton key={index} type="button" aria-current={index === currentPage ? 'page' : undefined} onClick={() => setPage(index)}>
                                 {index}
-                            </button>
+                            </BaseButton>
                         ))}
                     </div>
                 )}
@@ -188,19 +191,20 @@ export const InventoryFurnitureView: FC<{
                         </div>
                     )}
                     {selectedItem && (
-                        <button
-                            type="button"
-                            className="octane-inventory-preview-delete"
-                            aria-label={LocalizeText('generic.delete')}
-                            title={LocalizeText('generic.delete')}
-                            onPointerDown={(event) => event.stopPropagation()}
-                            onClick={(event) => {
-                                event.stopPropagation();
-                                attemptDeleteItem(selectedItem);
-                            }}
-                        >
-                            <FaTrashAlt aria-hidden="true" />
-                        </button>
+                        <Hint content={LocalizeText('generic.delete')}>
+                            <BaseButton
+                                type="button"
+                                className="octane-inventory-preview-delete"
+                                aria-label={LocalizeText('generic.delete')}
+                                onPointerDown={(event) => event.stopPropagation()}
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    attemptDeleteItem(selectedItem);
+                                }}
+                            >
+                                <FaTrashAlt aria-hidden="true" />
+                            </BaseButton>
+                        </Hint>
                     )}
                     {selectedItem && selectedItem.stuffData.isUnique && (
                         <LayoutLimitedEditionCompactPlateView
@@ -220,19 +224,19 @@ export const InventoryFurnitureView: FC<{
                         {selectedItem.description && <div className="octane-inventory-furni-desc">{selectedItem.description}</div>}
                         <div className="octane-inventory-furni-actions">
                             <OctaneButton
-                                disabled={!roomSession || !selectedItem.getUnlockedCount()}
+                                disabled={!roomSession || !selectedItem.getUnlockedCount() || playTestRestricted}
                                 className="octane-inventory-btn-place"
                                 onClick={() => attemptItemPlacement(selectedItem)}
                             >
                                 {LocalizeText('inventory.furni.placetoroom')}
                             </OctaneButton>
                             <div className="octane-inventory-preview-controls">
-                                <button type="button" onClick={() => roomPreviewer?.changeRoomObjectDirection()}>
+                                <BaseButton type="button" onClick={() => roomPreviewer?.changeRoomObjectDirection()}>
                                     {localizeWithFallback('widget.furniture.button.rotate', 'Rotate')}
-                                </button>
-                                <button type="button" onClick={() => roomPreviewer?.changeRoomObjectState()}>
+                                </BaseButton>
+                                <BaseButton type="button" onClick={() => roomPreviewer?.changeRoomObjectState()}>
                                     {localizeWithFallback('widget.furniture.button.use', 'Use')}
-                                </button>
+                                </BaseButton>
                             </div>
                             {selectedItem.isSellable && (
                                 <OctaneButton className="octane-inventory-btn-sell" onClick={() => attemptPlaceMarketplaceOffer(selectedItem)}>
