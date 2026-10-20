@@ -299,9 +299,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 20px;
-    overflow: visible;
+    min-width: 40px;
+}
+
+/* The selected furni's icon at its own size: a scaled pixel icon turns blocky. */
+.wired-contract__selected-icon .furni-image {
+    flex: none;
+    image-rendering: pixelated;
 }
 
 /* AIR table_view_xml: border_white, 5px margins, 23px header plus a 1px splitter, 20px rows. */

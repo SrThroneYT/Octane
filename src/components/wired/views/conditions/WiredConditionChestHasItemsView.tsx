@@ -2,12 +2,14 @@ import { FC, useEffect, useState } from 'react';
 import { LocalizeText, WiredFurniType } from '../../../../api';
 import { useWired } from '../../../../hooks';
 import { normalizeWiredComparison, WIRED_CMP_DEFAULT, WiredComparisonOperator } from '../WiredComparisonOperator';
+import { WiredSourcesSelector } from '../WiredSourcesSelector';
 import { normalizeWiredValueTarget, variableTokenFromId, WIRED_VALUE_TARGET_GLOBAL, WiredValueOrVariableField } from '../WiredValueOrVariableField';
 import { getCustomVariableItemId, normalizeVariableTokenFromWire } from '../WiredVariablePickerData';
 import { WiredConditionBaseView } from './WiredConditionBaseView';
 
 const CHEST_AMOUNT_MIN = 0;
 const CHEST_AMOUNT_MAX = 1_000_000;
+const SOURCE_SELECTED = 100;
 
 /** The chest amount fields AIR's ChestHasAmount reads and writes (shared by Chest Has Items and Chest Has Item Types). */
 export interface IChestAmountState {
@@ -79,17 +81,25 @@ export const WiredConditionChestAmountSections: FC<ChestAmountSectionsProps> = (
 export const isChestAmountValid = (state: IChestAmountState, literalValid: boolean) =>
     literalValid && (!state.fromVariable || getCustomVariableItemId(state.token) > 0);
 
-/** Chest Has Items (45): the chests are the furni picks (`sources.furni.title.chests`). */
+/**
+ * Chest Has Items (45), AIR ChestHasAmount: one furni source slot for the chests (`mergedSelections [[1, 0]]`,
+ * `sources.furni.title.chests`), the picks by default, or the trigger, a selector or a signal.
+ */
 export const WiredConditionChestHasItemsView: FC<{}> = () => {
-    const { trigger = null, setIntParams = null, setStringParam = null, setVariableIds = null } = useWired();
+    const { trigger = null, setIntParams = null, setStringParam = null, setVariableIds = null, setSourceTypes = null, setFurniIds = null } = useWired();
     const [state, setState] = useState<IChestAmountState>(() => readChestAmountState([], [], ''));
     const [literalValid, setLiteralValid] = useState(true);
+    const [furniSource, setFurniSource] = useState(SOURCE_SELECTED);
 
     useEffect(() => {
         if (!trigger) return;
 
         setState(readChestAmountState(trigger.intData ?? [], trigger.variableIds, trigger.stringData ?? ''));
+        // A box saved before the source slot has none and reads its picks.
+        setFurniSource(trigger.furniSourceTypes?.[0] ?? SOURCE_SELECTED);
     }, [trigger]);
+
+    const requiresFurni = furniSource === SOURCE_SELECTED ? WiredFurniType.STUFF_SELECTION_OPTION_BY_ID : WiredFurniType.STUFF_SELECTION_OPTION_NONE;
 
     const save = () => {
         const { intParams, variableIds } = chestAmountParams(state);
@@ -97,14 +107,25 @@ export const WiredConditionChestHasItemsView: FC<{}> = () => {
         setIntParams(intParams);
         setVariableIds(variableIds);
         setStringParam('');
+        setSourceTypes({ furni: [furniSource], users: [] });
+
+        if (furniSource !== SOURCE_SELECTED) setFurniIds([]);
     };
 
     return (
         <WiredConditionBaseView
             hasSpecialInput={true}
-            requiresFurni={WiredFurniType.STUFF_SELECTION_OPTION_BY_ID}
+            requiresFurni={requiresFurni}
             save={save}
             validate={() => isChestAmountValid(state, literalValid)}
+            footer={
+                <WiredSourcesSelector
+                    showFurni={true}
+                    furniTitle="wiredfurni.params.sources.furni.title.chests"
+                    furniSource={furniSource}
+                    onChangeFurni={setFurniSource}
+                />
+            }
         >
             <WiredConditionChestAmountSections state={state} onChange={setState} onValidityChange={setLiteralValid} />
         </WiredConditionBaseView>

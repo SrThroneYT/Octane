@@ -56,6 +56,7 @@ import { AchievementNotificationBubbleItem } from '../../api/notification/Achiev
 import { localizeWithFallback } from '../../api/utils/localizeWithFallback';
 import { countSimpleAlert } from '../../api/notification/SimpleAlertCounter';
 import { wiredRewardResultAlert } from '../../api/wired/WiredRewardResult';
+import { WIRED_TRADE_ERROR_ICON, wiredTradeErrorMessage } from '../../api/inventory/WiredTradingUtilities';
 import { useMessageEvent } from '../events';
 import { receiveWiredReward } from '../rooms/widgets/wiredRewardStore';
 import { useHotelAlertToastStore } from './hotelAlertToastStore';
@@ -420,18 +421,11 @@ const useNotificationStore = () => {
         );
     });
 
-    // WiredTradeError: a refused trade action.
+    // WiredTradeError: a refused trade action, with AIR's trading error icon (e.g. 5, more than the requirements ask).
     useMessageEvent<WiredTradeErrorEvent>(WiredTradeErrorEvent, (event) => {
         const parser = event.getParser();
 
-        showSingleBubble(
-            LocalizeText(
-                'wired_transactions.notification.trade_error',
-                ['error'],
-                [LocalizeText(`wired_transactions.notification.trade_error.${ parser.tradeErrorId }`)],
-            ),
-            NotificationBubbleType.INFO,
-        );
+        showSingleBubble(wiredTradeErrorMessage(parser.tradeErrorId, LocalizeText), NotificationBubbleType.INFO, WIRED_TRADE_ERROR_ICON);
     });
 
     // WiredTransactionSuccess. AIR RewardNotificationController keeps every reward under its own id: one that opens by
