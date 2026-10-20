@@ -19,12 +19,7 @@ import checkIcon from '../../assets/images/reward-track/check.png';
 import hintFrankImage from '../../assets/images/reward-track/hint-frank.png';
 import milestoneReachedIcon from '../../assets/images/reward-track/milestone-reached.png';
 import pointsIcon from '../../assets/images/reward-track/points.png';
-import chatWithSomeoneIcon from '../../assets/images/reward-track/tasks/chat_with_someone.png';
-import claimDailyTaskIcon from '../../assets/images/reward-track/tasks/claim_daily_task.png';
-import completeQuestIcon from '../../assets/images/reward-track/tasks/complete_quest.png';
-import enterOtherUsersRoomIcon from '../../assets/images/reward-track/tasks/enter_other_users_room.png';
-import giveRespectIcon from '../../assets/images/reward-track/tasks/give_respect.png';
-import placeItemIcon from '../../assets/images/reward-track/tasks/place_item.png';
+import { GetRewardTrackTaskIconUrl } from '../../assets/images/reward-track/tasks';
 import tierGiftIcon from '../../assets/images/reward-track/tier-gift.png';
 import tasksIcon from '../../assets/images/reward-track/tasks.png';
 import { Button, DraggableWindowPosition, LayoutAvatarImageView, LayoutBadgeImageView, LayoutCurrencyIcon, LayoutFurniIconImageView, Text } from '../../common';
@@ -37,16 +32,7 @@ import { Hint } from '../../common/Tooltip';
 const CURRENCY_TYPES: Record<string, number> = { credits: -1, duckets: 0, diamonds: 5 };
 
 /** One icon per official task action name the server sends (QuestGoalType.actionType()). */
-const TASK_ICONS: Record<string, string> = {
-    chat_with_someone: chatWithSomeoneIcon,
-    claim_daily_task: claimDailyTaskIcon,
-    complete_quest: completeQuestIcon,
-    enter_other_users_room: enterOtherUsersRoomIcon,
-    give_respect: giveRespectIcon,
-    place_item: placeItemIcon
-};
-
-const getTaskIcon = (actionType: string): string | null => TASK_ICONS[(actionType || '').toLowerCase()] ?? null;
+const getTaskIcon = GetRewardTrackTaskIconUrl;
 const FILTERS: RewardTrackTaskFilter[] = ['all', 'in_progress', 'completed'];
 
 const RewardIcon: FC<{ rewardTypeId: string; extraParams: string; productItemTypeId: number }> = ({ rewardTypeId, extraParams, productItemTypeId }) => {
