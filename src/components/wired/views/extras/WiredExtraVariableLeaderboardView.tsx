@@ -21,6 +21,8 @@ import {
     LEADERBOARD_SORT_KEYS,
     LEADERBOARD_TITLE_MAX,
     LEADERBOARD_WIDTH_KEYS,
+    leaderboardGlobalVariableId,
+    leaderboardUserVariableId,
     OPERAND_GLOBAL_VARIABLE,
     OPERAND_LITERAL,
     suggestLeaderboardName,
@@ -73,7 +75,7 @@ const retypeColumn = (column: ILeaderboardColumn, type: number): ILeaderboardCol
  * dragging the panel moves the location here.
  */
 export const WiredExtraVariableLeaderboardView: FC<{}> = () => {
-    const { trigger = null, setIntParams = null, setStringParam = null } = useWired();
+    const { trigger = null, setIntParams = null, setStringParam = null, setVariableIds = null } = useWired();
     const tools = useWiredTools();
     // AIR's leaderboard picker leaves pointers out: a leaderboard is read without a running stack.
     const userVariableDefinitions = useMemo(() => withoutExecutionContextVariables(tools.userVariableDefinitions), [tools.userVariableDefinitions]);
@@ -86,7 +88,8 @@ export const WiredExtraVariableLeaderboardView: FC<{}> = () => {
     const [ error, setError ] = useState<string>(null);
 
     const context: IWiredLeaderboardContext = (trigger && 'leaderboardContext' in trigger) ? (trigger as { leaderboardContext: IWiredLeaderboardContext }).leaderboardContext : null;
-    const choices = useMemo(() => (context?.choices ?? []).slice(0, LEADERBOARD_MAX_CHOICES), [ context ]);
+    // The variables stacked here, under the variable list's ids (an older server sent bare box ids).
+    const choices = useMemo(() => (context?.choices ?? []).slice(0, LEADERBOARD_MAX_CHOICES).map((choice) => ({ ...choice, variableId: leaderboardUserVariableId(choice.variableId) })), [ context ]);
 
     useEffect(() => {
         if (!trigger) return;
@@ -94,14 +97,14 @@ export const WiredExtraVariableLeaderboardView: FC<{}> = () => {
         const config = decodeLeaderboardConfig(trigger.intData, trigger.stringData, context?.physicalTileX ?? 0, context?.physicalTileY ?? 0, trigger.variableIds ?? []);
         const initialNames: Record<string, string> = {};
 
-        for (const choice of (context?.choices ?? []).slice(0, LEADERBOARD_MAX_CHOICES)) {
+        for (const choice of choices) {
             initialNames[choice.variableId] = config.displayOverrides[choice.variableId] ?? suggestLeaderboardName(choice.technicalName);
         }
 
         setNames(initialNames);
         setError(null);
         beginEdit(context?.overlayInstanceId ?? 0, config);
-    }, [ trigger, context, beginEdit ]);
+    }, [ trigger, context, choices, beginEdit ]);
 
     useEffect(() => () => endEdit(), [ endEdit ]);
 
@@ -131,10 +134,11 @@ export const WiredExtraVariableLeaderboardView: FC<{}> = () => {
     const save = () => {
         if (!draft) return;
 
-        const { intParams, stringParam } = encodeLeaderboardConfig(withOverrides(draft));
+        const { intParams, stringParam, variableIds } = encodeLeaderboardConfig(withOverrides(draft));
 
         setIntParams(intParams);
         setStringParam(stringParam);
+        setVariableIds?.(variableIds);
     };
 
     if (!draft) return null;
@@ -163,7 +167,9 @@ export const WiredExtraVariableLeaderboardView: FC<{}> = () => {
                 : null;
     const valueAvailable = choices.some((choice) => choice.persistent && choice.hasValue);
     const sortOptions = LEADERBOARD_SORT_KEYS.map((key, value) => ({ key, value })).filter((option) => valueAvailable || option.value > 1 || option.value === draft.sortMode);
-    const filterDefinition = userVariableDefinitions.find((definition) => String(definition.itemId) === draft.filterVariableId);
+    const userVariableId = (itemId: number) => leaderboardUserVariableId(String(itemId));
+    const globalVariableId = (itemId: number) => leaderboardGlobalVariableId(String(itemId));
+    const filterDefinition = userVariableDefinitions.find((definition) => userVariableId(definition.itemId) === draft.filterVariableId);
 
     const select = (label: string, value: number | string, options: { value: number | string, label: string }[], onChange: (value: string) => void, testId?: string) => (
         <div className="flex items-center gap-2">
@@ -224,7 +230,7 @@ export const WiredExtraVariableLeaderboardView: FC<{}> = () => {
                 </label>
                 {draft.filterEnabled && (
                     <div className="flex flex-col gap-1 pl-4">
-                        {select(text('filter.variable', 'Variable'), draft.filterVariableId, [ { value: '0', label: '-' }, ...userVariableDefinitions.map((definition) => ({ value: String(definition.itemId), label: definition.name })) ], (value) => patch({ filterVariableId: value }))}
+                        {select(text('filter.variable', 'Variable'), draft.filterVariableId, [ { value: '0', label: '-' }, ...userVariableDefinitions.map((definition) => ({ value: userVariableId(definition.itemId), label: definition.name })) ], (value) => patch({ filterVariableId: value }))}
                         <label className="flex items-center gap-1">
                             <Checkbox disabled={!filterDefinition?.hasValue} checked={draft.compareEnabled && !!filterDefinition?.hasValue} onCheckedChange={(nextChecked) => patch({ compareEnabled: nextChecked })} />
                             <Text>{text('filter.compare', 'Whose value equals')}</Text>
@@ -240,7 +246,7 @@ export const WiredExtraVariableLeaderboardView: FC<{}> = () => {
                                     : (
                                         <Select className="form-select form-select-sm" value={draft.operandVariableId} onChange={(event) => patch({ operandVariableId: event.target.value })}>
                                             <option value="0">-</option>
-                                            {roomVariableDefinitions.map((definition) => <option key={definition.itemId} value={String(definition.itemId)}>{definition.name}</option>)}
+                                            {roomVariableDefinitions.map((definition) => <option key={definition.itemId} value={globalVariableId(definition.itemId)}>{definition.name}</option>)}
                                         </Select>
                                     )}
                             </div>
