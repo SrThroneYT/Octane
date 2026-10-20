@@ -361,6 +361,17 @@ export class BadgeReceivedEvent extends MessageEvent {}
 export class ChestNotificationEvent extends MessageEvent {}
 export class WiredTransactionFailEvent extends MessageEvent {}
 export class WiredTradeErrorEvent extends MessageEvent {}
+
+// Wired trade constants with the renderer's real values (WiredTradeOpenMessageParser / WiredTradeRuleParser).
+export const WIRED_TRADE_REQUIREMENT_ANY_COINS = 0;
+export const WIRED_TRADE_REQUIREMENT_ANY_FURNI = 1;
+export const WIRED_TRADE_REQUIREMENT_ANY = 2;
+export const WIRED_TRADE_REQUIREMENT_RULES = 4;
+export const WIRED_TRADE_RULES_NORMAL = 0;
+export const WIRED_TRADE_RULES_MULTIPLIER = 1;
+export const WIRED_TRADE_RULES_AUTO = 2;
+export const WIRED_TRADE_NODE_COINS = 0;
+export const WIRED_TRADE_NODE_FURNI = 1;
 export class WiredTransactionSuccessEvent extends MessageEvent {}
 export class FurnitureFloorRemoveEvent extends MessageEvent {}
 export class FurnitureWallRemoveEvent extends MessageEvent {}

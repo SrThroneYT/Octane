@@ -233,7 +233,12 @@ export const WiredChestsTabView: FC<{}> = () => {
                         <img
                             alt=""
                             className="max-h-[28px] max-w-[28px] object-contain"
-                            src={ProductImageUtility.getProductImageUrl(FurnitureType.FLOOR, item.spriteId, '')}
+                            // The server negates a wall item's sprite id: the two kinds have their own id ranges.
+                            src={ProductImageUtility.getProductImageUrl(
+                                item.spriteId < 0 ? FurnitureType.WALL : FurnitureType.FLOOR,
+                                Math.abs(item.spriteId),
+                                '',
+                            )}
                         />
                         <span className="text-[11px] tabular-nums">x{item.quantity}</span>
                     </div>

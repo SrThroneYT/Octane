@@ -72,6 +72,7 @@ import './css/inventory/InventoryAnimals.css';
 import './css/inventory/InventoryPrefixes.css';
 import './css/inventory/InventoryBadges.css';
 import './css/inventory/InventoryFilters.css';
+import './css/inventory/InventoryWiredTrade.css';
 
 import './css/layout/LayoutTrophy.css';
 

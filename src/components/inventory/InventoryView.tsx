@@ -269,7 +269,7 @@ export const InventoryView: FC<{}> = () => {
     return (
         <>
             <OctaneCardView
-                className={`octane-inventory-window max-w-[calc(100vw-16px)] ${currentTab === TAB_BADGES ? 'has-badge-controls' : currentTab === TAB_PETS ? 'has-pet-controls' : ''}`}
+                className={`octane-inventory-window max-w-[calc(100vw-16px)] ${!isTrading && isWiredTrading ? 'is-wired-trading' : currentTab === TAB_BADGES ? 'has-badge-controls' : currentTab === TAB_PETS ? 'has-pet-controls' : ''}`}
                 frameStyle={3}
                 resizeAxis="vertical"
                 uniqueKey="inventory"

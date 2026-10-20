@@ -18,6 +18,7 @@ import { localizeWithFallback, SendMessageComposer } from '../../api';
 import { registerSharedHook, useSharedHook } from '@/state/useSharedHook';
 import { useMessageEvent } from '../events';
 import { useNotification } from '../notification';
+import { useInventoryFurni } from './useInventoryFurni';
 
 /**
  * The client-side trade states of AIR WiredTradingModel. The server sends no state (WiredTradeItems 705 only carries
@@ -60,6 +61,7 @@ const useWiredTradingState = () => {
     const [countdown, setCountdown] = useState(0);
 
     const { simpleAlert = null } = useNotification();
+    const { setGroupItems = null, activate = null, deactivate = null } = useInventoryFurni();
 
     const secondsLeftRef = useRef(0);
     secondsLeftRef.current = secondsLeft;
@@ -155,6 +157,38 @@ const useWiredTradingState = () => {
     });
 
     useMessageEvent<WiredTradeCompletedEvent>(WiredTradeCompletedEvent, () => reset());
+
+    // The furni come from the inventory, as in a user trade: while the trade is open the furni list is live, so the
+    // server's refresh after every offer (the offered items leave the inventory) reaches the grid.
+    useEffect(() => {
+        if (!isOpen || !activate) return;
+
+        const id = activate();
+
+        return () => deactivate(id);
+    }, [isOpen, activate, deactivate]);
+
+    // What is on the table is locked in the inventory grid until the server's refresh takes it out, so the same item
+    // can not be offered twice (AIR locks the offered items in the furni view the same way).
+    useEffect(() => {
+        if (!setGroupItems) return;
+
+        const tableIds = isOpen ? offeredItems.map((item) => item.ref) : [];
+
+        setGroupItems((previous) => {
+            let changed = false;
+            const next = previous.map((group) => {
+                const copy = group.clone();
+
+                if (!copy.lockItemIds(tableIds)) return group;
+
+                changed = true;
+                return copy;
+            });
+
+            return changed ? next : previous;
+        });
+    }, [isOpen, offeredItems, setGroupItems]);
 
     // The trade time-out from WiredTradeOpen (84) runs locally.
     useEffect(() => {

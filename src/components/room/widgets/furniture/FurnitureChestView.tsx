@@ -45,6 +45,10 @@ import {
     WIRED_CHEST_KIND_FURNI,
     WiredChestKind,
 } from '../../../../api';
+import darkSceneHigh from '../../../../assets/images/chest/dark_coins_chest_balance_high.png';
+import darkSceneLow from '../../../../assets/images/chest/dark_coins_chest_balance_low.png';
+import darkSceneMedium from '../../../../assets/images/chest/dark_coins_chest_balance_medium.png';
+import darkSceneZero from '../../../../assets/images/chest/dark_coins_chest_balance_zero.png';
 import sceneHigh from '../../../../assets/images/chest/light_coins_chest_balance_high.png';
 import sceneLow from '../../../../assets/images/chest/light_coins_chest_balance_low.png';
 import sceneMedium from '../../../../assets/images/chest/light_coins_chest_balance_medium.png';
@@ -391,7 +395,11 @@ export const FurnitureChestView: FC = () => {
 
     // Scene image follows the official CoinChestSubController.CHEST_STATES thresholds:
     // absolute coin count (NOT a fill ratio) — 0 -> zero, >=1 -> low, >=20 -> medium, >=100 -> high.
-    const sceneImg = coins >= 100 ? sceneHigh : coins >= 20 ? sceneMedium : coins >= 1 ? sceneLow : sceneZero;
+    // AIR CoinChestSubController: wf_storage_coins1 draws the dark scene, every other coin chest the light one.
+    const scenes = chestObject.className === 'wf_storage_coins1'
+        ? [darkSceneHigh, darkSceneMedium, darkSceneLow, darkSceneZero]
+        : [sceneHigh, sceneMedium, sceneLow, sceneZero];
+    const sceneImg = coins >= 100 ? scenes[0] : coins >= 20 ? scenes[1] : coins >= 1 ? scenes[2] : scenes[3];
 
     const chestTypeLabel = isFurni
         ? LocalizeText('wiredchests.furni_chest')

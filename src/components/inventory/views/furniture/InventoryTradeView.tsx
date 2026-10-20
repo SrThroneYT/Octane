@@ -190,7 +190,7 @@ export const InventoryTradeView: FC<InventoryTradeViewProps> = (props) => {
                                     return (
                                         <LayoutGridItem
                                             key={index}
-                                            className={!count ? 'opacity-0-5 ' : ''}
+                                            className={!count ? 'opacity-50 ' : ''}
                                             component="div"
                                             itemActive={groupItem === item}
                                             itemCount={count}
