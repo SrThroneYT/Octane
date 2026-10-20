@@ -78,7 +78,8 @@ describe('Wired variable picker', () => {
         expect(screen.getByRole('button', { name: 'wiredfurni.variable_picker.tab.search' })).toHaveAttribute('aria-pressed', 'true');
         expect(rowNames()).toEqual(['event.variable_update.old_value']);
         fireEvent.change(screen.getByRole('textbox'), { target: { value: 'deposit' } });
-        expect(rowNames()).toEqual(['event']);
+        // The box variables and AIR's built-in @event.transaction_complete.deposit.* parts.
+        expect(rowNames()).toEqual(['event', '@event']);
     });
 
     it('takes the first search result on Enter and an exact name on Enter', () => {

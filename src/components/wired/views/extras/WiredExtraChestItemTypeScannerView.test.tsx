@@ -149,7 +149,7 @@ describe('WiredExtraChestItemTypeScannerView', () => {
 
         expect(mocks.setIntParams).toHaveBeenCalledWith([0]);
         expect(mocks.setStringParam).toHaveBeenCalledWith('');
-        expect(mocks.setVariableIds).toHaveBeenCalledWith(['5']);
+        expect(mocks.setVariableIds).toHaveBeenCalledWith(['ctx:5']);
         expect(mocks.setSourceTypes).toHaveBeenCalledWith({ furni: [100, 101], users: [] });
         expect(mocks.setFurniIds2).toHaveBeenCalledWith([500]);
     });

@@ -131,7 +131,7 @@ describe('chest conditions (AIR ChestHasAmount)', () => {
         expect(field().token).toBe('custom:12');
         save();
         expect(mocks.setIntParams).toHaveBeenLastCalledWith([3, 1, -20, 2]);
-        expect(mocks.setVariableIds).toHaveBeenLastCalledWith(['12']);
+        expect(mocks.setVariableIds).toHaveBeenLastCalledWith(['ctx:12']);
         expect(mocks.setStringParam).toHaveBeenLastCalledWith('');
 
         act(() => field().onTargetChange(0));
@@ -146,7 +146,7 @@ describe('chest conditions (AIR ChestHasAmount)', () => {
         expect(field().token).toBe('custom:7');
         expect(field().target).toBe(1);
         save();
-        expect(mocks.setVariableIds).toHaveBeenLastCalledWith(['7']);
+        expect(mocks.setVariableIds).toHaveBeenLastCalledWith(['user:7']);
     });
 
     it('chest has items: AIR\'s chests source slot, picks by default, saved as the official furni source', () => {
