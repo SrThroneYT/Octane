@@ -86,6 +86,7 @@ import './css/notification/AlertActions.css';
 
 import './css/purse/PurseView.css';
 import './css/quests/QuestsView.css';
+import './css/quests/RewardTrackView.css';
 import './css/radio/RadioView.css';
 
 import './css/room/InfoStand.css';

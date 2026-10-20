@@ -1,40 +1,65 @@
 import { AddLinkEventTracker, CreateLinkEvent, GetSessionDataManager, ILinkEventTracker, RemoveLinkEventTracker, RewardTrackData, RewardTrackPrizeData, RewardTrackTaskData } from '@octane/renderer';
-import { CSSProperties, FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { CSSProperties, FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { FaCog } from 'react-icons/fa';
 import {
+    buildRewardTrackLayout,
+    buildRewardTrackPages,
+    countRewardTrackUnclaimed,
     filterRewardTrackTasks,
+    GetConfigurationValue,
     getPremiumBoostPercent,
+    getRewardTrackBarWidths,
+    getRewardTrackMiniBarWidth,
     getRewardTrackPrizeState,
     getRewardTrackPrizeTooltip,
+    getRewardTrackSlotLeft,
     getRewardTrackTaskHintLink,
     getRewardTrackTaskText,
     getRewardTrackText,
     localizeWithFallback,
     NotificationAlertType,
-    paginatePrizeTiers,
+    REWARD_TRACK_TASK_BAR_COMPLETE,
+    REWARD_TRACK_TASK_BAR_INCOMPLETE,
     RewardTrackTaskFilter,
     resolveRewardTrackTheme
 } from '../../api';
-import checkIcon from '../../assets/images/reward-track/check.png';
-import hintFrankImage from '../../assets/images/reward-track/hint-frank.png';
-import milestoneReachedIcon from '../../assets/images/reward-track/milestone-reached.png';
-import pointsIcon from '../../assets/images/reward-track/points.png';
+import availableIcon from '../../assets/images/reward-track/available-icon.png';
+import checkmarkIcon from '../../assets/images/reward-track/checkmark.png';
+import frankAndPiccoloImage from '../../assets/images/reward-track/frank-and-piccolo.png';
+import frankTipsImage from '../../assets/images/reward-track/frank-tips.png';
+import freeTrackIcon from '../../assets/images/reward-track/free-track.png';
+import lockedRewardIcon from '../../assets/images/reward-track/locked-reward.png';
+import notAvailableIcon from '../../assets/images/reward-track/not-available-icon.png';
+import pageNextIcon from '../../assets/images/reward-track/page-next.png';
+import pagePreviousIcon from '../../assets/images/reward-track/page-previous.png';
+import pointLargeIcon from '../../assets/images/reward-track/point-large.png';
+import pointSmallIcon from '../../assets/images/reward-track/point-small.png';
+import premiumTrackIcon from '../../assets/images/reward-track/premium-track.png';
+import prizesBackgroundImage from '../../assets/images/reward-track/prizes-background.png';
+import prizesStarsImage from '../../assets/images/reward-track/prizes-background-stars.png';
+import rewardGiftIcon from '../../assets/images/reward-track/reward-gift.png';
+import rewardGiftPremiumIcon from '../../assets/images/reward-track/reward-gift-premium.png';
+import taskListIcon from '../../assets/images/reward-track/task-list.png';
 import { GetRewardTrackTaskIconUrl } from '../../assets/images/reward-track/tasks';
-import tierGiftIcon from '../../assets/images/reward-track/tier-gift.png';
-import tasksIcon from '../../assets/images/reward-track/tasks.png';
 import { Button, DraggableWindowPosition, LayoutAvatarImageView, LayoutBadgeImageView, LayoutCurrencyIcon, LayoutFurniIconImageView, Text } from '../../common';
+import { BaseButton } from '../../common/BaseButton';
+import { Hint } from '../../common/Tooltip';
 import { useHasPermission, useNotification, useRewardTracks } from '../../hooks';
 import { OctaneCard } from '../../layout';
 import { RewardTrackAdminView } from './RewardTrackAdminView';
-import { BaseButton } from '../../common/BaseButton';
-import { Hint } from '../../common/Tooltip';
 
 const CURRENCY_TYPES: Record<string, number> = { credits: -1, duckets: 0, diamonds: 5 };
-
-/** One icon per official task action name the server sends (QuestGoalType.actionType()). */
-const getTaskIcon = GetRewardTrackTaskIconUrl;
 const FILTERS: RewardTrackTaskFilter[] = ['all', 'in_progress', 'completed'];
+const FILTER_KEYS: Record<RewardTrackTaskFilter, [string, string]> = {
+    all: ['reward_track.tasks.tab.all_tasks', 'All Tasks'],
+    in_progress: ['reward_track.tasks.tab.in_progress', 'In Progress'],
+    completed: ['reward_track.tasks.tab.completed', 'Completed']
+};
+/** loading_bar widths of task_template (200) and level_template (260). */
+const TASK_BAR_WIDTH = 200;
+const LEVEL_BAR_WIDTH = 260;
 
+/** The product_icon widget (40x40) of a prize. */
 const RewardIcon: FC<{ rewardTypeId: string; extraParams: string; productItemTypeId: number }> = ({ rewardTypeId, extraParams, productItemTypeId }) => {
     const type = (rewardTypeId || '').toLowerCase();
 
@@ -48,15 +73,57 @@ const RewardIcon: FC<{ rewardTypeId: string; extraParams: string; productItemTyp
     return <div className="octane-reward-track-prize-generic">{rewardTypeId}</div>;
 };
 
-/** One prize of the track (prize_template 80x105): icon, quantity chip, locked / claimed markers. */
+/** The task picture (reward_track_tasks_<action>) centred in its slot, as static_bitmap pivot_point="center". */
+const RewardTrackTaskGlyph: FC<{ actionType: string; large?: boolean }> = ({ actionType, large = false }) => {
+    const url = GetRewardTrackTaskIconUrl(actionType);
+
+    return (
+        <div className={large ? 'octane-reward-track-detail-glyph' : 'octane-reward-track-task-glyph'}>
+            {url && <img src={url} alt="" draggable={false} />}
+        </div>
+    );
+};
+
+/** A loading_bar of the task rows and levels: grey track, orange (green when full) fill with its gloss. */
+const RewardTrackMiniBar: FC<{ ratio: number; width: number }> = ({ ratio, width }) => {
+    const progress = getRewardTrackMiniBarWidth(ratio, width);
+    const complete = ratio >= 1;
+
+    return (
+        <div className="octane-reward-track-mini-bar" style={{ width }} data-complete={complete}>
+            <div className="octane-reward-track-mini-bar-progress" style={{ width: progress }}>
+                <div
+                    className="octane-reward-track-mini-bar-fill"
+                    style={{ backgroundColor: complete ? REWARD_TRACK_TASK_BAR_COMPLETE : REWARD_TRACK_TASK_BAR_INCOMPLETE }}
+                />
+                <div className="octane-reward-track-mini-bar-gloss" />
+            </div>
+        </div>
+    );
+};
+
+/** The points value with the small points icon (track_reward_txt / level_reward_txt). */
+const RewardTrackPointsReward: FC<{ value: number }> = ({ value }) => (
+    <span className="octane-reward-track-points-reward">
+        <span>{value}</span>
+        <img src={pointSmallIcon} alt="" draggable={false} />
+    </span>
+);
+
+/**
+ * One prize (prize_template 80x105 / prize_template_premium 80x104): the click region with its shadow and
+ * plate, the product icon (3px higher when the quantity chip shows), the stem towards the bar, the lock and
+ * the claimed check. A prize without enough points is dimmed to 0.75 and loses its shadow.
+ */
 const RewardTrackPrizeView: FC<{
-    column?: number;
+    left: number;
     track: RewardTrackData;
     prize: RewardTrackPrizeData;
     onClaim: (prize: RewardTrackPrizeData) => void;
     onPremium: () => void;
-}> = ({ column, track, prize, onClaim, onPremium }) => {
+}> = ({ left, track, prize, onClaim, onPremium }) => {
     const state = getRewardTrackPrizeState(prize, track);
+    const enoughPoints = prize.hasEnoughPoints(track);
 
     const onClick = () => {
         if (state === 'claimed') return;
@@ -71,21 +138,63 @@ const RewardTrackPrizeView: FC<{
     };
 
     return (
-        <Hint content={getRewardTrackPrizeTooltip(state)}><BaseButton
-            className={`octane-reward-track-prize octane-reward-track-prize-${state}`}
-            style={column ? { gridColumn: column } : undefined}
+        <div
+            className="octane-reward-track-prize"
+            data-state={state}
             data-premium={prize.premium}
-            onClick={onClick}
+            data-disabled={!enoughPoints}
+            style={{ left }}
         >
-            <div className="octane-reward-track-prize-icon air-bitmap-surface">
-                <RewardIcon rewardTypeId={prize.rewardTypeId} extraParams={prize.extraParams} productItemTypeId={prize.productItemTypeId} />
-                {prize.rewardAmount > 1 && <span className="octane-reward-track-prize-amount">{prize.rewardAmount}</span>}
-            </div>
-            {state === 'premium_locked' && <div className="octane-reward-track-prize-marker octane-reward-track-prize-marker-locked" />}
-            {state === 'claimed' && <div className="octane-reward-track-prize-marker octane-reward-track-prize-marker-claimed" />}
-        </BaseButton></Hint>
+            <Hint content={getRewardTrackPrizeTooltip(state)} delay={0}>
+                <BaseButton className="octane-reward-track-prize-hit" onClick={onClick} aria-label={getRewardTrackPrizeTooltip(state)}>
+                    <span className="octane-reward-track-prize-shadow" />
+                    <span className="octane-reward-track-prize-plate">
+                        <span className="octane-reward-track-prize-product" data-shifted={prize.rewardAmount > 1}>
+                            <RewardIcon rewardTypeId={prize.rewardTypeId} extraParams={prize.extraParams} productItemTypeId={prize.productItemTypeId} />
+                        </span>
+                        {prize.rewardAmount > 1 && <span className="octane-reward-track-prize-quantity">{prize.rewardAmount}</span>}
+                    </span>
+                </BaseButton>
+            </Hint>
+            <span className="octane-reward-track-prize-stem" />
+            {state === 'premium_locked' && <img src={lockedRewardIcon} alt="" draggable={false} className="octane-reward-track-prize-lock" />}
+            {state === 'claimed' && <img src={checkmarkIcon} alt="" draggable={false} className="octane-reward-track-prize-check" />}
+        </div>
     );
 };
+
+/** One point_indicator_template (80x157): reached icon on the bar, connector, dot, stem and the points label. */
+const RewardTrackPointIndicatorView: FC<{ left: number; points: number; reached: boolean }> = ({ left, points, reached }) => (
+    <div className="octane-reward-track-indicator" data-reached={reached} style={{ left }}>
+        <img src={reached ? availableIcon : notAvailableIcon} alt="" draggable={false} className="octane-reward-track-indicator-icon" />
+        <span className="octane-reward-track-indicator-connector" />
+        <span className="octane-reward-track-indicator-dot" />
+        <span className="octane-reward-track-indicator-stem" />
+        <span className="octane-reward-track-indicator-points">{points}</span>
+    </div>
+);
+
+/** A free / premium band (free_tier_cont / premium_tier_cont 700x80) with its information cut-out. */
+const RewardTrackBandView: FC<{ premium: boolean }> = ({ premium }) => (
+    <div className={`octane-reward-track-band octane-reward-track-band-${premium ? 'premium' : 'free'}`}>
+        <div className="octane-reward-track-band-info">
+            <span className="octane-reward-track-band-cut" />
+            <span className="octane-reward-track-band-split" />
+            <img
+                src={premium ? premiumTrackIcon : freeTrackIcon}
+                alt=""
+                draggable={false}
+                className="octane-reward-track-band-icon"
+            />
+            <div className="octane-reward-track-band-texts">
+                <span className="octane-reward-track-band-title">
+                    {premium ? localizeWithFallback('reward_track.rewards.premium', 'Premium') : localizeWithFallback('reward_track.rewards.free', 'Free Track')}
+                </span>
+                {premium && <span className="octane-reward-track-band-desc">{localizeWithFallback('reward_track.rewards.premium.info', 'Extra rewards')}</span>}
+            </div>
+        </div>
+    </div>
+);
 
 /** The premium purchase confirmation (390x352): benefits, cost, confirm / cancel. */
 const RewardTrackPremiumConfirmView: FC<{ track: RewardTrackData; pending: boolean; onConfirm: () => void; onCancel: () => void }> = ({
@@ -170,14 +279,18 @@ const RewardTrackPremiumConfirmView: FC<{ track: RewardTrackData; pending: boole
 );
 
 /**
- * The official reward track window (main_xml 1103x722, `reward_track/open/<id>`): the header with the
- * avatar and the points, the prize band with its pages, the task list with its three filters and the
- * task details with the levels.
+ * The official reward track window (reward_track_main_xml 1103x722, `reward_track/open/<id>`), laid out
+ * at the layout's pixel positions: the header stage (the rewards panel with its background, the main bar,
+ * the free and premium bands, the point indicators and the prizes placed along the track by their points,
+ * the page buttons, and the profile cut-out over its left edge) and the body (the task list with its
+ * filters and tip, the task details with the levels and the hint).
  */
 export const RewardTrackView: FC<{}> = () => {
     const [trackId, setTrackId] = useState<string>(null);
     const [filter, setFilter] = useState<RewardTrackTaskFilter>('all');
     const [selectedTaskId, setSelectedTaskId] = useState<string>(null);
+    // null: the page of the track's points (RewardTrackPrizeTrackView opens on it); a number once paged.
+    const [page, setPage] = useState<number>(null);
     const [premiumConfirm, setPremiumConfirm] = useState(false);
     // The gear opens the staff editor inside the same window (acc_rewardtrack).
     const isEditor = useHasPermission('acc_rewardtrack');
@@ -193,6 +306,7 @@ export const RewardTrackView: FC<{}> = () => {
             setEditMode(false);
             setFilter('all');
             setSelectedTaskId(null);
+            setPage(null);
             requestTracks && requestTracks();
         },
         [requestTracks]
@@ -249,106 +363,60 @@ export const RewardTrackView: FC<{}> = () => {
     }, [pendingPurchase]);
 
     const theme = resolveRewardTrackTheme(track?.theme ?? 'blue');
-
-    // The official track (talent_track's "panorama") keeps every milestone in one
-    // horizontal list and scrolls it, so no reward is paginated out of reach.
-    const prizeRows = useMemo(() => paginatePrizeTiers(track?.prizes ?? [], Number.MAX_SAFE_INTEGER), [track]);
-    const milestones = prizeRows.milestones[0] ?? [];
-    const freePrizes = prizeRows.free[0] ?? [];
-    const premiumPrizes = prizeRows.premium[0] ?? [];
-    // Both rows place a prize in the column of its milestone, so the same point
-    // target lines up across the free and the premium row.
-    const columnOf = (prize: RewardTrackPrizeData) => milestones.indexOf(prize.requiredPoints) + 1;
-    const trackMaxPoints = milestones.length ? milestones[milestones.length - 1] : 0;
-    const trackProgress = track && trackMaxPoints > 0 ? Math.max(0, Math.min(1, track.points / trackMaxPoints)) : 0;
+    const prizes = track?.prizes ?? [];
+    const layout = useMemo(() => buildRewardTrackLayout(prizes), [prizes]);
+    const pages = useMemo(() => buildRewardTrackPages(prizes, layout), [prizes, layout]);
+    const points = track?.points ?? 0;
+    const currentPage = Math.max(0, Math.min(layout.pageCount - 1, page ?? layout.pageOf(points)));
+    const pageData = pages[currentPage] ?? { free: [], premium: [], points: [] };
+    const bar = getRewardTrackBarWidths(layout.xFor(points, currentPage));
+    const unclaimed = track ? countRewardTrackUnclaimed(prizes, layout, currentPage, (prize) => prize.isClaimable(track)) : { next: 0, previous: 0 };
 
     const themeStyle = {
         '--rt-dark': theme.dark,
         '--rt-medium': theme.medium,
         '--rt-light': theme.light,
         '--rt-active': theme.active,
-        '--rt-prize-columns': String(milestones.length || 1)
+        '--rt-prizes-background': `url("${prizesBackgroundImage}")`
     } as CSSProperties;
 
     const filteredTasks = useMemo(() => filterRewardTrackTasks(track?.tasks ?? [], filter), [track, filter]);
+    // RewardTrackTaskListView.applyFilter(): the selection falls back to the first task the filter keeps.
     const selectedTask: RewardTrackTaskData = useMemo(
-        () => track?.tasks.find((task) => task.id === selectedTaskId) ?? filteredTasks[0] ?? null,
-        [track, selectedTaskId, filteredTasks]
+        () => filteredTasks.find((task) => task.id === selectedTaskId) ?? filteredTasks[0] ?? null,
+        [selectedTaskId, filteredTasks]
     );
-
-    const panoramaRef = useRef<HTMLDivElement>(null);
-    const [panorama, setPanorama] = useState({ atEnd: true, atStart: true, claimableAfter: 0, claimableBefore: 0 });
-
-    /** The official track badges its arrows with the claimable rewards you cannot see yet. */
-    const measurePanorama = useCallback(() => {
-        const panel = panoramaRef.current;
-
-        if (!panel) return;
-
-        const view = panel.getBoundingClientRect();
-        const label = panel.querySelector('.octane-reward-track-tier-title')?.getBoundingClientRect();
-        const leftEdge = label ? label.right : view.left;
-        let before = 0;
-        let after = 0;
-
-        panel.querySelectorAll('.octane-reward-track-prize-claimable').forEach((node) => {
-            const box = node.getBoundingClientRect();
-
-            if (box.right <= leftEdge) before++;
-            else if (box.left >= view.right) after++;
-        });
-
-        setPanorama({
-            atEnd: Math.ceil(panel.scrollLeft + panel.clientWidth) >= panel.scrollWidth,
-            atStart: panel.scrollLeft <= 0,
-            claimableAfter: after,
-            claimableBefore: before
-        });
-    }, []);
-
-    useEffect(() => {
-        measurePanorama();
-    }, [measurePanorama, track, milestones.length]);
-
-    const scrollPanorama = (direction: -1 | 1) => {
-        const panel = panoramaRef.current;
-
-        if (!panel) return;
-
-        panel.scrollBy({ behavior: 'smooth', left: direction * Math.max(88, panel.clientWidth - 120) });
-    };
-
-    const hintLink = selectedTask ? getRewardTrackTaskHintLink(selectedTask.actionType) : null;
 
     if (!trackId) return null;
 
     const onClaim = (prize: RewardTrackPrizeData) => track && claimPrize && claimPrize(track.id, prize.id);
     const onPremium = () => track && track.hasPremiumConfig && !track.premium && setPremiumConfirm(true);
 
-    const filterText = (value: RewardTrackTaskFilter) => {
-        switch (value) {
-            case 'in_progress':
-                return localizeWithFallback('reward_track.tasks.tab.in_progress', 'In progress');
-            case 'completed':
-                return localizeWithFallback('reward_track.tasks.tab.completed', 'Completed');
-            default:
-                return localizeWithFallback('reward_track.tasks.tab.all_tasks', 'All tasks');
-        }
-    };
+    const hintLink = track && selectedTask
+        ? getRewardTrackTaskHintLink(
+              selectedTask.actionType,
+              GetConfigurationValue<string>(`reward_track.${track.id}.task.${selectedTask.id}.hint.internal_link`, '')
+          )
+        : null;
 
     return (
         <>
-            <OctaneCard
-                className="octane-reward-track"
-                uniqueKey="reward-track"
-                windowPosition={DraggableWindowPosition.TOP_CENTER}
-                style={themeStyle}
-            >
-                <OctaneCard.Header
-                    headerText={localizeWithFallback('reward_track.title', 'Reward track')}
-                    onCloseClick={() => setTrackId(null)}
-                />
+            <OctaneCard className="octane-reward-track" uniqueKey="reward-track" windowPosition={DraggableWindowPosition.TOP_CENTER} style={themeStyle}>
+                <OctaneCard.Header headerText={localizeWithFallback('reward_track.title', 'Reward Track')} onCloseClick={() => setTrackId(null)} />
                 <OctaneCard.Content className="octane-reward-track-content">
+                    {isEditor && !editMode && track && (
+                        <Hint content={localizeWithFallback('reward_track.admin.open', 'Edit the reward tracks')}>
+                            <BaseButton
+                                aria-label={localizeWithFallback('reward_track.admin.open', 'Edit the reward tracks')}
+                                type="button"
+                                className="octane-reward-track-admin-toggle"
+                                data-testid="reward-track-admin-toggle"
+                                onClick={() => setEditMode(true)}
+                            >
+                                <FaCog />
+                            </BaseButton>
+                        </Hint>
+                    )}
                     {editMode && isEditor && (
                         <RewardTrackAdminView
                             onClose={() => setEditMode(false)}
@@ -360,158 +428,119 @@ export const RewardTrackView: FC<{}> = () => {
                     )}
                     {!editMode && !track && <Text center>{localizeWithFallback('reward_track.loading', 'Loading the reward track...')}</Text>}
                     {!editMode && track && (
-                        <>
+                        <div className="octane-reward-track-stage">
                             <div className="octane-reward-track-header">
-                                {isEditor && (
-                                    <Hint content={localizeWithFallback('reward_track.admin.open', 'Edit the reward tracks')}>
-                                        <BaseButton aria-label={localizeWithFallback('reward_track.admin.open', 'Edit the reward tracks')}
-                                            type="button"
-                                            className="octane-reward-track-admin-toggle"
-                                            data-testid="reward-track-admin-toggle"
-                                            onClick={() => setEditMode(true)}
-                                        >
-                                            <FaCog />
-                                        </BaseButton>
-                                    </Hint>
-                                )}
-                                <div className="octane-reward-track-profile">
-                                    <LayoutAvatarImageView figure={GetSessionDataManager().figure} direction={2} className="octane-reward-track-avatar" />
-                                    <div className="octane-reward-track-info">
-                                        <div className="octane-reward-track-title">{getRewardTrackText(track.id, 'name', track.id)}</div>
-                                        <Text small>{getRewardTrackText(track.id, 'desc', '')}</Text>
-                                        <Text small>{getRewardTrackText(track.id, 'info', '')}</Text>
+                                <div className="octane-reward-track-rewards">
+                                    <span className="octane-reward-track-rewards-background" />
+                                    <span className="octane-reward-track-rewards-sky" />
+                                    <img src={prizesStarsImage} alt="" draggable={false} className="octane-reward-track-rewards-stars" />
+                                    <RewardTrackBandView premium={false} />
+                                    <RewardTrackBandView premium />
+                                    <div className="octane-reward-track-bar" data-testid="reward-track-bar">
+                                        <div className="octane-reward-track-bar-progress" style={{ width: bar.progress }}>
+                                            <div className="octane-reward-track-bar-fill" style={{ width: bar.fill }} />
+                                            <div className="octane-reward-track-bar-gloss" />
+                                        </div>
                                     </div>
-                                    <div className="octane-reward-track-points">
-                                        <span className="octane-reward-track-points-value">
-                                            <img src={pointsIcon} alt="" className="octane-reward-track-points-icon" draggable={false} />
-                                            {track.points}
+                                    <div className="octane-reward-track-points-band" />
+                                    <div className="octane-reward-track-indicators">
+                                        {pageData.points.map((value) => (
+                                            <RewardTrackPointIndicatorView
+                                                key={value}
+                                                left={getRewardTrackSlotLeft(layout.xFor(value, currentPage))}
+                                                points={value}
+                                                reached={points >= value}
+                                            />
+                                        ))}
+                                    </div>
+                                    <div className="octane-reward-track-prizes">
+                                        {[...pageData.free, ...pageData.premium].map((prize) => (
+                                            <RewardTrackPrizeView
+                                                key={prize.id}
+                                                left={getRewardTrackSlotLeft(layout.xFor(prize.requiredPoints, currentPage))}
+                                                track={track}
+                                                prize={prize}
+                                                onClaim={onClaim}
+                                                onPremium={onPremium}
+                                            />
+                                        ))}
+                                    </div>
+                                    <BaseButton
+                                        type="button"
+                                        className="octane-reward-track-page"
+                                        data-side="previous"
+                                        disabled={currentPage <= 0}
+                                        onClick={() => setPage(Math.max(0, currentPage - 1))}
+                                        aria-label={localizeWithFallback('reward_track.rewards.previous', 'Previous rewards')}
+                                    >
+                                        <img src={pagePreviousIcon} alt="" draggable={false} />
+                                    </BaseButton>
+                                    <BaseButton
+                                        type="button"
+                                        className="octane-reward-track-page"
+                                        data-side="next"
+                                        disabled={currentPage >= layout.pageCount - 1}
+                                        onClick={() => setPage(Math.min(layout.pageCount - 1, currentPage + 1))}
+                                        aria-label={localizeWithFallback('reward_track.rewards.next', 'Next rewards')}
+                                    >
+                                        <img src={pageNextIcon} alt="" draggable={false} />
+                                    </BaseButton>
+                                    {unclaimed.previous > 0 && (
+                                        <span className="octane-reward-track-unclaimed" data-side="previous">
+                                            {unclaimed.previous}
                                         </span>
-                                        <span className="octane-reward-track-points-label">
-                                            {localizeWithFallback('reward_track.profile.points_collected', 'points collected')}
+                                    )}
+                                    {unclaimed.next > 0 && (
+                                        <span className="octane-reward-track-unclaimed" data-side="next">
+                                            {unclaimed.next}
                                         </span>
-                                    </div>
-                                    <div className="octane-reward-track-collected">
-                                        <img src={checkIcon} alt="" className="octane-reward-track-check" draggable={false} />
-                                        {localizeWithFallback(
-                                            'reward_track.profile.rewards_collected',
-                                            '%progress% / %total% rewards collected',
-                                            ['progress', 'total'],
-                                            [String(track.claimedPrizeCount), String(track.totalPrizeCount)]
-                                        )}
-                                    </div>
+                                    )}
                                 </div>
-                                <BaseButton
-                                    type="button"
-                                    className="octane-reward-track-scroll"
-                                    data-side="prev"
-                                    disabled={panorama.atStart}
-                                    onClick={() => scrollPanorama(-1)}
-                                    aria-label={localizeWithFallback('reward_track.rewards.previous', 'Earlier rewards')}
-                                >
-                                    {'«'}
-                                    {panorama.claimableBefore > 0 && <span className="octane-reward-track-scroll-badge">{panorama.claimableBefore}</span>}
-                                </BaseButton>
-                                <div className="octane-reward-track-rewards" ref={panoramaRef} onScroll={measurePanorama}>
-                                    <div className="octane-reward-track-tier octane-reward-track-tier-free">
-                                        <span className="octane-reward-track-tier-title">
-                                            <img src={tierGiftIcon} alt="" className="octane-reward-track-tier-icon" draggable={false} />
-                                            <span>{localizeWithFallback('reward_track.rewards.free', 'Free')}</span>
-                                        </span>
-                                        <div className="octane-reward-track-tier-prizes">
-                                            {freePrizes.map((prize) => (
-                                                <RewardTrackPrizeView
-                                                    key={prize.id}
-                                                    column={columnOf(prize)}
-                                                    track={track}
-                                                    prize={prize}
-                                                    onClaim={onClaim}
-                                                    onPremium={onPremium}
-                                                />
-                                            ))}
+                                <div className="octane-reward-track-cutout">
+                                    <span className="octane-reward-track-bulge" />
+                                    <div className="octane-reward-track-profile">
+                                        <LayoutAvatarImageView figure={GetSessionDataManager().figure} direction={2} className="octane-reward-track-avatar" />
+                                        <div className="octane-reward-track-info">
+                                            <div className="octane-reward-track-title">{getRewardTrackText(track.id, 'name', track.id)}</div>
+                                            <div className="octane-reward-track-desc">{getRewardTrackText(track.id, 'desc', '')}</div>
+                                            <div className="octane-reward-track-instructions">{getRewardTrackText(track.id, 'info', '')}</div>
                                         </div>
-                                    </div>
-                                    <div className="octane-reward-track-bar-row">
-                                        <span className="octane-reward-track-lane-spacer" aria-hidden="true" />
-                                        <div className="octane-reward-track-bar-lane">
-                                            <div className="octane-reward-track-bar">
-                                                <div className="octane-reward-track-bar-progress" style={{ width: `${Math.round(trackProgress * 100)}%` }} />
-                                            </div>
-                                            {milestones.map((milestone, index) =>
-                                                track.points >= milestone ? (
-                                                    <img
-                                                        key={milestone}
-                                                        src={milestoneReachedIcon}
-                                                        alt=""
-                                                        draggable={false}
-                                                        className="octane-reward-track-milestone-mark"
-                                                        style={{ gridColumn: index + 1 }}
-                                                    />
-                                                ) : (
-                                                    <span key={milestone} className="octane-reward-track-milestone-dot" style={{ gridColumn: index + 1 }} />
-                                                )
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="octane-reward-track-tier octane-reward-track-tier-premium" data-locked={!track.premium}>
-                                        <span className="octane-reward-track-tier-title">
-                                            <img src={tierGiftIcon} alt="" className="octane-reward-track-tier-icon" draggable={false} />
-                                            <span>
-                                                {localizeWithFallback('reward_track.rewards.premium', 'Premium')}
-                                                <small>{localizeWithFallback('reward_track.rewards.premium.info', 'Extra rewards for pass holders')}</small>
+                                        <div className="octane-reward-track-points">
+                                            <span className="octane-reward-track-points-value">
+                                                <img src={pointLargeIcon} alt="" draggable={false} />
+                                                <span>{track.points}</span>
                                             </span>
-                                        </span>
-                                        <div className="octane-reward-track-tier-prizes">
-                                            {premiumPrizes.map((prize) => (
-                                                <RewardTrackPrizeView
-                                                    key={prize.id}
-                                                    column={columnOf(prize)}
-                                                    track={track}
-                                                    prize={prize}
-                                                    onClaim={onClaim}
-                                                    onPremium={onPremium}
-                                                />
-                                            ))}
+                                            <span className="octane-reward-track-points-label">
+                                                {localizeWithFallback('reward_track.profile.points_collected', 'Points collected')}
+                                            </span>
                                         </div>
-                                    </div>
-                                    <div className="octane-reward-track-axis">
-                                        <span className="octane-reward-track-lane-spacer" aria-hidden="true" />
-                                        <div className="octane-reward-track-axis-values">
-                                            {milestones.map((milestone, index) => (
-                                                <span key={milestone} data-reached={track.points >= milestone} style={{ gridColumn: index + 1 }}>
-                                                    {milestone}
-                                                </span>
-                                            ))}
+                                        <span className="octane-reward-track-splitter" />
+                                        <div className="octane-reward-track-collected">
+                                            <img src={checkmarkIcon} alt="" draggable={false} />
+                                            <span>
+                                                {localizeWithFallback(
+                                                    'reward_track.profile.rewards_collected',
+                                                    '%progress% / %total% rewards collected',
+                                                    ['progress', 'total'],
+                                                    [String(track.claimedPrizeCount), String(track.totalPrizeCount)]
+                                                )}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
-                                <BaseButton
-                                    type="button"
-                                    className="octane-reward-track-scroll"
-                                    data-side="next"
-                                    disabled={panorama.atEnd}
-                                    onClick={() => scrollPanorama(1)}
-                                    aria-label={localizeWithFallback('reward_track.rewards.next', 'Later rewards')}
-                                >
-                                    {'»'}
-                                    {panorama.claimableAfter > 0 && <span className="octane-reward-track-scroll-badge">{panorama.claimableAfter}</span>}
-                                </BaseButton>
                             </div>
                             <div className="octane-reward-track-body">
                                 <div className="octane-reward-track-tasks">
-                                    <div className="octane-reward-track-tasks-header">
-                                        <span className="octane-reward-track-tasks-title">
-                                            <img src={tasksIcon} alt="" className="octane-reward-track-tasks-icon" draggable={false} />
-                                            {localizeWithFallback('reward_track.tasks', 'Tasks')}
-                                        </span>
-                                        <span className="octane-reward-track-tasks-progress">
-                                            {localizeWithFallback(
-                                                'reward_track.tasks.progress',
-                                                '%progress% / %total% completed',
-                                                ['progress', 'total'],
-                                                [String(track.completedTaskCount), String(track.totalTaskCount)]
-                                            )}
-                                        </span>
-                                    </div>
+                                    <img src={taskListIcon} alt="" draggable={false} className="octane-reward-track-tasks-icon" />
+                                    <span className="octane-reward-track-tasks-title">{localizeWithFallback('reward_track.tasks', 'Track Tasks')}</span>
+                                    <span className="octane-reward-track-tasks-progress">
+                                        {localizeWithFallback(
+                                            'reward_track.tasks.progress',
+                                            '%progress% / %total% completed',
+                                            ['progress', 'total'],
+                                            [String(track.completedTaskCount), String(track.totalTaskCount)]
+                                        )}
+                                    </span>
                                     <div className="octane-reward-track-filters">
                                         {FILTERS.map((value) => (
                                             <BaseButton
@@ -521,7 +550,7 @@ export const RewardTrackView: FC<{}> = () => {
                                                 data-active={filter === value}
                                                 onClick={() => setFilter(value)}
                                             >
-                                                {filterText(value)}
+                                                {localizeWithFallback(FILTER_KEYS[value][0], FILTER_KEYS[value][1])}
                                             </BaseButton>
                                         ))}
                                     </div>
@@ -537,122 +566,97 @@ export const RewardTrackView: FC<{}> = () => {
                                                     data-complete={task.isComplete}
                                                     onClick={() => setSelectedTaskId(task.id)}
                                                 >
-                                                    <div className="reward-track-task-icon">
-                                                        {getTaskIcon(task.actionType) && (
-                                                            <img className="reward-track-task-image" src={getTaskIcon(task.actionType)} alt="" draggable={false} />
-                                                        )}
-                                                    </div>
-                                                    <div className="octane-reward-track-task-texts">
-                                                        <div className="font-bold">{getRewardTrackTaskText(track.id, task.id, 'name', task.id)}</div>
-                                                        <Text small>{getRewardTrackTaskText(track.id, task.id, 'desc', '')}</Text>
-                                                        <div className="octane-reward-track-task-bar">
-                                                            <div
-                                                                className="octane-reward-track-task-bar-progress"
-                                                                style={{ width: `${Math.round(task.progressRatioFor(level) * 100)}%` }}
-                                                            />
-                                                        </div>
-                                                        <span className="octane-reward-track-task-progress">
-                                                            {task.progressCount} / {level ? level.requiredCount : 0}
-                                                        </span>
-                                                    </div>
-                                                    <div className="octane-reward-track-task-reward">
-                                                        {level ? level.pointsReward : 0}
-                                                        <img src={pointsIcon} alt="" className="octane-reward-track-points-icon" draggable={false} />
-                                                    </div>
+                                                    <RewardTrackTaskGlyph actionType={task.actionType} />
+                                                    <span className="octane-reward-track-task-name">{getRewardTrackTaskText(track.id, task.id, 'name', task.id)}</span>
+                                                    <span className="octane-reward-track-task-desc">{getRewardTrackTaskText(track.id, task.id, 'desc', '')}</span>
+                                                    <span className="octane-reward-track-task-bar">
+                                                        <RewardTrackMiniBar ratio={task.progressRatioFor(level)} width={TASK_BAR_WIDTH} />
+                                                    </span>
+                                                    <span className="octane-reward-track-task-count">
+                                                        {task.progressCount} / {level ? level.requiredCount : 0}
+                                                    </span>
+                                                    <span className="octane-reward-track-task-reward">
+                                                        <RewardTrackPointsReward value={level ? level.pointsReward : 0} />
+                                                    </span>
                                                 </BaseButton>
                                             );
                                         })}
                                     </div>
                                     {(!track.hasPremiumConfig || track.premium) && (
                                         <div className="octane-reward-track-tip">
-                                            {localizeWithFallback('reward_track.tasks.tip', 'Complete tasks to collect points and unlock the rewards!')}
+                                            <img src={rewardGiftIcon} alt="" draggable={false} className="octane-reward-track-tip-gift" />
+                                            <span className="octane-reward-track-tip-text">
+                                                {localizeWithFallback('reward_track.tasks.tip', 'Complete tasks to earn points and unlock rewards')}
+                                            </span>
+                                            <img src={frankAndPiccoloImage} alt="" draggable={false} className="octane-reward-track-tip-frank" />
                                         </div>
                                     )}
                                     {track.hasPremiumConfig && !track.premium && (
                                         <div className="octane-reward-track-tip octane-reward-track-tip-premium">
-                                            <img src={tierGiftIcon} alt="" className="octane-reward-track-tip-icon" draggable={false} />
-                                            <span>
-                                                {localizeWithFallback(
-                                                    'reward_track.tasks.tip_upgrade',
-                                                    'Get the premium pass for more points and exclusive rewards!'
-                                                )}
+                                            <img src={rewardGiftPremiumIcon} alt="" draggable={false} className="octane-reward-track-tip-gift" />
+                                            <span className="octane-reward-track-tip-text">
+                                                {localizeWithFallback('reward_track.tasks.tip_upgrade', 'Upgrade now for premium rewards and faster progress!')}
                                             </span>
-                                            <Button variant="primary" onClick={onPremium}>
-                                                {localizeWithFallback('reward_track.tasks.tip_upgrade.button', 'Upgrade')}
-                                            </Button>
+                                            <BaseButton type="button" className="octane-reward-track-button octane-reward-track-get-premium" onClick={onPremium}>
+                                                {localizeWithFallback('reward_track.tasks.tip_upgrade.button', 'Get Premium')}
+                                            </BaseButton>
                                         </div>
                                     )}
                                 </div>
                                 <div className="octane-reward-track-task-info">
                                     {selectedTask && (
                                         <>
-                                            <div className="octane-reward-track-task-info-header">
-                                                <div className="reward-track-task-icon octane-reward-track-task-icon-large">
-                                                    {getTaskIcon(selectedTask.actionType) && (
-                                                        <img className="reward-track-task-image" src={getTaskIcon(selectedTask.actionType)} alt="" draggable={false} />
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <div className="octane-reward-track-task-info-name">
-                                                        {getRewardTrackTaskText(track.id, selectedTask.id, 'name', selectedTask.id)}
-                                                    </div>
-                                                    <Text>{getRewardTrackTaskText(track.id, selectedTask.id, 'desc', '')}</Text>
-                                                </div>
+                                            <RewardTrackTaskGlyph actionType={selectedTask.actionType} large />
+                                            <div className="octane-reward-track-task-info-name">
+                                                {getRewardTrackTaskText(track.id, selectedTask.id, 'name', selectedTask.id)}
                                             </div>
-                                            <div className="octane-reward-track-levels-title">{localizeWithFallback('reward_track.levels.title', 'Levels')}</div>
+                                            <div className="octane-reward-track-task-info-desc">{getRewardTrackTaskText(track.id, selectedTask.id, 'desc', '')}</div>
+                                            <span className="octane-reward-track-levels-rule" />
+                                            <span className="octane-reward-track-levels-title">{localizeWithFallback('reward_track.levels.title', 'Levels')}</span>
                                             <div className="octane-reward-track-levels">
                                                 {selectedTask.levels.map((level, index) => {
                                                     const ratio = selectedTask.progressRatioFor(level);
 
                                                     return (
-                                                        <div
-                                                            key={index}
-                                                            className="octane-reward-track-level"
-                                                            data-active={index === selectedTask.activeLevelIndex}
-                                                        >
+                                                        <div key={index} className="octane-reward-track-level" data-active={index === selectedTask.activeLevelIndex}>
                                                             <span className="octane-reward-track-level-name">
-                                                                {localizeWithFallback(
-                                                                    'reward_track.levels.level',
-                                                                    'Level %level%',
-                                                                    ['level'],
-                                                                    [String(index + 1)]
-                                                                )}
+                                                                {localizeWithFallback('reward_track.levels.level', 'Level %level%', ['level'], [String(index + 1)])}
                                                             </span>
-                                                            <div className="octane-reward-track-task-bar">
-                                                                <div
-                                                                    className="octane-reward-track-task-bar-progress"
-                                                                    style={{ width: `${Math.round(ratio * 100)}%` }}
-                                                                />
-                                                            </div>
-                                                            <span className="octane-reward-track-task-progress">
+                                                            <span className="octane-reward-track-level-bar">
+                                                                <RewardTrackMiniBar ratio={ratio} width={LEVEL_BAR_WIDTH} />
+                                                            </span>
+                                                            <span className="octane-reward-track-level-count">
                                                                 {selectedTask.progressCount} / {level.requiredCount}
                                                             </span>
-                                                            {ratio >= 1 && <img src={checkIcon} alt="" className="octane-reward-track-check" draggable={false} />}
-                                                            <span className="octane-reward-track-task-reward">
-                                                                {level.pointsReward}
-                                                                <img src={pointsIcon} alt="" className="octane-reward-track-points-icon" draggable={false} />
+                                                            <span className="octane-reward-track-level-end">
+                                                                {ratio >= 1 && <img src={checkmarkIcon} alt="" draggable={false} className="octane-reward-track-level-check" />}
+                                                                <RewardTrackPointsReward value={level.pointsReward} />
                                                             </span>
                                                         </div>
                                                     );
                                                 })}
                                             </div>
                                             <div className="octane-reward-track-hint">
-                                                <img src={hintFrankImage} alt="" className="octane-reward-track-hint-image" draggable={false} />
-                                                <div className="octane-reward-track-hint-texts">
-                                                    <div className="font-bold">{localizeWithFallback('reward_track.levels.tip', 'Tip')}</div>
-                                                    <Text small>{getRewardTrackTaskText(track.id, selectedTask.id, 'hint.desc', '')}</Text>
-                                                </div>
+                                                <span className="octane-reward-track-hint-frank">
+                                                    <img src={frankTipsImage} alt="" draggable={false} />
+                                                </span>
+                                                <span className="octane-reward-track-hint-title">{localizeWithFallback('reward_track.levels.tip', 'Tip!')}</span>
+                                                <span className="octane-reward-track-hint-text">{getRewardTrackTaskText(track.id, selectedTask.id, 'hint.desc', '')}</span>
                                                 {hintLink && (
-                                                    <Button variant="primary" onClick={() => CreateLinkEvent(hintLink.link)}>
+                                                    <BaseButton
+                                                        type="button"
+                                                        className="octane-reward-track-button octane-reward-track-hint-button"
+                                                        onClick={() => CreateLinkEvent(hintLink.link)}
+                                                    >
                                                         {getRewardTrackTaskText(track.id, selectedTask.id, 'hint.button_text', hintLink.fallbackText)}
-                                                    </Button>
+                                                    </BaseButton>
                                                 )}
                                             </div>
                                         </>
                                     )}
                                 </div>
                             </div>
-                        </>
+                        </div>
                     )}
                 </OctaneCard.Content>
             </OctaneCard>
