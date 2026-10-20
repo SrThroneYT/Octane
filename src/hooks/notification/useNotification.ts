@@ -7,32 +7,18 @@ import {
     ClubGiftSelectedEvent,
     ConnectionErrorEvent,
     GetLocalizationManager,
-    GetRoomEngine,
     GetSessionDataManager,
-    GoToBreedingNestFailureEvent,
-    GoToBreedingNestFailureParser,
     HabboBroadcastMessageEvent,
-    HotelClosedAndOpensEvent,
-    HotelClosesAndWillOpenAtEvent,
-    HotelWillCloseInMinutesEvent,
     InfoFeedEnableMessageEvent,
-    MaintenanceStatusMessageEvent,
     MOTDNotificationEvent,
     ModeratorCautionEvent,
     ModeratorMessageEvent,
     NotificationDialogMessageEvent,
-    PetLevelNotificationEvent,
-    PetReceivedMessageEvent,
     RespectReceivedEvent,
     RoomEnterEffect,
     RoomEnterEvent,
     SimpleAlertMessageEvent,
-    UserBannedMessageEvent,
-    Vector3d,
-    WiredRewardResultMessageEvent,
-    WiredTradeErrorEvent,
-    WiredTransactionFailEvent,
-    WiredTransactionSuccessEvent
+    UserBannedMessageEvent
 } from '@octane/renderer';
 import { useCallback, useState } from 'react';
 import { registerSharedHook, useSharedHook } from '@/state/useSharedHook';
@@ -55,11 +41,11 @@ import { rememberReceivedBadgeRarity } from '../../api/badges/badgeRarity';
 import { AchievementNotificationBubbleItem } from '../../api/notification/AchievementNotificationBubbleItem';
 import { localizeWithFallback } from '../../api/utils/localizeWithFallback';
 import { countSimpleAlert } from '../../api/notification/SimpleAlertCounter';
-import { wiredRewardResultAlert } from '../../api/wired/WiredRewardResult';
-import { WIRED_TRADE_ERROR_ICON, wiredTradeErrorMessage } from '../../api/inventory/WiredTradingUtilities';
 import { useMessageEvent } from '../events';
-import { receiveWiredReward } from '../rooms/widgets/wiredRewardStore';
 import { useHotelAlertToastStore } from './hotelAlertToastStore';
+import { useHotelStatusNotifications } from './useHotelStatusNotifications';
+import { usePetNotifications } from './usePetNotifications';
+import { useWiredTransactionNotifications } from './useWiredTransactionNotifications';
 
 const cleanText = (text: string) => (text && text.length ? text.replace(/\\r/g, '\r') : '');
 
@@ -67,12 +53,6 @@ const HOTEL_ALERT_TOAST_MAX_LENGTH = 240;
 
 /** Mention toasts on screen at once; a burst replaces the oldest instead of piling up. */
 const MAX_MENTION_BUBBLES = 3;
-
-const getTimeZeroPadded = (time: number) => {
-    const text = '0' + time;
-
-    return text.substr(text.length - 2, text.length);
-};
 
 let modDisclaimerTimeout: ReturnType<typeof setTimeout> = null;
 const recentBadgeNotifications = new Set<string>();
@@ -333,6 +313,10 @@ const useNotificationStore = () => {
         });
     }, []);
 
+    useHotelStatusNotifications(simpleAlert);
+    usePetNotifications(simpleAlert, showSingleBubble);
+    useWiredTransactionNotifications(simpleAlert, showSingleBubble);
+
     useMessageEvent<RespectReceivedEvent>(RespectReceivedEvent, (event) => {
         const parser = event.getParser();
 
@@ -407,38 +391,6 @@ const useNotificationStore = () => {
         );
     });
 
-    // AIR notifications onWiredTransactionFail: fail text with the localized reason (ported from Volt, GPL-3.0).
-    useMessageEvent<WiredTransactionFailEvent>(WiredTransactionFailEvent, (event) => {
-        const parser = event.getParser();
-
-        showSingleBubble(
-            LocalizeText(
-                'wired_transactions.notification.fail',
-                ['reason'],
-                [LocalizeText(`wired_transactions.notification.fail.${ parser.failureReason }`)],
-            ),
-            NotificationBubbleType.INFO,
-        );
-    });
-
-    // WiredTradeError: a refused trade action, with AIR's trading error icon (e.g. 5, more than the requirements ask).
-    useMessageEvent<WiredTradeErrorEvent>(WiredTradeErrorEvent, (event) => {
-        const parser = event.getParser();
-
-        showSingleBubble(wiredTradeErrorMessage(parser.tradeErrorId, LocalizeText), NotificationBubbleType.INFO, WIRED_TRADE_ERROR_ICON);
-    });
-
-    // WiredTransactionSuccess. AIR RewardNotificationController keeps every reward under its own id: one that opens by
-    // itself opens its popup (FurnitureWiredChestRewardView) now, the others get the click-to-popup text whose link
-    // opens that reward, not whichever came last.
-    useMessageEvent<WiredTransactionSuccessEvent>(WiredTransactionSuccessEvent, (event) => {
-        const parser = event.getParser();
-        const rewardLink = receiveWiredReward(parser);
-        const key = `wired_transactions.notification.success.${ parser.successType }`;
-
-        showSingleBubble(LocalizeText(rewardLink ? `${ key }.click_to_popup` : key), NotificationBubbleType.INFO, null, rewardLink);
-    });
-
     useMessageEvent<BadgeReceivedEvent>(BadgeReceivedEvent, (event) => {
         const parser = event.getParser();
 
@@ -499,58 +451,6 @@ const useNotificationStore = () => {
         showModeratorMessage(parser.message);
     });
 
-    useMessageEvent<HotelClosesAndWillOpenAtEvent>(HotelClosesAndWillOpenAtEvent, (event) => {
-        const parser = event.getParser();
-
-        simpleAlert(
-            LocalizeText(
-                'opening.hours.' + (parser.userThrowOutAtClose ? 'disconnected' : 'closed'),
-                ['h', 'm'],
-                [getTimeZeroPadded(parser.openHour), getTimeZeroPadded(parser.openMinute)]
-            ),
-            NotificationAlertType.DEFAULT,
-            null,
-            null,
-            LocalizeText('opening.hours.title')
-        );
-    });
-
-    useMessageEvent<GoToBreedingNestFailureEvent>(GoToBreedingNestFailureEvent, (event) => {
-        const reason = event.getParser().reason;
-        const needsFood = reason === GoToBreedingNestFailureParser.PET_TOO_TIRED_TO_BREED;
-        const page = GetConfigurationValue<string>(`gotobreedingnestfailure.catalogpage.${needsFood ? 'food' : 'nests'}`, '');
-
-        simpleAlert(
-            LocalizeText(`gotobreedingnestfailure.message.${reason}`),
-            NotificationAlertType.DEFAULT,
-            page ? `catalog/open/${page}` : null,
-            page ? LocalizeText(`gotobreedingnestfailure.${needsFood ? 'getfood' : 'getnest'}`) : null,
-            LocalizeText('gotobreedingnestfailure.caption')
-        );
-    });
-
-    useMessageEvent<PetReceivedMessageEvent>(PetReceivedMessageEvent, async (event) => {
-        const parser = event.getParser();
-
-        const text = LocalizeText('notifications.text.' + (parser.boughtAsGift ? 'petbought' : 'petreceived'));
-
-        let imageUrl: string = null;
-
-        const imageResult = GetRoomEngine().getRoomObjectPetImage(
-            parser.pet.typeId,
-            parser.pet.paletteId,
-            parseInt(parser.pet.color, 16),
-            new Vector3d(45 * 3),
-            64,
-            null,
-            true
-        );
-
-        if (imageResult) imageUrl = (await imageResult.getImage())?.src;
-
-        showSingleBubble(text, NotificationBubbleType.PETLEVEL, imageUrl);
-    });
-
     useMessageEvent<MOTDNotificationEvent>(MOTDNotificationEvent, (event) => {
         const parser = event.getParser();
 
@@ -559,30 +459,6 @@ const useNotificationStore = () => {
         const alertItem = new NotificationAlertItem(messages, NotificationAlertType.MOTD, null, null, LocalizeText('notifications.motd.title'));
 
         setAlerts((prevValue) => [alertItem, ...prevValue]);
-    });
-
-    useMessageEvent<PetLevelNotificationEvent>(PetLevelNotificationEvent, async (event) => {
-        const parser = event.getParser();
-
-        let imageUrl: string = null;
-
-        const imageResult = GetRoomEngine().getRoomObjectPetImage(
-            parser.figureData.typeId,
-            parser.figureData.paletteId,
-            parseInt(parser.figureData.color, 16),
-            new Vector3d(45 * 3),
-            64,
-            null,
-            true
-        );
-
-        if (imageResult) imageUrl = (await imageResult.getImage())?.src;
-
-        showSingleBubble(
-            LocalizeText('notifications.text.petlevel', ['pet_name', 'level'], [parser.petName, parser.level.toString()]),
-            NotificationBubbleType.PETLEVEL,
-            imageUrl
-        );
     });
 
     useMessageEvent<InfoFeedEnableMessageEvent>(InfoFeedEnableMessageEvent, (event) => {
@@ -607,18 +483,6 @@ const useNotificationStore = () => {
         );
     });
 
-    useMessageEvent<MaintenanceStatusMessageEvent>(MaintenanceStatusMessageEvent, (event) => {
-        const parser = event.getParser();
-
-        simpleAlert(
-            LocalizeText('maintenance.shutdown', ['m', 'd'], [parser.minutesUntilMaintenance.toString(), parser.duration.toString()]),
-            NotificationAlertType.DEFAULT,
-            null,
-            null,
-            LocalizeText('opening.hours.title')
-        );
-    });
-
     useMessageEvent<ModeratorCautionEvent>(ModeratorCautionEvent, (event) => {
         const parser = event.getParser();
 
@@ -631,30 +495,6 @@ const useNotificationStore = () => {
         if (parser.type === 'badge_received' || parser.type === 'badges') return;
 
         showNotification(parser.type, parser.parameters);
-    });
-
-    useMessageEvent<HotelWillCloseInMinutesEvent>(HotelWillCloseInMinutesEvent, (event) => {
-        const parser = event.getParser();
-
-        simpleAlert(
-            LocalizeText('opening.hours.shutdown', ['m'], [parser.openMinute.toString()]),
-            NotificationAlertType.DEFAULT,
-            null,
-            null,
-            LocalizeText('opening.hours.title')
-        );
-    });
-
-    useMessageEvent<HotelClosedAndOpensEvent>(HotelClosedAndOpensEvent, (event) => {
-        const parser = event.getParser();
-
-        simpleAlert(
-            LocalizeText('opening.hours.disconnected', ['h', 'm'], [parser.openHour.toString(), parser.openMinute.toString()]),
-            NotificationAlertType.DEFAULT,
-            null,
-            null,
-            LocalizeText('opening.hours.title')
-        );
     });
 
     useMessageEvent<ConnectionErrorEvent>(ConnectionErrorEvent, (event) => {
@@ -715,13 +555,6 @@ const useNotificationStore = () => {
             null,
             LocalizeText(parser.titleMessage ? parser.titleMessage : 'notifications.broadcast.title')
         );
-    });
-
-    useMessageEvent<WiredRewardResultMessageEvent>(WiredRewardResultMessageEvent, (event) => {
-        // Official: a product, a badge, or a refusal with its reason; no reason is dropped.
-        const { titleKey, bodyKey } = wiredRewardResultAlert(event.getParser().reason);
-
-        simpleAlert(LocalizeText(bodyKey), NotificationAlertType.DEFAULT, null, null, LocalizeText(titleKey));
     });
 
     const onRoomEnterEvent = useCallback(() => {
