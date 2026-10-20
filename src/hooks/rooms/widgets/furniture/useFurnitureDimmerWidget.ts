@@ -7,7 +7,7 @@ import {
     RoomSessionDimmerPresetsEvent
 } from '@octane/renderer';
 import { useEffect, useState } from 'react';
-import { DimmerFurnitureWidgetPresetItem, FurnitureDimmerUtilities, IsAnyRoomController } from '../../../../api';
+import { DimmerFurnitureWidgetPresetItem, FurnitureDimmerUtilities, IsAnyRoomController, IsPlayTestRestricted } from '../../../../api';
 import { useOctaneEvent } from '../../../events';
 import { useRoom } from '../../useRoom';
 
@@ -24,7 +24,9 @@ const useFurnitureDimmerWidgetState = () => {
     const [selectedBrightness, setSelectedBrightness] = useState(0);
     const { roomSession = null } = useRoom();
 
-    const canOpenWidget = () => roomSession.isRoomOwner || roomSession.controllerLevel >= RoomControllerLevel.GUEST || IsAnyRoomController();
+    // Playtest refuses the dimmer to its owner too (the hotel's own rule beyond AIR), as the server does.
+    const canOpenWidget = () =>
+        !IsPlayTestRestricted(roomSession) && (roomSession.isRoomOwner || roomSession.controllerLevel >= RoomControllerLevel.GUEST || IsAnyRoomController());
 
     const selectPresetId = (id: number) => {
         const preset = presets[id - 1];

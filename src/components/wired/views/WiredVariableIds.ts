@@ -233,6 +233,10 @@ export const toWiredVariableId = (target: WiredVariablePickerTarget, token: stri
     return '';
 };
 
+/** {@link toWiredVariableId} on an official target number (furni 0, user 1, global -10, context -20). */
+export const toWiredVariableIdOnTarget = (officialTarget: number, token: string): string =>
+    toWiredVariableId(officialTarget === 1 ? 'user' : officialTarget === -10 ? 'global' : officialTarget === -20 ? 'context' : 'furni', token);
+
 /** The token of a variable id in any form the server or an older client wrote; empty when it names no variable. */
 export const fromWiredVariableId = (id: string): string => {
     const text = (id ?? '').trim();

@@ -1,5 +1,5 @@
 import { FC, useEffect, useMemo, useState } from 'react';
-import { fromOfficialVariableTarget, LocalizeText, localizeWithFallback, toOfficialVariableTarget, WiredFurniType } from '../../../../api';
+import { fromOfficialVariableTarget, LocalizeText, localizeWithFallback, WiredFurniType } from '../../../../api';
 import furniVariableIcon from '../../../../assets/images/wired/var/icon_source_furni.png';
 import globalVariableIcon from '../../../../assets/images/wired/var/icon_source_global.png';
 import userVariableIcon from '../../../../assets/images/wired/var/icon_source_user.png';
@@ -24,7 +24,6 @@ import { Radio } from '../../../../common/Radio';
 
 type VariableTargetType = 'user' | 'furni' | 'global';
 
-const TARGET_USER = 0;
 const TARGET_FURNI = 1;
 const TARGET_GLOBAL = 3;
 
@@ -91,17 +90,6 @@ const normalizeTargetType = (value: number): VariableTargetType => {
             return 'global';
         default:
             return 'user';
-    }
-};
-
-const getTargetValue = (value: VariableTargetType) => {
-    switch (value) {
-        case 'furni':
-            return TARGET_FURNI;
-        case 'global':
-            return TARGET_GLOBAL;
-        default:
-            return TARGET_USER;
     }
 };
 
@@ -217,8 +205,7 @@ export const WiredTriggerVariableChangedView: FC<{}> = () => {
             effectiveDeletedEnabled ? 1 : 0,
             (effectiveIncreasedEnabled ? 1 : 0) | (effectiveDecreasedEnabled ? 2 : 0) | (effectiveUnchangedEnabled ? 4 : 0),
             originMask,
-            mode,
-            toOfficialVariableTarget(getTargetValue(targetType))
+            mode
         ]);
     };
 

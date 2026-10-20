@@ -5,6 +5,7 @@ import { useWired, useWiredTools } from '../../../../hooks';
 import { WiredFurniSelectionSourceRow } from '../WiredFurniSelectionSourceRow';
 import { FURNI_SOURCES, sortWiredSourceOptions, WiredSourceOption } from '../WiredSourcesSelector';
 import { variableTokenFromId } from '../WiredValueOrVariableField';
+import { toWiredVariableId } from '../WiredVariableIds';
 import { WiredVariablePicker } from '../WiredVariablePicker';
 import { buildWiredVariablePickerEntries, getCustomVariableItemId, IWiredVariablePickerEntry } from '../WiredVariablePickerData';
 import { WiredExtraBaseView } from './WiredExtraBaseView';
@@ -172,7 +173,8 @@ export const WiredExtraChestItemTypeScannerView: FC<{}> = () => {
 
         setIntParams([mode]);
         setStringParam('');
-        setVariableIds(variableId > 0 ? [String(variableId)] : []);
+        // The variable list's id of the context variable (ctx:12), as AIR sends it.
+        setVariableIds(variableId > 0 ? [toWiredVariableId('context', variableToken)] : []);
         setSourceTypes({ furni: [typeSource, chestSource], users: [] });
         setFurniIds2(chestSource === SOURCE_SECONDARY_SELECTED ? nextChestIds.filter((id) => id > 0) : []);
     };

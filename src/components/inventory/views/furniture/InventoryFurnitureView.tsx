@@ -14,7 +14,7 @@ import {
 } from '../../../../api';
 import { LayoutLimitedEditionCompactPlateView, LayoutRarityLevelView, LayoutRoomPreviewerView } from '../../../../common';
 import { CatalogPostMarketplaceOfferEvent, DeleteItemConfirmEvent } from '../../../../events';
-import { useInventoryFurni, useInventoryUnseenTracker } from '../../../../hooks';
+import { useInventoryFurni, useInventoryUnseenTracker, usePlayTestRestricted } from '../../../../hooks';
 import { OctaneButton } from '../../../../layout';
 import { InventoryCategoryEmptyView } from '../InventoryCategoryEmptyView';
 import { InventoryFurnitureItemView } from './InventoryFurnitureItemView';
@@ -44,6 +44,7 @@ export const InventoryFurnitureView: FC<{
     const [isVisible, setIsVisible] = useState(false);
     const { groupItems = [], selectedItem = null, setSelectedItem = null, activate = null, deactivate = null } = useInventoryFurni();
     const { resetItems = null } = useInventoryUnseenTracker();
+    const playTestRestricted = usePlayTestRestricted();
 
     const [page, setPage] = useState(0);
     const pageCount = Math.floor(filteredGroupItems.length / 200) + 1;
@@ -223,7 +224,7 @@ export const InventoryFurnitureView: FC<{
                         {selectedItem.description && <div className="octane-inventory-furni-desc">{selectedItem.description}</div>}
                         <div className="octane-inventory-furni-actions">
                             <OctaneButton
-                                disabled={!roomSession || !selectedItem.getUnlockedCount()}
+                                disabled={!roomSession || !selectedItem.getUnlockedCount() || playTestRestricted}
                                 className="octane-inventory-btn-place"
                                 onClick={() => attemptItemPlacement(selectedItem)}
                             >

@@ -1,4 +1,5 @@
 export * from './useFurnitureAreaHideWidget';
+export * from './useFurnitureAreaHideWidget.helpers';
 export * from './useFurnitureBackgroundColorWidget';
 export * from './useFurnitureBadgeDisplayWidget';
 export * from './useFurnitureContextMenuWidget';
