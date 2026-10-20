@@ -1,4 +1,4 @@
-import { GetSessionDataManager } from '@octane/renderer';
+import { GetLocalizationManager, GetSessionDataManager } from '@octane/renderer';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useEffect } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -147,6 +147,44 @@ describe('InventoryWiredTradeView', () => {
 
         fireEvent.doubleClick(container.querySelector('.octane-wired-trade-offers.is-own .octane-wired-trade-slot.is-filled'));
         expect(state.withdrawItem).toHaveBeenCalledWith(11);
+    });
+
+    it('the requirements bubble draws AIR\'s bold text instead of showing its tags', () => {
+        const texts: Record<string, string> = {
+            'inventory.wired_trading.requirements.indicator.multi': 'Aan de vereisten moet %times% keer <b>(%amount%/%times%) worden voldaan</b>',
+            'inventory.wired_trading.requirements.auto_mode_hint_payment': '<b>Let op: </b>Je kunt items blijven toevoegen. <i>(max %amount%x)</i>',
+        };
+        const stub = vi.mocked(GetLocalizationManager).getMockImplementation();
+        vi.mocked(GetLocalizationManager).mockReturnValue({
+            getValueWithParameters: (key: string, parameters: string[], replacements: string[]) =>
+                (parameters ?? []).reduce((text, name, index) => text.split(`%${ name }%`).join(replacements[index]), texts[key] ?? key),
+        } as any);
+        vi.mocked(useWiredTrading).mockReturnValue(trading({ showRequirements: true, requirementType: 4, rulesType: 1, multiplier: 3, extra: 1 }) as any);
+
+        const { container, unmount } = render(<InventoryWiredTradeView />);
+        const met = container.querySelector('.octane-wired-trade-bubble-met span');
+
+        expect(met.textContent).toBe('Aan de vereisten moet 3 keer (1/3) worden voldaan');
+        expect(met.querySelector('b')?.textContent).toBe('(1/3) worden voldaan');
+        unmount();
+
+        vi.mocked(useWiredTrading).mockReturnValue(trading({ showRequirements: true, requirementType: 4, rulesType: 2, autoMultiplierMax: 5 }) as any);
+        const auto = render(<InventoryWiredTradeView />);
+        const note = auto.container.querySelector('.octane-wired-trade-bubble-note');
+
+        expect(note.textContent).toBe('Let op: Je kunt items blijven toevoegen. (max 5x)');
+        expect(note.querySelector('b')).not.toBeNull();
+        vi.mocked(GetLocalizationManager).mockImplementation(stub);
+    });
+
+    it('a trade without a timeout shows no time left', () => {
+        vi.mocked(useWiredTrading).mockReturnValue(trading({ secondsLeft: -1 }) as any);
+        const { container, unmount } = render(<InventoryWiredTradeView />);
+        expect(container.querySelector('.octane-wired-trade-time')).toBeNull();
+        unmount();
+
+        vi.mocked(useWiredTrading).mockReturnValue(trading({ secondsLeft: 45 }) as any);
+        expect(render(<InventoryWiredTradeView />).container.querySelector('.octane-wired-trade-time')?.textContent).toContain('0:45');
     });
 
     it('the requirements button opens AIR\'s bubble', () => {

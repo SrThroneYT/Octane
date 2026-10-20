@@ -14,7 +14,7 @@ import {
     WiredTradeOpenEvent,
 } from '@octane/renderer';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { localizeWithFallback, SendMessageComposer } from '../../api';
+import { localizeWithFallback, SendMessageComposer, wiredTradeInitialSecondsLeft } from '../../api';
 import { registerSharedHook, useSharedHook } from '@/state/useSharedHook';
 import { useMessageEvent } from '../events';
 import { useNotification } from '../notification';
@@ -101,7 +101,7 @@ const useWiredTradingState = () => {
         setMultiplier(parser.multiplier);
         setAutoMultiplierMax(parser.autoMultiplierMax);
         setShowRequirements(parser.showRequirementsImmediate);
-        setSecondsLeft(parser.timeoutSeconds);
+        setSecondsLeft(wiredTradeInitialSecondsLeft(parser.timeoutSeconds));
         setCanAccept(false);
         setExtra(0);
         setOfferedItems([]);
@@ -190,16 +190,17 @@ const useWiredTradingState = () => {
         });
     }, [isOpen, offeredItems, setGroupItems]);
 
-    // The trade time-out from WiredTradeOpen (84) runs locally.
+    // The trade time-out from WiredTradeOpen (84) runs locally; a trade without one has none to run.
+    const hasTimeout = secondsLeft >= 0;
     useEffect(() => {
-        if (!isOpen) return;
+        if (!isOpen || !hasTimeout) return;
 
         const handle = window.setInterval(() => {
             setSecondsLeft(Math.max(0, secondsLeftRef.current - 1));
         }, 1000);
 
         return () => window.clearInterval(handle);
-    }, [isOpen]);
+    }, [isOpen, hasTimeout]);
 
     useEffect(() => {
         if (state !== WIRED_TRADING_STATE_COUNTDOWN) return;

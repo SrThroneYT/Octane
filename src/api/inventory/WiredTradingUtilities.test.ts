@@ -8,6 +8,7 @@ import {
     WIRED_TRADE_ANY_COINS,
     WIRED_TRADE_ANY_FURNI,
     WIRED_TRADE_RULES,
+    wiredTradeInitialSecondsLeft,
     wiredTradePaymentLayout,
     wiredTradeTimeLeft,
 } from './WiredTradingUtilities';
@@ -68,6 +69,15 @@ describe('wired trade: the panel', () => {
         expect(wiredTradeTimeLeft(-1)).toBeNull();
         expect(wiredTradeTimeLeft(65)).toEqual({ minutes: '1', seconds: '05', time: '1:05' });
         expect(wiredTradeTimeLeft(0)).toEqual({ minutes: '0', seconds: '00', time: '0:00' });
+    });
+
+    it('a trade without a timeout never shows 0:00 left', () => {
+        // Initiate Transaction with its timeout off sends 0: AIR's secondsLeft is -1 then and hides the text.
+        expect(wiredTradeInitialSecondsLeft(0)).toBe(-1);
+        expect(wiredTradeInitialSecondsLeft(-5)).toBe(-1);
+        expect(wiredTradeTimeLeft(wiredTradeInitialSecondsLeft(0))).toBeNull();
+        expect(wiredTradeInitialSecondsLeft(90)).toBe(90);
+        expect(wiredTradeTimeLeft(wiredTradeInitialSecondsLeft(90))).toEqual({ minutes: '1', seconds: '30', time: '1:30' });
     });
 
     it('groups the table into a slot per kind', () => {

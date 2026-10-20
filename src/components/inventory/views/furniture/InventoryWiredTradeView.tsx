@@ -24,6 +24,7 @@ import {
     LocalizeText,
     localizeWithFallback,
     ProductImageUtility,
+    SanitizeHtml,
     wiredTradePaymentLayout,
     wiredTradeTimeLeft,
 } from '../../../../api';
@@ -432,30 +433,36 @@ export const InventoryWiredTradeView: FC<{}> = () => {
                                 )}
                             </div>
                             <div className="octane-wired-trade-bubble-met">
-                                <span>{indicatorText}</span>
+                                <span dangerouslySetInnerHTML={{ __html: SanitizeHtml(indicatorText) }} />
                                 <img alt="" src={canAccept ? requirementsMetIcon : requirementsNotMetIcon} />
                             </div>
                             {rulesType === WIRED_TRADE_RULES_AUTO && (
-                                <div className="octane-wired-trade-bubble-note">
-                                    {localizeWithFallback(
-                                        paymentOnly
-                                            ? 'inventory.wired_trading.requirements.auto_mode_hint_payment'
-                                            : 'inventory.wired_trading.requirements.auto_mode_hint_trade',
-                                        `You can keep adding items to run this ${ tradeTypeLower } several times (max ${ autoMultiplierMax }x)`,
-                                        ['amount'],
-                                        [String(autoMultiplierMax)],
-                                    ).replace(/<[^>]+>/g, '')}
-                                </div>
+                                <div
+                                    className="octane-wired-trade-bubble-note"
+                                    dangerouslySetInnerHTML={{
+                                        __html: SanitizeHtml(localizeWithFallback(
+                                            paymentOnly
+                                                ? 'inventory.wired_trading.requirements.auto_mode_hint_payment'
+                                                : 'inventory.wired_trading.requirements.auto_mode_hint_trade',
+                                            `You can keep adding items to run this ${ tradeTypeLower } several times (max ${ autoMultiplierMax }x)`,
+                                            ['amount'],
+                                            [String(autoMultiplierMax)],
+                                        )),
+                                    }}
+                                />
                             )}
                             {paymentOnly && showYouGet && (
-                                <div className="octane-wired-trade-bubble-note">
-                                    {localizeWithFallback(
-                                        'inventory.wired_trading.requirements.receive_text_disclaimer',
-                                        'Disclaimer: the creator can write any text in the "you receive" box.',
-                                        ['you_get_name'],
-                                        [localizeWithFallback('inventory.wired_trading.requirements.receiving', 'You receive')],
-                                    ).replace(/<[^>]+>/g, '')}
-                                </div>
+                                <div
+                                    className="octane-wired-trade-bubble-note"
+                                    dangerouslySetInnerHTML={{
+                                        __html: SanitizeHtml(localizeWithFallback(
+                                            'inventory.wired_trading.requirements.receive_text_disclaimer',
+                                            'Disclaimer: the creator can write any text in the "you receive" box.',
+                                            ['you_get_name'],
+                                            [localizeWithFallback('inventory.wired_trading.requirements.receiving', 'You receive')],
+                                        )),
+                                    }}
+                                />
                             )}
                         </div>
                     )}

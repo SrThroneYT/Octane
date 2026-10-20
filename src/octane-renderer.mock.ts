@@ -372,6 +372,7 @@ export const WIRED_TRADE_RULES_MULTIPLIER = 1;
 export const WIRED_TRADE_RULES_AUTO = 2;
 export const WIRED_TRADE_NODE_COINS = 0;
 export const WIRED_TRADE_NODE_FURNI = 1;
+export const WIRED_TRANSACTION_SUCCESS_REWARD = 2;
 export class WiredTransactionSuccessEvent extends MessageEvent {}
 export class FurnitureFloorRemoveEvent extends MessageEvent {}
 export class FurnitureWallRemoveEvent extends MessageEvent {}

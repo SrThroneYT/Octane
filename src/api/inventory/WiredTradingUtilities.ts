@@ -83,6 +83,13 @@ export const canOfferToWiredTrade = (
 export const wiredTradePaymentLayout = (layoutType: string): 'generic' | 'games' => (layoutType === 'games' ? 'games' : 'generic');
 
 /**
+ * AIR WiredTradingModel.secondsLeft at the start of a trade: the server's timeout, or -1 for a trade without one (an
+ * Initiate Transaction with the timeout off sends 0), which keeps the time left hidden instead of showing 0:00.
+ */
+export const wiredTradeInitialSecondsLeft = (timeoutSeconds: number): number =>
+    (Number.isFinite(timeoutSeconds) && timeoutSeconds > 0) ? Math.trunc(timeoutSeconds) : -1;
+
+/**
  * AIR WiredTradingView.updateSecondsLeftUI: the time left shows only under two minutes, as minutes and two-digit
  * seconds; null hides it.
  */
