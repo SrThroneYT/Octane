@@ -123,7 +123,7 @@ describe('custom contract (AIR addon 20)', () => {
         baseProps.save();
 
         expect(setIntParams).toHaveBeenCalledWith([1, 1, 0, 3, -10, 1, 0, 1, 1, -20]);
-        expect(setVariableIds).toHaveBeenCalledWith(['', '10']);
+        expect(setVariableIds).toHaveBeenCalledWith(['n', 'ctx:10']);
         expect(setFurniIds2).toHaveBeenCalledWith([21, 22]);
     });
 

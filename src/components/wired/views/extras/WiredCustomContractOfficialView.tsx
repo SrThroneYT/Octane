@@ -20,6 +20,7 @@ import { WiredFurniSelectionSourceRow } from '../WiredFurniSelectionSourceRow';
 import { FURNI_SOURCES, sortWiredSourceOptions, WiredSourceOption } from '../WiredSourcesSelector';
 import { getCustomVariableItemId } from '../WiredVariablePickerData';
 import { variableTokenFromId, WIRED_FIXED_HOLDER_SOURCE, WiredValueOrVariableField } from '../WiredValueOrVariableField';
+import { toWiredVariableIdOnTarget, wiredVariableIdList } from '../WiredVariableIds';
 import { WiredExtraBaseView } from './WiredExtraBaseView';
 
 const SOURCE_SELECTED = 100;
@@ -228,7 +229,11 @@ export const WiredCustomContractOfficialView: FC<{}> = () => {
 
         setIntParams([...writeCustomContractElement(payment, paymentVariable), ...writeCustomContractElement(reward, rewardVariable)]);
         setStringParam('');
-        setVariableIds(paymentVariable > 0 || rewardVariable > 0 ? [paymentVariable > 0 ? String(paymentVariable) : '', rewardVariable > 0 ? String(rewardVariable) : ''] : []);
+        // The variable list's ids (room:12 / ctx:12), as AIR sends them.
+        setVariableIds(wiredVariableIdList(
+            paymentVariable > 0 ? toWiredVariableIdOnTarget(payment.target, payment.token) : '',
+            rewardVariable > 0 ? toWiredVariableIdOnTarget(reward.target, reward.token) : ''
+        ));
         setSourceTypes({ furni: [paymentSource, rewardSource], users: [] });
         setFurniIds2(rewardSource === SOURCE_SECONDARY_SELECTED ? nextRewardIds.filter((id) => id > 0) : []);
     };

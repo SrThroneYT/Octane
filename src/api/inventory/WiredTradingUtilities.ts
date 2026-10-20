@@ -1,3 +1,5 @@
+import tradingErrorIcon from '../../assets/images/notifications/wired/chests_icon_trading_error.png';
+
 /**
  * The rules of AIR's wired trade panel (inventory/wired_trading: WiredTradingModel, WiredTradingView,
  * WiredTradeRequirementsModel), kept apart from the view so they can be tested without a room.
@@ -129,3 +131,19 @@ export const groupWiredTradeItems = <T extends { itemId: number; isWallItem: boo
 
     return [...slots.values()];
 };
+
+/** AIR's icon on a refused trade action (the notifications asset `chests_icon_trading_error`). */
+export const WIRED_TRADE_ERROR_ICON: string = tradingErrorIcon;
+
+/** Trade error 4: the table already meets every requirement. */
+export const WIRED_TRADE_ERROR_ALREADY_MET = 4;
+
+/** Trade error 5: the item would put more on the table than the requirements ask (a coin past the price, a furni not asked). */
+export const WIRED_TRADE_ERROR_EXCEEDS_REQUIREMENTS = 5;
+
+/**
+ * AIR notifications onWiredTradeError: `wired_transactions.notification.trade_error` with %error% the text of the
+ * error id (`.trade_error.<id>`), shown as an info bubble with {@link WIRED_TRADE_ERROR_ICON}.
+ */
+export const wiredTradeErrorMessage = (errorId: number, localize: (key: string, parameters?: string[], replacements?: string[]) => string): string =>
+    localize('wired_transactions.notification.trade_error', ['error'], [localize(`wired_transactions.notification.trade_error.${ errorId }`)]);

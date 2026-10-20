@@ -9,6 +9,7 @@ import { WiredFurniSelectionSourceRow } from '../WiredFurniSelectionSourceRow';
 import { FURNI_SOURCES, sortWiredSourceOptions, WiredSourceOption, WiredSourcesSelector } from '../WiredSourcesSelector';
 import { getCustomVariableItemId } from '../WiredVariablePickerData';
 import { variableTokenFromId, WIRED_FIXED_HOLDER_SOURCE, WiredValueOrVariableField } from '../WiredValueOrVariableField';
+import { toWiredVariableIdOnTarget } from '../WiredVariableIds';
 import { WiredActionBaseView } from './WiredActionBaseView';
 
 export const TRANSACTION_MODE_NORMAL = 0;
@@ -180,7 +181,8 @@ export const WiredActionInitTransactionView: FC<{}> = () => {
 
         setIntParams([mode, value, variableId > 0 ? 1 : 0, target, timeoutEnabled ? 1 : 0, clampTimeout(parseInt(timeoutSeconds, 10))]);
         setStringParam('');
-        setVariableIds(variableId > 0 ? [String(variableId)] : []);
+        // The variable list's id (room:12 / ctx:12), as AIR sends it.
+        setVariableIds(variableId > 0 ? [toWiredVariableIdOnTarget(target, token)] : []);
         setSourceTypes({ furni: [chestSource, contractSource, REFERENCE_SOURCE], users: [userSource, REFERENCE_SOURCE] });
         setFurniIds2(contractSource === SOURCE_SECONDARY_SELECTED ? nextContractIds.filter((id) => id > 0) : []);
     };

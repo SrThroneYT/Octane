@@ -7,7 +7,11 @@ import {
     WIRED_TRADE_ANY,
     WIRED_TRADE_ANY_COINS,
     WIRED_TRADE_ANY_FURNI,
+    WIRED_TRADE_ERROR_ALREADY_MET,
+    WIRED_TRADE_ERROR_EXCEEDS_REQUIREMENTS,
+    WIRED_TRADE_ERROR_ICON,
     WIRED_TRADE_RULES,
+    wiredTradeErrorMessage,
     wiredTradeInitialSecondsLeft,
     wiredTradePaymentLayout,
     wiredTradeTimeLeft,
@@ -91,5 +95,29 @@ describe('wired trade: the panel', () => {
         ]);
 
         expect(slots.map((slot) => slot.items.map((item) => item.itemId))).toEqual([[1, 2], [3], [4], [5], [6]]);
+    });
+});
+
+describe('wired trade: refused offers (AIR onWiredTradeError)', () => {
+    const texts: Record<string, string> = {
+        'wired_transactions.notification.trade_error': 'Wired ruil error: %error%',
+        'wired_transactions.notification.trade_error.4': 'Je hebt al voldaan aan de ruil vereisten',
+        'wired_transactions.notification.trade_error.5': 'Overschrijdt de aanbiedings vereisten'
+    };
+    const localize = (key: string, parameters: string[] = [], replacements: string[] = []) =>
+        (parameters ?? []).reduce((text, parameter, index) => text.replace(`%${ parameter }%`, replacements[index]), texts[key] ?? key);
+
+    it('error 5 reads "exceeds the offering requirements" inside the trade error text', () => {
+        expect(WIRED_TRADE_ERROR_EXCEEDS_REQUIREMENTS).toBe(5);
+        expect(wiredTradeErrorMessage(5, localize)).toBe('Wired ruil error: Overschrijdt de aanbiedings vereisten');
+    });
+
+    it('error 4 reads "already met"', () => {
+        expect(WIRED_TRADE_ERROR_ALREADY_MET).toBe(4);
+        expect(wiredTradeErrorMessage(4, localize)).toBe('Wired ruil error: Je hebt al voldaan aan de ruil vereisten');
+    });
+
+    it('the bubble carries AIR\'s trading error icon', () => {
+        expect(WIRED_TRADE_ERROR_ICON).toContain('chests_icon_trading_error');
     });
 });

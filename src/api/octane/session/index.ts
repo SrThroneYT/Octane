@@ -17,6 +17,7 @@ export * from './HasHabboVip';
 export * from './HasSessionPermission';
 export * from './IsOwnerOfFloorFurniture';
 export * from './IsOwnerOfFurniture';
+export * from './IsPlayTestRestricted';
 export * from './IsRidingHorse';
 export * from './StartRoomSession';
 export * from './VisitDesktop';

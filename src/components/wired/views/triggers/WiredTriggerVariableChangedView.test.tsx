@@ -110,7 +110,8 @@ describe('WiredTriggerVariableChangedView origin filter', () => {
         openSections();
 
         fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-        expect(setIntParams.mock.calls[0][0]).toHaveLength(7);
+        // AIR's six ints: the target is the variable id's.
+        expect(setIntParams.mock.calls[0][0]).toHaveLength(6);
         expect(setIntParams.mock.calls[0][0][4]).toBe(-1);
 
         fireEvent.click(screen.getByRole('checkbox', { name: 'External' }));
@@ -169,7 +170,7 @@ describe('WiredTriggerVariableChangedView trigger mode', () => {
         render(<WiredTriggerVariableChangedView />);
         fireEvent.click(screen.getByRole('button', { name: 'Save' }));
 
-        expect(setIntParams.mock.calls[0][0][6]).toBe(0);
+        expect(setIntParams.mock.calls[0][0]).toHaveLength(6);
         expect(setVariableIds).toHaveBeenLastCalledWith(['furni:9']);
     });
 

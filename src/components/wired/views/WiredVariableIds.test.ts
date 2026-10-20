@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fromWiredVariableId, readWiredVariableToken, toWiredVariableId, WIRED_VARIABLE_ID_NONE, wiredVariableIdList, wiredVariableIdTarget } from './WiredVariableIds';
+import { fromWiredVariableId, readWiredVariableToken, toWiredVariableId, toWiredVariableIdOnTarget, WIRED_VARIABLE_ID_NONE, wiredVariableIdList, wiredVariableIdTarget } from './WiredVariableIds';
 
 describe('WiredVariableIds', () => {
     it('sends a box variable under the id the variable list gives it', () => {
@@ -52,5 +52,15 @@ describe('WiredVariableIds', () => {
         expect(wiredVariableIdList('user:1', '')).toEqual(['user:1']);
         expect(wiredVariableIdList('', 'room:2')).toEqual(['n', 'room:2']);
         expect(wiredVariableIdList('', '')).toEqual([]);
+    });
+    it('names the new built-ins by Habbo id and a box on an official target by its list id', () => {
+        expect(toWiredVariableId('furni', 'internal:~clock.pulse_count')).toBe('~121');
+        expect(toWiredVariableId('user', 'internal:@habbicon')).toBe('-245');
+        expect(toWiredVariableId('user', 'internal:~plant.can_harvest')).toBe('~611');
+        expect(toWiredVariableId('context', 'internal:@event.transaction_complete.multiplier')).toBe('-470');
+        expect(wiredVariableIdTarget('-284')).toBe('user');
+        expect(toWiredVariableIdOnTarget(-10, 'custom:12')).toBe('room:12');
+        expect(toWiredVariableIdOnTarget(-20, 'custom:12')).toBe('ctx:12');
+        expect(toWiredVariableIdOnTarget(1, 'custom:12')).toBe('user:12');
     });
 });

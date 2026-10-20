@@ -14,7 +14,7 @@ import {
     wiredContractCandidates,
     wiredContractItemKey
 } from '../../../../api/wired/WiredContract';
-import { LayoutFurniImageView } from '../../../../common';
+import { LayoutFurniIconImageView } from '../../../../common';
 import { ContractFooter, ContractFrame, ContractSection, ContractSkin, ContractText } from './WiredContractEditorView';
 import { BaseButton } from '../../../../common/BaseButton';
 import { NumberInput } from '../../../../common/NumberInput';
@@ -85,7 +85,7 @@ export const WiredContractElementEditorView: FC<WiredContractElementEditorViewPr
                     </ContractSection>
                 </div>
                 <ContractSection title={ LocalizeText('wiredcontracts.element.itemtype.selection') } disabled={ type !== WIRED_CONTRACT_FURNI }
-                    headerOption={ selected && <span className="wired-contract__selected-icon"><LayoutFurniImageView productType={ selected.isWallItem ? FurnitureType.WALL : FurnitureType.FLOOR } productClassId={ selected.typeId } extraData={ selected.legacyPosterId } direction={ 2 } /></span> }>
+                    headerOption={ selected && <span className="wired-contract__selected-icon"><LayoutFurniIconImageView productType={ selected.isWallItem ? FurnitureType.WALL : FurnitureType.FLOOR } productClassId={ selected.typeId } extraData={ selected.legacyPosterId } /></span> }>
                     <label className="wired-contract__named">
                         <ContractText text={ LocalizeText('wiredcontracts.element.itemtype.furni_code') } />
                         <input className="wired-contract__input wired-contract__named-input" type="text" readOnly aria-label={ LocalizeText('wiredcontracts.element.itemtype.furni_code') } placeholder={ LocalizeText('wiredcontracts.element.itemtype.furni_code.placeholder') } value={ selectedCandidate?.code ?? '' } />
