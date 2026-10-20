@@ -3,8 +3,11 @@
  * format, the editor's rules and the panel's cell formatting, mirrored from the AIR client so a box
  * saved here reads back the same in AIR and on the server.
  *
- * On the wire our save packet has no variable-id list, so the 12 variable ids ride after the 17
- * text fields of the string param (29 TAB fields); "" is a box nobody configured yet.
+ * The definition and the save carry the 17 text fields as the string param ("" for a box nobody
+ * configured yet) and the 12 variable ids as the packet's variable ids, under the variable list's ids
+ * like every other box: `user:<box id>` for the filter and the display names, `room:<box id>` for the
+ * compared global, "0" for an empty slot. Older servers sent bare box ids, and the ids after the text
+ * fields (29 TAB fields); both still read, as the same variables.
  */
 export const WIRED_LEADERBOARD_CODE = 1005;
 
@@ -106,6 +109,28 @@ export const defaultLeaderboardConfig = (tileX: number, tileY: number): ILeaderb
 
 const canonicalId = (id: string): string => ((!id || id === 'n') ? LEADERBOARD_NULL_VARIABLE_ID : id);
 
+const BOX_VARIABLE_ID = /^(custom:|user:|furni:|room:|ctx:)?(\d{1,10})$/;
+
+/** A box id, bare or as a token, takes the slot's prefix; an id of another target or a built-in stays as it is. */
+const listVariableId = (prefix: 'user:' | 'room:', id: string): string =>
+{
+    const text = canonicalId((id ?? '').trim());
+    const match = BOX_VARIABLE_ID.exec(text);
+
+    if(text === LEADERBOARD_NULL_VARIABLE_ID || !match) return text;
+    if(match[1] && match[1] !== 'custom:' && match[1] !== prefix) return text;
+
+    const itemId = parseInt(match[2], 10);
+
+    return (itemId > 0) ? `${ prefix }${ itemId }` : LEADERBOARD_NULL_VARIABLE_ID;
+};
+
+/** The variable list's id of a user variable (filter, display names) from any form a server sent: `12` -> `user:12`. */
+export const leaderboardUserVariableId = (id: string): string => listVariableId('user:', id);
+
+/** The variable list's id of the compared global variable: `5` -> `room:5`. */
+export const leaderboardGlobalVariableId = (id: string): string => listVariableId('room:', id);
+
 /**
  * Reads a box from the editor packet; the defaults when it was never configured or does not read.
  * The official definition carries the string fields alone and the variable ids as its own list.
@@ -118,12 +143,15 @@ export const decodeLeaderboardConfig = (intParams: number[], stringParam: string
 
     let fields = stringParam.split(SEPARATOR);
 
-    if(fields.length === STRING_FIELD_COUNT && variableIds?.length === VARIABLE_ID_COUNT) fields = [ ...fields, ...variableIds ];
+    if(fields.length === STRING_FIELD_COUNT && variableIds && variableIds.length <= VARIABLE_ID_COUNT)
+    {
+        fields = [ ...fields, ...Array.from({ length: VARIABLE_ID_COUNT }, (_, index) => canonicalId(variableIds[index])) ];
+    }
 
     if(fields.length !== (STRING_FIELD_COUNT + VARIABLE_ID_COUNT) || !intParams || intParams.length < 14) return fallback;
 
     const strings = fields.slice(0, STRING_FIELD_COUNT);
-    const ids = fields.slice(STRING_FIELD_COUNT).map(canonicalId);
+    const ids = fields.slice(STRING_FIELD_COUNT).map((id, index) => ((index === 1) ? leaderboardGlobalVariableId(id) : leaderboardUserVariableId(id)));
     const columnCount = Math.max(1, Math.min(LEADERBOARD_MAX_COLUMNS, intParams[1]));
     const columns: ILeaderboardColumn[] = [];
 
@@ -167,10 +195,11 @@ export const decodeLeaderboardConfig = (intParams: number[], stringParam: string
 };
 
 /**
- * The editor packet for a config, in the canonical form the codec stores: fields a disabled option
- * does not use are cleared, overrides are sorted by plain string order.
+ * The save packet for a config, in the canonical form the codec stores: fields a disabled option
+ * does not use are cleared, overrides are sorted by plain string order, and the 12 variable ids go
+ * out as the list's ids apart from the text fields, as AIR sends them.
  */
-export const encodeLeaderboardConfig = (config: ILeaderboardConfig): { intParams: number[], stringParam: string } =>
+export const encodeLeaderboardConfig = (config: ILeaderboardConfig): { intParams: number[], stringParam: string, variableIds: string[] } =>
 {
     const ints = new Array<number>(INT_PARAM_COUNT).fill(0);
     const ids = new Array<string>(VARIABLE_ID_COUNT).fill(LEADERBOARD_NULL_VARIABLE_ID);
@@ -178,7 +207,11 @@ export const encodeLeaderboardConfig = (config: ILeaderboardConfig): { intParams
     const filter = config.filterEnabled;
     const compare = filter && config.compareEnabled;
     const operandKind = compare ? config.operandKind : OPERAND_LITERAL;
-    const overrideIds = Object.keys(config.displayOverrides).sort((a, b) => (a < b ? -1 : (a > b ? 1 : 0))).slice(0, LEADERBOARD_MAX_CHOICES);
+    const overrides: Record<string, string> = {};
+
+    for(const [ id, name ] of Object.entries(config.displayOverrides)) overrides[leaderboardUserVariableId(id)] = name;
+
+    const overrideIds = Object.keys(overrides).filter((id) => id !== LEADERBOARD_NULL_VARIABLE_ID).sort((a, b) => (a < b ? -1 : (a > b ? 1 : 0))).slice(0, LEADERBOARD_MAX_CHOICES);
 
     ints[0] = config.sortMode;
     ints[1] = config.columns.length;
@@ -202,19 +235,19 @@ export const encodeLeaderboardConfig = (config: ILeaderboardConfig): { intParams
     ints[13] = config.altitude;
     ints[18] = config.pageSizeOption;
 
-    ids[0] = filter ? canonicalId(config.filterVariableId) : LEADERBOARD_NULL_VARIABLE_ID;
-    ids[1] = (compare && operandKind === OPERAND_GLOBAL_VARIABLE) ? canonicalId(config.operandVariableId) : LEADERBOARD_NULL_VARIABLE_ID;
+    ids[0] = filter ? leaderboardUserVariableId(config.filterVariableId) : LEADERBOARD_NULL_VARIABLE_ID;
+    ids[1] = (compare && operandKind === OPERAND_GLOBAL_VARIABLE) ? leaderboardGlobalVariableId(config.operandVariableId) : LEADERBOARD_NULL_VARIABLE_ID;
     overrideIds.forEach((id, index) =>
     {
         ids[2 + index] = id;
-        strings[7 + index] = config.displayOverrides[id];
+        strings[7 + index] = overrides[id];
     });
 
     strings[0] = config.title;
     strings[1] = config.description;
     strings[6] = (compare && operandKind === OPERAND_LITERAL) ? config.comparisonLiteral.trim() : '';
 
-    return { intParams: ints, stringParam: [ ...strings, ...ids ].join(SEPARATOR) };
+    return { intParams: ints, stringParam: strings.join(SEPARATOR), variableIds: ids };
 };
 
 /** A signed 64-bit decimal without leading zeros or "-0". */

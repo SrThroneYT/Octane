@@ -106,6 +106,8 @@ export interface BuilderPlacementStatusInput {
     builderPlacementAllowedInCurrentRoom: boolean;
     builderPlacementBlockedByVisitors: boolean;
     visitorCount?: number;
+    /** Playtest refuses Builders Club placement (the hotel's own rule beyond AIR), as the server does. */
+    playTestRestricted?: boolean;
 }
 
 export const resolveBuilderFurniPlaceableStatus = (input: BuilderPlacementStatusInput): BuilderFurniPlaceableStatus => {
@@ -117,12 +119,15 @@ export const resolveBuilderFurniPlaceableStatus = (input: BuilderPlacementStatus
         furniLimit,
         builderPlacementAllowedInCurrentRoom,
         builderPlacementBlockedByVisitors,
-        visitorCount = 0
+        visitorCount = 0,
+        playTestRestricted = false
     } = input;
 
     if (!offer) return BuilderFurniPlaceableStatus.MISSING_OFFER;
 
     if (!roomSession) return BuilderFurniPlaceableStatus.NOT_IN_ROOM;
+
+    if (playTestRestricted) return BuilderFurniPlaceableStatus.NOT_ROOM_OWNER;
 
     const canUseGuildAdminFallback = roomSession.isGuildRoom && roomSession.controllerLevel >= RoomControllerLevel.GUILD_ADMIN && secondsLeft > 0;
 

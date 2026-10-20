@@ -315,6 +315,7 @@ export class HabbiconAssetManager {
 // Mentions system — incoming events extend MessageEvent (they expose
 // getParser()); the request/mark composers are symbol-only constructors.
 export class MentionReceivedEvent extends MessageEvent {}
+export class FurnitureStackHeightEvent extends MessageEvent {}
 export class MentionsListEvent extends MessageEvent {}
 export class MentionsPageEvent extends MessageEvent {}
 
@@ -408,6 +409,35 @@ export const RoomEnterEffect = {
     totalRunningTime: 0
 };
 
+export class RoomEngineTriggerWidgetEvent extends StubClass {
+    static readonly REQUEST_STACK_HEIGHT = 'RETWE_REQUEST_STACK_HEIGHT';
+    static readonly REQUEST_DIMMER = 'RETWE_REQUEST_DIMMER';
+    static readonly REQUEST_BACKGROUND_COLOR = 'RETWE_REQUEST_BACKGROUND_COLOR';
+    static readonly REQUEST_AREA_HIDE = 'RETWE_REQUEST_AREA_HIDE';
+}
+
+export class RoomEngineAreaHideStateEvent extends StubClass {
+    static readonly UPDATE_STATE_AREA_HIDE = 'RETWE_UPDATE_STATE_AREA_HIDE';
+}
+
+export class RoomAreaSelectionManager extends StubClass {
+    static readonly HIGHLIGHT_DARKEN = 'highlight_darken';
+}
+
+// Composers that keep their constructor arguments, so a test can read what was sent.
+export class SetObjectDataMessageComposer {
+    constructor(
+        public readonly objectId: number,
+        public readonly data: Map<string, string>
+    ) {}
+}
+export class FurnitureMultiStateComposer {
+    constructor(
+        public readonly itemId: number,
+        public readonly state: number = 0
+    ) {}
+}
+
 export class RoomEngineObjectEvent extends StubClass {
     static readonly MOUSE_ENTER = 'REOE_MOUSE_ENTER';
     static readonly MOUSE_LEAVE = 'REOE_MOUSE_LEAVE';
@@ -500,6 +530,7 @@ export class JoinQueueMessageComposer extends StubClass {}
 export class PurchaseSnowWarGameTokensOfferComposer extends StubClass {}
 export class Game2GetAccountGameStatusMessageComposer extends StubClass {}
 export class AddFavouriteRoomMessageComposer extends StubClass {}
+export class FurnitureStackHeightComposer extends StubClass {}
 export class AvatarEffectActivatedComposer extends StubClass {}
 export class AvatarEffectSelectedComposer extends StubClass {}
 export class DeleteFavouriteRoomMessageComposer extends StubClass {}

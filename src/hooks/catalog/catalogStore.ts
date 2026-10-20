@@ -7,6 +7,7 @@ import {
     ICatalogPage,
     IPurchasableOffer,
     IPurchaseOptions,
+    IsPlayTestRestricted,
     Offer,
     PlacedObjectPurchaseData,
     ProductTypeEnum,
@@ -456,7 +457,8 @@ export const useCatalogStore = createOctaneStore<CatalogStoreState>((set, get) =
             furniLimit,
             builderPlacementAllowedInCurrentRoom,
             builderPlacementBlockedByVisitors,
-            visitorCount
+            visitorCount,
+            playTestRestricted: IsPlayTestRestricted(roomSession)
         });
     },
 
@@ -470,6 +472,7 @@ export const useCatalogStore = createOctaneStore<CatalogStoreState>((set, get) =
                 offer.page &&
                 offer.page.layoutCode !== 'sold_ltd_items' &&
                 currentType === CatalogType.NORMAL &&
+                !IsPlayTestRestricted(roomSession) &&
                 (roomSession.isRoomOwner || (roomSession.isGuildRoom && roomSession.controllerLevel >= RoomControllerLevel.GUILD_MEMBER))) ||
                 (currentType === CatalogType.BUILDER && get().getBuilderFurniPlaceableStatus(offer) === BuilderFurniPlaceableStatus.OKAY)) &&
             offer.pricingModel !== Offer.PRICING_MODEL_BUNDLE &&

@@ -13,11 +13,10 @@ import {
 import { useCallback, useMemo, useState } from 'react';
 import { registerSharedHook, useSharedHook } from '@/state/useSharedHook';
 import { getRewardTrackResultText, localizeWithFallback, NotificationAlertType, NotificationBubbleType, SendMessageComposer } from '../../api';
+import FREE_CLAIM_ICON from '../../assets/images/reward-track/free-track.png';
+import PREMIUM_CLAIM_ICON from '../../assets/images/reward-track/premium-track.png';
 import { useMessageEvent } from '../events';
 import { useNotification } from '../notification';
-
-const FREE_CLAIM_ICON = 'reward_track_free_track';
-const PREMIUM_CLAIM_ICON = 'reward_track_premium_track';
 
 /** RewardTrackController: the active tracks, claims, progress and the premium purchase. */
 const useRewardTracksState = () => {
