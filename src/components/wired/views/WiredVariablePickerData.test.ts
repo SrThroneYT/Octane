@@ -188,4 +188,27 @@ describe('Wired variable picker: AIR internal and smart variables', () => {
     it('offers the link source room and the transaction failure reason in the context', () => {
         expect(labels('context', 'change-reference')).toEqual(expect.arrayContaining(['@event.link.source_room_id', '@event.transaction_failed.reason']));
     });
+
+    it('lists the clock parts on furni, only the pulse count writable', () => {
+        expect(labels('furni', 'change-reference')).toEqual(expect.arrayContaining(['~clock.state', '~clock.pulse_count', '~clock.is_game_aware']));
+        expect(labels('furni', 'change-destination')).toContain('~clock.pulse_count');
+        expect(labels('furni', 'change-destination')).not.toContain('~clock.state');
+    });
+
+    it('lists the plant shape, colour and harvest flag read-only', () => {
+        expect(labels('user', 'change-reference')).toEqual(expect.arrayContaining(['~plant.shape', '~plant.color', '~plant.can_harvest']));
+        expect(labels('user', 'change-destination')).not.toContain('~plant.shape');
+    });
+
+    it('offers the habbicon to write and the transaction parts to read', () => {
+        expect(labels('user', 'change-destination')).toContain('@habbicon');
+        expect(labels('user', 'change-reference')).toEqual(expect.arrayContaining(['@transaction.in_trade', '@transaction.state', '@transaction.current_multiplier']));
+        expect(labels('user', 'change-destination')).not.toContain('@transaction.state');
+    });
+
+    it('offers the event habbicon and what a completed transaction moved in the context', () => {
+        expect(labels('context', 'change-reference')).toEqual(
+            expect.arrayContaining(['@event.habbicon', '@event.transaction_complete.multiplier', '@event.transaction_complete.withdrawal.coins_count'])
+        );
+    });
 });

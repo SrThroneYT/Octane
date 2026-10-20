@@ -11,7 +11,9 @@ const mocks = vi.hoisted(() => ({
     setFurniIds2: vi.fn(),
     setAllowsFurni: vi.fn(),
     field: null as null | Record<string, unknown>,
-    rows: [] as string[]
+    rows: [] as string[],
+    selector: null as null | Record<string, unknown>,
+    requiresFurni: [] as number[]
 }));
 
 let trigger: Record<string, unknown> | null = null;
@@ -48,7 +50,12 @@ vi.mock('../../../../common', () => ({
 
 vi.mock('../WiredSourcesSelector', () => ({
     FURNI_SOURCES: [{ value: 100, label: 'wiredfurni.params.sources.furni.100' }],
-    sortWiredSourceOptions: (options: unknown[]) => options
+    sortWiredSourceOptions: (options: unknown[]) => options,
+    WiredSourcesSelector: (props: Record<string, unknown>) => {
+        mocks.selector = props;
+
+        return <div data-testid="sources-selector">{String(props.furniTitle)}</div>;
+    }
 }));
 
 vi.mock('../WiredFurniSelectionSourceRow', () => ({
@@ -71,8 +78,8 @@ vi.mock('../WiredValueOrVariableField', () => ({
 }));
 
 vi.mock('./WiredConditionBaseView', () => ({
-    WiredConditionBaseView: ({ children, save, footer }: PropsWithChildren<{ save: () => void; footer?: ReactNode }>) => (
-        <div>
+    WiredConditionBaseView: ({ children, save, footer, requiresFurni }: PropsWithChildren<{ save: () => void; footer?: ReactNode; requiresFurni?: number }>) => (
+        <div data-requires-furni={(mocks.requiresFurni.push(requiresFurni ?? 0), requiresFurni)}>
             {children}
             {footer}
             <button type="button" onClick={save}>
@@ -93,6 +100,8 @@ describe('chest conditions (AIR ChestHasAmount)', () => {
         Object.values(mocks).forEach((value) => typeof value === 'function' && 'mockClear' in value && value.mockClear());
         mocks.rows = [];
         mocks.field = null;
+        mocks.selector = null;
+        mocks.requiresFurni = [];
     });
 
     afterEach(cleanup);
@@ -122,7 +131,7 @@ describe('chest conditions (AIR ChestHasAmount)', () => {
         expect(field().token).toBe('custom:12');
         save();
         expect(mocks.setIntParams).toHaveBeenLastCalledWith([3, 1, -20, 2]);
-        expect(mocks.setVariableIds).toHaveBeenLastCalledWith(['12']);
+        expect(mocks.setVariableIds).toHaveBeenLastCalledWith(['ctx:12']);
         expect(mocks.setStringParam).toHaveBeenLastCalledWith('');
 
         act(() => field().onTargetChange(0));
@@ -137,7 +146,37 @@ describe('chest conditions (AIR ChestHasAmount)', () => {
         expect(field().token).toBe('custom:7');
         expect(field().target).toBe(1);
         save();
-        expect(mocks.setVariableIds).toHaveBeenLastCalledWith(['7']);
+        expect(mocks.setVariableIds).toHaveBeenLastCalledWith(['user:7']);
+    });
+
+    it('chest has items: AIR\'s chests source slot, picks by default, saved as the official furni source', () => {
+        trigger = { intData: [5, 0, -10, 1], stringData: '', variableIds: [], selectedItems: [3] };
+        render(<WiredConditionChestHasItemsView />);
+
+        expect(screen.getByTestId('sources-selector')).toHaveTextContent('wiredfurni.params.sources.furni.title.chests');
+        expect(mocks.selector.showFurni).toBe(true);
+        // A box saved before the slot has no source: the picks.
+        expect(mocks.selector.furniSource).toBe(100);
+        expect(mocks.requiresFurni.at(-1)).toBe(1);
+        save();
+        expect(mocks.setSourceTypes).toHaveBeenLastCalledWith({ furni: [100], users: [] });
+        expect(mocks.setFurniIds).not.toHaveBeenCalled();
+
+        // A selector: no picking, and the picks are dropped on save.
+        act(() => (mocks.selector.onChangeFurni as (value: number) => void)(200));
+        expect(mocks.requiresFurni.at(-1)).toBe(0);
+        save();
+        expect(mocks.setSourceTypes).toHaveBeenLastCalledWith({ furni: [200], users: [] });
+        expect(mocks.setFurniIds).toHaveBeenLastCalledWith([]);
+    });
+
+    it('chest has items: a stored source reopens as saved', () => {
+        trigger = { intData: [5, 0, -10, 1], stringData: '', variableIds: [], furniSourceTypes: [0] };
+        render(<WiredConditionChestHasItemsView />);
+
+        expect(mocks.selector.furniSource).toBe(0);
+        save();
+        expect(mocks.setSourceTypes).toHaveBeenLastCalledWith({ furni: [0], users: [] });
     });
 
     it('chest has item types: the item types are the first picks, the chests the second, the same ints', () => {

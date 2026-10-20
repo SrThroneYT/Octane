@@ -8,7 +8,7 @@ import {
     RoomObjectPlacementSource,
     RoomObjectType
 } from '@octane/renderer';
-import { SendMessageComposer } from '../octane';
+import { IsPlayTestRestricted, SendMessageComposer } from '../octane';
 import { FurniCategory } from './FurniCategory';
 import { GroupItem } from './GroupItem';
 import { IBotItem } from './IBotItem';
@@ -41,7 +41,7 @@ export const attemptPetPlacement = (petItem: IPetItem, flag: boolean = false) =>
 
     const session = GetRoomSessionManager().getSession(1);
 
-    if (!session) return false;
+    if (!session || IsPlayTestRestricted(session)) return false;
 
     if (!session.isRoomOwner && !session.allowPets) return false;
 
@@ -72,6 +72,9 @@ export const attemptPetPlacement = (petItem: IPetItem, flag: boolean = false) =>
 
 export const attemptItemPlacement = (groupItem: GroupItem, flag: boolean = false) => {
     if (!groupItem || !groupItem.getUnlockedCount()) return false;
+
+    // Playtest: nothing is placed from the inventory (the hotel's own rule beyond AIR), as the server refuses it.
+    if (IsPlayTestRestricted(GetRoomSessionManager().getSession(-1))) return false;
 
     const item = groupItem.getLastItem();
 
@@ -128,7 +131,7 @@ export const attemptBotPlacement = (botItem: IBotItem, flag: boolean = false) =>
 
     const session = GetRoomSessionManager().getSession(1);
 
-    if (!session || !session.isRoomOwner) return false;
+    if (!session || !session.isRoomOwner || IsPlayTestRestricted(session)) return false;
 
     CreateLinkEvent('inventory/hide');
 

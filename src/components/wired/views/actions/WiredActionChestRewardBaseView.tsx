@@ -5,6 +5,7 @@ import { useWired } from '../../../../hooks';
 import { WiredSourcesSelector } from '../WiredSourcesSelector';
 import { getCustomVariableItemId } from '../WiredVariablePickerData';
 import { variableTokenFromId, WIRED_FIXED_HOLDER_SOURCE, WiredValueOrVariableField } from '../WiredValueOrVariableField';
+import { toWiredVariableIdOnTarget } from '../WiredVariableIds';
 import { WiredActionBaseView } from './WiredActionBaseView';
 import { Checkbox } from '../../../../common/Checkbox';
 import { Radio } from '../../../../common/Radio';
@@ -74,7 +75,8 @@ export const WiredActionChestRewardBaseView: FC<{ extra: ChestRewardExtra }> = (
 
         setIntParams([mode, Math.max(1, parseInt(amount, 10) || 1), isVariable ? 1 : 0, target, showByDefault ? 1 : 0, extraValue]);
         setStringParam(normalizeChestPopup(popupText));
-        setVariableIds(variableId > 0 ? [String(variableId)] : []);
+        // The variable list's id (room:12 / ctx:12), as AIR sends it.
+        setVariableIds(variableId > 0 ? [toWiredVariableIdOnTarget(target, token)] : []);
         setSourceTypes({ furni: [100], users: [userSource] });
     };
 

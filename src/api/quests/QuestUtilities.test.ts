@@ -103,8 +103,10 @@ describe('reward track', () => {
     });
 
     it('falls back to the blue theme', () => {
-        expect(resolveRewardTrackTheme('unknown').dark).toBe('#3577B9');
-        expect(resolveRewardTrackTheme('red').dark).toBe('#B84A4B');
+        expect(resolveRewardTrackTheme('unknown').dark).toBe('#3576B9');
+        // RewardTrackTheme.resolve(): red is 12077899 / 15846604 / 16309725 / 15186104.
+        expect(resolveRewardTrackTheme('red')).toEqual({ dark: '#B84B4B', medium: '#F1CCCC', light: '#F8DDDD', active: '#E7B8B8' });
+        expect(resolveRewardTrackTheme('cyan').dark).toBe('#1F9EB3');
     });
 
     it('filters tasks by the three tabs', () => {
@@ -153,7 +155,10 @@ describe('reward track', () => {
         expect(getRewardTrackTaskHintLink('enter_other_users_room')?.link).toBe('navigator/show');
         expect(getRewardTrackTaskHintLink('CHAT_WITH_SOMEONE')?.link).toBe('navigator/show');
         expect(getRewardTrackTaskHintLink('place_item')?.link).toBe('inventory/show');
+        expect(getRewardTrackTaskHintLink('wear_badge')?.link).toBe('inventory/show/badges');
         expect(getRewardTrackTaskHintLink('give_respect')).toBeNull();
+        // The official internal_link property wins over the action default.
+        expect(getRewardTrackTaskHintLink('give_respect', 'habbopages/respect')?.link).toBe('habbopages/respect');
         expect(getRewardTrackTaskHintLink('')).toBeNull();
     });
 

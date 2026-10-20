@@ -225,6 +225,10 @@ export const VARIABLE_DEFINITIONS: Record<VariablesElementType, VariableDefiniti
         createVariableDefinition('~chest.capacity', 'Furni', 'Conditional'),
         createVariableDefinition('~chest.is_open', 'Furni', 'Conditional'),
         createVariableDefinition('~chest.is_donatable', 'Furni', 'Conditional'),
+        // Counters and game timers: 0 initial, 1 running, 2 paused; the time shown in pulses (half seconds).
+        createVariableDefinition('~clock.state', 'Furni', 'Conditional'),
+        createVariableDefinition('~clock.pulse_count', 'Furni', 'Conditional', true),
+        createVariableDefinition('~clock.is_game_aware', 'Furni', 'Conditional'),
         createVariableDefinition('@id', 'Furni'),
         createVariableDefinition('@class_id', 'Furni'),
         createVariableDefinition('@height', 'Furni'),
@@ -289,6 +293,15 @@ export const VARIABLE_DEFINITIONS: Record<VariablesElementType, VariableDefiniti
         createVariableDefinition('@bot_id', 'User', 'Conditional'),
         createVariableDefinition('@pet_id', 'User', 'Conditional'),
         createVariableDefinition('@pet_owner_id', 'User', 'Conditional'),
+        // The habbicon shown over the head, while its bubble shows.
+        { ...createVariableDefinition('@habbicon', 'User', 'Conditional', true), canCreateDelete: true, canIntercept: true },
+        // While a wired transaction window is open for the user.
+        createVariableDefinition('@transaction.in_trade', 'User', 'Conditional'),
+        createVariableDefinition('@transaction.start_time', 'User', 'Conditional'),
+        createVariableDefinition('@transaction.contract_id', 'User', 'Conditional'),
+        createVariableDefinition('@transaction.state', 'User', 'Conditional'),
+        createVariableDefinition('@transaction.can_accept', 'User', 'Conditional'),
+        createVariableDefinition('@transaction.current_multiplier', 'User', 'Conditional'),
         createVariableDefinition('~pet.level', 'User', 'Conditional'),
         createVariableDefinition('~pet.experience', 'User', 'Conditional'),
         createVariableDefinition('~pet.energy', 'User', 'Conditional'),
@@ -304,7 +317,10 @@ export const VARIABLE_DEFINITIONS: Record<VariablesElementType, VariableDefiniti
         createVariableDefinition('~horse.is_riding', 'User', 'Conditional'),
         createVariableDefinition('~horse.controller_user_id', 'User', 'Conditional'),
         createVariableDefinition('~plant.rarity_level', 'User', 'Conditional'),
+        createVariableDefinition('~plant.shape', 'User', 'Conditional'),
+        createVariableDefinition('~plant.color', 'User', 'Conditional'),
         createVariableDefinition('~plant.can_breed', 'User', 'Conditional'),
+        createVariableDefinition('~plant.can_harvest', 'User', 'Conditional'),
         createVariableDefinition('~plant.can_revive', 'User', 'Conditional'),
         createVariableDefinition('~plant.is_dead', 'User', 'Conditional'),
         createVariableDefinition('~plant.is_growing', 'User', 'Conditional'),
@@ -349,7 +365,13 @@ export const VARIABLE_DEFINITIONS: Record<VariablesElementType, VariableDefiniti
         createVariableDefinition('@chat_type', 'Context', 'Conditional'),
         createVariableDefinition('@chat_style', 'Context', 'Conditional'),
         createVariableDefinition('@event.link.source_room_id', 'Context', 'Conditional'),
-        createVariableDefinition('@event.transaction_failed.reason', 'Context', 'Conditional')
+        createVariableDefinition('@event.transaction_failed.reason', 'Context', 'Conditional'),
+        createVariableDefinition('@event.habbicon', 'Context', 'Conditional'),
+        createVariableDefinition('@event.transaction_complete.multiplier', 'Context', 'Conditional'),
+        createVariableDefinition('@event.transaction_complete.deposit.furni_count', 'Context', 'Conditional'),
+        createVariableDefinition('@event.transaction_complete.deposit.coins_count', 'Context', 'Conditional'),
+        createVariableDefinition('@event.transaction_complete.withdrawal.furni_count', 'Context', 'Conditional'),
+        createVariableDefinition('@event.transaction_complete.withdrawal.coins_count', 'Context', 'Conditional')
     ]
 };
 

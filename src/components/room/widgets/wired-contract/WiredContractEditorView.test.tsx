@@ -10,7 +10,7 @@ vi.mock('../../../../common', () => ({
     OctaneCardView: ({ children, style }: PropsWithChildren<{ style?: object }>) => <div style={ style }>{ children }</div>,
     OctaneCardContentView: ({ children }: PropsWithChildren) => <div>{ children }</div>,
     OctaneCardHeaderView: ({ headerText }: { headerText: string }) => <h1>{ headerText }</h1>,
-    LayoutFurniImageView: () => <span>furni image</span>
+    LayoutFurniIconImageView: () => <span>furni image</span>
 }));
 vi.mock('../../../../common/native-text/NativeText', () => ({ NativeText: ({ text }: { text: string }) => <span>{ text }</span> }));
 vi.mock('../../../mod-tools/native/NativeSkin', () => ({ parseNativeSkin: () => ({}) }));
