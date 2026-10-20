@@ -431,6 +431,9 @@ export class SetObjectDataMessageComposer {
         public readonly data: Map<string, string>
     ) {}
 }
+export class GetSecondsUntilMessageComposer {
+    constructor(public readonly timingCode: string) {}
+}
 export class FurnitureMultiStateComposer {
     constructor(
         public readonly itemId: number,
@@ -958,6 +961,7 @@ export class RewardTracksMessageEvent extends MessageEvent {}
 export class RewardTrackClaimResultMessageEvent extends MessageEvent {}
 export class RewardTrackProgressMessageEvent extends MessageEvent {}
 export class RewardTrackPremiumPurchaseResultMessageEvent extends MessageEvent {}
+export class SecondsUntilMessageEvent extends MessageEvent {}
 export class QuestMessageData extends StubClass {}
 export class DailyTaskData extends StubClass {
     public static STATUS_IN_PROGRESS = 0;
