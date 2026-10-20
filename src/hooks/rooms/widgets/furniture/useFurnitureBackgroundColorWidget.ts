@@ -1,6 +1,12 @@
 import { ApplyTonerComposer, GetRoomEngine, RoomEngineTriggerWidgetEvent, RoomObjectVariable } from '@octane/renderer';
 import { useEffect, useState } from 'react';
-import { CanManipulateFurniture, DispatchUiEvent, RoomWidgetUpdateBackgroundColorPreviewEvent, SendMessageComposer } from '../../../../api';
+import {
+    CanManipulateFurniture,
+    DispatchUiEvent,
+    IsPlayTestRestricted,
+    RoomWidgetUpdateBackgroundColorPreviewEvent,
+    SendMessageComposer
+} from '../../../../api';
 import { useOctaneEvent } from '../../../events';
 import { useFurniRemovedEvent } from '../../engine';
 import { useRoom } from '../../useRoom';
@@ -28,7 +34,8 @@ const useFurnitureBackgroundColorWidgetState = () => {
     };
 
     useOctaneEvent<RoomEngineTriggerWidgetEvent>(RoomEngineTriggerWidgetEvent.REQUEST_BACKGROUND_COLOR, (event) => {
-        if (!CanManipulateFurniture(roomSession, event.objectId, event.category)) return;
+        // Playtest refuses the toner to its owner too (the hotel's own rule beyond AIR), as the server does.
+        if (IsPlayTestRestricted(roomSession) || !CanManipulateFurniture(roomSession, event.objectId, event.category)) return;
 
         const roomObject = GetRoomEngine().getRoomObject(event.roomId, event.objectId, event.category);
         const model = roomObject.model;

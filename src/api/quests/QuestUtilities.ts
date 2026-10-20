@@ -173,27 +173,42 @@ export interface RewardTrackTheme {
 
 /** RewardTrackTheme.resolve(): five recolour themes, blue is the fallback. */
 export const REWARD_TRACK_THEMES: Record<string, RewardTrackTheme> = {
-    blue: { dark: '#3577B9', medium: '#CFE2F9', light: '#DDEBF9', active: '#BDD6EF' },
-    orange: { dark: '#C97C98', medium: '#FFE1B2', light: '#FFF1D6', active: '#FFD1D1' },
-    forest_green: { dark: '#3F8B45', medium: '#CDE0CB', light: '#E1F0DF', active: '#B8E0B6' },
-    red: { dark: '#B84A4B', medium: '#F1D9CC', light: '#F8E8DD', active: '#E7B0B8' },
-    cyan: { dark: '#1F9BF3', medium: '#C7F1B5', light: '#DCF3BB', active: '#B5E9B1' }
+    blue: { dark: '#3576B9', medium: '#CFE2F9', light: '#DDEBF9', active: '#BDD6EF' },
+    orange: { dark: '#C97918', medium: '#FFDFB2', light: '#FFEFD6', active: '#FFCF91' },
+    forest_green: { dark: '#3F8A45', medium: '#CDEACB', light: '#E1F3DF', active: '#B8DFB6' },
+    red: { dark: '#B84B4B', medium: '#F1CCCC', light: '#F8DDDD', active: '#E7B8B8' },
+    cyan: { dark: '#1F9EB3', medium: '#C7EFF5', light: '#DCF7FB', active: '#B5E9F1' }
 };
 
 export const resolveRewardTrackTheme = (theme: string): RewardTrackTheme => REWARD_TRACK_THEMES[theme] ?? REWARD_TRACK_THEMES.blue;
 
 /**
- * The window the hint button opens for a task, keyed on the official action
- * name the server sends. Only the actions whose official hint button exists
- * (`task.<id>.hint.button_text`) map to a window; the others show no button.
+ * The window the hint button opens for a task. The official client reads the link from the
+ * `reward_track.<track>.task.<task>.hint.internal_link` property and hides the button when it is
+ * empty; `configuredLink` is that property. Without one, the official actions whose hint has a
+ * button text (`task.<id>.hint.button_text`) open their window; the others show no button.
  */
-export const getRewardTrackTaskHintLink = (actionType: string): { fallbackText: string; link: string } | null => {
+export const getRewardTrackTaskHintLink = (actionType: string, configuredLink: string = null): { fallbackText: string; link: string } | null => {
+    if (configuredLink) return { fallbackText: '', link: configuredLink };
+
     switch ((actionType || '').toLowerCase()) {
         case 'enter_other_users_room':
         case 'chat_with_someone':
             return { fallbackText: 'Open the Navigator', link: 'navigator/show' };
+        case 'create_room':
+            return { fallbackText: 'Open the Navigator', link: 'navigator/create' };
         case 'place_item':
             return { fallbackText: 'Open the inventory', link: 'inventory/show' };
+        case 'wear_badge':
+            return { fallbackText: 'Open the inventory', link: 'inventory/show/badges' };
+        case 'buy_from_catalogue':
+            return { fallbackText: 'Open the Catalogue', link: 'catalog/show' };
+        case 'change_figure':
+            return { fallbackText: 'Open the Look Editor', link: 'avatar-editor/show' };
+        case 'request_friend':
+            return { fallbackText: 'Find friends', link: 'friends/show' };
+        case 'publish_picture':
+            return { fallbackText: 'Open the Camera', link: 'camera/show' };
         default:
             return null;
     }

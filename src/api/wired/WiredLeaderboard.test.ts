@@ -4,6 +4,8 @@ import {
     defaultLeaderboardConfig,
     encodeLeaderboardConfig,
     formatLeaderboardTime,
+    leaderboardGlobalVariableId,
+    leaderboardUserVariableId,
     formatLeaderboardValue,
     ILeaderboardConfig,
     isCanonicalLeaderboardLiteral,
@@ -22,46 +24,62 @@ const sample = (): ILeaderboardConfig => ({
     columns: [ { type: 0, label: 'Player', width: 3 }, { type: 1, label: 'Score', width: 0 }, { type: 4, label: 'Lvl', width: 0 } ],
     filterEnabled: true,
     compareEnabled: true,
-    filterVariableId: '77',
+    filterVariableId: 'user:77',
     comparisonLiteral: '-12',
-    displayOverrides: { '812': 'Coins', '1200': 'Wins' },
+    displayOverrides: { 'user:812': 'Coins', 'user:1200': 'Wins' },
     offsetX: -10,
     altitude: 40
 });
 
 describe('WiredLeaderboard codec', () =>
 {
-    it('writes the official layout and reads it back', () =>
+    it('writes the official layout, the variable list ids apart from the text, and reads it back', () =>
     {
-        const { intParams, stringParam } = encodeLeaderboardConfig(sample());
+        const { intParams, stringParam, variableIds } = encodeLeaderboardConfig(sample());
         const fields = stringParam.split('\t');
 
         expect(intParams).toHaveLength(19);
-        expect(fields).toHaveLength(29);
+        expect(fields).toHaveLength(17);
+        expect(variableIds).toHaveLength(12);
         expect(intParams.slice(0, 10)).toEqual([ 0, 3, 0, 1, 4, -1, 1, 1, 0, 2 ]);
-        // Overrides are sorted by plain string order: "1200" before "812".
-        expect(fields.slice(17, 21)).toEqual([ '77', '0', '1200', '812' ]);
+        // Overrides are sorted by plain string order: "user:1200" before "user:812".
+        expect(variableIds.slice(0, 4)).toEqual([ 'user:77', '0', 'user:1200', 'user:812' ]);
         expect(fields[7]).toBe('Wins');
-        expect(decodeLeaderboardConfig(intParams, stringParam, 0, 0)).toEqual(sample());
+        expect(decodeLeaderboardConfig(intParams, stringParam, 0, 0, variableIds)).toEqual(sample());
     });
 
-    it('reads the official split of string fields and variable ids', () =>
+    it('reads what an older server sent: bare ids after the text fields', () =>
     {
         const { intParams, stringParam } = encodeLeaderboardConfig(sample());
-        const fields = stringParam.split('\t');
+        const old = [ ...stringParam.split('\t'), '77', '0', '1200', '812', '0', '0', '0', '0', '0', '0', '0', '0' ].join('\t');
 
-        expect(decodeLeaderboardConfig(intParams, fields.slice(0, 17).join('\t'), 0, 0, fields.slice(17))).toEqual(sample());
+        expect(decodeLeaderboardConfig(intParams, old, 0, 0)).toEqual(sample());
+    });
+
+    it('reads bare ids, tokens and trimmed lists as the same variables', () =>
+    {
+        const { intParams, stringParam } = encodeLeaderboardConfig(sample());
+
+        expect(decodeLeaderboardConfig(intParams, stringParam, 0, 0, [ 'custom:77', 'n', '1200', 'user:812' ])).toEqual(sample());
+        expect(leaderboardUserVariableId('12')).toBe('user:12');
+        expect(leaderboardUserVariableId('custom:12')).toBe('user:12');
+        expect(leaderboardUserVariableId('n')).toBe('0');
+        expect(leaderboardUserVariableId('furni:12')).toBe('furni:12');
+        expect(leaderboardUserVariableId('-234')).toBe('-234');
+        expect(leaderboardGlobalVariableId('5')).toBe('room:5');
+        // A config holding a bare id (an older draft) still saves the list id.
+        expect(encodeLeaderboardConfig({ ...sample(), filterVariableId: '77', displayOverrides: { '812': 'Coins' } }).variableIds.slice(0, 3)).toEqual([ 'user:77', '0', 'user:812' ]);
     });
 
     it('clears what a disabled option does not use', () =>
     {
-        const { intParams, stringParam } = encodeLeaderboardConfig({ ...sample(), filterEnabled: false });
+        const { intParams, stringParam, variableIds } = encodeLeaderboardConfig({ ...sample(), filterEnabled: false });
         const fields = stringParam.split('\t');
 
         expect(intParams[6]).toBe(0);
         expect(intParams[7]).toBe(0);
         expect(fields[6]).toBe('');
-        expect(fields[17]).toBe('0');
+        expect(variableIds[0]).toBe('0');
     });
 
     it('reads an unconfigured box as the defaults at its tile', () =>

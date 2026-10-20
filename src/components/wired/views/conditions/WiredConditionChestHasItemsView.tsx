@@ -4,6 +4,7 @@ import { useWired } from '../../../../hooks';
 import { normalizeWiredComparison, WIRED_CMP_DEFAULT, WiredComparisonOperator } from '../WiredComparisonOperator';
 import { WiredSourcesSelector } from '../WiredSourcesSelector';
 import { normalizeWiredValueTarget, variableTokenFromId, WIRED_VALUE_TARGET_GLOBAL, WiredValueOrVariableField } from '../WiredValueOrVariableField';
+import { toWiredVariableIdOnTarget } from '../WiredVariableIds';
 import { getCustomVariableItemId, normalizeVariableTokenFromWire } from '../WiredVariablePickerData';
 import { WiredConditionBaseView } from './WiredConditionBaseView';
 
@@ -42,7 +43,8 @@ export const chestAmountParams = (state: IChestAmountState) => {
 
     return {
         intParams: [value, state.fromVariable ? 1 : 0, state.target, state.comparison],
-        variableIds: variableId > 0 ? [String(variableId)] : []
+        // The variable list's id (user:12 / room:12), as AIR sends it.
+        variableIds: variableId > 0 ? [toWiredVariableIdOnTarget(state.target, state.token)] : []
     };
 };
 

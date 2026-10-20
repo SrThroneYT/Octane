@@ -5,7 +5,7 @@ import { FaTrashAlt } from 'react-icons/fa';
 import { attemptPetPlacement, LocalizeText, localizeWithFallback, SendMessageComposer, UnseenItemCategory } from '../../../../api';
 import { LayoutRarityLevelView } from '../../../../common';
 import { ClassicScrollAreaView } from '../../../../common/scroll-area/ClassicScrollAreaView';
-import { useInventoryPets, useInventoryUnseenTracker, useNotification } from '../../../../hooks';
+import { useInventoryPets, useInventoryUnseenTracker, useNotification, usePlayTestRestricted } from '../../../../hooks';
 import { OctaneButton } from '../../../../layout';
 import { InventoryCategoryEmptyView } from '../InventoryCategoryEmptyView';
 import { InventoryPetImageView } from './InventoryPetImageView';
@@ -21,6 +21,7 @@ export const InventoryPetView: FC<{
     const { petItems = null, selectedPet = null, setSelectedPet, activate = null, deactivate = null } = useInventoryPets();
     const { isUnseen = null, removeUnseen = null } = useInventoryUnseenTracker();
     const { showConfirm = null } = useNotification();
+    const playTestRestricted = usePlayTestRestricted();
 
     const [searchInput, setSearchInput] = useState('');
     const [search, setSearch] = useState('');
@@ -179,7 +180,7 @@ export const InventoryPetView: FC<{
                 <div className="octane-inventory-animal-actions">
                     <OctaneButton
                         className="octane-inventory-animal-place"
-                        disabled={!selectedPet || !(roomSession?.isRoomOwner || roomSession?.allowPets)}
+                        disabled={!selectedPet || !(roomSession?.isRoomOwner || roomSession?.allowPets) || playTestRestricted}
                         onClick={() => attemptPetPlacement(selectedPet)}
                     >
                         {LocalizeText('inventory.pets.placetoroom')}

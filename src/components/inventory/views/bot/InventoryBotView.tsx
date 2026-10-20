@@ -2,7 +2,7 @@ import { IRoomSession, RoomPreviewer } from '@octane/renderer';
 import { FC, useEffect, useState } from 'react';
 import { attemptBotPlacement, LocalizeText, UnseenItemCategory } from '../../../../api';
 import { ClassicScrollAreaView } from '../../../../common/scroll-area/ClassicScrollAreaView';
-import { useInventoryBots, useInventoryUnseenTracker } from '../../../../hooks';
+import { useInventoryBots, useInventoryUnseenTracker, usePlayTestRestricted } from '../../../../hooks';
 import { OctaneButton } from '../../../../layout';
 import { InventoryCategoryEmptyView } from '../InventoryCategoryEmptyView';
 import { InventoryBotImageView } from './InventoryBotImageView';
@@ -16,6 +16,7 @@ export const InventoryBotView: FC<{
     const [isVisible, setIsVisible] = useState(false);
     const { botItems = [], selectedBot = null, activate = null, deactivate = null } = useInventoryBots();
     const { isUnseen = null, removeUnseen = null } = useInventoryUnseenTracker();
+    const playTestRestricted = usePlayTestRestricted();
 
     useEffect(() => {
         if (!selectedBot || !isUnseen(UnseenItemCategory.BOT, selectedBot.botData.id)) return;
@@ -57,7 +58,7 @@ export const InventoryBotView: FC<{
                 <div className="octane-inventory-animal-actions">
                     <OctaneButton
                         className="octane-inventory-animal-place"
-                        disabled={!selectedBot || !roomSession?.isRoomOwner}
+                        disabled={!selectedBot || !roomSession?.isRoomOwner || playTestRestricted}
                         onClick={() => attemptBotPlacement(selectedBot)}
                     >
                         {LocalizeText('inventory.bot.placetoroom')}

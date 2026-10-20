@@ -86,7 +86,7 @@ describe('chest reward wired actions', () => {
         baseProps.save();
 
         expect(setIntParams).toHaveBeenCalledWith([0, 5, 1, -20, 1, 13]);
-        expect(setVariableIds).toHaveBeenCalledWith(['44']);
+        expect(setVariableIds).toHaveBeenCalledWith(['ctx:44']);
         expect(setSourceTypes).toHaveBeenCalledWith({ furni: [100], users: [200] });
     });
 
@@ -120,7 +120,7 @@ describe('chest reward wired actions', () => {
         baseProps.save();
 
         expect(setIntParams).toHaveBeenLastCalledWith([0, 3, 1, -20, 0, 11]);
-        expect(setVariableIds).toHaveBeenLastCalledWith(['10']);
+        expect(setVariableIds).toHaveBeenLastCalledWith(['ctx:10']);
     });
 
     it('amount: refuses 0 and a variable without a value; the field is disabled when the box gives everything', () => {

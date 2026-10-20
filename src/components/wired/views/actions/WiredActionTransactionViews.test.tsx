@@ -126,7 +126,7 @@ describe('transaction wired actions', () => {
         baseProps.save();
 
         expect(setIntParams).toHaveBeenCalledWith([2, 1, 1, -20, 0, 300]);
-        expect(setVariableIds).toHaveBeenCalledWith(['10']);
+        expect(setVariableIds).toHaveBeenCalledWith(['ctx:10']);
 
         fireEvent.click(screen.getByRole('radio', { name: 'Normal' }));
         expect(screen.getByRole('textbox', { name: 'Select multiplier:' })).toBeDisabled();
