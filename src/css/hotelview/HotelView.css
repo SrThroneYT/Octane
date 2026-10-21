@@ -938,3 +938,270 @@
         display: none;
     }
 }
+
+/* ---- live AIR landing view widgets inside the slots (friendbar/landingview/widget) ---- */
+
+.hotelview-widget-title {
+    display: block;
+    color: rgb(255 255 255 / 85%);
+    font: 700 9px Ubuntu, Arial, sans-serif;
+    letter-spacing: .5px;
+    text-shadow: 1px 1px rgb(0 0 0 / 22%);
+    text-transform: uppercase;
+}
+
+.hotelview-slot .hotelview-widget-button {
+    width: 100%;
+    height: 25px;
+    margin-top: 7px;
+    border: 1px solid #888;
+    border-radius: 5px;
+    background: linear-gradient(#fff, #d5d5d5);
+    box-shadow: inset 0 1px #fff, 0 1px rgb(0 0 0 / 35%);
+    color: #111;
+    cursor: pointer;
+    font: 700 12px Ubuntu, Arial, sans-serif;
+}
+
+.hotelview-slot .hotelview-widget-button:hover {
+    background: linear-gradient(#fff, #c2c2c2);
+}
+
+.hotelview-slot .hotelview-widget-button:disabled {
+    cursor: default;
+    filter: grayscale(1);
+    opacity: .72;
+}
+
+.hotelview-slot .hotelview-widget-link {
+    display: block;
+    margin-top: 4px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #fff;
+    cursor: pointer;
+    font: 12px Ubuntu, Arial, sans-serif;
+    text-decoration: underline;
+    text-shadow: 1px 1px rgb(0 0 0 / 22%);
+}
+
+/* PromoArticleWidget: header, one disk per article, image left of the copy. */
+.hotelview-promo-article-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    color: #fff;
+    font: 700 11px Ubuntu, Arial, sans-serif;
+    text-shadow: 1px 1px rgb(0 0 0 / 22%);
+}
+
+.hotelview-promo-article-navigation {
+    display: flex;
+    gap: 2px;
+}
+
+.hotelview-slot .hotelview-promo-article-disk {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border: 1px solid rgb(255 255 255 / 85%);
+    border-radius: 50%;
+    background: rgb(0 0 0 / 25%);
+    cursor: pointer;
+}
+
+.hotelview-slot .hotelview-promo-article-disk:hover,
+.hotelview-slot .hotelview-promo-article-disk-on {
+    background: #fff;
+}
+
+.hotelview-promo-article-body {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+    transition: opacity 250ms linear;
+}
+
+.hotelview-promo-article-fading {
+    opacity: 0;
+}
+
+.hotelview-promo-article-image {
+    flex: 0 0 auto;
+    max-width: 150px;
+    max-height: 82px;
+}
+
+.hotelview-promo-article-copy {
+    min-width: 0;
+    flex: 1;
+}
+
+/* BonusRarePromoWidget: furni preview, header, progress bar with the status on top. */
+.hotelview-bonus-rare {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.hotelview-bonus-rare-preview {
+    display: grid;
+    flex: 0 0 64px;
+    height: 64px;
+    place-items: center;
+}
+
+.hotelview-bonus-rare-copy {
+    min-width: 0;
+    flex: 1;
+}
+
+.hotelview-bonus-rare-progress {
+    position: relative;
+}
+
+.hotelview-bonus-rare-progress span {
+    background: linear-gradient(#ffd348, #f0a400);
+}
+
+.hotelview-bonus-rare-progress em {
+    position: absolute;
+    inset: 0;
+    color: #fff;
+    font: 700 11px/15px Ubuntu, Arial, sans-serif;
+    text-align: center;
+    text-shadow: 1px 1px rgb(0 0 0 / 55%);
+}
+
+/* CommunityGoalWidget: texts left, the 226x200 meter scaled into the slot on the right. */
+.hotelview-community-goal {
+    display: flex;
+    gap: 8px;
+}
+
+.hotelview-community-goal-copy {
+    min-width: 0;
+    flex: 1;
+}
+
+.hotelview-community-goal-votes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+}
+
+.hotelview-community-goal-meter {
+    position: relative;
+    flex: 0 0 136px;
+    height: 120px;
+}
+
+.hotelview-community-goal-meter > img {
+    position: absolute;
+    transform-origin: 0 0;
+}
+
+.hotelview-community-goal-meter-level-0 {
+    top: 0;
+    left: 0;
+    transform: scale(.6);
+}
+
+.hotelview-community-goal-meter-level-1 {
+    top: 23px;
+    left: 6px;
+    transform: scale(.6);
+}
+
+.hotelview-community-goal-meter-level-2 {
+    top: 6px;
+    left: 18px;
+    transform: scale(.6);
+}
+
+.hotelview-community-goal-meter-level-3 {
+    top: 23px;
+    left: 63px;
+    transform: scale(.6);
+}
+
+.hotelview-community-goal-needle {
+    top: 29px;
+    left: 24px;
+    transform: scale(.6);
+}
+
+.hotelview-slot .hotelview-community-goal-status {
+    position: absolute;
+    top: 88px;
+    right: 0;
+    left: 0;
+    font-size: 11px;
+}
+
+/* Concurrent users goal: the counter, then the badge and the claim button. */
+.hotelview-concurrent-users-reward {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 5px;
+    color: #fff;
+    font-size: 12px;
+    text-shadow: 1px 1px rgb(0 0 0 / 22%);
+}
+
+.hotelview-concurrent-users-reward img {
+    max-width: 40px;
+    max-height: 40px;
+}
+
+/* DailyQuestWidget: header with the easy | hard switch, quest image left of the copy. */
+.hotelview-daily-quest-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.hotelview-daily-quest-difficulty {
+    display: flex;
+    gap: 4px;
+    color: #fff;
+    font-size: 11px;
+}
+
+.hotelview-slot .hotelview-daily-quest-difficulty button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #fff;
+    cursor: pointer;
+    font: 11px Ubuntu, Arial, sans-serif;
+    text-decoration: underline;
+}
+
+.hotelview-slot .hotelview-daily-quest-difficulty .hotelview-daily-quest-selected {
+    cursor: default;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.hotelview-daily-quest-body {
+    display: flex;
+    gap: 8px;
+    margin-top: 3px;
+}
+
+.hotelview-daily-quest-image {
+    flex: 0 0 auto;
+    max-width: 64px;
+    max-height: 64px;
+    align-self: flex-start;
+}
+
+.hotelview-daily-quest-copy {
+    min-width: 0;
+    flex: 1;
+}

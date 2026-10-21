@@ -574,6 +574,12 @@
     border-image-repeat: repeat repeat;
 }
 
+/* bubble_18 carries a wide horizontal border-image-outset for room chat (Chats.css), which
+   outranks the rule above and pushed its preview out of the 41px cell. */
+.swf-chat-style-preview.bubble-container .chat-bubble.bubble-18 {
+    border-image-outset: 1px 0 0 0;
+}
+
 .swf-chat-font-row {
     display: flex;
     align-items: center;
@@ -1756,4 +1762,17 @@
 
 .air-bot-skill-button--save:active {
     border-image-source: var(--habbo-skin-shiny-thick-green-pressed);
+}
+
+/* Official RoomQueueWidget (room_queue layout): 229 px frame, bold centred position, 154 px exit button. */
+.octane-room-queue-widget {
+    width: 229px;
+
+    .octane-room-queue-info {
+        width: 100%;
+    }
+
+    .octane-room-queue-button {
+        width: 154px;
+    }
 }

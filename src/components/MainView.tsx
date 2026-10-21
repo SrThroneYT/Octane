@@ -41,15 +41,18 @@ import { InventoryView } from './inventory/InventoryView';
 import { MentionsView } from './mentions';
 import { ModToolsView } from './mod-tools/ModToolsView';
 import { NavigatorView } from './navigator/NavigatorView';
+import { NuxView } from './nux/NuxView';
 import { OctanebubbleHiddenView } from './octanebubblehidden/OctanebubbleHiddenView';
 import { OctanepediaView } from './octanepedia/OctanepediaView';
 import { ExternalPluginLoader } from './plugins/ExternalPluginLoader';
-import { DailyTasksView, QuestCompletedView, QuestsView, QuestTrackerView, RewardTrackView } from './quests';
+import { DailyTasksView, NextQuestTimerView, QuestCompletedView, QuestsView, QuestTrackerView, RewardTrackView, SeasonalCalendarView } from './quests';
 import { RadioView } from './radio/RadioView';
 import { RareValuesView } from './rare-values/RareValuesView';
 import { RightSideView } from './right-side/RightSideView';
 import { RoomView } from './room/RoomView';
+import { RoomQueueWidgetView } from './room/widgets/room-queue/RoomQueueWidgetView';
 import { SoundboardView } from './soundboard/SoundboardView';
+import { TalentView } from './talent/TalentView';
 import { ToolbarView } from './toolbar/ToolbarView';
 import { TranslationBootstrap } from './translation/TranslationBootstrap';
 import { TranslationSettingsView } from './translation/TranslationSettingsView';
@@ -191,6 +194,7 @@ export const MainView: FC<{}> = (props) =>
             <WiredCreatorToolsView />
             <VariablesExplorerView />
             <RoomView />
+            <RoomQueueWidgetView />
             <ChatHistoryView />
             <CustomizeNickIconView />
             <WiredView />
@@ -211,7 +215,9 @@ export const MainView: FC<{}> = (props) =>
             <DiscordSettingsView />
             <VaultView />
             <QuestsView />
+            <SeasonalCalendarView />
             <QuestTrackerView />
+            <NextQuestTimerView />
             <QuestCompletedView />
             <DailyTasksView />
             <RewardTrackView />
@@ -221,6 +227,8 @@ export const MainView: FC<{}> = (props) =>
             <GroupForumView />
             <CameraWidgetView />
             <HelpView />
+            <TalentView />
+            <NuxView />
             <OctanepediaView />
             <GuideToolView />
             <HcCenterView />

@@ -9,7 +9,7 @@ import {
 import { FC, useCallback, useEffect, useState } from 'react';
 import { localizeWithFallback } from '../../api';
 import { Button, DraggableWindowPosition, Text } from '../../common';
-import { useQuests } from '../../hooks';
+import { useQuests, useSeasonalCalendar } from '../../hooks';
 import { OctaneCard } from '../../layout';
 import { QuestEntryView } from './QuestEntryView';
 import { BaseButton } from '../../common/BaseButton';
@@ -22,6 +22,7 @@ export const QuestsView: FC<{}> = () => {
     const [isVisible, setIsVisible] = useState(false);
     const [detailsQuest, setDetailsQuest] = useState<QuestMessageData>(null);
     const { quests = [], openRequests = 0, trackedQuest = null, requestQuests = null, acceptQuest = null, rejectQuest = null } = useQuests();
+    const { enabled: seasonalCalendarEnabled = false, toggle: toggleSeasonalCalendar = null } = useSeasonalCalendar();
 
     const hasClub = GetSessionDataManager().clubLevel > 0;
 
@@ -45,6 +46,13 @@ export const QuestsView: FC<{}> = () => {
                         setIsVisible(false);
                         return;
                     case 'toggle':
+                        // QuestController: with the seasonal calendar on, the quests button toggles the calendar.
+                        if (seasonalCalendarEnabled && toggleSeasonalCalendar) {
+                            setIsVisible(false);
+                            toggleSeasonalCalendar();
+                            return;
+                        }
+
                         setIsVisible((prevValue) => {
                             if (!prevValue) requestQuests && requestQuests();
 
@@ -63,7 +71,15 @@ export const QuestsView: FC<{}> = () => {
             linkReceived: (url: string) => {
                 const parts = url.split('/');
 
-                if (parts.length >= 2 && parts[1] === 'quests') show();
+                if (parts.length < 2 || parts[1] !== 'quests') return;
+
+                if (seasonalCalendarEnabled && toggleSeasonalCalendar) {
+                    setIsVisible(false);
+                    toggleSeasonalCalendar();
+                    return;
+                }
+
+                show();
             },
             eventUrlPrefix: 'questengine/'
         };
@@ -75,7 +91,7 @@ export const QuestsView: FC<{}> = () => {
             RemoveLinkEventTracker(linkTracker);
             RemoveLinkEventTracker(engineTracker);
         };
-    }, [show, requestQuests, trackedQuest]);
+    }, [show, requestQuests, trackedQuest, seasonalCalendarEnabled, toggleSeasonalCalendar]);
 
     useEffect(() => {
         if (openRequests > 0) setIsVisible(true);

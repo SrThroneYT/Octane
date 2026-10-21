@@ -8,4 +8,6 @@ export class ProductTypeEnum {
     public static GAME_TOKEN: string = 'GAME_TOKEN';
     public static PET: string = 'p';
     public static ROBOT: string = 'r';
+    // AIR 13 class_1803.PRODUCT_TYPE_CHAT_STYLE: a purchasable chat bubble style; extraParam is the style id.
+    public static CHAT_STYLE: string = 'chat_style';
 }

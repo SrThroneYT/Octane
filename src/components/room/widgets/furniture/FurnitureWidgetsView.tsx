@@ -7,6 +7,7 @@ import { FurnitureBadgeDisplayView } from './FurnitureBadgeDisplayView';
 import { FurnitureChestView } from './FurnitureChestView';
 import { FurnitureCraftingView } from './FurnitureCraftingView';
 import { FurnitureDimmerView } from './FurnitureDimmerView';
+import { FurnitureEcotronBoxView } from './FurnitureEcotronBoxView';
 import { FurnitureExchangeCreditView } from './FurnitureExchangeCreditView';
 import { FurnitureExternalImageView } from './FurnitureExternalImageView';
 import { FurnitureFootballGateView } from './FurnitureFootballGateView';
@@ -18,6 +19,7 @@ import { FurnitureMannequinView } from './FurnitureMannequinView';
 import { FurnitureRoomLinkView } from './FurnitureRoomLinkView';
 import { FurnitureSpamWallPostItView } from './FurnitureSpamWallPostItView';
 import { FurnitureRecolorView } from './FurnitureRecolorView';
+import { FurnitureRentableSpaceView } from './FurnitureRentableSpaceView';
 import { FurnitureStackHeightView } from './FurnitureStackHeightView';
 import { FurnitureStickieView } from './FurnitureStickieView';
 import { FurnitureTrophyView } from './FurnitureTrophyView';
@@ -52,6 +54,9 @@ export const FurnitureWidgetsView: FC<{}> = (props) => {
             <WidgetErrorBoundary name="FurnitureDimmer">
                 <FurnitureDimmerView />
             </WidgetErrorBoundary>
+            <WidgetErrorBoundary name="FurnitureEcotronBox">
+                <FurnitureEcotronBoxView />
+            </WidgetErrorBoundary>
             <WidgetErrorBoundary name="FurnitureExchangeCredit">
                 <FurnitureExchangeCreditView />
             </WidgetErrorBoundary>
@@ -78,6 +83,9 @@ export const FurnitureWidgetsView: FC<{}> = (props) => {
             </WidgetErrorBoundary>
             <WidgetErrorBoundary name="FurniturePlaylistEditorWidget">
                 <FurniturePlaylistEditorWidgetView />
+            </WidgetErrorBoundary>
+            <WidgetErrorBoundary name="FurnitureRentableSpace">
+                <FurnitureRentableSpaceView />
             </WidgetErrorBoundary>
             <WidgetErrorBoundary name="FurnitureRoomLink">
                 <FurnitureRoomLinkView />

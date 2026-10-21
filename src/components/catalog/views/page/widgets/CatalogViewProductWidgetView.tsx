@@ -1,7 +1,7 @@
 import { GetAvatarRenderManager, GetSessionDataManager, RoomObjectVariable, Vector3d } from '@octane/renderer';
 import { FC, useEffect } from 'react';
 import { FurniCategory, GetProductIconUrl, Offer, ProductTypeEnum } from '../../../../../api';
-import { AutoGrid, Column, LayoutGridItem, LayoutHabbiconImageView, LayoutRoomPreviewerView } from '../../../../../common';
+import { AutoGrid, Column, LayoutChatStyleImageView, LayoutGridItem, LayoutHabbiconImageView, LayoutRoomPreviewerView } from '../../../../../common';
 import { useCatalogData, useCatalogUiState } from '../../../../../hooks';
 
 const PREVIEW_LIFT = 21;
@@ -181,6 +181,8 @@ export const CatalogViewProductWidgetView: FC<{ height?: number }> = (props) => 
                                 <LayoutGridItem key={index} itemCount={product.productCount}>
                                     {product.productType === ProductTypeEnum.HABBICON ? (
                                         <LayoutHabbiconImageView id={product.productClassId} />
+                                    ) : product.productType === ProductTypeEnum.CHAT_STYLE ? (
+                                        <LayoutChatStyleImageView styleId={product.extraParam} />
                                     ) : (
                                         iconUrl && <img alt="" className="octane-catalog-grid-offer-icon" draggable={false} src={iconUrl} />
                                     )}

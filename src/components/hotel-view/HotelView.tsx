@@ -18,6 +18,7 @@ import { Select } from '../../common/Select';
 import { NumberInput } from '../../common/NumberInput';
 import { BaseButton } from '../../common/BaseButton';
 import { Hint } from '../../common/Tooltip';
+import { HotelViewLiveSlotView } from './widgets/HotelViewLiveSlotView';
 
 interface HotelViewLandingData {
     canEdit: boolean;
@@ -34,6 +35,10 @@ interface HotelViewSlotConfig {
     catalogPage?: string;
     featuredSlot?: number;
     useServerLTD?: boolean;
+    useServerBonusRare?: boolean;
+    useServerGoal?: boolean;
+    useServerQuest?: boolean;
+    badgeCode?: string;
     userVote?: number;
     voteOptions?: Array<{ id: number; label: string; badgeCode?: string; furniId?: number; currencyType?: number; currencyAmount?: number }>;
     voteCounts?: Record<string, number>;
@@ -94,8 +99,12 @@ const SLOT_WIDGET_TYPES: Array<{ value: IHotelViewLandingSlot['type']; label: st
     { value: 'achievementcompetition_prizes', label: 'Achievement competition: prizes', title: 'Competition prizes', body: 'See the rewards for this achievement competition.', buttonText: 'Open achievements', link: 'achievements/show' },
     { value: 'habbotalentspromo', label: 'Habbo Talents promo', title: 'Habbo Talents', body: 'Learn more about Habbo Talents.', buttonText: 'Open Help', link: 'help/show' },
     { value: 'habbowaypromo', label: 'Habbo Way promo', title: 'Habbo Way', body: 'Learn how to make the hotel a better place.', buttonText: 'Open Help', link: 'help/show' },
-    { value: 'safetyquizpromo', label: 'Safety quiz promo', title: 'Safety quiz', body: 'Take the safety quiz and learn how to stay safe.', buttonText: 'Open Help', link: 'help/show' },
-    { value: 'habbomoderationpromo', label: 'Moderation promo', title: 'Hotel moderation', body: 'Learn more about hotel moderation and safety.', buttonText: 'Open Help', link: 'help/show' }
+    { value: 'safetyquizpromo', label: 'Safety quiz promo', title: 'Safety quiz', body: 'Take the safety quiz and learn how to stay safe.', buttonText: 'Take the quiz', link: 'help/safetybooklet' },
+    { value: 'habbomoderationpromo', label: 'Moderation promo', title: 'Hotel moderation', body: 'Learn more about hotel moderation and safety.', buttonText: 'Open Help', link: 'help/show' },
+    { value: 'promoarticle', label: 'News articles (live)', title: 'Latest news', body: 'The news of the hotel appears here.', buttonText: '', link: '' },
+    { value: 'communitygoalvsmode', label: 'Community goal: versus (live)', title: 'Community challenge', body: 'Which side wins?', buttonText: '', link: '' },
+    { value: 'communitygoalvsmodevote', label: 'Community goal: versus with voting (live)', title: 'Community challenge', body: 'Pick your side!', buttonText: '', link: '' },
+    { value: 'concurrentusersgoal', label: 'Users online goal (live)', title: 'Habbo Challenge', body: 'Get enough users online at the same time!', buttonText: '', link: '' }
 ];
 
 const parseSlotConfig = (configJson: string): HotelViewSlotConfig => {
@@ -153,9 +162,11 @@ const getDefaultConfig = (type: IHotelViewLandingSlot['type']): HotelViewSlotCon
     switch (type) {
         case 'communitygoal': return { voteOptions: [{ id: 1, label: 'Vote option 1' }, { id: 2, label: 'Vote option 2' }] };
         case 'nextlimitedrarecountdown': return { useServerLTD: true };
+        case 'bonus': return { useServerBonusRare: true };
+        case 'concurrentusersgoal': return { badgeCode: 'ConcurrentUsersReward' };
         case 'expiringcatalogpage':
         case 'expiringcatalogpagesmall': return { endsAt: tomorrow() };
-        case 'dailyquest': return { secondaryButtonText: 'Skip quest', secondaryLink: 'achievements/show' };
+        case 'dailyquest': return { useServerQuest: true, secondaryButtonText: 'Skip quest', secondaryLink: 'achievements/show' };
         case 'achievementcompetition_hall_of_fame': return { secondaryButtonText: 'View prizes', secondaryLink: 'achievements/show' };
         case 'habbowaypromo': return { secondaryButtonText: 'Open help', secondaryLink: 'help/show' };
         default: return {};
@@ -267,6 +278,9 @@ export const HotelView: FC = () => {
     };
 
     const getCatalogLink = (slot: IHotelViewLandingSlot) => {
+        // AIR SafetyQuizPromoWidget: the button opens the safety booklet, which ends with the quiz.
+        if (slot.type === 'safetyquizpromo') return 'help/safetybooklet';
+
         const page = parseSlotConfig(slot.configJson).catalogPage?.trim();
 
         return page ? `catalog/open/${page}` : slot.link;
@@ -538,7 +552,7 @@ export const HotelView: FC = () => {
                                             const voteTotal = voteOptions.reduce((total, option) => total + (config.voteCounts?.[String(option.id)] || 0), 0);
                                             const countdown = seconds === null ? null : getCountdownParts(seconds);
 
-                                            return <>
+                                            const staticContent = <>
                                         {slot.title && <h2>{slot.title}</h2>}
                                         {slot.body && <p>{slot.body}</p>}
                                         {slot.type === 'bonus' && <div className="hotelview-progress"><span style={{ width: `${Math.min(100, Math.max(0, slot.progress))}%` }} /></div>}
@@ -551,6 +565,8 @@ export const HotelView: FC = () => {
                                             ? <div className="hotelview-vote-options">{voteOptions.map((option) => <BaseButton key={option.id} className={config.userVote === option.id ? 'hotelview-vote-selected' : ''} type="button" disabled={config.userVote !== undefined} onClick={() => SendMessageComposer(new HotelViewLandingVoteComposer(slot.id, option.id))}>{option.label} <span>{config.voteCounts?.[String(option.id)] || 0}</span></BaseButton>)}</div>
                                             : <>{slot.buttonText && <BaseButton type="button" disabled={isLtdPending || isExpired} onClick={() => handleSlotClick(getCatalogLink(slot))}>{isLtdPending ? 'Coming soon' : slot.buttonText}</BaseButton>}{config.secondaryButtonText && <BaseButton type="button" onClick={() => handleSlotClick(config.secondaryLink || '')}>{config.secondaryButtonText}</BaseButton>}</>}
                                             </>;
+
+                                            return <HotelViewLiveSlotView slot={slot} config={config} fallback={staticContent} onLink={handleSlotClick} />;
                                         })()}
                                     </div>
                                 </>}
@@ -602,6 +618,10 @@ export const HotelView: FC = () => {
                             {(editingSlot.type === 'expiringcatalogpage' || editingSlot.type === 'expiringcatalogpagesmall') && <label>Featured catalog slot<NumberInput min="1" value={parseSlotConfig(editingSlot.configJson).featuredSlot || ''} placeholder="Optional" onChange={(event) => updateEditingConfig((config) => ({ ...config, featuredSlot: Number(event.target.value) || undefined }))} /></label>}
                             {editingSlot.type !== 'communitygoal' && <><label>Progress<NumberInput min="0" max="100" value={editingSlot.progress} onChange={(event) => setEditingSlot({ ...editingSlot, progress: Number(event.target.value) })} /></label><label>Progress label<input value={editingSlot.progressLabel} onChange={(event) => setEditingSlot({ ...editingSlot, progressLabel: event.target.value })} /></label></>}
                             {editingSlot.type === 'nextlimitedrarecountdown' && <label className="hotelview-editor-toggle"><Checkbox checked={parseSlotConfig(editingSlot.configJson).useServerLTD !== false} onCheckedChange={(nextChecked) => updateEditingConfig((config) => ({ ...config, useServerLTD: nextChecked }))} /><span>Use emulator LTD configuration: {parseSlotConfig(editingSlot.configJson).useServerLTD !== false ? 'Yes' : 'No'}</span></label>}
+                            {editingSlot.type === 'bonus' && <label className="hotelview-editor-toggle"><Checkbox checked={parseSlotConfig(editingSlot.configJson).useServerBonusRare !== false} onCheckedChange={(nextChecked) => updateEditingConfig((config) => ({ ...config, useServerBonusRare: nextChecked }))} /><span>Live bonus rare from the emulator: {parseSlotConfig(editingSlot.configJson).useServerBonusRare !== false ? 'Yes' : 'No'}</span></label>}
+                            {editingSlot.type === 'communitygoal' && <label className="hotelview-editor-toggle"><Checkbox checked={parseSlotConfig(editingSlot.configJson).useServerGoal === true} onCheckedChange={(nextChecked) => updateEditingConfig((config) => ({ ...config, useServerGoal: nextChecked }))} /><span>Show the emulator community goal meter instead of these votes: {parseSlotConfig(editingSlot.configJson).useServerGoal === true ? 'Yes' : 'No'}</span></label>}
+                            {editingSlot.type === 'dailyquest' && <label className="hotelview-editor-toggle"><Checkbox checked={parseSlotConfig(editingSlot.configJson).useServerQuest !== false} onCheckedChange={(nextChecked) => updateEditingConfig((config) => ({ ...config, useServerQuest: nextChecked }))} /><span>Live daily quest from the emulator: {parseSlotConfig(editingSlot.configJson).useServerQuest !== false ? 'Yes' : 'No'}</span></label>}
+                            {editingSlot.type === 'concurrentusersgoal' && <label>Reward badge code<input value={parseSlotConfig(editingSlot.configJson).badgeCode || ''} placeholder="ConcurrentUsersReward" onChange={(event) => updateEditingConfig((config) => ({ ...config, badgeCode: event.target.value }))} /></label>}
                             {(editingSlot.type === 'nextlimitedrarecountdown' || editingSlot.type === 'expiringcatalogpage' || editingSlot.type === 'expiringcatalogpagesmall') && <label>Countdown ends<input className="hotelview-countdown-editor-input" value={countdownInput} placeholder="DD/MM/YYYY HH:mm" onChange={(event) => {
                                 setCountdownInput(event.target.value);
 

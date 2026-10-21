@@ -1,7 +1,7 @@
 import { MouseEventType } from '@octane/renderer';
 import { FC, KeyboardEvent, MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { CatalogType, GetConfigurationValue, GetProductIconUrl, IPurchasableOffer, Offer, ProductTypeEnum } from '../../../../../api';
-import { LayoutAvatarImageView, LayoutGridItem, LayoutGridItemProps, LayoutHabbiconImageView } from '../../../../../common';
+import { LayoutAvatarImageView, LayoutChatStyleImageView, LayoutGridItem, LayoutGridItemProps, LayoutHabbiconImageView } from '../../../../../common';
 import { isAirBaseCatalogOffer } from './catalogAirGrid.helpers';
 import { Hint } from '../../../../../common/Tooltip';
 
@@ -141,6 +141,9 @@ export const CatalogOfferTileView: FC<CatalogOfferTileViewProps> = (props) => {
                     <LayoutHabbiconImageView className="octane-catalog-grid-habbicon-icon" id={product.productClassId} />
                 )}
                 {product.productType === ProductTypeEnum.ROBOT && <LayoutAvatarImageView direction={2} figure={product.extraParam} fit />}
+                {product.productType === ProductTypeEnum.CHAT_STYLE && (
+                    <LayoutChatStyleImageView className="octane-catalog-grid-chat-style-icon" styleId={product.extraParam} />
+                )}
                 {offer.clubLevel > 0 && (
                     <Hint content="Habbo Club">
                         <span aria-label="Habbo Club" className="octane-catalog-grid-club-level" role="img">

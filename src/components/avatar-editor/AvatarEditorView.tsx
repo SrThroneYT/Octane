@@ -14,6 +14,7 @@ import { AVATAR_EDITOR_EFFECTS_TAB, AvatarEditorAction, GetConfigurationValue, L
 import mainEffectsSrc from '../../assets/images/avatareditor/air/main-effects.png';
 import mainGenericSrc from '../../assets/images/avatareditor/air/main-generic.png';
 import mainHeadSrc from '../../assets/images/avatareditor/air/main-head.png';
+import mainHotLooksSrc from '../../assets/images/avatareditor/air/main-hotlooks.png';
 import mainLegsSrc from '../../assets/images/avatareditor/air/main-legs.png';
 import mainMiscSrc from '../../assets/images/avatareditor/air/main-misc.png';
 import mainTorsoSrc from '../../assets/images/avatareditor/air/main-torso.png';
@@ -21,9 +22,10 @@ import wardrobeHangerSrc from '../../assets/images/avatareditor/wardrobe-hanger.
 import mainNftSrc from '../../assets/images/wardrobe/nft.png';
 import mainPetsSrc from '../../assets/images/wardrobe/pets.png';
 import { OctaneCardContentView, OctaneCardHeaderView, OctaneCardTabsItemView, OctaneCardTabsView, OctaneCardView } from '../../common';
-import { useAvatarEditor, useAvatarEffects } from '../../hooks';
+import { useAvatarEditor, useAvatarEffects, useHotLooks } from '../../hooks';
 import { AvatarEditorEffectsView } from './AvatarEditorEffectsView';
 import { AvatarEditorFigurePreviewView } from './AvatarEditorFigurePreviewView';
+import { AvatarEditorHotLooksView } from './AvatarEditorHotLooksView';
 import { AvatarEditorModelView } from './AvatarEditorModelView';
 import { AvatarEditorNftView } from './AvatarEditorNftView';
 import { AvatarEditorPetView } from './AvatarEditorPetView';
@@ -39,6 +41,7 @@ const MAIN_TAB_ICONS: Record<string, string> = {
     [AvatarEditorFigureCategory.LEGS]: mainLegsSrc,
     [AvatarEditorFigureCategory.PETS]: mainPetsSrc,
     [AvatarEditorFigureCategory.MISC]: mainMiscSrc,
+    [AvatarEditorFigureCategory.HOTLOOKS]: mainHotLooksSrc,
     [AvatarEditorFigureCategory.NFT]: mainNftSrc,
     [AVATAR_EDITOR_EFFECTS_TAB]: mainEffectsSrc
 };
@@ -51,6 +54,7 @@ const MAIN_TAB_ORDER: string[] = [
     AvatarEditorFigureCategory.TORSO,
     AvatarEditorFigureCategory.LEGS,
     AvatarEditorFigureCategory.MISC,
+    AvatarEditorFigureCategory.HOTLOOKS,
     AVATAR_EDITOR_EFFECTS_TAB,
     AvatarEditorFigureCategory.NFT,
     AvatarEditorFigureCategory.PETS
@@ -82,8 +86,16 @@ export const AvatarEditorView: FC<{}> = (props) => {
     // Official effects.in.avatar.editor; not for a clothing change booth.
     const effectsEnabled = !clothingChangeData && GetConfigurationValue<boolean>('effects.in.avatar.editor', true);
     const isEffectsOpen = effectsEnabled && activeModelKey === AVATAR_EDITOR_EFFECTS_TAB;
+    // AIR HotLooksModel: not part of a clothing change booth's restricted categories.
+    const hotLooksEnabled = !clothingChangeData;
+    const isHotLooksOpen = hotLooksEnabled && activeModelKey === AvatarEditorFigureCategory.HOTLOOKS;
+    const hotLooks = useHotLooks(isVisible && hotLooksEnabled);
     const canUseWardrobe = !clothingChangeData && !isNftOpen;
-    const orderedModelKeys = [...Object.keys(avatarModels), ...(effectsEnabled ? [AVATAR_EDITOR_EFFECTS_TAB] : [])]
+    const orderedModelKeys = [
+        ...Object.keys(avatarModels),
+        ...(hotLooksEnabled ? [AvatarEditorFigureCategory.HOTLOOKS] : []),
+        ...(effectsEnabled ? [AVATAR_EDITOR_EFFECTS_TAB] : [])
+    ]
         .filter((modelKey) => modelKey !== AvatarEditorFigureCategory.WARDROBE)
         .sort((left, right) => {
             const leftIndex = MAIN_TAB_ORDER.indexOf(left);
@@ -216,11 +228,17 @@ export const AvatarEditorView: FC<{}> = (props) => {
                         </ToggleButton>
                     )}
                     <div className="octane-avatar-editor-main">
-                        {activeModelKey.length > 0 && !isPetsOpen && !isNftOpen && !isEffectsOpen && avatarModels[activeModelKey] && (
+                        {activeModelKey.length > 0 && !isPetsOpen && !isNftOpen && !isEffectsOpen && !isHotLooksOpen && avatarModels[activeModelKey] && (
                             <AvatarEditorModelView categories={avatarModels[activeModelKey]} name={activeModelKey} />
                         )}
                         {isPetsOpen && <AvatarEditorPetView categories={avatarModels[activeModelKey]} />}
                         {isNftOpen && <AvatarEditorNftView categories={avatarModels[activeModelKey]} />}
+                        {isHotLooksOpen && (
+                            <AvatarEditorHotLooksView
+                                hotLooks={hotLooks[gender === AvatarFigurePartType.FEMALE ? 'F' : 'M']}
+                                onSelect={(look) => loadAvatarData(look.figure, look.gender)}
+                            />
+                        )}
                         {isEffectsOpen && (
                             <AvatarEditorEffectsView selectedType={effectSelection ?? (activeEffectType > 0 ? activeEffectType : -1)} onSelect={setEffectSelection} />
                         )}

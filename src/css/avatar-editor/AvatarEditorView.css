@@ -1218,3 +1218,56 @@
     inset: 0;
     z-index: 2;
 }
+
+/* AIR avatar/hotlooks HotLooksView: hotlooks_content (title, "choose" line and a
+   299x220 itemgrid of 35x60 Outfit thumbnails, spacing 7). */
+.octane-avatar-editor-hotlooks {
+    position: absolute;
+    left: 23px;
+    top: 120px;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    width: 310px;
+    height: 290px;
+}
+
+.octane-avatar-editor-hotlooks-title {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 26px;
+}
+
+.octane-avatar-editor-hotlooks-choose {
+    font-size: 12px;
+    line-height: 17px;
+    margin: 2px 0 20px;
+}
+
+.octane-avatar-editor-hotlooks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 35px);
+    gap: 7px;
+    margin-left: 4px;
+    width: 299px;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.octane-avatar-editor-hotlook {
+    position: relative;
+    width: 35px;
+    height: 60px;
+    padding: 0;
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.35);
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.octane-avatar-editor-hotlook:hover,
+.octane-avatar-editor-hotlook:focus-visible {
+    border-color: #ffffff;
+    background: rgba(255, 255, 255, 0.6);
+}

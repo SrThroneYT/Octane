@@ -1,0 +1,82 @@
+/* AIR marketplace_offer_details.xml: a 340px panel over the offer list. */
+.octane-marketplace-offer-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    max-width: 340px;
+    min-height: 0;
+    overflow: auto;
+
+    .marketplace-details-back {
+        align-self: flex-start;
+        min-width: min(235px, 100%);
+    }
+
+    .marketplace-details-head {
+        display: flex;
+        align-items: flex-start;
+        gap: 7px;
+        min-height: 80px;
+    }
+
+    .marketplace-details-image {
+        position: relative;
+        flex: 0 0 66px;
+        width: 66px;
+        height: 62px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .marketplace-details-unique {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+    }
+
+    .marketplace-details-text {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        min-width: 0;
+        padding-top: 5px;
+
+        .marketplace-details-price {
+            margin-top: 8px;
+        }
+    }
+
+    .marketplace-details-buy {
+        flex: 0 0 auto;
+        margin-top: 7px;
+    }
+
+    /* selector: button_group_left + button_group_right, 160px each. */
+    .marketplace-details-chart-selector {
+        display: flex;
+
+        > * {
+            flex: 0 1 160px;
+            min-width: 0;
+        }
+    }
+
+    .marketplace-details-chart {
+        flex: 0 0 auto;
+        width: 100%;
+        max-width: 340px;
+        padding: 10px;
+        border: 1px solid #cccccc;
+        background: #ffffff;
+    }
+
+    .octane-marketplace-chart {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        image-rendering: pixelated;
+    }
+}

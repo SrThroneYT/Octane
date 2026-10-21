@@ -1,5 +1,5 @@
 import { FC, useCallback, useMemo } from 'react';
-import { CatalogType, ICatalogNode, LocalizeText } from '../../../../api';
+import { CatalogType, getCatalogNodeKey, ICatalogNode, LocalizeText } from '../../../../api';
 import { ClassicScrollAreaView } from '../../../../common';
 import { useCatalogActions, useCatalogData } from '../../../../hooks';
 import { useCatalogAdmin } from '../../CatalogAdminContext';
@@ -65,7 +65,7 @@ export const CatalogNavigationView: FC<CatalogNavigationViewProps> = (props) => 
             {searchResult &&
                 searchResult.filteredNodes.length > 0 &&
                 searchResult.filteredNodes.map((n, index) => {
-                    return <CatalogNavigationItemView key={n.pageId} node={n} runtime={runtime} />;
+                    return <CatalogNavigationItemView key={getCatalogNodeKey(n, index)} node={n} runtime={runtime} />;
                 })}
             {!searchResult && <CatalogNavigationSetView node={node} runtime={runtime} />}
         </ClassicScrollAreaView>

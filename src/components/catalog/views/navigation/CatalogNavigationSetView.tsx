@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { ICatalogNode } from '../../../../api';
+import { getCatalogNodeKey, ICatalogNode } from '../../../../api';
 import { CatalogNavigationItemView } from './CatalogNavigationItemView';
 import { CatalogNavigationRuntime } from './CatalogNavigationRuntime';
 
@@ -16,10 +16,10 @@ export const CatalogNavigationSetView: FC<CatalogNavigationSetViewProps> = (prop
         <>
             {node &&
                 node.children.length > 0 &&
-                node.children.map((n) => {
+                node.children.map((n, index) => {
                     if (!n.isVisible) return null;
 
-                    return <CatalogNavigationItemView key={n.pageId} child={child} node={n} runtime={runtime} />;
+                    return <CatalogNavigationItemView key={getCatalogNodeKey(n, index)} child={child} node={n} runtime={runtime} />;
                 })}
         </>
     );

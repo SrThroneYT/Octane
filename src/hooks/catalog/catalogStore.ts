@@ -477,7 +477,8 @@ export const useCatalogStore = createOctaneStore<CatalogStoreState>((set, get) =
                 (currentType === CatalogType.BUILDER && get().getBuilderFurniPlaceableStatus(offer) === BuilderFurniPlaceableStatus.OKAY)) &&
             offer.pricingModel !== Offer.PRICING_MODEL_BUNDLE &&
             offer.product.productType !== ProductTypeEnum.EFFECT &&
-            offer.product.productType !== ProductTypeEnum.HABBO_CLUB
+            offer.product.productType !== ProductTypeEnum.HABBO_CLUB &&
+            offer.product.productType !== ProductTypeEnum.CHAT_STYLE
         );
     },
 

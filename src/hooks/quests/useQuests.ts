@@ -16,7 +16,7 @@ import {
 } from '@octane/renderer';
 import { useCallback, useMemo, useState } from 'react';
 import { registerSharedHook, useSharedHook } from '@/state/useSharedHook';
-import { localizeWithFallback, NotificationAlertType, SendMessageComposer } from '../../api';
+import { GetConfigurationValue, isSeasonalQuest, localizeWithFallback, NotificationAlertType, SendMessageComposer } from '../../api';
 import { useMessageEvent } from '../events';
 import { useNotification } from '../notification';
 import { useRoom } from '../rooms';
@@ -43,6 +43,7 @@ const useQuestsState = () => {
     const [trackedQuest, setTrackedQuest] = useState<QuestMessageData>(null);
     const [completion, setCompletion] = useState<QuestCompletion>(null);
     const [dailyQuest, setDailyQuest] = useState<DailyQuestState>(null);
+    const [questClock, setQuestClock] = useState(0);
     const { roomSession = null } = useRoom();
     const { simpleAlert = null } = useNotification();
 
@@ -74,6 +75,18 @@ const useQuestsState = () => {
 
     const clearTrackedQuest = useCallback(() => setTrackedQuest(null), []);
 
+    /**
+     * NextQuestTimer.refresh(): once the wait is over the timer zeroes it and hands the quest back to
+     * the quest controller, so the tracker and the list show it as a normal quest.
+     */
+    const releaseDelayedQuest = useCallback((quest: QuestMessageData) => {
+        if (!quest) return;
+
+        quest.waitPeriodSeconds = 0;
+        setQuests((prevValue) => [...prevValue]);
+        setQuestClock(Date.now());
+    }, []);
+
     const replaceQuestInList = useCallback((quest: QuestMessageData, accepted: boolean) => {
         setQuests((prevValue) =>
             prevValue.map((existing) => {
@@ -91,7 +104,10 @@ const useQuestsState = () => {
     useMessageEvent<QuestsMessageEvent>(QuestsMessageEvent, (event) => {
         const parser = event.getParser();
 
-        setQuests(parser.quests.filter((quest) => !quest.isSeasonal));
+        // QuestsList.onQuests: the campaigns of the seasonal calendar live in their own window.
+        const seasonalPrefix = String(GetConfigurationValue<string>('seasonalQuestCalendar.campaignPrefix', '') ?? '');
+
+        setQuests(parser.quests.filter((quest) => !isSeasonalQuest(quest, seasonalPrefix)));
 
         if (parser.openWindow) setOpenRequests((prevValue) => prevValue + 1);
     });
@@ -151,6 +167,7 @@ const useQuestsState = () => {
         dailyQuest,
         acceptedQuest,
         isInRoom,
+        questClock,
         requestQuests,
         acceptQuest,
         rejectQuest,
@@ -159,7 +176,8 @@ const useQuestsState = () => {
         startCampaign,
         requestDailyQuest,
         clearCompletion,
-        clearTrackedQuest
+        clearTrackedQuest,
+        releaseDelayedQuest
     };
 };
 

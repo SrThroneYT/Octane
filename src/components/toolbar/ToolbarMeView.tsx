@@ -80,6 +80,11 @@ export const ToolbarMeView: FC<
             >
                 {unseenRewardTrackCount > 0 && <LayoutItemCountView count={unseenRewardTrackCount} />}
             </BaseButton></Hint>
+            {GetConfigurationValue<boolean>('talent.track.enabled', true) &&
+                <Hint content={localizeWithFallback('widget.memenu.talents', 'Talents')}><BaseButton aria-label={localizeWithFallback('widget.memenu.talents', 'Talents')} type="button"
+                    className="navigation-item relative icon-me-talents cursor-pointer"
+                    onClick={(event) => CreateLinkEvent('talent/open/current')}
+                /></Hint>}
             <BaseButton type="button"
                 className="navigation-item relative octane-icon icon-me-profile cursor-pointer"
                 onClick={(event) => GetUserProfile(GetSessionDataManager().userId)}

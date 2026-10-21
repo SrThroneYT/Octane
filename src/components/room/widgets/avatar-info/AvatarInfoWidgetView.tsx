@@ -31,6 +31,7 @@ import { InfoStandWidgetFurniView } from './infostand/InfoStandWidgetFurniView';
 import { InfoStandWidgetPetView } from './infostand/InfoStandWidgetPetView';
 import { InfoStandWidgetRentableBotView } from './infostand/InfoStandWidgetRentableBotView';
 import { InfoStandWidgetUserView } from './infostand/InfoStandWidgetUserView';
+import { AvatarInfoNewUserHelpView } from './menu/AvatarInfoNewUserHelpView';
 import { AvatarInfoWidgetAvatarView } from './menu/AvatarInfoWidgetAvatarView';
 import { AvatarInfoWidgetDecorateView } from './menu/AvatarInfoWidgetDecorateView';
 import { AvatarInfoWidgetFurniView } from './menu/AvatarInfoWidgetFurniView';
@@ -187,7 +188,7 @@ export const AvatarInfoWidgetView: FC<{}> = (props) => {
                     if (info.isSpectatorMode) return null;
 
                     if (info.isOwnUser) {
-                        if (RoomEnterEffect.isRunning()) return null;
+                        if (RoomEnterEffect.isRunning()) return <AvatarInfoNewUserHelpView avatarInfo={info} onClose={() => setAvatarInfo(null)} />;
 
                         return (
                             <AvatarInfoWidgetOwnAvatarView

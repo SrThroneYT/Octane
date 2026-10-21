@@ -1,9 +1,18 @@
 import { GetSessionDataManager, HabboClubLevelEnum, SecurityLevel } from '@octane/renderer';
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ChatMessageTypeEnum, GetClubMemberLevel, GetConfigurationValue, HasSessionPermission, LocalizeText, RoomWidgetUpdateChatInputContentEvent } from '../../../../api';
+import {
+    ChatMessageTypeEnum,
+    ChatStyleConfigEntry,
+    GetClubMemberLevel,
+    GetConfigurationValue,
+    HasSessionPermission,
+    LocalizeText,
+    ResolveChatStyleIds,
+    RoomWidgetUpdateChatInputContentEvent
+} from '../../../../api';
 import { Text } from '../../../../common';
-import { useChatCommandSelector, useChatInputWidget, useChatMentions, useRoom, useSessionInfo, useUiEvent } from '../../../../hooks';
+import { useChatCommandSelector, useChatInputWidget, useChatMentions, useNuxChatReminder, usePurchasableChatStyles, useRoom, useSessionInfo, useUiEvent } from '../../../../hooks';
 import { ChatInputCommandSelectorView } from './ChatInputCommandSelectorView';
 import { ChatInputEmojiSelectorView } from './ChatInputEmojiSelectorView';
 import { ChatInputHabbiconSelectorView } from './ChatInputHabbiconSelectorView';
@@ -14,6 +23,7 @@ export const ChatInputView: FC<{}> = (props) => {
     const [chatValue, setChatValue] = useState<string>('');
     const [portalTarget, setPortalTarget] = useState<HTMLElement>(null);
     const { chatStyleId = 0, updateChatStyleId = null } = useSessionInfo();
+    const ownedPurchasableStyleIds = usePurchasableChatStyles();
     const {
         selectedUsername = '',
         floodBlocked = false,
@@ -36,6 +46,7 @@ export const ChatInputView: FC<{}> = (props) => {
     } = useChatCommandSelector(chatValue);
 
     const mention = useChatMentions(chatValue, setChatValue, inputRef, commandSelectorVisible);
+    const nuxReminder = useNuxChatReminder(chatValue.length > 0);
 
     const chatModeIdWhisper = useMemo(() => LocalizeText('widgets.chatinput.mode.whisper'), []);
     const chatModeIdShout = useMemo(() => LocalizeText('widgets.chatinput.mode.shout'), []);
@@ -259,49 +270,18 @@ export const ChatInputView: FC<{}> = (props) => {
         }
     });
 
-    const chatStyleIds = useMemo(() => {
-        let styleIds: number[] = [];
-
-        const styles =
-            GetConfigurationValue<{ styleId: number; minRank: number; isSystemStyle: boolean; isHcOnly: boolean; isAmbassadorOnly: boolean }[]>('chat.styles');
-
-        for (const style of styles) {
-            if (!style) continue;
-
-            if (style.minRank > 0) {
-                if (GetSessionDataManager().hasSecurity(style.minRank)) styleIds.push(style.styleId);
-
-                continue;
-            }
-
-            if (style.isSystemStyle) {
-                // The server keeps these bubbles for acc_anychatcolor.
-                if (HasSessionPermission('acc_anychatcolor', SecurityLevel.MODERATOR)) {
-                    styleIds.push(style.styleId);
-
-                    continue;
-                }
-            }
-
-            if (GetConfigurationValue<number[]>('chat.styles.disabled').indexOf(style.styleId) >= 0) continue;
-
-            if (style.isHcOnly && GetClubMemberLevel() >= HabboClubLevelEnum.CLUB) {
-                styleIds.push(style.styleId);
-
-                continue;
-            }
-
-            if (style.isAmbassadorOnly && GetSessionDataManager().isAmbassador) {
-                styleIds.push(style.styleId);
-
-                continue;
-            }
-
-            if (!style.isHcOnly && !style.isAmbassadorOnly) styleIds.push(style.styleId);
-        }
-
-        return styleIds;
-    }, []);
+    const chatStyleIds = useMemo(
+        () =>
+            ResolveChatStyleIds(GetConfigurationValue<ChatStyleConfigEntry[]>('chat.styles'), {
+                hasSecurity: (rank) => GetSessionDataManager().hasSecurity(rank),
+                canUseSystemStyles: HasSessionPermission('acc_anychatcolor', SecurityLevel.MODERATOR),
+                disabledStyleIds: GetConfigurationValue<number[]>('chat.styles.disabled') ?? [],
+                isClubMember: GetClubMemberLevel() >= HabboClubLevelEnum.CLUB,
+                isAmbassador: GetSessionDataManager().isAmbassador,
+                ownedPurchasableStyleIds
+            }),
+        [ownedPurchasableStyleIds]
+    );
 
     useEffect(() => {
         document.body.addEventListener('keydown', onKeyDownEvent);
@@ -347,7 +327,8 @@ export const ChatInputView: FC<{}> = (props) => {
         // left cap via a negative margin. With justify-between, hiding an optional
         // trailing button (habbicons disabled) redistributes the slack between the
         // trigger and the bubble, exposing the cap and opening a gap.
-        <div className="octane-chat-input-container swf-chat-input relative flex w-full items-center justify-start overflow-visible">
+        <div className={`octane-chat-input-container swf-chat-input relative flex w-full items-center justify-start overflow-visible ${nuxReminder.wiggling ? 'is-nux-reminder' : ''}`}>
+            {nuxReminder.wiggling && <div className="octane-nux-chat-hint">{LocalizeText('widgets.chatinput.mode.remind.noobie')}</div>}
             {commandSelectorVisible && (
                 <ChatInputCommandSelectorView
                     commands={filteredCommands}
@@ -374,10 +355,11 @@ export const ChatInputView: FC<{}> = (props) => {
                         ref={inputRef}
                         className="swf-chat-input-field w-full border-none bg-transparent"
                         maxLength={maxChatLength}
-                        placeholder={LocalizeText('widgets.chatinput.default')}
+                        placeholder={nuxReminder.reminding ? LocalizeText('widgets.chatinput.mode.remind.noobie') : LocalizeText('widgets.chatinput.default')}
                         type="text"
                         value={chatValue}
                         onChange={(event) => updateChatInput(event.target.value)}
+                        onFocus={() => nuxReminder.dismiss()}
                         onMouseDown={(event) => setInputFocus()}
                     />
                 </div>

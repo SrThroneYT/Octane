@@ -3,9 +3,12 @@ import { FC, useEffect, useState } from 'react';
 import { LocalizeText, ReportState, ReportType } from '../../api';
 import { Column, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView } from '../../common';
 import { useHelp } from '../../hooks';
+import { ChatReviewReporterFeedbackView } from './views/ChatReviewReporterFeedbackView';
+import { HabboWayWindowsView } from './habbo-way/HabboWayWindowsView';
 import { DescribeReportView } from './views/DescribeReportView';
 import { HelpIndexView } from './views/HelpIndexView';
 import { NameChangeView } from './views/name-change/NameChangeView';
+import { PendingBullyReportView } from './views/PendingBullyReportView';
 import { ReportSummaryView } from './views/ReportSummaryView';
 import { MyReportsStatusView } from './views/MyReportsStatusView';
 import { SanctionSatusView } from './views/SanctionStatusView';
@@ -40,7 +43,7 @@ export const HelpView: FC<{}> = (props) => {
                         setIsVisible((prevValue) => !prevValue);
                         return;
                     case 'tour':
-                        // todo: launch tour
+                        // The guide tool sends the tour request (official HabboHelp.requestGuide).
                         return;
                     case 'report':
                         // help/report/room/<id>/<name>: a room report, as from the room info.
@@ -107,9 +110,12 @@ export const HelpView: FC<{}> = (props) => {
                     </OctaneCardContentView>
                 </OctaneCardView>
             )}
+            <ChatReviewReporterFeedbackView />
+            <PendingBullyReportView />
             <SanctionSatusView />
             <MyReportsStatusView />
             <NameChangeView />
+            <HabboWayWindowsView />
         </>
     );
 };
