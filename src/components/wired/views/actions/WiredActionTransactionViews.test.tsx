@@ -141,12 +141,12 @@ describe('transaction wired actions', () => {
 
         fireEvent.change(screen.getByRole('textbox', { name: 'Select multiplier:' }), { target: { value: '12' } });
         fireEvent.click(screen.getByRole('checkbox'));
-        const timeout = screen.getByLabelText('timeout seconds');
+        const timeout = screen.getByRole('spinbutton', { name: 'timeout seconds' });
 
         fireEvent.change(timeout, { target: { value: '5' } });
         expect(baseProps.validate()).toBe(false);
         fireEvent.blur(timeout);
-        expect(timeout).toHaveValue(30);
+        expect((timeout as HTMLInputElement).value).toBe('30');
         baseProps.save();
 
         expect(setIntParams).toHaveBeenLastCalledWith([1, 12, 0, -10, 1, 30]);
