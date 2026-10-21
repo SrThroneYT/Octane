@@ -68,6 +68,8 @@ Significato:
 - `secureApiEnabled: true` cifra automaticamente le chiamate `/api/*`.
 - `apiBaseUrl` deve puntare all'emulatore/API.
 - `plainConfigBaseUrl` e `plainGamedataBaseUrl` restano fallback quando spegni secure assets.
+- Se `/nitro-sec/bootstrap` non risponde con una chiave (secure spento sul server, emulatore vecchio, rete), il client carica config, gamedata e `/api` in chiaro invece di fallire, e riprova la via cifrata dopo 5 minuti. Con `nitro.secure.api.required=true` il server rifiuta comunque con 403 le chiamate in chiaro a `/api/auth/*` e `/api/badges/*`.
+- Il client rinnova la sua chiave ogni `nitro.secure.session_ttl_sec` secondi del server (tra 60 e 3600; 300 se il server non lo indica).
 
 ## 3. `configuration/renderer-config.json`
 

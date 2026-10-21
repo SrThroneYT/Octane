@@ -68,6 +68,8 @@ Meaning:
 - `secureApiEnabled: true` automatically encrypts `/api/*` requests.
 - `apiBaseUrl` must point to the emulator/API.
 - `plainConfigBaseUrl` and `plainGamedataBaseUrl` are fallbacks when secure assets are disabled.
+- If `/nitro-sec/bootstrap` does not answer with a key (secure off on the server, an older emulator, a network error), the client loads config, gamedata and `/api` in the clear instead of failing, and tries the encrypted path again after 5 minutes. With `nitro.secure.api.required=true` the server still refuses plain calls to `/api/auth/*` and `/api/badges/*` with 403.
+- The client renews its key every `nitro.secure.session_ttl_sec` seconds of the server (between 60 and 3600; 300 when the server does not say).
 
 ## 3. `configuration/renderer-config.json`
 
