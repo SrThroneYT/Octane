@@ -25,13 +25,15 @@ import {
     useNavigatorSearch,
     useNavigatorUiState,
     useNavigatorUiStore,
-    useOctaneEvent
+    useOctaneEvent,
+    requestRaidProtectionSettings
 } from '../../hooks';
 import { NavigatorDoorStateView } from './views/NavigatorDoorStateView';
 import { NavigatorRoomCreatorView } from './views/NavigatorRoomCreatorView';
 import { NavigatorRoomInfoView } from './views/NavigatorRoomInfoView';
 import { NavigatorRoomLinkView } from './views/NavigatorRoomLinkView';
 import { NavigatorRoomSettingsView } from './views/room-settings/NavigatorRoomSettingsView';
+import { NavigatorRaidProtectionView } from './views/raid-protection/NavigatorRaidProtectionView';
 import { NavigatorEnforceCategoryView } from './views/NavigatorEnforceCategoryView';
 import { NavigatorEmptyStateView } from './views/search/NavigatorEmptyStateView';
 import { NavigatorRoomInfoPopupView } from './views/search/NavigatorRoomInfoPopupView';
@@ -142,6 +144,9 @@ export const NavigatorView: FC<{}> = () => {
                     case 'me':
                         store.setTab('myworld_view');
                         store.show();
+                        return;
+                    case 'raidprotection':
+                        requestRaidProtectionSettings(parts.length === 3 ? parts[2] : null, navigatorData?.enteredGuestRoom?.roomId ?? 0);
                         return;
                 }
             },
@@ -462,6 +467,9 @@ export const NavigatorView: FC<{}> = () => {
             )}
             <WidgetErrorBoundary name="NavigatorRoomSettings">
                 <NavigatorRoomSettingsView />
+            </WidgetErrorBoundary>
+            <WidgetErrorBoundary name="NavigatorRaidProtection">
+                <NavigatorRaidProtectionView />
             </WidgetErrorBoundary>
             <WidgetErrorBoundary name="NavigatorEnforceCategory">
                 <NavigatorEnforceCategoryView />

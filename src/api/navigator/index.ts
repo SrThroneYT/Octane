@@ -7,6 +7,7 @@ export * from './IRoomData';
 export * from './IRoomModel';
 export * from './IRoomModerationSettings';
 export * from './NavigatorSearchResultViewDisplayMode';
+export * from './RaidProtection';
 export * from './RoomInfoData';
 export * from './RoomSettingsSaveError';
 export * from './RoomSettingsUtils';

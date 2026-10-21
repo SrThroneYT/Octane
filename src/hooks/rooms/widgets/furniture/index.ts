@@ -22,5 +22,6 @@ export * from './useFurnitureSpamWallPostItWidget';
 export * from './useFurnitureStackHeightWidget';
 export * from './useFurnitureStickieWidget';
 export * from './useFurnitureTrophyWidget';
+export * from './useFurnitureVimeoWidget';
 export * from './useFurnitureYoutubeWidget';
 export * from './useFurnitureRecolorWidget';

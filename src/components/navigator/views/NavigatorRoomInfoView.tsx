@@ -12,7 +12,7 @@ import {
     UpdateHomeRoomMessageComposer
 } from '@octane/renderer';
 import { FC, useEffect, useState } from 'react';
-import { DispatchUiEvent, GetGroupInformation, isHousekeepingEnabled, LocalizeText, ReportType, SendMessageComposer } from '../../../api';
+import { DispatchUiEvent, GetGroupInformation, isHousekeepingEnabled, LocalizeText, localizeWithFallback, ReportType, SendMessageComposer } from '../../../api';
 import weblinkIcon from '../../../assets/images/navigator/air/icon-weblink.png';
 import removeRightsIcon from '../../../assets/images/navigator/air/remove-rights.png';
 import {
@@ -26,7 +26,7 @@ import {
     UserProfileIconView
 } from '../../../common';
 import { RoomWidgetThumbnailEvent } from '../../../events';
-import { useHasPermission, useHelp, useNavigatorData, useNavigatorFavourite, useRoom } from '../../../hooks';
+import { isRaidProtectionFeatureEnabled, useHasPermission, useHelp, useNavigatorData, useNavigatorFavourite, useRaidProtectionStore, useRoom } from '../../../hooks';
 import { classNames } from '../../../layout';
 import { BaseButton } from '../../../common/BaseButton';
 import { Hint } from '../../../common/Tooltip';
@@ -48,6 +48,8 @@ export const NavigatorRoomInfoView: FC<NavigatorRoomInfoViewProps> = (props) => 
     const canOpenHousekeeping = useHasPermission('acc_housekeeping') && isHousekeepingEnabled();
 
     const enteredRoomId = navigatorData?.enteredGuestRoom?.roomId ?? 0;
+    // AIR refreshRaidProtectionButton: the room's capability packet says whether the viewer may manage it.
+    const canManageRaidProtection = useRaidProtectionStore((state) => state.manageableRoomId > 0 && state.manageableRoomId === enteredRoomId) && isRaidProtectionFeatureEnabled();
     const { isFavourite: isRoomInFavouritesList, toggle: toggleFavourite } = useNavigatorFavourite(enteredRoomId);
 
     useEffect(() => {
@@ -109,6 +111,11 @@ export const NavigatorRoomInfoView: FC<NavigatorRoomInfoViewProps> = (props) => 
                 setIsRoomMuted((prev) => !prev);
                 SendMessageComposer(new RoomMuteComposer());
                 SendMessageComposer(new GetGuestRoomMessageComposer(roomId, false, false));
+                return;
+            case 'raid_protection':
+                // AIR onRaidProtectionSettingsClick: the link opens the settings, the room info closes.
+                CreateLinkEvent(`navigator/raidprotection/${roomId}`);
+                onCloseClick();
                 return;
             case 'room_filter':
                 SendMessageComposer(new GetCustomRoomFilterMessageComposer(roomId));
@@ -226,6 +233,11 @@ export const NavigatorRoomInfoView: FC<NavigatorRoomInfoViewProps> = (props) => 
                     {hasPermission('settings') && (
                         <BaseButton type="button" className="octane-room-info__action habbo-btn-primary" onClick={() => processAction('open_room_settings')}>
                             {LocalizeText('navigator.roomsettings')}
+                        </BaseButton>
+                    )}
+                    {canManageRaidProtection && (
+                        <BaseButton type="button" className="octane-room-info__action habbo-btn-primary" onClick={() => processAction('raid_protection')}>
+                            {localizeWithFallback('raid.protection.settings.button', 'Raid protection')}
                         </BaseButton>
                     )}
                     {hasPermission('settings') && (

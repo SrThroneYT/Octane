@@ -120,7 +120,10 @@ import './css/WiredView.css';
 import './css/camera/CameraWidget.css';
 import './css/catalog/CatalogGiftView.css';
 import './css/catalog/MarketplacePostOfferView.css';
+import './css/catalog/SpecialItemsDisplay.css';
+import './css/room/VimeoDisplay.css';
 import './css/navigator/NavigatorView.css';
+import './css/navigator/RaidProtection.css';
 import './css/common/ClassicScrollbar.css';
 
 document.documentElement.classList.add('has-classic-scrollbar');
