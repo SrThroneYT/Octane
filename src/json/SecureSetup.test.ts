@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
     buildIniSnippet,
+    cleanPathAnswer,
     generateMasterKey,
+    isPlaceholderHost,
     isPlaceholderSecret,
     normalizeSecureAnswer,
     patchClientMode,
@@ -21,6 +23,25 @@ describe('secure setup', () => {
         ['maybe', null]
     ])('normalizes "%s" to %s', (input, expected) => {
         expect(normalizeSecureAnswer(input)).toBe(expected);
+    });
+
+    it.each([
+        ['"E:\\Emu\\config.ini"', 'E:\\Emu\\config.ini'],
+        ["  'a b/c.ini'  ", 'a b/c.ini'],
+        ['plain.ini', 'plain.ini'],
+        ['"unbalanced', '"unbalanced']
+    ])('strips the quotes of a pasted path %s', (input, expected) => {
+        expect(cleanPathAnswer(input)).toBe(expected);
+    });
+
+    it.each([
+        ['https://nitro.example.com:2096', true],
+        ['https://example.org', true],
+        ['not a url', true],
+        ['https://myexample.com', false],
+        ['http://localhost:2096', false]
+    ])('flags %s as placeholder=%s', (url, expected) => {
+        expect(isPlaceholderHost(url)).toBe(expected);
     });
 
     it('generates a 256 bit key that differs every time', () => {

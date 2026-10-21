@@ -10,6 +10,8 @@ import { stdin as input, stdout as output } from 'node:process';
 import { DEFAULT_JSON_MODE, normalizeJsonModeAnswer, VALID_JSON_MODES } from './scripts/json-mode.mjs';
 import {
     buildIniSnippet,
+    cleanPathAnswer,
+    isPlaceholderHost,
     normalizeSecureAnswer,
     patchClientMode,
     patchIniValues,
@@ -589,50 +591,68 @@ async function promptConfigs(opts) {
     }
 }
 
-async function chooseSecureMode(opts) {
+async function chooseSecureMode(opts, rl) {
     if (opts.secure) return opts.secure === 'on';
-    if (!opts.interactive) return null;
-    const rl = readline.createInterface({ input, output });
-    activeReadline = rl;
-    try {
-        while (true) {
-            const answer = await rl.question('  Encrypt config, gamedata and /api through /nitro-sec? [Y/n]: ');
-            const mode = normalizeSecureAnswer(answer);
-            if (mode) return mode === 'on';
-            warn('Answer y or n.');
-        }
-    } finally {
-        activeReadline = null;
-        rl.close();
+    if (!rl) return null;
+    while (true) {
+        const answer = await rl.question('  Encrypt config, gamedata and /api through /nitro-sec? [Y/n]: ');
+        const mode = normalizeSecureAnswer(answer);
+        if (mode) return mode === 'on';
+        warn('Answer y or n.');
     }
 }
 
-async function chooseEmulatorConfig(opts) {
-    if (opts.emulatorConfig) return resolve(opts.emulatorConfig);
-    if (!opts.interactive) return null;
-    const rl = readline.createInterface({ input, output });
-    activeReadline = rl;
-    try {
-        const answer = (await rl.question('  Emulator config.ini to patch [Enter = print the values instead]: ')).trim();
-        return answer ? resolve(answer) : null;
-    } finally {
-        activeReadline = null;
-        rl.close();
+async function readEmulatorConfig(path) {
+    if (!existsSync(path)) throw new Error('Emulator config not found: ' + path);
+    return { path, text: await readFile(path, 'utf8') };
+}
+
+async function chooseEmulatorConfig(opts, rl) {
+    if (opts.emulatorConfig) return readEmulatorConfig(resolve(cleanPathAnswer(opts.emulatorConfig)));
+    if (!rl) return null;
+    while (true) {
+        const answer = cleanPathAnswer(await rl.question('  Emulator config.ini to patch [Enter = print the values instead]: '));
+        if (!answer) return null;
+        const path = resolve(answer);
+        if (existsSync(path)) return readEmulatorConfig(path);
+        warn('Not found: ' + path + '. Try again or press Enter to print the values.');
     }
 }
 
 async function configureSecure(opts) {
-    const assets = await chooseSecureMode(opts);
+    // One readline for the whole step: a second interface on a piped stdin would find it already drained.
+    const rl = opts.interactive ? readline.createInterface({ input, output }) : null;
+    activeReadline = rl;
+    try {
+        await applySecure(opts, rl);
+    } finally {
+        activeReadline = null;
+        if (rl) rl.close();
+    }
+}
+
+async function applySecure(opts, rl) {
+    const assets = await chooseSecureMode(opts, rl);
     if (assets === null) {
         info('--non-interactive without --secure: leaving client-mode.json and the emulator config as they are');
         return;
     }
     const api = opts.secureApi ? opts.secureApi === 'on' : assets;
-    summary.secure = { assets, api, iniPatched: null, iniBackup: null, masterKey: null, probe: null };
 
+    // Everything that can fail is read before the first write, so a bad path or a
+    // broken JSON file leaves both configs as they were.
+    const ini = await chooseEmulatorConfig(opts, rl);
     const modePath = join(CONFIG_DIR, 'client-mode.json');
-    const current = JSON.parse(await readFile(modePath, 'utf8'));
+    let current;
+    try {
+        current = JSON.parse(await readFile(modePath, 'utf8'));
+    } catch (e) {
+        throw new Error('Could not read client-mode.json: ' + e.message);
+    }
     const patched = patchClientMode(current, { assets, api });
+    const { values, keptMasterKey } = resolveIniValues(ini ? ini.text : null, { assets, api });
+    summary.secure = { assets, api, iniPatched: null, probe: null };
+
     if (patched.changed) {
         await writeFile(modePath, JSON.stringify(patched.clientMode, null, 4) + '\n');
         ok('Updated client-mode.json (secureAssetsEnabled=' + assets + ', secureApiEnabled=' + api + ')');
@@ -641,34 +661,37 @@ async function configureSecure(opts) {
         info('client-mode.json already has these secure flags');
     }
 
-    const iniPath = await chooseEmulatorConfig(opts);
-    const iniText = iniPath ? await readFile(iniPath, 'utf8') : null;
-    const { values, keptMasterKey } = resolveIniValues(iniText, { assets, api });
-
-    if (iniPath) {
-        const result = patchIniValues(iniText, values);
+    if (ini) {
+        const result = patchIniValues(ini.text, values);
         if (result.changes.length) {
-            const backup = iniPath + '.bak-' + Date.now();
-            await copyFile(iniPath, backup);
-            await writeFile(iniPath, result.text);
-            ok('Updated ' + iniPath + ' (' + result.changes.join(', ') + '); backup: ' + backup);
-            summary.secure.iniBackup = backup;
+            const backup = ini.path + '.bak-' + Date.now();
+            await copyFile(ini.path, backup);
+            await writeFile(ini.path, result.text);
+            ok('Updated ' + ini.path + ' (' + result.changes.join(', ') + '); backup: ' + backup);
         } else {
-            info(iniPath + ' already holds these values');
+            info(ini.path + ' already holds these values');
         }
-        summary.secure.iniPatched = iniPath;
-        if (keptMasterKey) info('Kept the nitro.secure.master_key already set in ' + iniPath);
-    } else {
-        summary.secure.masterKey = values['nitro.secure.master_key'] || null;
-        console.log('\n  Add this to the emulator config.ini' + (summary.secure.masterKey ? ' (the key is shown once, keep it stable)' : '') + ':\n');
+        summary.secure.iniPatched = ini.path;
+        if (keptMasterKey) info('Kept the nitro.secure.master_key already set in ' + ini.path);
+    } else if (opts.interactive) {
+        console.log('\n  Add this to the emulator config.ini (the key is shown once, keep it stable):\n');
         console.log(buildIniSnippet(values).replace(/^/gm, '    '));
+        console.log('');
+    } else {
+        // A non-interactive run usually logs to CI: the secret must not go there.
+        const { 'nitro.secure.master_key': generated, ...withoutKey } = values;
+        console.log('\n  Add this to the emulator config.ini:\n');
+        console.log(buildIniSnippet(withoutKey).replace(/^/gm, '    '));
+        if (generated) warn('No master key was printed: pass --emulator-config=<path> so one is generated and written there, or set nitro.secure.master_key yourself.');
         console.log('');
     }
 
     if (assets || api) {
         info('Also set nitro.secure.config.root and nitro.secure.gamedata.root to the deployed folders, then restart the emulator.');
         const apiBase = patched.clientMode.apiBaseUrl;
-        if (typeof apiBase === 'string' && apiBase) {
+        if (typeof apiBase !== 'string' || !apiBase || isPlaceholderHost(apiBase)) {
+            info('Bootstrap check skipped: apiBaseUrl is not set to your own emulator yet.');
+        } else {
             const probe = await probeBootstrap(apiBase);
             summary.secure.probe = probe.state;
             if (probe.state === 'ready') ok('Emulator at ' + apiBase + ' answers /nitro-sec/bootstrap (fp ' + (probe.fingerprint || 'n/a') + ')');

@@ -17,6 +17,25 @@ export const normalizeSecureAnswer = raw =>
     return null;
 };
 
+// A path pasted or dragged into a terminal usually arrives wrapped in quotes.
+export const cleanPathAnswer = raw => (raw || '').trim().replace(/^(["'])(.*)\1$/, '$2').trim();
+
+// The shipped examples point at example.com; a probe there would be a real
+// request to a host that is not the user's.
+export const isPlaceholderHost = url =>
+{
+    try
+    {
+        const host = new URL(url).hostname.toLowerCase();
+
+        return [ 'example.com', 'example.org', 'example.net' ].some(name => host === name || host.endsWith('.' + name));
+    }
+    catch
+    {
+        return true;
+    }
+};
+
 export const generateMasterKey = () => randomBytes(32).toString('hex');
 
 // The example config ships "change-me-..." and an empty value means an ephemeral
