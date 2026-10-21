@@ -9,3 +9,13 @@ export { useNavigatorFavourite } from './useNavigatorFavourite';
 export { useNavigatorSearch } from './useNavigatorSearch';
 export { useNavigatorUiState } from './useNavigatorUiState';
 export { buildRoomLimitAlert, useRoomCreateLimitAlert } from './useRoomCreateLimitAlert';
+export type { RaidProtectionActions, RaidProtectionState } from './raidProtectionStore';
+export { useRaidProtectionStore } from './raidProtectionStore';
+export {
+    isCurrentRaidProtectionRoom,
+    isRaidProtectionFeatureEnabled,
+    requestRaidProtectionSettings,
+    sendRaidProtectionSave,
+    toRaidProtectionSettings,
+    useRaidProtectionController
+} from './useRaidProtection';

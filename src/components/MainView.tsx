@@ -20,6 +20,7 @@ import { BadgeLeaderboardView } from './badge-leaderboard/BadgeLeaderboardView';
 import { CameraWidgetView } from './camera/CameraWidgetView';
 import { CampaignView } from './campaign/CampaignView';
 import { CatalogView } from './catalog/CatalogView';
+import { SpecialItemsDisplayView } from './catalog/special-items/SpecialItemsDisplayView';
 import { ChatHistoryView } from './chat-history/ChatHistoryView';
 import { CustomizeNickIconView } from './customize/CustomizeNickIconView';
 import { DiscordSettingsView } from './discord/DiscordSettingsView';
@@ -208,6 +209,7 @@ export const MainView: FC<{}> = (props) =>
             <OctanebubbleHiddenView />
             <InventoryView />
             <CatalogView />
+            <SpecialItemsDisplayView />
             <FriendsView />
             <RightSideView />
             <UserSettingsView />
