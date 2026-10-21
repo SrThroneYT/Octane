@@ -44,7 +44,7 @@ const FLAG_TO_KEY = Object.fromEntries(
 
 const CONFIG_FILES = [
     {
-        example: 'renderer-config.example',
+        example: 'renderer-config.json.example.json',
         target: 'renderer-config.json',
         keys: ['socket.url', 'api.url', 'asset.url', 'image.library.url', 'hof.furni.url']
     },
