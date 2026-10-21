@@ -1370,3 +1370,61 @@
         transition-duration: 0.01ms !important;
     }
 }
+
+/* AIR 13 purchasable chat styles (PRODUCT_TYPE_CHAT_STYLE): the style is drawn as the
+   chat-style selector draws it, an empty bubble of that style. */
+.octane-chat-style-image {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 41px;
+    height: 25px;
+    pointer-events: none;
+    image-rendering: var(--octane-pixel-art, pixelated);
+}
+
+.octane-chat-style-image .chat-bubble {
+    display: block;
+    width: 38px;
+    min-width: 38px;
+    max-width: 38px;
+    min-height: 17px;
+    border-image-width: 12px 5px 5px 20px;
+    border-image-slice: 17 6 6 29 fill;
+    border-image-outset: 1px 0 0 0;
+    border-image-repeat: repeat repeat;
+}
+
+.octane-catalog-window .octane-catalog-grid-density-standard .layout-grid-item > .octane-catalog-grid-chat-style-icon {
+    position: absolute;
+    top: 8px;
+    left: 6px;
+    z-index: 1;
+}
+
+.octane-catalog-offer-preview.is-chat-style .octane-catalog-chat-style-preview {
+    transform: scale(2);
+}
+
+/* HabboCatalogUtils.showExtraOnProduct(CHAT_STYLE): 60x42 catalogue_chatstyle_background. */
+.octane-catalog-addon-chat-style {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 42px;
+    z-index: 2;
+}
+
+.octane-catalog-addon-chat-style-background {
+    position: absolute;
+    inset: 0;
+    image-rendering: var(--octane-pixel-art, pixelated);
+    pointer-events: none;
+}
+
+.octane-catalog-purchase-confirm-preview .octane-chat-style-image {
+    transform: scale(1.5);
+}

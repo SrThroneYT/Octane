@@ -502,8 +502,11 @@ See `docs/ARCHITECTURE.md` "Recently fixed" for fix shapes.
   `useWiredVariableFxRoomDrawing` / `wiredVariableFxRoomDrawing.ts`, which decide visibility and hand each holder its
   stack through `IRoomEngine.setRoomObjectVariableFx`. The renderer draws it as AIR does, a sprite in the avatar / pet /
   furni visualization (`Octane-Renderer/packages/room/src/object/visualization/variablefx/`, 150 ms fade in, 350 ms
-  out); each value is painted on a canvas by `src/api/wired/WiredVariableFxVisualizer.ts` over the pure layout in
-  `WiredVariableFxDrawing.ts`. `src/css/room/WiredVariableFx.css` only holds the editor rule. Only `custom:<id>`
+  out, the habbicon as the stack's layer-100 entry); each value is painted by the renderer's port of AIR's painters
+  (`VariableFxVisualizer` / `VariableFxRendererRegistry`, `renderers/*`, AIR's `variablefx_*` PNGs in
+  `Octane-Renderer/packages/assets/src/assets/variablefx/images`, loaded as `local://variablefx`), wrapped per value by
+  `src/api/wired/WiredVariableFxVisualizer.ts`. Colour / width ids are AIR's (`WIRED_FX_COLOR`, `WIRED_FX_WIDTH`,
+  per-style options in `wiredVariableFxAppearance`). `src/css/room/WiredVariableFx.css` only holds the editor rule. Only `custom:<id>`
   variable tokens are offered for overrides/audience, since that is what the server resolves.
 - Wired setup quick menu (`src/components/wired/views/WiredBaseView.tsx`, the ≡ button): copy / paste /
   paste-into / clear picks / reset / save-without-closing, backed by `useWired` (`clipboardEntry`,

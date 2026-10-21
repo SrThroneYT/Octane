@@ -13,8 +13,6 @@ import {
     writeCustomContractElement
 } from '../../../../api/wired/WiredCustomContract';
 import { Text } from '../../../../common';
-import { Checkbox } from '../../../../common/Checkbox';
-import { Radio } from '../../../../common/Radio';
 import { useWired } from '../../../../hooks';
 import { WiredFurniSelectionSourceRow } from '../WiredFurniSelectionSourceRow';
 import { FURNI_SOURCES, sortWiredSourceOptions, WiredSourceOption } from '../WiredSourcesSelector';
@@ -61,7 +59,13 @@ const ElementSection: FC<ElementSectionProps> = ({ half, element, onChange, onVa
             </summary>
             <div className="flex flex-col gap-1 pt-1">
                 <label className="flex items-center gap-1">
-                    <Checkbox aria-label={enableLabel} checked={element.enabled} onCheckedChange={(enabled) => onChange({ ...element, enabled })} />
+                    <input
+                        type="checkbox"
+                        className="form-check-input"
+                        aria-label={enableLabel}
+                        checked={element.enabled}
+                        onChange={(event) => onChange({ ...element, enabled: event.target.checked })}
+                    />
                     <Text>{enableLabel}</Text>
                 </label>
                 <fieldset className="flex flex-col gap-1 ps-3" disabled={!element.enabled}>
@@ -69,11 +73,12 @@ const ElementSection: FC<ElementSectionProps> = ({ half, element, onChange, onVa
                     <div className="flex items-center gap-3">
                         {ELEMENT_TYPES.map((type) => (
                             <label key={type} className="flex items-center gap-1">
-                                <Radio
-                                    disabled={!element.enabled}
+                                <input
+                                    type="radio"
+                                    className="form-check-input"
                                     name={`customContract-${half}-type`}
                                     checked={element.type === type}
-                                    onCheckedChange={() => onChange({ ...element, type })}
+                                    onChange={() => onChange({ ...element, type })}
                                 />
                                 <Text>{localizeWithFallback(`wiredfurni.params.custom_contract.element_type_selection.${type}`, ELEMENT_TYPE_LABELS[type])}</Text>
                             </label>

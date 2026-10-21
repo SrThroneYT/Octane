@@ -5,17 +5,23 @@ import bullyImage from '../../../assets/images/help/help-bully.png';
 import confusedImage from '../../../assets/images/help/help-confused.png';
 import needHelpImage from '../../../assets/images/help/help-need-help.png';
 import { GuideToolEvent } from '../../../events';
-import { useHelp } from '../../../hooks';
+import { isGuardiansEnabled, useHelp } from '../../../hooks';
 import { Checkbox } from '../../../common/Checkbox';
 import { BaseButton } from '../../../common/BaseButton';
 
 /* Official main_help: a 420 px page of sections, each headed by its title: the help of the guides,
    the report of a bully, the self-help links, and the emergency box with its way out of the room. */
 export const HelpIndexView: FC<{}> = () => {
-    const { setActiveReport = null } = useHelp();
+    const { setActiveReport = null, startBullyReport = null } = useHelp();
     const [leaveRoom, setLeaveRoom] = useState(false);
 
     const startReport = (reportType: number) => {
+        // With the Guardians on, a bully report asks first whether the user may report (AIR bully_button).
+        if (reportType === ReportType.BULLY && isGuardiansEnabled() && startBullyReport) {
+            startBullyReport();
+            return;
+        }
+
         setActiveReport((prevValue) => ({
             ...prevValue,
             currentStep: ReportState.SELECT_USER,
@@ -25,6 +31,22 @@ export const HelpIndexView: FC<{}> = () => {
     };
 
     const openFaq = () => CreateLinkEvent('habbopages/help');
+
+    // Official HelpController habboway_link: the Habbo Way window, or the hotel's page when it is off.
+    const openHabboWay = () => {
+        const url = GetConfigurationValue<string>('habboway.url', '');
+
+        if (GetConfigurationValue<boolean>('habboway.enabled', true) || !url) CreateLinkEvent('help/habboway');
+        else window.open(url, 'habboMain');
+
+        CreateLinkEvent('help/hide');
+    };
+
+    // safetybooklet_link: the safety booklet, which ends with the safety quiz.
+    const openSafetyBooklet = () => {
+        CreateLinkEvent('help/safetybooklet');
+        CreateLinkEvent('help/hide');
+    };
 
     return (
         <div className="octane-help-index">
@@ -71,10 +93,10 @@ export const HelpIndexView: FC<{}> = () => {
                     </BaseButton>
                 </div>
                 <div className="octane-help-index__self-column">
-                    <BaseButton className="octane-help-index__link" type="button" onClick={openFaq}>
+                    <BaseButton className="octane-help-index__link" type="button" onClick={openHabboWay}>
                         {localizeWithFallback('help.main.self.habboway.title', 'The Habbo Way')}
                     </BaseButton>
-                    <BaseButton className="octane-help-index__link" type="button" onClick={openFaq}>
+                    <BaseButton className="octane-help-index__link" type="button" onClick={openSafetyBooklet}>
                         {localizeWithFallback('help.main.self.safetybooklet.title', 'Safety rules')}
                     </BaseButton>
                 </div>

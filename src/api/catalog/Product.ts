@@ -47,6 +47,7 @@ export class Product implements IProduct {
             (product) =>
                 product.productType !== ProductTypeEnum.BADGE &&
                 product.productType !== ProductTypeEnum.EFFECT &&
+                product.productType !== ProductTypeEnum.CHAT_STYLE &&
                 product.productClassId !== Product.EFFECT_CLASSID_NINJA_DISAPPEAR
         );
     }

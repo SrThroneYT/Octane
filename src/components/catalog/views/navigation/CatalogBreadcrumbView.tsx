@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { LocalizeText } from '../../../../api';
+import { getCatalogNodeKey, LocalizeText } from '../../../../api';
 import { BaseButton } from '../../../../common/BaseButton';
 import { useCatalogActions, useCatalogUiState } from '../../../../hooks';
 
@@ -18,7 +18,7 @@ export const CatalogBreadcrumbView: FC<{}> = () => {
     return (
         <div className="octane-catalog-breadcrumb">
             {activeNodes.map((node, index) => (
-                <span key={node.pageId} className="octane-catalog-breadcrumb-segment">
+                <span key={getCatalogNodeKey(node, index)} className="octane-catalog-breadcrumb-segment">
                     <span className="octane-catalog-breadcrumb-separator">&rsaquo;</span>
                     {index === activeNodes.length - 1 ? (
                         <span className="truncate font-semibold">{node.localization}</span>

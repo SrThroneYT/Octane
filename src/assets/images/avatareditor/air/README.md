@@ -5,6 +5,8 @@ These bitmaps come from the WIN63 `HabboAir.swf` reference in
 
 - `main-misc.png` is the native 24×9 `avatar_editor_tabs_ae_tabs_misc`
   bitmap (`2435_class_170.png`).
+- `main-hotlooks.png` is the native 41×22 `avatar_editor_tabs_ae_tabs_hotlooks`
+  bitmap (habbo-window-manager-com).
 - `tab-default.png`, `tab-hover.png`, and `tab-selected.png` render the
   52×32 `habbo_skin_button_tab_3_xml` states from
   `habbo_skin_ubuntu_png`. The source uses fixed 9px caps and a stretched

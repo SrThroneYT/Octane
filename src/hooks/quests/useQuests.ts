@@ -16,7 +16,7 @@ import {
 } from '@octane/renderer';
 import { useCallback, useMemo, useState } from 'react';
 import { registerSharedHook, useSharedHook } from '@/state/useSharedHook';
-import { localizeWithFallback, NotificationAlertType, SendMessageComposer } from '../../api';
+import { GetConfigurationValue, isSeasonalQuest, localizeWithFallback, NotificationAlertType, SendMessageComposer } from '../../api';
 import { useMessageEvent } from '../events';
 import { useNotification } from '../notification';
 import { useRoom } from '../rooms';
@@ -104,7 +104,10 @@ const useQuestsState = () => {
     useMessageEvent<QuestsMessageEvent>(QuestsMessageEvent, (event) => {
         const parser = event.getParser();
 
-        setQuests(parser.quests.filter((quest) => !quest.isSeasonal));
+        // QuestsList.onQuests: the campaigns of the seasonal calendar live in their own window.
+        const seasonalPrefix = String(GetConfigurationValue<string>('seasonalQuestCalendar.campaignPrefix', '') ?? '');
+
+        setQuests(parser.quests.filter((quest) => !isSeasonalQuest(quest, seasonalPrefix)));
 
         if (parser.openWindow) setOpenRequests((prevValue) => prevValue + 1);
     });

@@ -234,3 +234,10 @@ export function GetPetAvailableColors(petIndex: number, palettes: SellablePetPal
         }
     }
 }
+
+/**
+ * React key for a catalog node. Nodes without a page of their own (folder-only categories,
+ * search results) all carry pageId -1, so those fall back to their name and position.
+ */
+export const getCatalogNodeKey = (node: ICatalogNode, index: number): string =>
+    node.pageId > 0 ? String(node.pageId) : `${node.pageId}-${node.pageName}-${node.localization}-${index}`;

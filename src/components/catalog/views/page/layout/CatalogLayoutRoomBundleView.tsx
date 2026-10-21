@@ -2,6 +2,7 @@ import { FC } from 'react';
 import { SanitizeHtml } from '../../../../../api';
 import { Column, Flex, Grid, Text } from '../../../../../common';
 import { CatalogAddOnBadgeWidgetView } from '../widgets/CatalogAddOnBadgeWidgetView';
+import { CatalogAddOnChatStyleWidgetView } from '../widgets/CatalogAddOnChatStyleWidgetView';
 import { CatalogBundleGridWidgetView } from '../widgets/CatalogBundleGridWidgetView';
 import { CatalogFirstProductSelectorWidgetView } from '../widgets/CatalogFirstProductSelectorWidgetView';
 import { CatalogPurchaseWidgetView } from '../widgets/CatalogPurchaseWidgetView';
@@ -44,6 +45,7 @@ export const CatalogLayoutRoomBundleView: FC<CatalogLayoutProps> = (props) => {
                     <Column grow gap={0} overflow="hidden" position="relative">
                         {!!page.localization.getImage(1) && <img alt="" className="w-full h-full object-contain object-top" src={page.localization.getImage(1)} />}
                         <CatalogAddOnBadgeWidgetView className="bg-muted rounded bottom-0 inset-s-0" position="absolute" />
+                        <CatalogAddOnChatStyleWidgetView className="absolute bottom-0 inset-s-0" />
                     </Column>
                 </Column>
                 <Column gap={1} overflow="hidden" size={7}>

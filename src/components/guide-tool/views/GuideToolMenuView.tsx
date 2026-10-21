@@ -1,5 +1,6 @@
 import { FC } from 'react';
-import { LocalizeText } from '../../../api';
+import { CreateLinkEvent } from '@octane/renderer';
+import { GetConfigurationValue, LocalizeText } from '../../../api';
 import { Button, Column, Flex, Text } from '../../../common';
 import { BaseButton } from '../../../common/BaseButton';
 import { Checkbox } from '../../../common/Checkbox';
@@ -15,6 +16,8 @@ interface GuideToolMenuViewProps {
     guidesOnDuty: number;
     helpersOnDuty: number;
     guardiansOnDuty: number;
+    /** AIR removes the bully report option without the JUDGE_CHAT_REVIEWS perk. */
+    canJudgeChatReviews?: boolean;
     processAction: (action: string) => void;
 }
 
@@ -30,6 +33,7 @@ export const GuideToolMenuView: FC<GuideToolMenuViewProps> = (props) => {
         guidesOnDuty = 0,
         helpersOnDuty = 0,
         guardiansOnDuty = 0,
+        canJudgeChatReviews = true,
         processAction = null
     } = props;
 
@@ -58,10 +62,12 @@ export const GuideToolMenuView: FC<GuideToolMenuViewProps> = (props) => {
                     <Checkbox checked={isHandlingHelpRequests} disabled={isOnDuty} onCheckedChange={(nextChecked) => setIsHandlingHelpRequests(nextChecked)} />
                     <Text>{LocalizeText('guide.help.guide.tool.tickettypeselection.onlyhelprequests')}</Text>
                 </div>
-                <div className="flex items-center gap-1">
-                    <Checkbox checked={isHandlingBullyReports} disabled={isOnDuty} onCheckedChange={(nextChecked) => setIsHandlingBullyReports(nextChecked)} />
-                    <Text>{LocalizeText('guide.help.guide.tool.tickettypeselection.bullyreports')}</Text>
-                </div>
+                {canJudgeChatReviews && (
+                    <div className="flex items-center gap-1">
+                        <Checkbox checked={isHandlingBullyReports} disabled={isOnDuty} onCheckedChange={(nextChecked) => setIsHandlingBullyReports(nextChecked)} />
+                        <Text>{LocalizeText('guide.help.guide.tool.tickettypeselection.bullyreports')}</Text>
+                    </div>
+                )}
             </div>
             <hr className="octane-card-divider m-0" />
             <div className="flex justify-enter items-center gap-2">
@@ -79,7 +85,10 @@ export const GuideToolMenuView: FC<GuideToolMenuViewProps> = (props) => {
                 <Button disabled onClick={(event) => processAction('forum_link')}>
                     {LocalizeText('guide.help.guide.tool.forum.link')}
                 </Button>
-                <Button disabled>{LocalizeText('guide.help.guide.tool.skill.link')}</Button>
+                {/* Official guide_tool_talent: the helper talent track. */}
+                <Button disabled={!GetConfigurationValue<boolean>('talent.track.enabled', true)} onClick={() => CreateLinkEvent('talent/open/helper')}>
+                    {LocalizeText('guide.help.guide.tool.skill.link')}
+                </Button>
             </Flex>
         </div>
     );

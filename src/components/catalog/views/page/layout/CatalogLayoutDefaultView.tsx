@@ -1,9 +1,10 @@
 import { FC } from 'react';
 import { CatalogType, GetConfigurationValue, LocalizeText, ProductTypeEnum, SanitizeHtml } from '../../../../../api';
-import { Text } from '../../../../../common';
+import { LayoutChatStyleImageView, Text } from '../../../../../common';
 import { getCatalogGridMetrics, useCatalogData, useCatalogDisplayPreferences, useCatalogUiState } from '../../../../../hooks';
 import { CatalogHeaderView } from '../../catalog-header/CatalogHeaderView';
 import { CatalogAddOnBadgeWidgetView } from '../widgets/CatalogAddOnBadgeWidgetView';
+import { CatalogAddOnChatStyleWidgetView } from '../widgets/CatalogAddOnChatStyleWidgetView';
 import { CatalogItemGridWidgetView } from '../widgets/CatalogItemGridWidgetView';
 import { CatalogLimitedItemWidgetView } from '../widgets/CatalogLimitedItemWidgetView';
 import { CatalogPreviewControls } from '../widgets/CatalogPreviewControls';
@@ -35,7 +36,7 @@ export const CatalogLayoutDefaultView: FC<CatalogLayoutProps> = (props) => {
                 {currentOffer && (
                     <div className="octane-catalog-offer-panel flex gap-0">
                         <div
-                            className={`octane-catalog-offer-preview relative flex items-center justify-center ${currentOffer.product.productType === ProductTypeEnum.BADGE ? 'is-badge' : ''}`}
+                            className={`octane-catalog-offer-preview relative flex items-center justify-center ${currentOffer.product.productType === ProductTypeEnum.BADGE ? 'is-badge' : ''} ${currentOffer.product.productType === ProductTypeEnum.CHAT_STYLE ? 'is-chat-style' : ''}`}
                             style={{ flex: '1 1 auto', minWidth: 0, width: '100%' }}
                         >
                             <div className="octane-catalog-preview-details">
@@ -44,14 +45,21 @@ export const CatalogLayoutDefaultView: FC<CatalogLayoutProps> = (props) => {
                             <div className="octane-catalog-preview-limited">
                                 <CatalogLimitedItemWidgetView />
                             </div>
-                            {currentOffer.product.productType !== ProductTypeEnum.BADGE && (
+                            {currentOffer.product.productType !== ProductTypeEnum.BADGE && currentOffer.product.productType !== ProductTypeEnum.CHAT_STYLE && (
                                 <>
                                     <CatalogPreviewControls productType={currentOffer.product.productType} roomPreviewer={roomPreviewer} />
                                     <CatalogViewProductWidgetView height={348} />
                                     <CatalogAddOnBadgeWidgetView className="bg-muted rounded bottom-1 right-1 absolute" />
+                                    <CatalogAddOnChatStyleWidgetView className="bottom-1 right-1 absolute" />
                                 </>
                             )}
                             {currentOffer.product.productType === ProductTypeEnum.BADGE && <CatalogAddOnBadgeWidgetView className="scale-200" />}
+                            {currentOffer.product.productType === ProductTypeEnum.CHAT_STYLE && (
+                                <>
+                                    <LayoutChatStyleImageView className="octane-catalog-chat-style-preview" styleId={currentOffer.product.extraParam} />
+                                    <CatalogAddOnBadgeWidgetView className="bg-muted rounded bottom-1 right-1 absolute" />
+                                </>
+                            )}
                         </div>
                     </div>
                 )}

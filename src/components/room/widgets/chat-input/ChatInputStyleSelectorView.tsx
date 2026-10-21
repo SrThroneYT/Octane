@@ -2,6 +2,7 @@ import { FC, useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '../../../../common/FloatingPopover';
 import { CHAT_TEXT_SIZES, ChatTextSize, getChatTextSizeLabel, getStoredChatTextSize, setStoredChatTextSize } from './chatTextSize';
 import { BaseButton } from '../../../../common/BaseButton';
+import { localizeWithFallback } from '../../../../api';
 
 interface ChatInputStyleSelectorViewProps {
     chatStyleId: number;
@@ -30,7 +31,7 @@ export const ChatInputStyleSelectorView: FC<ChatInputStyleSelectorViewProps> = (
                 nativeButton={false}
                 render={<div />}
                 className="swf-chat-style-trigger flex items-center cursor-pointer select-none"
-                aria-label="Stili chat"
+                aria-label={localizeWithFallback('widgets.chatinput.styles', 'Chat styles')}
             >
                 <svg className="swf-chat-style-arrow shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
@@ -55,7 +56,7 @@ export const ChatInputStyleSelectorView: FC<ChatInputStyleSelectorViewProps> = (
                         ))}
                 </div>
                 <div className="swf-chat-font-row">
-                    <span className="swf-chat-font-label">Dimensione del testo</span>
+                    <span className="swf-chat-font-label">{localizeWithFallback('widgets.chatinput.text_size', 'Text size')}</span>
                     {CHAT_TEXT_SIZES.map((size) => (
                         <BaseButton
                             key={size}

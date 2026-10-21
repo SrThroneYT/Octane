@@ -2,7 +2,14 @@ import { FC, MutableRefObject, useEffect, useState } from 'react';
 import { GetConfigurationValue, IPurchasableOffer, LocalizeText, ProductTypeEnum } from '../../../api';
 import { localizeWithFallback } from '../../../api/utils/localizeWithFallback';
 import { getCatalogBundlePrice, ICatalogBundleDiscountRuleset } from '../../../api/catalog/CatalogBundleDiscount';
-import { LayoutCurrencyIcon, LayoutFurniImageView, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView } from '../../../common';
+import {
+    LayoutChatStyleImageView,
+    LayoutCurrencyIcon,
+    LayoutFurniImageView,
+    OctaneCardContentView,
+    OctaneCardHeaderView,
+    OctaneCardView
+} from '../../../common';
 import { Checkbox } from '../../../common/Checkbox';
 import { InlineDialog } from '../../../common/InlineDialog';
 import { BaseButton } from '../../../common/BaseButton';
@@ -87,6 +94,8 @@ export const CatalogPurchaseConfirmView: FC<CatalogPurchaseConfirmViewProps> = (
                             role="img"
                             scale={0.5}
                         />
+                    ) : offer.product?.productType === ProductTypeEnum.CHAT_STYLE ? (
+                        <LayoutChatStyleImageView styleId={offer.product.extraParam} />
                     ) : (
                         !!iconUrl && <img alt={offer.localizationName} src={iconUrl} />
                     )}

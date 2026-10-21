@@ -5,3 +5,4 @@ export * from './QuestEntryView';
 export * from './QuestsView';
 export * from './QuestTrackerView';
 export * from './RewardTrackView';
+export * from './SeasonalCalendarView';

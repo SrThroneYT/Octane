@@ -15,6 +15,8 @@ export * from './useFurnitureInternalLinkWidget';
 export * from './useFurnitureMannequinWidget';
 export * from './useFurniturePlaylistEditorWidget';
 export * from './useFurniturePresentWidget';
+export * from './useFurnitureRentableSpaceWidget';
+export * from './useFurnitureRentableSpaceWidget.helpers';
 export * from './useFurnitureRoomLinkWidget';
 export * from './useFurnitureSpamWallPostItWidget';
 export * from './useFurnitureStackHeightWidget';
