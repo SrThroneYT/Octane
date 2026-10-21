@@ -1,4 +1,4 @@
-import { Air32NativeTextRenderer, layoutNativeText, layoutNormalText, prepareAir32NativeBundle, swfGlyphHasInk } from './Air32NativeTextRenderer';
+import { NativeTextRenderer, layoutNativeText, layoutNormalText, prepareNativeBundle, swfGlyphHasInk } from './NativeTextRenderer';
 import { NativeBundle, NativeFont, NativeRenderOptions } from './NativeTextTypes';
 
 const fontAssets = {
@@ -13,7 +13,7 @@ const fontAssets = {
 type FontKey = keyof typeof fontAssets;
 interface LoadedFont {
     font: NativeFont;
-    renderer: Air32NativeTextRenderer;
+    renderer: NativeTextRenderer;
 }
 const loadingFonts = new Map<FontKey, Promise<LoadedFont>>();
 
@@ -53,8 +53,8 @@ export async function loadNativeFont(style: NativeFontStyle): Promise<LoadedFont
     if (!loadingFonts.has(key)) {
         const loading = fetch(fontAssets[key]).then(async (response) => {
             if (!response.ok) throw new Error(`Native font ${key}: HTTP ${response.status}`);
-            const font = prepareAir32NativeBundle((await response.json()) as NativeBundle);
-            return { font, renderer: new Air32NativeTextRenderer(font) };
+            const font = prepareNativeBundle((await response.json()) as NativeBundle);
+            return { font, renderer: new NativeTextRenderer(font) };
         });
         loadingFonts.set(key, loading);
         loading.catch(() => loadingFonts.delete(key));

@@ -1,5 +1,5 @@
 import { CSSProperties, FC, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { compositeAir32RetainedToOpaque, resolveLineMetrics } from './Air32NativeTextRenderer';
+import { compositeRetainedToOpaque, resolveLineMetrics } from './NativeTextRenderer';
 import { renderCanvasSpacedText, supportsCanvasSpacedText } from './CanvasSpacedText';
 import { loadNativeFont, measureNativeText, NativeFontStyle, supportsNativeText } from './NativeFont';
 import { useNativeTextSampling, useNativeTextScale } from './NativeTextScale';
@@ -204,7 +204,7 @@ export const NativeText: FC<NativeTextProps> = ({
             const canvas = canvasRef.current;
             canvas.width = pixelWidth;
             canvas.height = pixelHeight;
-            const composited = compositeAir32RetainedToOpaque(pixels, [(background >>> 16) & 255, (background >>> 8) & 255, background & 255, 255]);
+            const composited = compositeRetainedToOpaque(pixels, [(background >>> 16) & 255, (background >>> 8) & 255, background & 255, 255]);
             canvas.getContext('2d').putImageData(new ImageData(composited, pixelWidth, pixelHeight), 0, 0);
             setSize({ width: pixelWidth / scale, height: fieldHeight });
             onRasterRef.current?.({ canvas, text, background });

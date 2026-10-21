@@ -41,7 +41,7 @@ import type {
 
 export type { TextPixelTarget, TextRenderStyle } from './NativeTextTypes';
 
-type AdvancedPixelSetup = ReturnType<typeof deriveAir32AdvancedPixelSetup>;
+type AdvancedPixelSetup = ReturnType<typeof deriveAdvancedPixelSetup>;
 type ResolvedNativeOptions = ReturnType<typeof resolveOptions>;
 type NativeGlyphRaster = ReturnType<typeof rasterizeOccurrence>;
 type CachedGlyphRaster = NativeGlyphRaster & { originOffsetX: number; originOffsetY: number };
@@ -58,18 +58,18 @@ export function roundRationalTiesEven(numerator: number, denominator: number) {
         doubledRemainder = (numerator - quotient * denominator) * 2 - denominator;
     return doubledRemainder < 0 ? quotient : doubledRemainder > 0 ? quotient + 1 : quotient % 2 === 0 ? quotient : quotient + 1;
 }
-export function quantizeAir32AlphaMultiplier(alphaMultiplier: number) {
+export function quantizeAlphaMultiplier(alphaMultiplier: number) {
     if (!isFiniteNumber(alphaMultiplier)) throw new TypeError('alphaMultiplier must be finite');
     let quantized = Math.max(0, Math.min(256, Math.floor(Math.max(0, Math.min(1, alphaMultiplier)) * 256)));
     return Math.max(0, quantized - 1);
 }
-export function premultiplyAir32Color(color: ColorChannels) {
+export function premultiplyColor(color: ColorChannels) {
     let channels = normalizeColor(color),
         alpha = channels[3]!,
         alphaScale = alpha + 1;
     return [Math.floor((channels[0]! * alphaScale) / 256), Math.floor((channels[1]! * alphaScale) / 256), Math.floor((channels[2]! * alphaScale) / 256), alpha];
 }
-export function blendAir32Component(destination: number, foregroundPremultiplied: number, globalAlpha: number, mask: number) {
+export function blendComponent(destination: number, foregroundPremultiplied: number, globalAlpha: number, mask: number) {
     for (let [name, value] of [
         ['destination', destination],
         ['foregroundPremultiplied', foregroundPremultiplied],
@@ -81,8 +81,8 @@ export function blendAir32Component(destination: number, foregroundPremultiplied
         difference = foregroundPremultiplied - scaledDestination;
     return clampByte(destination + Math.floor((difference * mask) / 256));
 }
-var componentMaskInverse = buildAir32ComponentMaskInverse();
-export function buildAir32ComponentMaskInverse() {
+var componentMaskInverse = buildComponentMaskInverse();
+export function buildComponentMaskInverse() {
     let inverse = new Uint8Array(256);
     inverse[0]! = 255;
     for (let coverage = 0; coverage <= 255; coverage++) {
@@ -226,7 +226,7 @@ export function applyTextFieldControlsToCutoffs(base: CsmCutoffs, pixelSize: num
         gamma: base.gamma ?? 1
     };
 }
-export function resolveAir32TextFieldCsm(pixelSize: number, thickness = 0, sharpness = 0, colorType = 'dark', csmTableHint = 0) {
+export function resolveTextFieldCsm(pixelSize: number, thickness = 0, sharpness = 0, colorType = 'dark', csmTableHint = 0) {
     if (!Number.isInteger(csmTableHint) || csmTableHint < 0 || csmTableHint >= csmTables.length) throw new RangeError('csmTableHint must be 0, 1, or 2');
     let table = csmTables[csmTableHint]![colorType]!;
     if (!table) throw new RangeError('colorType must be dark or light');
@@ -260,13 +260,13 @@ var float32 = Math.fround,
     outsideDistanceSentinel = -1e3,
     scanlineBias = 0.0010000000474974513,
     scanlineEpsilon = float32(1e-8);
-export function rasterizeAir32AdfDistances(lines: RasterLine[], setup: DistanceSetup) {
-    return rasterizeAir32AdfDistancesAtScale(lines, setup, 3);
+export function rasterizeAdfDistances(lines: RasterLine[], setup: DistanceSetup) {
+    return rasterizeAdfDistancesAtScale(lines, setup, 3);
 }
-export function rasterizeAir32GrayscaleAdfDistances(lines: RasterLine[], setup: DistanceSetup) {
-    return rasterizeAir32AdfDistancesAtScale(lines, setup, 1);
+export function rasterizeGrayscaleAdfDistances(lines: RasterLine[], setup: DistanceSetup) {
+    return rasterizeAdfDistancesAtScale(lines, setup, 1);
 }
-export function rasterizeAir32AdfDistancesAtScale(lines: RasterLine[], setup: DistanceSetup, scale: number) {
+export function rasterizeAdfDistancesAtScale(lines: RasterLine[], setup: DistanceSetup, scale: number) {
     validate(lines, setup);
     let width = setup.width * scale,
         height = setup.height,
@@ -458,7 +458,7 @@ export function validate(lines: RasterLine[], setup: DistanceSetup) {
     )
         throw new TypeError('setup must contain dimensions and finite cutoffs');
 }
-export function reduceAir32LcdColor(red: number, green: number, blue: number, amount = 0.5) {
+export function reduceLcdColor(red: number, green: number, blue: number, amount = 0.5) {
     for (let [channel, value] of Object.entries({ red: red, green: green, blue: blue }))
         if (!Number.isInteger(value) || value < 0 || value > 255) throw new RangeError(`${channel} must be an 8-bit integer`);
     if (!isFiniteNumber(amount)) throw new TypeError('amount must be finite');
@@ -555,7 +555,7 @@ var defaultQuadraticFlatness = 0.4,
     defaultFlatnessMode = 'second-euclidean',
     lcdSampleOffsets = Object.freeze([-1 / 3, 0, 1 / 3]),
     lcdSampleWidth = Math.fround(1 / 3);
-export function rasterizeAir32Imp1(glyph: Imp1Glyph, setup: Imp1RasterSetup) {
+export function rasterizeImp1(glyph: Imp1Glyph, setup: Imp1RasterSetup) {
     validateSetup(setup);
     let lines =
             setup.quadraticFlatness === void 0 && setup.flatnessMode === void 0
@@ -563,7 +563,7 @@ export function rasterizeAir32Imp1(glyph: Imp1Glyph, setup: Imp1RasterSetup) {
                 : transformAndFlattenImp1(glyph, setup.matrix, setup.quadraticFlatness ?? defaultQuadraticFlatness, setup.flatnessMode ?? defaultFlatnessMode),
         rowStride = setup.rowStride ?? setup.width * 4;
     if (!isSafeInteger(rowStride) || rowStride < setup.width * 4) throw new RangeError('rowStride is too small for BGRA8 output');
-    let distances = rasterizeAir32AdfDistances(lines, setup),
+    let distances = rasterizeAdfDistances(lines, setup),
         pixels = new Uint8Array(rowStride * setup.height);
     for (let row = 0; row < setup.height; row++)
         for (let column = 0; column < setup.width; column++) {
@@ -572,7 +572,7 @@ export function rasterizeAir32Imp1(glyph: Imp1Glyph, setup: Imp1RasterSetup) {
                         p = h < 0 ? -1e3 : distances.values[row * distances.width + h]!;
                     return air32DistanceToMask(p, setup.outsideCutoff, setup.insideCutoff);
                 }),
-                channels = setup.useColorReduction === !1 ? masks : reduceAir32LcdColor(masks[0]!, masks[1]!, masks[2]!, setup.colorReductionAmount ?? 0.5),
+                channels = setup.useColorReduction === !1 ? masks : reduceLcdColor(masks[0]!, masks[1]!, masks[2]!, setup.colorReductionAmount ?? 0.5),
                 offset = row * rowStride + column * 4;
             (pixels[offset]! = channels[2]!),
                 (pixels[offset + 1]! = channels[1]!),
@@ -656,7 +656,7 @@ var lcdAxisBias = 1 / 3,
     lcdImagePadding = 5 / 3,
     verticalZoneRoundingBias = 0.800000011920929,
     lcdZoneOffsetBias = 0.1666666716337204;
-export function deriveAir32AdvancedPixelSetup(glyph: Imp1Glyph, options: AdvancedSetupOptions) {
+export function deriveAdvancedPixelSetup(glyph: Imp1Glyph, options: AdvancedSetupOptions) {
     if (
         !glyph ||
         !isFiniteNumber(glyph.normalizedEm) ||
@@ -753,8 +753,8 @@ export function deriveAir32AdvancedPixelSetup(glyph: Imp1Glyph, options: Advance
         nativeKeyWords: nativeKeyWords
     };
 }
-export function deriveAir32AdvancedRetainedSetup(glyph: Imp1Glyph, options: AdvancedSetupOptions) {
-    let setup = deriveAir32AdvancedPixelSetup(glyph, options),
+export function deriveAdvancedRetainedSetup(glyph: Imp1Glyph, options: AdvancedSetupOptions) {
+    let setup = deriveAdvancedPixelSetup(glyph, options),
         xAxis =
             (setup.standardAlignmentZones.mask & 1) === 0
                 ? setupAxis(Math.fround(options.fittedPenX), setup.scaleX, glyph.referenceX, !1)
@@ -904,7 +904,7 @@ export function asUint8Array(input: ArrayBuffer | ArrayBufferView) {
     if (ArrayBuffer.isView(input)) return new Uint8Array(input.buffer, input.byteOffset, input.byteLength);
     throw new TypeError('IMP1 input must be an ArrayBuffer or typed array');
 }
-export function prepareAir32NativeProfile(profile: RawNativeProfile) {
+export function prepareNativeProfile(profile: RawNativeProfile) {
     if (!profile || !isArray(profile.glyphs)) throw new TypeError('native profile must contain a glyphs array');
     let glyphs = new Map<number, NativeGlyph>();
     for (let record of profile.glyphs) {
@@ -932,7 +932,7 @@ export function decodeBase64(text: string) {
     throw new Error('a standards-compatible atob implementation is required');
 }
 var normalSampleOffsets = Object.freeze([0.125, 0.375, 0.625, 0.875]);
-export function rasterizeAir32NormalImp1(glyph: Imp1Glyph, { sampleMasks, width, height, originX, baselineY, size, emSquare }: NormalSampleSetup) {
+export function rasterizeNormalImp1(glyph: Imp1Glyph, { sampleMasks, width, height, originX, baselineY, size, emSquare }: NormalSampleSetup) {
     if (
         (validateRasterArguments(glyph, {
             sampleMasks: sampleMasks,
@@ -1071,23 +1071,23 @@ export function validateLowRasterArguments(glyph: Imp1Glyph, setup: LowNormalSet
 export function validateLineOnlyImp1(glyph: Imp1Glyph) {
     if (glyph.pathType !== 0) throw new RangeError('exact AIR LOW NORMAL rasterization currently supports filled IMP1 paths');
 }
-export function createAir32RetainedBitmap(width: number, height: number) {
+export function createRetainedBitmap(width: number, height: number) {
     if (!isSafeInteger(width) || width < 1 || !isSafeInteger(height) || height < 1)
         throw new RangeError('retained bitmap dimensions must be positive integers');
     return new Uint8ClampedArray(width * height * 4);
 }
-export function compositeAir32RetainedCoverage(destination: BytePixels, offset: number, color: ColorChannels, coverage: number) {
+export function compositeRetainedCoverage(destination: BytePixels, offset: number, color: ColorChannels, coverage: number) {
     if (!(destination instanceof Uint8Array || destination instanceof Uint8ClampedArray)) throw new TypeError('destination must be an 8-bit typed array');
     if (!isSafeInteger(offset) || offset < 0 || offset + 3 >= destination.length) throw new RangeError('retained destination offset is out of bounds');
     if (!Number.isInteger(coverage) || coverage < 0 || coverage > 255) throw new RangeError('coverage must be an 8-bit integer');
     if (coverage === 0) return;
-    let premultiplied = premultiplyAir32Color(color),
+    let premultiplied = premultiplyColor(color),
         alpha = premultiplied[3]!;
     for (let channel = 0; channel < 3; channel++)
-        destination[offset + channel]! = blendAir32Component(destination[offset + channel]!, premultiplied[channel]!, alpha, coverage);
-    destination[offset + 3]! = blendAir32Component(destination[offset + 3]!, alpha, alpha, coverage);
+        destination[offset + channel]! = blendComponent(destination[offset + channel]!, premultiplied[channel]!, alpha, coverage);
+    destination[offset + 3]! = blendComponent(destination[offset + 3]!, alpha, alpha, coverage);
 }
-export function setAir32NormalRetainedCoverage(destination: BytePixels, offset: number, color: ColorChannels, coverage: number) {
+export function setNormalRetainedCoverage(destination: BytePixels, offset: number, color: ColorChannels, coverage: number) {
     if (!(destination instanceof Uint8Array || destination instanceof Uint8ClampedArray)) throw new TypeError('destination must be an 8-bit typed array');
     if (!isSafeInteger(offset) || offset < 0 || offset + 3 >= destination.length) throw new RangeError('retained destination offset is out of bounds');
     if (!Number.isInteger(coverage) || coverage < 0 || coverage > 255) throw new RangeError('coverage must be an 8-bit integer');
@@ -1098,7 +1098,7 @@ export function setAir32NormalRetainedCoverage(destination: BytePixels, offset: 
         (destination[offset + 2]! = (foreground[2]! * (coverage + 1)) >> 8),
         (destination[offset + 3]! = coverage);
 }
-export function compositeAir32RetainedToOpaque(retained: BytePixels, background: ColorChannels) {
+export function compositeRetainedToOpaque(retained: BytePixels, background: ColorChannels) {
     if (!(retained instanceof Uint8Array || retained instanceof Uint8ClampedArray) || retained.length % 4 !== 0)
         throw new TypeError('retained must contain premultiplied RGBA bytes');
     let channels = normalizeOpaqueBackground(background),
@@ -1149,19 +1149,19 @@ var defaultOptions = Object.freeze({
     maxRasterCacheBytes = 2 * 1024 * 1024,
     maxZonedLayoutCacheEntries = 8192,
     fontRasterCaches = new WeakMap<NativeFont, RasterCache<CoverageRaster>>();
-export function prepareAir32NativeFont(profile: RawNativeProfile | NativeProfile, swfFont: SwfFont) {
-    let preparedProfile = profile?.glyphs instanceof Map ? (profile as NativeProfile) : prepareAir32NativeProfile(profile as RawNativeProfile);
+export function prepareNativeFont(profile: RawNativeProfile | NativeProfile, swfFont: SwfFont) {
+    let preparedProfile = profile?.glyphs instanceof Map ? (profile as NativeProfile) : prepareNativeProfile(profile as RawNativeProfile);
     if (!swfFont || !isSafeInteger(swfFont.emSquare) || !isArray(swfFont.glyphs) || !isArray(swfFont.kerning))
         throw new TypeError('swfFont must contain DefineFont3 emSquare, glyphs, and kerning');
     let swfGlyphs = new Map(swfFont.glyphs.map((s) => [s.code, s])),
         kerning = new Map(swfFont.kerning.map((s) => [`${s.leftCode},${s.rightCode}`, s.adjustment]));
     return { profile: preparedProfile, swfFont: swfFont, swfGlyphs: swfGlyphs, kerning: kerning };
 }
-export class Air32NativeTextRenderer {
+export class NativeTextRenderer {
     declare font: NativeFont;
     declare glyphRunCache: Map<string, CachedGlyphRaster>;
     constructor(font: NativeFont) {
-        if (!font?.profile?.glyphs || !font?.swfGlyphs) throw new TypeError('nativeFont must be returned by prepareAir32NativeFont');
+        if (!font?.profile?.glyphs || !font?.swfGlyphs) throw new TypeError('nativeFont must be returned by prepareNativeFont');
         (this.font = font), (this.glyphRunCache = new Map());
     }
     clearGlyphRunCache() {
@@ -1186,7 +1186,7 @@ export class Air32NativeTextRenderer {
         let width = resolved.target?.width ?? Math.max(1, Math.ceil(layout.fieldWidth) + resolved.padding * 2),
             height = resolved.target?.height ?? Math.max(1, Math.ceil(metrics.fieldHeight) + resolved.padding * 2),
             retainedPipeline = resolved.renderingPipeline === 'habbo-retained',
-            retained = retainedPipeline ? (resolved.target?.pixels ?? createAir32RetainedBitmap(width, height)) : null,
+            retained = retainedPipeline ? (resolved.target?.pixels ?? createRetainedBitmap(width, height)) : null,
             pixels = resolved.target?.pixels ?? new Uint8ClampedArray(width * height * 4);
         if ((retainedPipeline || fillOpaque(pixels, resolved.background), normal))
             if (resolved.stageQuality === 'low') {
@@ -1202,7 +1202,7 @@ export class Air32NativeTextRenderer {
             }
         else {
             let colorType = air32ColorType(resolved.color, resolved.color[3]!),
-                cutoffs = resolveAir32TextFieldCsm(
+                cutoffs = resolveTextFieldCsm(
                     size,
                     resolved.thickness,
                     resolved.sharpness,
@@ -1277,7 +1277,7 @@ export class Air32NativeTextRenderer {
             }
         }
         return (
-            retainedPipeline && !resolved.target && (pixels = compositeAir32RetainedToOpaque(retained!, resolved.background)),
+            retainedPipeline && !resolved.target && (pixels = compositeRetainedToOpaque(retained!, resolved.background)),
             { ...layout, ...metrics, width: width, height: height, pixels: pixels, ...(retainedPipeline ? { retainedPixels: retained } : {}) }
         );
     }
@@ -1363,7 +1363,7 @@ export function layoutZonedNativeText(font: NativeFont, text: string, size: numb
             if (cachedScale) cache.delete(cacheKey);
             else {
                 let nativeGlyph = requireNativeGlyph(font, codepoint),
-                    setup = deriveAir32AdvancedPixelSetup(nativeGlyph.imp1, { pointSize: size, fittedPenX: maskPenX + 0.5, fittedPenY: 0 });
+                    setup = deriveAdvancedPixelSetup(nativeGlyph.imp1, { pointSize: size, fittedPenX: maskPenX + 0.5, fittedPenY: 0 });
                 cachedScale = [setup.normalizedScaleX, setup.residualX];
             }
             cache.set(cacheKey, cachedScale),
@@ -1454,7 +1454,7 @@ export function resolveOptions(options: NativeRenderOptions) {
             clamp(color[3]! * colorTransform.alphaMultiplier + colorTransform.alphaOffset)
         ]),
             (transformedGlyphColor = [...transformedLineColor]),
-            (transformedGlyphColor[3]! = quantizeAir32AlphaMultiplier(transformedLineColor[3]! / 255));
+            (transformedGlyphColor[3]! = quantizeAlphaMultiplier(transformedLineColor[3]! / 255));
     }
     if ((options.backgroundAlpha ?? 1) !== 1) throw new RangeError('native translucent backgrounds require an AIR grayscale alpha-mask plane');
     let background = normalizeOpaqueColor(options.background ?? defaultOptions.background, 'background'),
@@ -1504,7 +1504,7 @@ export function resolveHabboEtching(color: number | string | null | undefined, p
         argb: argb,
         position: resolvedPosition,
         offset: offset,
-        glyphColor: [red, green, blue, quantizeAir32AlphaMultiplier(alpha / 255)],
+        glyphColor: [red, green, blue, quantizeAlphaMultiplier(alpha / 255)],
         lineColor: [red, green, blue, alpha]
     };
 }
@@ -1535,7 +1535,7 @@ export function rasterizeNormalRun(
     for (let placement of layout.placements) {
         if (!placement.hasInk) continue;
         let glyph = requireNativeGlyph(font, placement.codepoint);
-        rasterizeAir32NormalImp1(glyph.imp1, {
+        rasterizeNormalImp1(glyph.imp1, {
             sampleMasks: sampleMasks,
             width: width,
             height: height,
@@ -1589,7 +1589,7 @@ export function compositeNormalRetainedCoverage(masks: Uint16Array, pixels: Byte
         let mask = masks[index]!;
         if (mask === 0) continue;
         let density = normalSampleCountToDensity(normalSampleMaskCount(mask));
-        setAir32NormalRetainedCoverage(pixels, index * 4, color, density);
+        setNormalRetainedCoverage(pixels, index * 4, color, density);
     }
 }
 export function compositeLowNormalCoverage(coverage: Uint8Array, pixels: BytePixels, color: ColorChannels) {
@@ -1602,7 +1602,7 @@ export function compositeLowNormalCoverage(coverage: Uint8Array, pixels: BytePix
 }
 export function compositeLowNormalRetainedCoverage(coverage: Uint8Array, pixels: BytePixels, color: ColorChannels) {
     requireOpaqueNormalForeground(color, 'LOW NORMAL retained');
-    for (let index = 0; index < coverage.length; index++) coverage[index]! !== 0 && setAir32NormalRetainedCoverage(pixels, index * 4, color, 255);
+    for (let index = 0; index < coverage.length; index++) coverage[index]! !== 0 && setNormalRetainedCoverage(pixels, index * 4, color, 255);
 }
 export function requireOpaqueNormalForeground(color: ColorChannels, mode: string) {
     if (color[3]! !== 255) throw new RangeError(`exact AIR ${mode} rendering requires opaque text`);
@@ -1638,7 +1638,7 @@ export function prepareOccurrence(glyph: NativeGlyph, placement: GlyphPlacement,
     let penX = padding + 2 + placement.maskPenX + 0.5,
         penY = -(padding + metrics.baseline);
     return {
-        setup: deriveAir32AdvancedPixelSetup(glyph.imp1, { pointSize: metrics.size, fittedPenX: penX, fittedPenY: penY }),
+        setup: deriveAdvancedPixelSetup(glyph.imp1, { pointSize: metrics.size, fittedPenX: penX, fittedPenY: penY }),
         deviceAnchorX: padding + 2 + placement.anchorX!,
         deviceAnchorY: padding + metrics.baseline
     };
@@ -1647,7 +1647,7 @@ export function prepareRetainedOccurrence(glyph: NativeGlyph, placement: GlyphPl
     let penX = padding + 2 + placement.maskPenX + 0.5,
         penY = -(padding + metrics.baseline);
     return {
-        setup: deriveAir32AdvancedRetainedSetup(glyph.imp1, { pointSize: metrics.size, fittedPenX: penX, fittedPenY: penY }),
+        setup: deriveAdvancedRetainedSetup(glyph.imp1, { pointSize: metrics.size, fittedPenX: penX, fittedPenY: penY }),
         deviceAnchorX: padding + 2 + placement.anchorX!,
         deviceAnchorY: padding + metrics.baseline
     };
@@ -1655,7 +1655,7 @@ export function prepareRetainedOccurrence(glyph: NativeGlyph, placement: GlyphPl
 export function rasterizeOccurrence(glyph: NativeGlyph, setup: AdvancedPixelSetup, cutoffs: CsmCutoffs) {
     let fround = Math.fround;
     return {
-        ...rasterizeAir32Imp1(glyph.imp1, {
+        ...rasterizeImp1(glyph.imp1, {
             width: setup.width,
             height: setup.height,
             rowStride: setup.rowStride,
@@ -1675,7 +1675,7 @@ export function rasterizeRetainedOccurrence(glyph: NativeGlyph, setup: AdvancedP
     let outside = Math.fround(cutoffs.outside),
         inside = Math.fround(cutoffs.inside),
         lines = air32FlattenedPathToLines(air32TransformAndFlattenImp1(glyph.imp1, setup.matrix)),
-        distances = rasterizeAir32GrayscaleAdfDistances(lines, { width: setup.width, height: setup.height, outsideCutoff: outside, insideCutoff: inside }),
+        distances = rasterizeGrayscaleAdfDistances(lines, { width: setup.width, height: setup.height, outsideCutoff: outside, insideCutoff: inside }),
         coverage = new Uint8Array(distances.values.length);
     for (let index = 0; index < coverage.length; index++) {
         let distance = distances.values[index]!;
@@ -1698,7 +1698,7 @@ export function renderAdvancedRetainedPass(
     offsetY: number,
     lineColor: ColorChannels | null
 ) {
-    let premultiplied = premultiplyAir32Color(color);
+    let premultiplied = premultiplyColor(color);
     lineColor &&
         compositeRetainedUnderline(
             pixels,
@@ -1765,20 +1765,20 @@ export function compositeRetainedUnderline(pixels: BytePixels, width: number, he
         let offset = (y * width + pixelX) * 4;
         color[3]! === 255
             ? ((pixels[offset]! = color[0]!), (pixels[offset + 1]! = color[1]!), (pixels[offset + 2]! = color[2]!), (pixels[offset + 3]! = 255))
-            : compositeAir32RetainedCoverage(pixels, offset, color, 255);
+            : compositeRetainedCoverage(pixels, offset, color, 255);
     }
     let fraction = length - wholePixels;
     if (fraction <= 0) return;
     let lastX = x + wholePixels;
     if (lastX < 0 || lastX >= width) return;
     let coverage = Math.round(fraction * 256);
-    compositeAir32RetainedCoverage(pixels, (y * width + lastX) * 4, color, coverage);
+    compositeRetainedCoverage(pixels, (y * width + lastX) * 4, color, coverage);
 }
 export function glyphRunCacheKey(codepoint: number, phase: number | undefined, setup: AdvancedPixelSetup, cutoffs: CsmCutoffs) {
     return [codepoint, phase, ...setup.nativeKeyWords, float32Bits(Math.fround(cutoffs.outside)), float32Bits(Math.fround(cutoffs.inside))].join(':');
 }
 export function compositeNativeGlyph(glyph: NativeGlyphRaster, pixels: BytePixels, width: number, height: number, x: number, y: number, color: ColorChannels) {
-    let premultiplied = premultiplyAir32Color(color),
+    let premultiplied = premultiplyColor(color),
         alpha = premultiplied[3]!;
     for (let row = 0; row < glyph.height; row++) {
         let targetY = y + row;
@@ -1792,7 +1792,7 @@ export function compositeNativeGlyph(glyph: NativeGlyphRaster, pixels: BytePixel
             if ((coverage[0]! | coverage[1]! | coverage[2]!) === 0) continue;
             let targetOffset = (targetY * width + targetX) * 4;
             for (let channel = 0; channel < 3; channel++)
-                pixels[targetOffset + channel]! = blendAir32Component(pixels[targetOffset + channel]!, premultiplied[channel]!, alpha, coverage[channel]!);
+                pixels[targetOffset + channel]! = blendComponent(pixels[targetOffset + channel]!, premultiplied[channel]!, alpha, coverage[channel]!);
         }
     }
 }
@@ -1843,7 +1843,7 @@ export function normalizeTextColor(color: TextColor, alpha: number | undefined) 
     else throw new RangeError('color must be a 24-bit integer or RGBA bytes');
     if (alpha !== void 0) {
         if (!isFiniteNumber(alpha) || alpha < 0 || alpha > 1) throw new RangeError('alpha must be from 0 through 1');
-        channels[3]! = quantizeAir32AlphaMultiplier(alpha);
+        channels[3]! = quantizeAlphaMultiplier(alpha);
     }
     return channels;
 }
@@ -1882,7 +1882,7 @@ export function assertSafeRun(value: number) {
     if (!isSafeInteger(value)) throw new RangeError('text run is too long for exact DefineFont3 layout');
 }
 var nativeBundleFormat = 'air32-native-font-bundle-v1';
-export function prepareAir32NativeBundle(bundle: NativeBundle) {
+export function prepareNativeBundle(bundle: NativeBundle) {
     if (!bundle || bundle.schemaVersion !== 1 || bundle.format !== nativeBundleFormat) throw new TypeError(`native bundle must use ${nativeBundleFormat}`);
     if (typeof bundle.fontKey != 'string' || bundle.fontKey.length === 0) throw new TypeError('native bundle fontKey must be a non-empty string');
     if (!bundle.nativeProfile || !isArray(bundle.nativeProfile.glyphs) || !bundle.swfFont || !isArray(bundle.swfFont.glyphs))
@@ -1904,7 +1904,7 @@ export function prepareAir32NativeBundle(bundle: NativeBundle) {
     if (bundle.coverage?.metricGlyphCount != null && bundle.coverage.metricGlyphCount !== metricCodepoints.size)
         throw new Error('native bundle metric count does not match its glyphs');
     return {
-        ...prepareAir32NativeFont(bundle.nativeProfile, bundle.swfFont),
+        ...prepareNativeFont(bundle.nativeProfile, bundle.swfFont),
         fontKey: bundle.fontKey,
         bundleMetadata: Object.freeze({
             schemaVersion: bundle.schemaVersion,
