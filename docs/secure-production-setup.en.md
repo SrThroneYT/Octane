@@ -11,6 +11,11 @@ Replace the example domains with your real domains:
 - `https://hotel.example.com`
 - `https://nitro.example.com:2096`
 
+Shortcut: `node install.mjs --secure=on --emulator-config=<path>/config.ini` sets the `client-mode.json` flags
+(section 2), generates `nitro.secure.master_key` and updates `config.ini` (section 5, with a backup).
+Without `--emulator-config` it prints the lines to paste. A master key that is already set is never replaced.
+`nitro.secure.config.root` and `nitro.secure.gamedata.root` still have to be set by hand.
+
 ## 1. Build Octane
 
 Inside the `octane` repository:

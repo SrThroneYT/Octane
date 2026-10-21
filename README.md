@@ -74,10 +74,11 @@ Both wrappers run `node install.mjs`, which you can also call directly. The inst
 5. Copies `public/configuration/*.example` to `*.json` (existing files are kept)
 6. Asks for the JSON parsing mode (JSONC recommended) and saves it in `.octane-build.json`
 7. Asks for your URLs and validates them
-8. Builds the client
-9. Prints a summary
+8. Asks whether to encrypt config, gamedata and `/api` (secure mode), sets the two flags in `client-mode.json`, and either patches the emulator's `config.ini` (backup first) or prints the lines to paste, with a freshly generated `nitro.secure.master_key`
+9. Builds the client
+10. Prints a summary
 
-Re-running it is safe: existing config files are kept and only the URL keys you pass are patched.
+Re-running it is safe: existing config files are kept and only the URL keys you pass are patched. A `nitro.secure.master_key` that is already set in `config.ini` is never replaced.
 
 <details>
 <summary><b>Headless / CI install</b></summary>
@@ -102,6 +103,8 @@ node install.mjs --non-interactive \
 
 - `--non-interactive` / `--skip-prompts`: keep the example defaults unless a URL flag is passed
 - `--json-mode=<jsonc|legacy|auto>`: pick the parser without the prompt
+- `--secure=<on|off>`, `--secure-api=<on|off>`: secure mode without the prompt; without `--secure` a non-interactive run leaves it as it is
+- `--emulator-config=<path to config.ini>`: patch the emulator config instead of printing the values
 - `--skip-build`, `--skip-clone`, `--skip-link`: skip those steps on a re-run
 - `--help`: every flag, including one per URL key
 

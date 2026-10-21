@@ -8,6 +8,15 @@ import { platform } from 'node:os';
 import * as readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import { DEFAULT_JSON_MODE, normalizeJsonModeAnswer, VALID_JSON_MODES } from './scripts/json-mode.mjs';
+import {
+    buildIniSnippet,
+    normalizeSecureAnswer,
+    patchClientMode,
+    patchIniValues,
+    probeBootstrap,
+    resolveIniValues,
+    SECURE_MODES
+} from './scripts/secure-setup.mjs';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_RENDERER_REPO_URL = 'https://github.com/duckietm/Octane-Renderer.git';
@@ -68,6 +77,7 @@ const STEPS = [
     'Copy config files',
     'Choose JSON parsing mode',
     'Configure URLs',
+    'Configure secure mode',
     'Build (yarn build)',
     'Summary'
 ];
@@ -82,6 +92,7 @@ const summary = {
     configsPatched: [],
     jsonMode: null,
     jsonModeSource: null,
+    secure: null,
     buildRan: false,
     buildSkipped: false
 };
@@ -168,6 +179,9 @@ function parseArgs() {
         jsonMode: null,
         rendererDir: null,
         rendererRepo: null,
+        secure: null,
+        secureApi: null,
+        emulatorConfig: null,
         urlOverrides: {}
     };
     const builtinFlags = new Set([
@@ -210,6 +224,20 @@ function parseArgs() {
                 opts.rendererRepo = value;
                 continue;
             }
+            if (flagName === 'secure' || flagName === 'secure-api') {
+                if (!SECURE_MODES.includes(value)) {
+                    warn('Invalid --' + flagName + '=' + value + ' (expected: ' + SECURE_MODES.join(', ') + '), ignored');
+                    continue;
+                }
+                if (flagName === 'secure') opts.secure = value;
+                else opts.secureApi = value;
+                continue;
+            }
+            if (flagName === 'emulator-config') {
+                if (value.length === 0) { warn('Empty --emulator-config ignored'); continue; }
+                opts.emulatorConfig = value;
+                continue;
+            }
             const key = FLAG_TO_KEY[flagName];
             if (key) {
                 opts.urlOverrides[key] = value;
@@ -236,6 +264,11 @@ function printUsage() {
         '  --renderer-dir=<path>               Renderer folder (absolute, or relative to the parent dir).',
         '                                      Default: auto-detect ' + RENDERER_DIR_CANDIDATES.join(' / ') + ', else "' + DEFAULT_RENDERER_DIR_NAME + '". Env: OCTANE_RENDERER_DIR',
         '  --renderer-repo=<url>               Git URL to clone the renderer from (default: duckietm/Octane-Renderer)',
+        '  --secure=<on|off>                   Encrypted config/gamedata (/nitro-sec/file) and /api. Without the flag the step',
+        '                                      asks, and --non-interactive leaves the current state untouched',
+        '  --secure-api=<on|off>               Encrypt /api calls on their own (default: follows --secure)',
+        '  --emulator-config=<path>            Emulator config.ini to patch (a backup is written first).',
+        '                                      Without it the values are printed to paste into config.ini',
         '  --skip-build                        Skip the final yarn build',
         '  --skip-clone                        Skip cloning the renderer',
         '  --skip-link                         Skip yarn link calls (useful when re-running)',
@@ -252,7 +285,8 @@ function printUsage() {
         '  5. Copy public/configuration/*.example -> *.json (keeps existing files)',
         '  6. Choose JSON parsing mode (jsonc recommended) -> writes .octane-build.json',
         '  7. Prompt for URLs and patch the JSON config files',
-        '  8. yarn build (honours the JSON mode chosen at step 6)',
+        '  8. Secure mode: patch client-mode.json, generate the emulator master key, check /nitro-sec/bootstrap',
+        '  9. yarn build (honours the JSON mode chosen at step 6)',
         ''
     ].join('\n'));
 }
@@ -555,6 +589,94 @@ async function promptConfigs(opts) {
     }
 }
 
+async function chooseSecureMode(opts) {
+    if (opts.secure) return opts.secure === 'on';
+    if (!opts.interactive) return null;
+    const rl = readline.createInterface({ input, output });
+    activeReadline = rl;
+    try {
+        while (true) {
+            const answer = await rl.question('  Encrypt config, gamedata and /api through /nitro-sec? [Y/n]: ');
+            const mode = normalizeSecureAnswer(answer);
+            if (mode) return mode === 'on';
+            warn('Answer y or n.');
+        }
+    } finally {
+        activeReadline = null;
+        rl.close();
+    }
+}
+
+async function chooseEmulatorConfig(opts) {
+    if (opts.emulatorConfig) return resolve(opts.emulatorConfig);
+    if (!opts.interactive) return null;
+    const rl = readline.createInterface({ input, output });
+    activeReadline = rl;
+    try {
+        const answer = (await rl.question('  Emulator config.ini to patch [Enter = print the values instead]: ')).trim();
+        return answer ? resolve(answer) : null;
+    } finally {
+        activeReadline = null;
+        rl.close();
+    }
+}
+
+async function configureSecure(opts) {
+    const assets = await chooseSecureMode(opts);
+    if (assets === null) {
+        info('--non-interactive without --secure: leaving client-mode.json and the emulator config as they are');
+        return;
+    }
+    const api = opts.secureApi ? opts.secureApi === 'on' : assets;
+    summary.secure = { assets, api, iniPatched: null, iniBackup: null, masterKey: null, probe: null };
+
+    const modePath = join(CONFIG_DIR, 'client-mode.json');
+    const current = JSON.parse(await readFile(modePath, 'utf8'));
+    const patched = patchClientMode(current, { assets, api });
+    if (patched.changed) {
+        await writeFile(modePath, JSON.stringify(patched.clientMode, null, 4) + '\n');
+        ok('Updated client-mode.json (secureAssetsEnabled=' + assets + ', secureApiEnabled=' + api + ')');
+        summary.configsPatched.push('client-mode.json');
+    } else {
+        info('client-mode.json already has these secure flags');
+    }
+
+    const iniPath = await chooseEmulatorConfig(opts);
+    const iniText = iniPath ? await readFile(iniPath, 'utf8') : null;
+    const { values, keptMasterKey } = resolveIniValues(iniText, { assets, api });
+
+    if (iniPath) {
+        const result = patchIniValues(iniText, values);
+        if (result.changes.length) {
+            const backup = iniPath + '.bak-' + Date.now();
+            await copyFile(iniPath, backup);
+            await writeFile(iniPath, result.text);
+            ok('Updated ' + iniPath + ' (' + result.changes.join(', ') + '); backup: ' + backup);
+            summary.secure.iniBackup = backup;
+        } else {
+            info(iniPath + ' already holds these values');
+        }
+        summary.secure.iniPatched = iniPath;
+        if (keptMasterKey) info('Kept the nitro.secure.master_key already set in ' + iniPath);
+    } else {
+        summary.secure.masterKey = values['nitro.secure.master_key'] || null;
+        console.log('\n  Add this to the emulator config.ini' + (summary.secure.masterKey ? ' (the key is shown once, keep it stable)' : '') + ':\n');
+        console.log(buildIniSnippet(values).replace(/^/gm, '    '));
+        console.log('');
+    }
+
+    if (assets || api) {
+        info('Also set nitro.secure.config.root and nitro.secure.gamedata.root to the deployed folders, then restart the emulator.');
+        const apiBase = patched.clientMode.apiBaseUrl;
+        if (typeof apiBase === 'string' && apiBase) {
+            const probe = await probeBootstrap(apiBase);
+            summary.secure.probe = probe.state;
+            if (probe.state === 'ready') ok('Emulator at ' + apiBase + ' answers /nitro-sec/bootstrap (fp ' + (probe.fingerprint || 'n/a') + ')');
+            else warn('Bootstrap check at ' + apiBase + ': ' + probe.state + ' (' + probe.detail + '). Expected until the emulator runs with the new config.ini.');
+        }
+    }
+}
+
 async function runBuild(opts) {
     if (opts.skipBuild) { info('--skip-build: skipping yarn build'); summary.buildSkipped = true; return; }
     await runShell('yarn build', ROOT);
@@ -572,6 +694,12 @@ function printSummary() {
     if (summary.configsKept.length)    console.log(' Kept:       ' + summary.configsKept.join(', '));
     if (summary.configsPatched.length) console.log(' Patched:    ' + summary.configsPatched.join(', '));
     if (summary.jsonMode)              console.log(' JSON mode:  ' + summary.jsonMode + (summary.jsonModeSource ? '  (' + summary.jsonModeSource + ')' : ''));
+    if (summary.secure) {
+        const s = summary.secure;
+        console.log(' Secure:     assets=' + s.assets + ', api=' + s.api
+            + (s.iniPatched ? ', config.ini patched' : ', config.ini values printed above')
+            + (s.probe ? ', bootstrap ' + s.probe : ''));
+    }
     if (summary.buildRan)              console.log(' Build:      ' + c.green + 'OK' + c.reset + ' -> ' + distPath);
     else if (summary.buildSkipped)     console.log(' Build:      skipped');
     console.log('');
@@ -601,8 +729,9 @@ async function main() {
     step(STEPS[4]); await copyConfigs();
     step(STEPS[5]); await chooseJsonMode(opts);
     step(STEPS[6]); await promptConfigs(opts);
-    step(STEPS[7]); await runBuild(opts);
-    step(STEPS[8]); printSummary();
+    step(STEPS[7]); await configureSecure(opts);
+    step(STEPS[8]); await runBuild(opts);
+    step(STEPS[9]); printSummary();
 }
 
 process.on('SIGINT', () => {
