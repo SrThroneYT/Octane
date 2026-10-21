@@ -7,9 +7,9 @@ import { Radio } from '../../../../common/Radio';
 import { useWired } from '../../../../hooks';
 import { WiredFurniSelectionSourceRow } from '../WiredFurniSelectionSourceRow';
 import { FURNI_SOURCES, sortWiredSourceOptions, WiredSourceOption, WiredSourcesSelector } from '../WiredSourcesSelector';
-import { getCustomVariableItemId } from '../WiredVariablePickerData';
 import { variableTokenFromId, WIRED_FIXED_HOLDER_SOURCE, WiredValueOrVariableField } from '../WiredValueOrVariableField';
 import { toWiredVariableIdOnTarget } from '../WiredVariableIds';
+import { getCustomVariableItemId } from '../WiredVariablePickerData';
 import { WiredActionBaseView } from './WiredActionBaseView';
 
 export const TRANSACTION_MODE_NORMAL = 0;
@@ -42,7 +42,8 @@ const CONTRACT_SOURCES: WiredSourceOption[] = sortWiredSourceOptions(
 
 type SelectionMode = 'chests' | 'contracts';
 
-const clampTimeout = (value: number) => Math.min(TRANSACTION_TIMEOUT_MAX, Math.max(TRANSACTION_TIMEOUT_MIN, Number.isFinite(value) ? Math.round(value) : TRANSACTION_TIMEOUT_DEFAULT));
+const clampTimeout = (value: number) =>
+    Math.min(TRANSACTION_TIMEOUT_MAX, Math.max(TRANSACTION_TIMEOUT_MIN, Number.isFinite(value) ? Math.round(value) : TRANSACTION_TIMEOUT_DEFAULT));
 
 /**
  * The official Initiate Transaction (47, AIR `chests/class_4135`): the transaction mode (normal, multiplier, auto
@@ -52,7 +53,17 @@ const clampTimeout = (value: number) => Math.min(TRANSACTION_TIMEOUT_MAX, Math.m
  * the contracts (second picks), user slot 0 the trading users.
  */
 export const WiredActionInitTransactionView: FC<{}> = () => {
-    const { trigger = null, furniIds = [], setFurniIds, setFurniIds2, setIntParams, setStringParam, setVariableIds, setSourceTypes, setAllowsFurni } = useWired();
+    const {
+        trigger = null,
+        furniIds = [],
+        setFurniIds,
+        setFurniIds2,
+        setIntParams,
+        setStringParam,
+        setVariableIds,
+        setSourceTypes,
+        setAllowsFurni
+    } = useWired();
     const [mode, setMode] = useState(TRANSACTION_MODE_NORMAL);
     const [multiplier, setMultiplier] = useState('1');
     const [isVariable, setIsVariable] = useState(false);
@@ -276,8 +287,11 @@ export const WiredActionInitTransactionView: FC<{}> = () => {
                 <label className="flex items-center gap-1">
                     <Text>{localizeWithFallback('wiredfurni.params.contract.timeout.selection', 'Timeout (seconds):')}</Text>
                     <NumberInput
+                        allowOutOfRange
                         aria-label="timeout seconds"
                         className="form-control form-control-sm"
+                        max={TRANSACTION_TIMEOUT_MAX}
+                        min={TRANSACTION_TIMEOUT_MIN}
                         value={timeoutSeconds}
                         onBlur={() => setTimeoutSeconds(String(clampTimeout(parseInt(timeoutSeconds, 10))))}
                         onChange={(event) => setTimeoutSeconds(event.target.value)}

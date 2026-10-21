@@ -100,7 +100,14 @@ describe('transaction wired actions', () => {
     });
 
     it('initiate: reads back the official ints and both pick lists', () => {
-        trigger = { intData: [1, 7, 0, -20, 1, 600], stringData: '', selectedItems: [11, 12], selectedItems2: [21], furniSourceTypes: [100, 101, 200], userSourceTypes: [200, 200] };
+        trigger = {
+            intData: [1, 7, 0, -20, 1, 600],
+            stringData: '',
+            selectedItems: [11, 12],
+            selectedItems2: [21],
+            furniSourceTypes: [100, 101, 200],
+            userSourceTypes: [200, 200]
+        };
         picks = [11, 12];
         render(<WiredActionInitTransactionView />);
 
@@ -150,6 +157,23 @@ describe('transaction wired actions', () => {
         baseProps.save();
 
         expect(setIntParams).toHaveBeenLastCalledWith([1, 12, 0, -10, 1, 30]);
+    });
+
+    it('initiate: the timeout arrows stop at 30 and 3600, as the native field did', () => {
+        trigger = { intData: [1, 3, 0, -10, 1, 30], stringData: '' };
+        render(<WiredActionInitTransactionView />);
+
+        const timeout = screen.getByRole('spinbutton', { name: 'timeout seconds' }) as HTMLInputElement;
+
+        expect(timeout).toHaveAttribute('aria-valuemin', '30');
+        expect(timeout).toHaveAttribute('aria-valuemax', '3600');
+
+        fireEvent.keyDown(timeout, { key: 'ArrowDown' });
+        expect(timeout.value).toBe('30');
+
+        fireEvent.change(timeout, { target: { value: '3600' } });
+        fireEvent.keyDown(timeout, { key: 'ArrowUp' });
+        expect(timeout.value).toBe('3600');
     });
 
     it('cancel: a fresh box cancels the picked contracts', () => {
