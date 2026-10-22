@@ -274,49 +274,6 @@
     width: 276px;
 }
 
-.octane-avatar-editor-nft-category-scroll {
-    appearance: none;
-    position: absolute;
-    top: 129px;
-    z-index: 3;
-    width: 17px;
-    height: 17px;
-    margin: 0;
-    padding: 0;
-    cursor: pointer;
-    border: 0;
-    background-color: transparent;
-    background-repeat: no-repeat;
-    background-position: center;
-    image-rendering: var(--octane-pixel-art, pixelated);
-}
-
-.octane-avatar-editor-nft-category-scroll.is-left {
-    left: 299px;
-    background-image: url('@/assets/images/scrollbar/left.png');
-}
-
-.octane-avatar-editor-nft-category-scroll.is-left:hover {
-    background-image: url('@/assets/images/scrollbar/left_hover.png');
-}
-
-.octane-avatar-editor-nft-category-scroll.is-left:active {
-    background-image: url('@/assets/images/scrollbar/left_active.png');
-}
-
-.octane-avatar-editor-nft-category-scroll.is-right {
-    left: 316px;
-    background-image: url('@/assets/images/scrollbar/right.png');
-}
-
-.octane-avatar-editor-nft-category-scroll.is-right:hover {
-    background-image: url('@/assets/images/scrollbar/right_hover.png');
-}
-
-.octane-avatar-editor-nft-category-scroll.is-right:active {
-    background-image: url('@/assets/images/scrollbar/right_active.png');
-}
-
 .octane-avatar-editor .category-item {
     appearance: none;
     display: flex;
@@ -1297,14 +1254,11 @@
     margin: 2px 0 20px;
 }
 
-.octane-avatar-editor-nfts-empty {
-    font-size: 12px;
-    opacity: 0.8;
-}
-
 .octane-avatar-editor-nfts-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, 44px);
+    grid-template-columns: repeat(auto-fill, 35px);
+    grid-auto-rows: 60px;
+    align-content: start;
     gap: 4px;
     margin-left: 4px;
     width: 299px;
@@ -1314,11 +1268,11 @@
 
 .octane-avatar-editor-nft-outfit {
     position: relative;
-    width: 44px;
-    height: 68px;
+    width: 35px;
+    height: 60px;
     padding: 0;
-    border: 2px solid #ffffff;
-    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    border-radius: 3px;
     overflow: hidden;
     cursor: pointer;
 }
@@ -1341,35 +1295,12 @@
     box-shadow: 0 0 0 1px #1d3d1c;
 }
 
-/* Collectible looks / NFT clothing parts switch of the NFT tab. */
-.octane-avatar-editor-nft-mode {
-    position: absolute;
-    left: 200px;
-    top: 98px;
-    z-index: 3;
-    display: flex;
-    gap: 4px;
-}
-
-.octane-avatar-editor-nft-mode button {
-    padding: 1px 6px;
-    font-size: 10px;
-    border: 1px solid rgba(0, 0, 0, 0.35);
-    border-radius: 3px;
-    background: rgba(255, 255, 255, 0.35);
-    cursor: pointer;
-}
-
-.octane-avatar-editor-nft-mode button[aria-pressed='true'] {
-    background: #ffffff;
-    font-weight: 700;
-}
-
-/* AIR NftWardrobeParamView (collectible_avatar_info): 122x20 label under the preview. */
+/* AIR NftWardrobeParamView (collectible_avatar_info): 122x20 label 257px below the preview's top (under the
+   rotate arrow), where the NFT tab drops the reset/clear/random row. */
 .octane-avatar-editor-nft-info {
     position: absolute;
-    left: 354px;
-    top: 371px;
+    left: 357px;
+    top: 415px;
     z-index: 3;
     display: flex;
     width: 122px;

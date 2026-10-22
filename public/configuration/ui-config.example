@@ -1,77 +1,47 @@
 {
-    "image.library.notifications.url": "${image.library.url}notifications/%image%.png",
-    "achievements.images.url": "${image.library.url}Quests/%image%.png",
-    "camera.url": "http://localhost:3000/camera/photo/",
-    "thumbnails.url": "http://localhost:3000/camera/photo/temp/thumb/%thumbnail%.png",
+    "// ---- Hotel and links ----": "",
+    "hotel.name": "Camwijs",
     "url.prefix": "",
     "habbopages.url": "/gamedata/habbopages/",
     "group.homepage.url": "${url.prefix}/groups/%groupid%/id",
-    "guide.help.alpha.groupid": 0,
-    "chat.viewer.height.percentage": 0.25,
-    "widget.dimmer.colorwheel": false,
-    "avatar.wardrobe.max.slots": 10,
-    "avatar.expression.67.enabled": true,
-    "user.badges.max.slots": 5,
-    "user.tags.enabled": false,
-    "camera.publish.disabled": false,
-    "camera.render.mode": "server",
-    "hc.disabled": false,
-    "badge.descriptions.enabled": true,
-    "furni.descriptions.enabled": true,
-    "furni.location.enabled": true,
-    "furni.location.require.access": true,
-    "trading.warning.enabled": true,
-	"furni.plant.classnames": [
-        "jungle_c16_flowera1", "jungle_c16_flowera2", "jungle_c16_flowera3",
-        "jungle_c16_flowerb1", "jungle_c16_flowerb2", "jungle_c16_flowerb3",
-        "jungle_c16_flowerc1", "jungle_c16_flowerc2", "jungle_c16_flowerc3",
-        "jungle_c16_flowerd1", "jungle_c16_flowerd2", "jungle_c16_flowerd3"
-    ],
-    "motto.max.length": 38,
-    "bot.name.max.length": 15,
-    "pet.package.name.max.length": 15,
-    "wired.action.bot.talk.to.avatar.max.length": 64,
-    "wired.action.bot.talk.max.length": 64,
-    "wired.action.chat.max.length": 100,
-    "wired.action.kick.from.room.max.length": 100,
-    "wired.action.mute.user.max.length": 100,
-    "wired.timezones": "",
-    "wired.selfdonation.enabled": false,
-    "wired.selfdonation.max.amount": 500,
-    "game.center.enabled": false,
-    "hotel_alert_animated": false,
-    "radio_ui.enabled": false,
-    "soundboard.layout.url": "configuration/soundboard-layout.jsonc",
-    "mentions_ui.enabled": true,
-    "mentions_ui.sound": true,
-	"mentions_ui.aliases.everyone": [ "all", "everyone" ],
-    "mentions_ui.aliases.friends":  [ "friends" ],
-    "mentions_ui.aliases.room":     [ "room" ],
-    "guides.enabled": true,
-    "guardians.enabled": true,
-    "chatreviewreporterfeedbackctrl.enabled": true,
-    "talent.track.enabled": true,
-    "talent.track.citizenship.enabled": true,
-    "new.user.citizenship.popup.enabled": false,
-    "talentpromo.track": "",
-    "habboway.enabled": true,
-    "help.habboway.page.count": 6,
-    "safety_quiz.disabled": false,
-    "nux.lobbies.enabled": false,
-    "nux.noob.lobby.popup.delay": 70,
-    "nux.noob.chat.reminder.delay": 240,
-	"housekeeping.enabled": true,
-    "buildersclub.enabled": true,
-    "toolbar.hide.quests": true,
-    "seasonalQuestCalendar.enabled": false,
-    "seasonalQuestCalendar.campaignPrefix": "xmas13",
-    "seasonalQuestCalendar.currency": "0",
-    "seasonalQuestCalendar.maximum.entities": 42,
-    "toolbar.buildersclub.enabled": true,
-    "toolbar.rarevalues.enabled": true,
-    "toolbar.fortunewheel.enabled": true,
-    "show.google.ads": false,
-    "catalog.classic.style": false,
+    "habboway.url": "${image.library.url}habboway",
+    "email.verification.url": "",
+    "web.shop.relativeUrl": "",
+    "link.format.club": "",
+    "link.format.duckets": "",
+    "link.format.collectibles": "",
+    "link.format.bots.help": "",
+    "niko.appstore.link.url": "",
+    "niko.trophy.appstore.image": "",
+    "emustats.endpoint": "${api.url}/api/emustats",
+    "external.plugins": [],
+    "// ---- Images and assets ----": "",
+    "image.library.notifications.url": "${image.library.url}notifications/%image%.png",
+    "achievements.images.url": "${image.library.url}Quests/%image%.png",
+    "image.library.questing.url": "",
+    "image.library.dailytasks.url": "",
+    "currency.asset.icon.url": "${images.url}/wallet/%type%.png",
+    "catalog.asset.url": "${image.library.url}catalogue",
+    "catalog.asset.image.url": "${catalog.asset.url}/%name%.gif",
+    "catalog.asset.icon.url": "${catalog.asset.url}/icon_%name%.png",
+    "ui.header.images.url": "",
+    "ui.header.images.count": 30,
+    "// ---- Loading screen texts (used before the external texts load) ----": "",
+    "loader": "Opstarten...",
+    "loader.waiting": "Loading content...",
+    "generic.reconnecting": "Connecting to server...",
+    "loading.task.assets": "Loading game assets...",
+    "loading.task.localization": "Loading translations...",
+    "loading.task.avatar": "Loading wardrobe...",
+    "loading.task.sounds": "Loading sounds...",
+    "loading.task.renderer": "Initializing renderer...",
+    "loading.task.engine": "Loading graphics engine...",
+    "loading.task.session": "Verifying session...",
+    "loading.task.startsession": "Starting session...",
+    "loading.task.userdata": "Loading user data...",
+    "loading.task.rooms": "Loading rooms...",
+    "onboarding.button.ready": "Ready!",
+    "// ---- Login screen ----": "",
     "loginview": {
         "images": {
             "background": "${asset.url}/c_images/reception/stretch_blue.png",
@@ -83,183 +53,15 @@
             "right.repeat": "${asset.url}/c_images/reception/US_top_right.png"
         }
     },
-    "navigator.room.models": [
-        {
-            "clubLevel": 0,
-            "tileSize": 104,
-            "name": "a"
-        },
-        {
-            "clubLevel": 0,
-            "tileSize": 94,
-            "name": "b"
-        },
-        {
-            "clubLevel": 0,
-            "tileSize": 36,
-            "name": "c"
-        },
-        {
-            "clubLevel": 0,
-            "tileSize": 84,
-            "name": "d"
-        },
-        {
-            "clubLevel": 0,
-            "tileSize": 80,
-            "name": "e"
-        },
-        {
-            "clubLevel": 0,
-            "tileSize": 80,
-            "name": "f"
-        },
-        {
-            "clubLevel": 0,
-            "tileSize": 416,
-            "name": "i"
-        },
-        {
-            "clubLevel": 0,
-            "tileSize": 320,
-            "name": "j"
-        },
-        {
-            "clubLevel": 0,
-            "tileSize": 448,
-            "name": "k"
-        },
-        {
-            "clubLevel": 0,
-            "tileSize": 352,
-            "name": "l"
-        },
-        {
-            "clubLevel": 0,
-            "tileSize": 384,
-            "name": "m"
-        },
-        {
-            "clubLevel": 0,
-            "tileSize": 372,
-            "name": "n"
-        },
-        {
-            "clubLevel": 1,
-            "tileSize": 80,
-            "name": "g"
-        },
-        {
-            "clubLevel": 1,
-            "tileSize": 74,
-            "name": "h"
-        },
-        {
-            "clubLevel": 1,
-            "tileSize": 416,
-            "name": "o"
-        },
-        {
-            "clubLevel": 1,
-            "tileSize": 352,
-            "name": "p"
-        },
-        {
-            "clubLevel": 1,
-            "tileSize": 304,
-            "name": "q"
-        },
-        {
-            "clubLevel": 1,
-            "tileSize": 336,
-            "name": "r"
-        },
-        {
-            "clubLevel": 1,
-            "tileSize": 748,
-            "name": "u"
-        },
-        {
-            "clubLevel": 1,
-            "tileSize": 438,
-            "name": "v"
-        },
-        {
-            "clubLevel": 2,
-            "tileSize": 540,
-            "name": "t"
-        },
-        {
-            "clubLevel": 2,
-            "tileSize": 512,
-            "name": "w"
-        },
-        {
-            "clubLevel": 2,
-            "tileSize": 396,
-            "name": "x"
-        },
-        {
-            "clubLevel": 2,
-            "tileSize": 440,
-            "name": "y"
-        },
-        {
-            "clubLevel": 2,
-            "tileSize": 456,
-            "name": "z"
-        },
-        {
-            "clubLevel": 2,
-            "tileSize": 208,
-            "name": "0"
-        },
-        {
-            "clubLevel": 2,
-            "tileSize": 1009,
-            "name": "1"
-        },
-        {
-            "clubLevel": 2,
-            "tileSize": 1044,
-            "name": "2"
-        },
-        {
-            "clubLevel": 2,
-            "tileSize": 183,
-            "name": "3"
-        },
-        {
-            "clubLevel": 2,
-            "tileSize": 254,
-            "name": "4"
-        },
-        {
-            "clubLevel": 2,
-            "tileSize": 1024,
-            "name": "5"
-        },
-        {
-            "clubLevel": 2,
-            "tileSize": 801,
-            "name": "6"
-        },
-        {
-            "clubLevel": 2,
-            "tileSize": 354,
-            "name": "7"
-        },
-        {
-            "clubLevel": 2,
-            "tileSize": 888,
-            "name": "8"
-        },
-        {
-            "clubLevel": 2,
-            "tileSize": 926,
-            "name": "9"
-        }
-    ],
+    "login_background.colour": "#6eadc8",
+    "login_background": "",
+    "login_sun": "",
+    "login_drape": "",
+    "login_left": "",
+    "login_right.repeat": "",
+    "login_right": "",
+    "login.remember.rotate.interval.minutes": 15,
+    "// ---- Hotel view ----": "",
     "hotelview": {
         "room.pool": "791",
         "room.picnic": "2193",
@@ -301,25 +103,40 @@
             "right.repeat": ""
         }
     },
-    "achievements.unseen.ignored": [
-        "ACH_AllTimeHotelPresence"
-    ],
-    "avatareditor.show.unowned.sellables": false,
-    "avatareditor.show.clubitems.dimmed": true,
-    "avatareditor.show.clubitems.first": true,
-    "chat.history.max.items": 100,
+    "landing.view.roomcategory": "random_friending_room",
+    "landing.view.community.interactive": true,
+    "landing.view.community.catalog.target": "",
+    "landing.view.communitygoalhof.hasroomlink": false,
+    "landing.view.dynamic.slot.6.conf": "",
+    "// ---- Toolbar and features on/off ----": "",
+    "toolbar.hide.quests": true,
+    "toolbar.buildersclub.enabled": true,
+    "toolbar.rarevalues.enabled": true,
+    "toolbar.fortunewheel.enabled": true,
+    "toolbar.stories.enabled": false,
+    "toolbar.new_additions.notification.enabled": true,
+    "buildersclub.enabled": true,
+    "game.center.enabled": false,
+    "games.highscores.enabled": true,
+    "dailytasks.enabled": true,
+    "friendbar.notifications.enabled": true,
+    "radio_ui.enabled": false,
+    "show.google.ads": false,
+    "hc.disabled": false,
+    "club.membership.extend.promotion.enabled": true,
+    "raid.protection.enabled": true,
+    "// ---- Currencies and purse ----": "",
     "system.currency.types": [
         -1,
         0,
         5,
         105
     ],
-    "catalog.links": {
-        "hc.buy_hc": "habbo_club",
-        "hc.hc_gifts": "club_gifts",
-        "pets.buy_food": "pet_food",
-        "pets.buy_saddle": "saddles"
-    },
+    "currency.display.number.short": false,
+    "currency.seasonal.color": "blue",
+    "activitypoint.name.0": "duckets",
+    "activitypoint.name.5": "diamonds",
+    "activity.point.display.enabled": true,
     "hc.center": {
         "benefits.info": true,
         "payday.info": true,
@@ -332,15 +149,56 @@
         "sound": "sound_respect_received"
     },
     "respect.replenish_cost_duckets": 50,
-    "currency.display.number.short": false,
-    "currency.asset.icon.url": "${images.url}/wallet/%type%.png",
-    "catalog.asset.url": "${image.library.url}catalogue",
-    "catalog.asset.image.url": "${catalog.asset.url}/%name%.gif",
-    "catalog.asset.icon.url": "${catalog.asset.url}/icon_%name%.png",
+    "// ---- Catalog ----": "",
+    "catalog.classic.style": false,
     "catalog.tab.icons": false,
     "catalog.headers": false,
+    "catalog.links": {
+        "hc.buy_hc": "habbo_club",
+        "hc.hc_gifts": "club_gifts",
+        "pets.buy_food": "pet_food",
+        "pets.buy_saddle": "saddles"
+    },
+    "catalog.vip.benefits.enabled": true,
+    "catalog.multiple.purchase.enabled": true,
+    "catalog.new.additions.page.open.disabled": false,
+    "catalog.gift_wrapping_new.gift_card": "",
+    "catalog.purchase.gift_wrapping.default_box_index": 0,
+    "gotobreedingnestfailure.catalogpage.food": "",
+    "gotobreedingnestfailure.catalogpage.nests": "",
+    "special_items.chests.items": "wf_storage_furni1,furni,wf_storage_furni1;wf_storage_furni2,furni,wf_storage_furni2;wf_storage_furni_starter,furni,wf_storage_furni_starter;wf_storage_coins1,furni,wf_storage_coins1;wf_storage_coins2,furni,wf_storage_coins2;wf_act_give_furni,furni,wf_act_give_furni;wf_act_give_currency,furni,wf_act_give_currency;wf_cnd_chest_has_items,furni,wf_cnd_chest_has_items;wf_cnd_chest_has_item_type,furni,wf_cnd_chest_has_item_type;wf_xtra_scan_chest_furni_by_type,furni,wf_xtra_scan_chest_furni_by_type;wf_act_init_transaction,furni,wf_act_init_transaction;wf_act_cancel_transaction,furni,wf_act_cancel_transaction;wf_trg_transaction_complete,furni,wf_trg_transaction_complete;wf_trg_transaction_fail,furni,wf_trg_transaction_fail;wf_contract_payment,furni,wf_contract_payment;wf_contract_reward,furni,wf_contract_reward;wf_contract_trade,furni,wf_contract_trade;wf_xtra_custom_contract,furni,wf_xtra_custom_contract",
+    "special_items.chests.free_claim": "chests_starter",
+    "// ---- Collectibles ----": "",
+    "collectibles.enabled": true,
+    "nft.shop.enabled": true,
+    "nft.minting.enabled": false,
+    "collectibles.transfer.enabled": false,
+    "nft.credit.converting.enabled": true,
+    "// ---- Avatar, avatar editor and badges ----": "",
+    "avatar.wardrobe.max.slots": 10,
+    "avatar.expression.67.enabled": true,
+    "avatar.expressions_menu.enabled": true,
+    "avatar.signs.enabled": true,
+    "avatar.sitting.enabled": true,
+    "handitem.drop.enabled": true,
+    "avatareditor.show.unowned.sellables": false,
+    "avatareditor.show.clubitems.dimmed": true,
+    "avatareditor.show.clubitems.first": true,
+    "effects.in.avatar.editor": true,
+    "avatareditor.effects.buy.button.catalog.page.name": "",
+    "user.badges.max.slots": 5,
+    "user.tags.enabled": false,
+    "badge.descriptions.enabled": true,
+    "badge.display.excluded.badgeCodes": "",
+    "badge_rarity.uncommon": false,
+    "motto.max.length": 38,
+    "backgrounds.data": [],
+    "stands.data": [],
+    "overlays.data": [],
+    "// ---- Chat and mentions ----": "",
     "chat.input.maxlength": 100,
-    "chat.styles.disabled": [],
+    "chat.history.max.items": 100,
+    "chat.viewer.height.percentage": 0.25,
     "chat.styles": [
         {
             "styleId": 0,
@@ -721,6 +579,236 @@
             "isAmbassadorOnly": true
         }
     ],
+    "chat.styles.disabled": [],
+    "mentions_ui.enabled": true,
+    "mentions_ui.sound": true,
+    "mentions_ui.aliases.everyone": [
+        "all",
+        "everyone"
+    ],
+    "mentions_ui.aliases.friends": [
+        "friends"
+    ],
+    "mentions_ui.aliases.room": [
+        "room"
+    ],
+    "// ---- Rooms, furni and navigator ----": "",
+    "navigator.room.models": [
+        {
+            "clubLevel": 0,
+            "tileSize": 104,
+            "name": "a"
+        },
+        {
+            "clubLevel": 0,
+            "tileSize": 94,
+            "name": "b"
+        },
+        {
+            "clubLevel": 0,
+            "tileSize": 36,
+            "name": "c"
+        },
+        {
+            "clubLevel": 0,
+            "tileSize": 84,
+            "name": "d"
+        },
+        {
+            "clubLevel": 0,
+            "tileSize": 80,
+            "name": "e"
+        },
+        {
+            "clubLevel": 0,
+            "tileSize": 80,
+            "name": "f"
+        },
+        {
+            "clubLevel": 0,
+            "tileSize": 416,
+            "name": "i"
+        },
+        {
+            "clubLevel": 0,
+            "tileSize": 320,
+            "name": "j"
+        },
+        {
+            "clubLevel": 0,
+            "tileSize": 448,
+            "name": "k"
+        },
+        {
+            "clubLevel": 0,
+            "tileSize": 352,
+            "name": "l"
+        },
+        {
+            "clubLevel": 0,
+            "tileSize": 384,
+            "name": "m"
+        },
+        {
+            "clubLevel": 0,
+            "tileSize": 372,
+            "name": "n"
+        },
+        {
+            "clubLevel": 1,
+            "tileSize": 80,
+            "name": "g"
+        },
+        {
+            "clubLevel": 1,
+            "tileSize": 74,
+            "name": "h"
+        },
+        {
+            "clubLevel": 1,
+            "tileSize": 416,
+            "name": "o"
+        },
+        {
+            "clubLevel": 1,
+            "tileSize": 352,
+            "name": "p"
+        },
+        {
+            "clubLevel": 1,
+            "tileSize": 304,
+            "name": "q"
+        },
+        {
+            "clubLevel": 1,
+            "tileSize": 336,
+            "name": "r"
+        },
+        {
+            "clubLevel": 1,
+            "tileSize": 748,
+            "name": "u"
+        },
+        {
+            "clubLevel": 1,
+            "tileSize": 438,
+            "name": "v"
+        },
+        {
+            "clubLevel": 2,
+            "tileSize": 540,
+            "name": "t"
+        },
+        {
+            "clubLevel": 2,
+            "tileSize": 512,
+            "name": "w"
+        },
+        {
+            "clubLevel": 2,
+            "tileSize": 396,
+            "name": "x"
+        },
+        {
+            "clubLevel": 2,
+            "tileSize": 440,
+            "name": "y"
+        },
+        {
+            "clubLevel": 2,
+            "tileSize": 456,
+            "name": "z"
+        },
+        {
+            "clubLevel": 2,
+            "tileSize": 208,
+            "name": "0"
+        },
+        {
+            "clubLevel": 2,
+            "tileSize": 1009,
+            "name": "1"
+        },
+        {
+            "clubLevel": 2,
+            "tileSize": 1044,
+            "name": "2"
+        },
+        {
+            "clubLevel": 2,
+            "tileSize": 183,
+            "name": "3"
+        },
+        {
+            "clubLevel": 2,
+            "tileSize": 254,
+            "name": "4"
+        },
+        {
+            "clubLevel": 2,
+            "tileSize": 1024,
+            "name": "5"
+        },
+        {
+            "clubLevel": 2,
+            "tileSize": 801,
+            "name": "6"
+        },
+        {
+            "clubLevel": 2,
+            "tileSize": 354,
+            "name": "7"
+        },
+        {
+            "clubLevel": 2,
+            "tileSize": 888,
+            "name": "8"
+        },
+        {
+            "clubLevel": 2,
+            "tileSize": 926,
+            "name": "9"
+        }
+    ],
+    "room.enter.info.enabled": true,
+    "room.enter.info.collapse.delay": 5000,
+    "room.report.enabled": true,
+    "room.ranking.enabled": false,
+    "room.queue.spectator.enabled": false,
+    "roomenterad.habblet.enabled": false,
+    "furni.descriptions.enabled": true,
+    "furni.location.enabled": true,
+    "furni.location.require.access": true,
+    "furni.plant.classnames": [
+        "jungle_c16_flowera1",
+        "jungle_c16_flowera2",
+        "jungle_c16_flowera3",
+        "jungle_c16_flowerb1",
+        "jungle_c16_flowerb2",
+        "jungle_c16_flowerb3",
+        "jungle_c16_flowerc1",
+        "jungle_c16_flowerc2",
+        "jungle_c16_flowerc3",
+        "jungle_c16_flowerd1",
+        "jungle_c16_flowerd2",
+        "jungle_c16_flowerd3"
+    ],
+    "widget.dimmer.colorwheel": false,
+    "trading.warning.enabled": true,
+    "bot.name.max.length": 15,
+    "pet.package.name.max.length": 15,
+    "hotel_alert_animated": false,
+    "// ---- Groups and forums ----": "",
+    "group.blocking.enabled": true,
+    "groupforum.poll.period": 300,
+    "// ---- Camera and stories ----": "",
+    "camera.url": "http://localhost/camera/photo/temp",
+    "thumbnails.url": "http://localhost/camera/photo/temp/thumb/%thumbnail%.png",
+    "camera.render.mode": "server",
+    "camera.publish.disabled": false,
+    "camera.effects.enabled": true,
+    "camera.photo.publishing.enabled": true,
+    "camera.competition.enabled": false,
     "camera.available.effects": [
         {
             "name": "dark_sepia",
@@ -1403,11 +1491,33 @@
             "enabled": true
         }
     ],
-    "notifications.new_feature.active": "rewardtrack_intro",
-    "notifications.new_feature.type.rewardtrack_intro": "promo",
-    "notifications.new_feature.condition.rewardtrack_intro": "reward_track_incomplete:introduction",
-    "notifications.new_feature.image.rewardtrack_intro": "reward_track_small_icon",
-    "notifications.new_feature.internal_link.rewardtrack_intro": "reward_track/open/introduction",
+    "disclaimer.credit_spending.enabled": false,
+    "stories.image_url_base": "",
+    "// ---- Help, guides and new users ----": "",
+    "guides.enabled": true,
+    "guide.help.alpha.groupid": 0,
+    "guardians.enabled": true,
+    "chatreviewreporterfeedbackctrl.enabled": true,
+    "habboway.enabled": true,
+    "help.habboway.page.count": 6,
+    "safety_quiz.disabled": false,
+    "nux.lobbies.enabled": false,
+    "nux.noob.lobby.popup.delay": 70,
+    "nux.noob.chat.reminder.delay": 240,
+    "nux.chat.reminder.shown": "",
+    "// ---- Quests, achievements and talents ----": "",
+    "achievements.unseen.ignored": [
+        "ACH_AllTimeHotelPresence"
+    ],
+    "seasonalQuestCalendar.enabled": false,
+    "seasonalQuestCalendar.campaignPrefix": "xmas13",
+    "seasonalQuestCalendar.currency": "0",
+    "seasonalQuestCalendar.maximum.entities": 42,
+    "talent.track.enabled": true,
+    "talent.track.citizenship.enabled": true,
+    "new.user.citizenship.popup.enabled": false,
+    "talentpromo.track": "",
+    "// ---- Notifications ----": "",
     "notification": {
         "notification.admin.transient": {
             "display": "POP_UP",
@@ -1525,7 +1635,47 @@
             "image": "${image.library.url}/album1584/X1517.gif"
         }
     },
-    "backgrounds.data": [],
-    "stands.data": [],
-    "overlays.data": []
+    "notifications.new_feature.active": "rewardtrack_intro",
+    "notifications.new_feature.type.rewardtrack_intro": "promo",
+    "notifications.new_feature.condition.rewardtrack_intro": "reward_track_incomplete:introduction",
+    "notifications.new_feature.image.rewardtrack_intro": "reward_track_small_icon",
+    "notifications.new_feature.internal_link.rewardtrack_intro": "reward_track/open/introduction",
+    "// ---- Wired ----": "",
+    "wired.action.bot.talk.to.avatar.max.length": 64,
+    "wired.action.bot.talk.max.length": 64,
+    "wired.action.chat.max.length": 100,
+    "wired.action.kick.from.room.max.length": 100,
+    "wired.action.mute.user.max.length": 100,
+    "wired.timezones": "",
+    "wired.selfdonation.enabled": false,
+    "wired.selfdonation.max.amount": 500,
+    "wired.coins_chest.starter_capacity": 100,
+    "wired.coins_chest.initial_capacity": 5000,
+    "wired.coins_chest.upgrade_capacity": 5000,
+    "wired.furni_chest.starter_capacity": 100,
+    "wired.furni_chest.initial_capacity": 1000,
+    "wired.furni_chest.upgrade_capacity": 1000,
+    "wired.furni_highlight.darken_levels": "",
+    "wired.api.docs.link": "",
+    "wired.webapi.url": "",
+    "wired.webapi.docs_url": "",
+    "wired.webapi.hotels": null,
+    "// ---- Radio and soundboard ----": "",
+    "radio.stations.url": "",
+    "soundboard.layout.url": "configuration/soundboard-layout.jsonc",
+    "soundboard.sounds.url": "",
+    "soundboard.url.prefix": "",
+    "// ---- Staff: moderation and housekeeping ----": "",
+    "housekeeping.enabled": true,
+    "housekeeping.telemetry.enabled": false,
+    "housekeeping.audit.poll_interval_ms": 30000,
+    "housekeeping.sanction_templates": null,
+    "housekeeping.ticket_replies": null,
+    "housekeeping.escalation": null,
+    "habboinfotool.url": "",
+    "moderatoractionlog.url": "",
+    "identityinformationtool.url": "",
+    "roomadmin.url": "",
+    "cfh.topic_id.to.sanction_type_id": "",
+    "stories.admin.tool.base.url": ""
 }

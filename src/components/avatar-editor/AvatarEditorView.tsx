@@ -10,7 +10,7 @@ import {
 } from '@octane/renderer';
 import { FC, useEffect, useState } from 'react';
 import { FaDice, FaRedo, FaTrash } from 'react-icons/fa';
-import { AVATAR_EDITOR_EFFECTS_TAB, AvatarEditorAction, GetConfigurationValue, LocalizeText, localizeWithFallback, SendMessageComposer } from '../../api';
+import { AVATAR_EDITOR_EFFECTS_TAB, AvatarEditorAction, GetConfigurationValue, LocalizeText, SendMessageComposer } from '../../api';
 import mainEffectsSrc from '../../assets/images/avatareditor/air/main-effects.png';
 import mainGenericSrc from '../../assets/images/avatareditor/air/main-generic.png';
 import mainHeadSrc from '../../assets/images/avatareditor/air/main-head.png';
@@ -23,13 +23,11 @@ import mainNftSrc from '../../assets/images/wardrobe/nft.png';
 import mainPetsSrc from '../../assets/images/wardrobe/pets.png';
 import { OctaneCardContentView, OctaneCardHeaderView, OctaneCardTabsItemView, OctaneCardTabsView, OctaneCardView } from '../../common';
 import { useAvatarEditor, useAvatarEffects, useHotLooks, useNftWardrobe } from '../../hooks';
-import { isCollectiblesEnabled } from '../../hooks/collectibles/useCollectibles';
 import { AvatarEditorEffectsView } from './AvatarEditorEffectsView';
 import { AvatarEditorFigurePreviewView } from './AvatarEditorFigurePreviewView';
 import { AvatarEditorHotLooksView } from './AvatarEditorHotLooksView';
 import { AvatarEditorModelView } from './AvatarEditorModelView';
 import { AvatarEditorNftOutfitInfoView, AvatarEditorNftOutfitsView } from './AvatarEditorNftOutfitsView';
-import { AvatarEditorNftView } from './AvatarEditorNftView';
 import { AvatarEditorPetView } from './AvatarEditorPetView';
 import { AvatarEditorWardrobeView } from './AvatarEditorWardrobeView';
 import { BaseButton } from '../../common/BaseButton';
@@ -93,12 +91,9 @@ export const AvatarEditorView: FC<{}> = (props) => {
     const isHotLooksOpen = hotLooksEnabled && activeModelKey === AvatarEditorFigureCategory.HOTLOOKS;
     const hotLooks = useHotLooks(isVisible && hotLooksEnabled);
     const canUseWardrobe = !clothingChangeData && !isNftOpen;
-    // AIR avatar collectibles (NftAvatarsModel): the NFT tab lists the user's collectible looks when the hotel
-    // runs collectibles; the NFT clothing parts stay one click away.
-    const nftWardrobe = useNftWardrobe(isVisible && !clothingChangeData && isCollectiblesEnabled(), activeModelKey);
-    const [nftShowsParts, setNftShowsParts] = useState(false);
-    const nftHasParts = (avatarModels[AvatarEditorFigureCategory.NFT] ?? []).some((category) => category.partItems.some((item) => !item.isClear));
-    const showNftOutfits = isNftOpen && nftWardrobe.enabled && !(nftShowsParts && nftHasParts);
+    // AIR avatar collectibles (NftAvatarsModel): the NFT tab always lists the user's collectible looks; it stays
+    // empty when the hotel doesn't run collectibles.
+    const nftWardrobe = useNftWardrobe(isVisible && !clothingChangeData, activeModelKey);
     const selectMainTab = (modelKey: string) => {
         nftWardrobe.onTabChange(modelKey);
         setActiveModelKey(modelKey);
@@ -191,7 +186,6 @@ export const AvatarEditorView: FC<{}> = (props) => {
             setClothingChangeData(null);
             setIsWardrobeOpen(false);
             setEffectSelection(null);
-            setNftShowsParts(false);
         }
     }, [isVisible, setEditorVisibility, setClothingChangeData]);
 
@@ -246,24 +240,13 @@ export const AvatarEditorView: FC<{}> = (props) => {
                             <AvatarEditorModelView categories={avatarModels[activeModelKey]} name={activeModelKey} />
                         )}
                         {isPetsOpen && <AvatarEditorPetView categories={avatarModels[activeModelKey]} />}
-                        {isNftOpen && !showNftOutfits && <AvatarEditorNftView categories={avatarModels[activeModelKey]} />}
-                        {showNftOutfits && (
+                        {isNftOpen && (
                             <AvatarEditorNftOutfitsView
                                 outfits={nftWardrobe.outfits}
                                 selectedOutfit={nftWardrobe.selectedOutfit}
                                 wornOutfit={nftWardrobe.wornOutfit}
                                 onSelect={nftWardrobe.selectOutfit}
                             />
-                        )}
-                        {isNftOpen && nftWardrobe.enabled && nftHasParts && (
-                            <div className="octane-avatar-editor-nft-mode">
-                                <ToggleButton type="button" pressed={!nftShowsParts} onClick={() => setNftShowsParts(false)}>
-                                    {localizeWithFallback('avatareditor.nfts.title', 'Avatar Collectibles')}
-                                </ToggleButton>
-                                <ToggleButton type="button" pressed={nftShowsParts} onClick={() => setNftShowsParts(true)}>
-                                    {localizeWithFallback('wardrobe.token.clothing.name', 'Outfit')}
-                                </ToggleButton>
-                            </div>
                         )}
                         {isHotLooksOpen && (
                             <AvatarEditorHotLooksView
@@ -275,8 +258,8 @@ export const AvatarEditorView: FC<{}> = (props) => {
                             <AvatarEditorEffectsView selectedType={effectSelection ?? (activeEffectType > 0 ? activeEffectType : -1)} onSelect={setEffectSelection} />
                         )}
                         <AvatarEditorFigurePreviewView effectType={effectSelection ?? 0} />
-                        {nftWardrobe.enabled && isNftOpen && <AvatarEditorNftOutfitInfoView outfit={nftWardrobe.selectedOutfit} />}
-                        {!clothingChangeData && (
+                        {isNftOpen && <AvatarEditorNftOutfitInfoView outfit={nftWardrobe.selectedOutfit} />}
+                        {!clothingChangeData && !isNftOpen && (
                             <div className="octane-avatar-editor-secondary-actions">
                                 <Hint content="Reset avatar">
                                     <BaseButton

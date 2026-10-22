@@ -30,20 +30,18 @@ const frameStyle = (outfit: NftOutfit): CSSProperties => {
 
 /**
  * AIR avatar/nft/NftAvatarsView on the `nfts_content` container of AvatarEditorContent.xml: the
- * "Avatar Collectibles" title, the "choose a look" line and the grid of the user's collectible looks.
+ * "Avatar Collectibles" title, the "click to choose" line and the grid of the user's collectible looks (empty
+ * when the user has none, as in AIR).
  * Clicking one previews it (NftAvatarsModel.selectNftAvatar); saving then wears it.
  */
 export const AvatarEditorNftOutfitsView: FC<AvatarEditorNftOutfitsViewProps> = (props) => {
     const { outfits = [], selectedOutfit = null, wornOutfit = null, onSelect = null } = props;
-    const chooseText = localizeWithFallback('avatareditor.nfts.choose', 'Choose a look');
+    const chooseText = localizeWithFallback('avatareditor.nfts.choose', 'Click to choose');
 
     return (
         <div className="octane-avatar-editor-nfts">
             <span className="octane-avatar-editor-nfts-title">{localizeWithFallback('avatareditor.nfts.title', 'Avatar Collectibles')}</span>
             <span className="octane-avatar-editor-nfts-choose">{chooseText}</span>
-            {!outfits.length && (
-                <span className="octane-avatar-editor-nfts-empty">{localizeWithFallback('avatareditor.nfts.empty', 'You have no avatar collectibles yet.')}</span>
-            )}
             <div className="octane-avatar-editor-nfts-grid">
                 {outfits.map((outfit) => (
                     <ToggleButton
