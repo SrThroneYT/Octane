@@ -1654,7 +1654,8 @@
     image-rendering: var(--octane-pixel-art, pixelated);
 }
 
-.air-bot-skill-checkbox:checked {
+.air-bot-skill-checkbox:checked,
+.air-bot-skill-checkbox[data-checked] {
     background-image: var(--habbo-skin-checkbox-checked);
 }
 
