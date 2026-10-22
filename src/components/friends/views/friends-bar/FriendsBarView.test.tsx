@@ -4,6 +4,8 @@ import { cleanup, fireEvent, render, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MessengerFriend } from '../../../../api';
 import { useFriends } from '../../../../hooks';
+import { FriendNotificationType } from '../../../../hooks/friends/friendBarNotifications.helpers';
+import { useFriendBarNotificationsStore } from '../../../../hooks/friends/friendBarNotificationsStore';
 import { FriendBarView } from './FriendsBarView';
 
 vi.mock('../../../../hooks', () => ({ useFriends: vi.fn() }));
@@ -44,6 +46,7 @@ describe('AIR friend bar paging', () => {
 
     afterEach(() => {
         cleanup();
+        useFriendBarNotificationsStore.getState().reset();
         vi.restoreAllMocks();
         vi.unstubAllGlobals();
     });
@@ -87,5 +90,35 @@ describe('AIR friend bar paging', () => {
         fireEvent.click(container.querySelector<HTMLButtonElement>('.friend-bar-tab'));
 
         await waitFor(() => expect(container.querySelectorAll('.friend-bar-action-icon')).toHaveLength(1));
+    });
+
+    it('shows friend activity as AIR tokens: icon on the tab, message pieces while open, gone once closed', async () => {
+        const friends = [makeFriend(1, 'Alice'), makeFriend(2, 'Bruno'), makeFriend(3, 'Carla')];
+        const store = useFriendBarNotificationsStore.getState();
+
+        store.receive(3, FriendNotificationType.PLAYING_GAME, 'snowwar');
+        store.receive(3, FriendNotificationType.ROOM_EVENT, 'Disco night');
+
+        const { container } = render(<FriendBarView onlineFriends={friends} />);
+
+        await waitFor(() => expect(container.querySelectorAll('.friend-bar-friend')).toHaveLength(3));
+
+        const tabs = container.querySelectorAll('.friend-bar-friend');
+
+        expect(tabs[0]).toHaveTextContent('Carla');
+        expect(tabs[0].querySelectorAll('.friend-bar-notification-icon')).toHaveLength(2);
+        expect(tabs[0].querySelector('.friend-bar-notification-piece')).toBeNull();
+
+        fireEvent.click(tabs[0].querySelector<HTMLButtonElement>('.friend-bar-tab'));
+
+        await waitFor(() => expect(tabs[0].querySelectorAll('.friend-bar-notification-piece')).toHaveLength(2));
+        expect(tabs[0]).toHaveTextContent('started an event');
+        expect(tabs[0]).toHaveTextContent('Disco night');
+        expect(tabs[0]).toHaveTextContent('is playing a game.');
+
+        fireEvent.click(tabs[0].querySelector<HTMLButtonElement>('.friend-bar-tab'));
+
+        await waitFor(() => expect(useFriendBarNotificationsStore.getState().byFriend[3]).toHaveLength(1));
+        expect(useFriendBarNotificationsStore.getState().byFriend[3][0].type).toBe(FriendNotificationType.PLAYING_GAME);
     });
 });

@@ -1,5 +1,5 @@
 import { ContextMenuEnum, CustomUserNotificationMessageEvent, GetSessionDataManager, RoomObjectCategory } from '@octane/renderer';
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { GetGroupInformation, LocalizeText } from '../../../../../api';
 import {
     EFFECTBOX_OPEN,
@@ -19,6 +19,7 @@ import { FurnitureMysteryTrophyOpenDialogView } from '../FurnitureMysteryTrophyO
 import { EffectBoxConfirmView } from './EffectBoxConfirmView';
 import { MonsterPlantSeedConfirmView } from './MonsterPlantSeedConfirmView';
 import { PurchasableClothingConfirmView } from './PurchasableClothingConfirmView';
+import { VipRequiredKind, VipRequiredView } from './VipRequiredView';
 
 export const FurnitureContextMenuView: FC<{}> = (props) => {
     const {
@@ -34,6 +35,7 @@ export const FurnitureContextMenuView: FC<{}> = (props) => {
         objectOwnerId = -1
     } = useFurnitureContextMenuWidget();
     const { simpleAlert = null } = useNotification();
+    const [vipRequired, setVipRequired] = useState<VipRequiredKind>(null);
 
     useMessageEvent<CustomUserNotificationMessageEvent>(CustomUserNotificationMessageEvent, (event) => {
         const parser = event.getParser();
@@ -53,25 +55,12 @@ export const FurnitureContextMenuView: FC<{}> = (props) => {
                     null
                 );
                 break;
+            // AIR opens its viprequired_xml window for both (FurnitureWidget open TYPE_VIPHOPPER / gate).
             case 2:
-                simpleAlert(
-                    LocalizeText('viphopper.viprequired.bodytext'),
-                    null,
-                    'catalog/open/habbo_club',
-                    LocalizeText('viprequired.buy.vip'),
-                    LocalizeText('viprequired.header'),
-                    null
-                );
+                setVipRequired('viphopper');
                 break;
             case 3:
-                simpleAlert(
-                    LocalizeText('gate.viprequired.bodytext'),
-                    null,
-                    'catalog/open/habbo_club',
-                    LocalizeText('viprequired.buy.vip'),
-                    LocalizeText('gate.viprequired.title'),
-                    null
-                );
+                setVipRequired('gate');
                 break;
         }
     });
@@ -80,6 +69,7 @@ export const FurnitureContextMenuView: FC<{}> = (props) => {
 
     return (
         <>
+            {vipRequired && <VipRequiredView kind={vipRequired} onClose={() => setVipRequired(null)} />}
             {confirmMode === MONSTERPLANT_SEED_CONFIRMATION && <MonsterPlantSeedConfirmView objectId={confirmingObjectId} onClose={closeConfirm} />}
             {confirmMode === PURCHASABLE_CLOTHING_CONFIRMATION && <PurchasableClothingConfirmView objectId={confirmingObjectId} onClose={closeConfirm} />}
             {confirmMode === EFFECTBOX_OPEN && <EffectBoxConfirmView objectId={confirmingObjectId} onClose={closeConfirm} />}

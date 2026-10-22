@@ -39,6 +39,7 @@ interface HotelViewSlotConfig {
     useServerGoal?: boolean;
     useServerQuest?: boolean;
     badgeCode?: string;
+    goalCode?: string;
     userVote?: number;
     voteOptions?: Array<{ id: number; label: string; badgeCode?: string; furniId?: number; currencyType?: number; currencyAmount?: number }>;
     voteCounts?: Record<string, number>;
@@ -95,8 +96,8 @@ const SLOT_WIDGET_TYPES: Array<{ value: IHotelViewLandingSlot['type']; label: st
     { value: 'communitygoal', label: 'Community goal / vote', title: 'Community goal', body: 'Work together with the community and vote for your favourite.', buttonText: 'View goal', link: '' },
     { value: 'dailyquest', label: 'Daily quest', title: 'Daily quest', body: 'Complete today\'s quest to earn your reward.', buttonText: 'Open achievements', link: 'achievements/show' },
     { value: 'nextlimitedrarecountdown', label: 'Limited rare countdown', title: 'Next limited rare', body: 'A new limited rare is coming soon.', buttonText: 'Open Catalogue', link: 'catalog/open' },
-    { value: 'achievementcompetition_hall_of_fame', label: 'Achievement competition: hall of fame', title: 'Hall of fame', body: 'See the top achievement competitors.', buttonText: 'Open achievements', link: 'achievements/show' },
-    { value: 'achievementcompetition_prizes', label: 'Achievement competition: prizes', title: 'Competition prizes', body: 'See the rewards for this achievement competition.', buttonText: 'Open achievements', link: 'achievements/show' },
+    { value: 'achievementcompetition_hall_of_fame', label: 'Achievement competition: hall of fame (live)', title: 'Hall of fame', body: 'See the top achievement competitors.', buttonText: 'Open achievements', link: 'achievements/show' },
+    { value: 'achievementcompetition_prizes', label: 'Achievement competition: prizes (live)', title: 'Competition prizes', body: 'See the rewards for this achievement competition.', buttonText: 'Open achievements', link: 'achievements/show' },
     { value: 'habbotalentspromo', label: 'Habbo Talents promo', title: 'Habbo Talents', body: 'Learn more about Habbo Talents.', buttonText: 'Open Help', link: 'help/show' },
     { value: 'habbowaypromo', label: 'Habbo Way promo', title: 'Habbo Way', body: 'Learn how to make the hotel a better place.', buttonText: 'Open Help', link: 'help/show' },
     { value: 'safetyquizpromo', label: 'Safety quiz promo', title: 'Safety quiz', body: 'Take the safety quiz and learn how to stay safe.', buttonText: 'Take the quiz', link: 'help/safetybooklet' },
@@ -621,6 +622,7 @@ export const HotelView: FC = () => {
                             {editingSlot.type === 'bonus' && <label className="hotelview-editor-toggle"><Checkbox checked={parseSlotConfig(editingSlot.configJson).useServerBonusRare !== false} onCheckedChange={(nextChecked) => updateEditingConfig((config) => ({ ...config, useServerBonusRare: nextChecked }))} /><span>Live bonus rare from the emulator: {parseSlotConfig(editingSlot.configJson).useServerBonusRare !== false ? 'Yes' : 'No'}</span></label>}
                             {editingSlot.type === 'communitygoal' && <label className="hotelview-editor-toggle"><Checkbox checked={parseSlotConfig(editingSlot.configJson).useServerGoal === true} onCheckedChange={(nextChecked) => updateEditingConfig((config) => ({ ...config, useServerGoal: nextChecked }))} /><span>Show the emulator community goal meter instead of these votes: {parseSlotConfig(editingSlot.configJson).useServerGoal === true ? 'Yes' : 'No'}</span></label>}
                             {editingSlot.type === 'dailyquest' && <label className="hotelview-editor-toggle"><Checkbox checked={parseSlotConfig(editingSlot.configJson).useServerQuest !== false} onCheckedChange={(nextChecked) => updateEditingConfig((config) => ({ ...config, useServerQuest: nextChecked }))} /><span>Live daily quest from the emulator: {parseSlotConfig(editingSlot.configJson).useServerQuest !== false ? 'Yes' : 'No'}</span></label>}
+                            {editingSlot.type === 'achievementcompetition_hall_of_fame' && <label>Competition goal code<input value={parseSlotConfig(editingSlot.configJson).goalCode || ''} placeholder="Empty = the active community goal" onChange={(event) => updateEditingConfig((config) => ({ ...config, goalCode: event.target.value }))} /></label>}
                             {editingSlot.type === 'concurrentusersgoal' && <label>Reward badge code<input value={parseSlotConfig(editingSlot.configJson).badgeCode || ''} placeholder="ConcurrentUsersReward" onChange={(event) => updateEditingConfig((config) => ({ ...config, badgeCode: event.target.value }))} /></label>}
                             {(editingSlot.type === 'nextlimitedrarecountdown' || editingSlot.type === 'expiringcatalogpage' || editingSlot.type === 'expiringcatalogpagesmall') && <label>Countdown ends<input className="hotelview-countdown-editor-input" value={countdownInput} placeholder="DD/MM/YYYY HH:mm" onChange={(event) => {
                                 setCountdownInput(event.target.value);

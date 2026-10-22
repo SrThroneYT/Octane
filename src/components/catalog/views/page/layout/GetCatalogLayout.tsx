@@ -3,6 +3,7 @@ import { ICatalogPage } from '../../../../../api';
 import { CatalogLayoutProps } from './CatalogLayout.types';
 import { CatalogLayoutBadgeDisplayView } from './CatalogLayoutBadgeDisplayView';
 import { CatalogLayoutBuildersClubBuyView } from './CatalogLayoutBuildersClubBuyView';
+import { CatalogLayoutCollectiblesView } from './CatalogLayoutCollectiblesView';
 import { CatalogLayoutColorGroupingView } from './CatalogLayoutColorGroupingView';
 import { CatalogLayoutDefaultView } from './CatalogLayoutDefaultView';
 import { CatalogLayouGuildCustomFurniView } from './CatalogLayoutGuildCustomFurniView';
@@ -36,6 +37,7 @@ const layoutRenderers: Record<CatalogLayoutRenderer, FC<CatalogLayoutProps>> = {
     badgeDisplay: CatalogLayoutBadgeDisplayView,
     buildersClubBuy: CatalogLayoutBuildersClubBuyView,
     clubGifts: CatalogLayoutVipGiftsView,
+    collectibles: CatalogLayoutCollectiblesView,
     colorGrouping: CatalogLayoutColorGroupingView,
     default: CatalogLayoutDefaultView,
     frontpage: CatalogLayoutFrontpage4View,

@@ -1,3 +1,4 @@
+export * from './catalogNewAdditionsStore';
 export * from './useCatalog';
 export * from './useCatalogBundleDiscountRuleset';
 export * from './useCatalogDisplayPreferences';

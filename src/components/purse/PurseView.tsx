@@ -2,11 +2,13 @@ import { CreateLinkEvent, DisconnectMessageComposer, GetCommunication, HabboClub
 import { FC, useCallback, useMemo, useState } from 'react';
 import { clearAccessToken, ClearRememberLogin, FriendlyTime, GetConfigurationValue, GetRememberLogin, LocalizeText, localizeWithFallback, SendMessageComposer } from '../../api';
 import earningsIcon from '../../assets/images/purse-swf/icons/1747_icon_earnings_png$5e39e03f65fbbb9a85bedd0d577dc12d307477063.png';
+import earningsUnseenIcon from '../../assets/images/purse-swf/icons/1784_unseen_indicator_png$d0b67597beeb8511b482f84737b145d2-1005700014.png';
 import hcIcon from '../../assets/images/purse-swf/icons/1801_hc_icon_png$2f8b554609e9c5cbbdc46bcbe5764be5-210881771.png';
 import logoutIcon from '../../assets/images/purse-swf/icons/1936_logout_icon_png$6a29fdff1e5e3cdd3c6290cec5c962b4-234470554.png';
 import settingsIcon from '../../assets/images/purse-swf/icons/2291_settings_icon_png$c9dcf215bb7a7e35a3f128c7c60151bc1008066621.png';
 import { Column } from '../../common';
 import { ClearStoredChatHistory, usePurse } from '../../hooks';
+import { useEarningsIndicatorStore } from '../../state/earningsIndicatorStore';
 import { ClubExtendView } from './views/ClubExtendView';
 import { CurrencyView } from './views/CurrencyView';
 import { SeasonalView } from './views/SeasonalView';
@@ -16,6 +18,7 @@ import { Hint } from '../../common/Tooltip';
 export const PurseView: FC<{}> = (props) => {
     const { purse = null, hcDisabled = false } = usePurse();
     const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
+    const earningsUnseen = useEarningsIndicatorStore((state) => state.showing);
 
     const openSettingsSection = useCallback((section: string) => {
         CreateLinkEvent('user-settings/show/' + section);
@@ -161,6 +164,7 @@ export const PurseView: FC<{}> = (props) => {
                         >
                             <img src={earningsIcon} alt="" className="octane-purse__btn-img" />
                             <span>{earningsLabel}</span>
+                            {earningsUnseen && <img src={earningsUnseenIcon} alt="" className="octane-purse__earnings-unseen" />}
                         </BaseButton></Hint>
                     </div>
                     <div className="octane-purse__divider" aria-hidden="true" />

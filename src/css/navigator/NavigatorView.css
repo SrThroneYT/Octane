@@ -2250,3 +2250,60 @@
     font-weight: 400;
     white-space: nowrap;
 }
+
+/* Lifted rooms (AIR LiftDataContainer): promoted teasers above the hotel view results, one per page. */
+.octane-navigator-lifted {
+    box-sizing: border-box;
+    width: 396px;
+    margin: 0 0 6px 2px;
+}
+
+.octane-navigator-lifted__track {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+}
+
+.octane-navigator-lifted__room {
+    position: relative;
+    flex: 0 0 100%;
+    display: block;
+    padding: 0;
+    border: 1px solid #000000;
+    border-radius: 3px;
+    background: #2b2b2b;
+    cursor: pointer;
+    overflow: hidden;
+    scroll-snap-align: start;
+}
+
+.octane-navigator-lifted__room:focus-visible {
+    outline: 2px solid #7ecaee;
+    outline-offset: -2px;
+}
+
+.octane-navigator-lifted__image {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 60px;
+    object-fit: cover;
+}
+
+.octane-navigator-lifted__caption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 3px 6px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #ffffff;
+    font-family: HabboAirUbuntu, UbuntuBold, Ubuntu, sans-serif;
+    font-size: 12px;
+    line-height: 15px;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

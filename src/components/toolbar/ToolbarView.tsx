@@ -13,6 +13,7 @@ import { useAchievements, useBuildHeight, useDailyTasks, useFriends, useHasPermi
 import { BottomDockLayout, resolveBottomDockLayout } from './bottomDockLayout';
 import { ToolbarItemView } from './ToolbarItemView';
 import { ToolbarMeView } from './ToolbarMeView';
+import { ToolbarNewAdditionsLabel } from './ToolbarNewAdditionsLabel';
 import { ToolbarProgressionView } from './ToolbarProgressionView';
 import { useGroupForumUnreadStore } from '../../state/groupForumUnreadStore';
 import { YouTubePlayerView } from './YouTubePlayerView';
@@ -429,6 +430,7 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
                     </>) }
                     <motion.div variants={ itemVariants } className="tb-slot">
                         <ToolbarItemView icon="catalog" onClick={ () => CreateLinkEvent('catalog/toggle/normal') } className="tb-icon" />
+                        <ToolbarNewAdditionsLabel />
                     </motion.div>
                     { (!leftCollapsed && buildersClubEnabled) &&
                         <motion.div variants={ itemVariants } className="tb-slot">
@@ -565,8 +567,9 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
                         <motion.div variants={ itemVariants }>
                             <ToolbarItemView icon="game" onClick={ () => CreateLinkEvent('games/toggle') } className="tb-icon" />
                         </motion.div> }
-                    <motion.div variants={ itemVariants }>
+                    <motion.div variants={ itemVariants } className="relative">
                         <ToolbarItemView icon="catalog" onClick={ () => CreateLinkEvent('catalog/toggle/normal') } className="tb-icon" />
+                        <ToolbarNewAdditionsLabel />
                     </motion.div>
                     <motion.div variants={ itemVariants } className="relative tb-slot tb-slot-tall tb-slot-memenu shrink-0">
                         <img src={ memenuBgImg } alt="" className="tb-memenu-bg" />

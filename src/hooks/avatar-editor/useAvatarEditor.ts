@@ -491,6 +491,8 @@ const useAvatarEditorState = () => {
         selectEditorColor,
         selectEditorPart,
         loadAvatarData: loadValidAvatarData,
+        // A collectible look (avatar editor NFT tab) loads as the server stores it: its parts come with the token.
+        loadOutfitFigure: loadAvatarData,
         getFigureString,
         getValidFigureString,
         getFigureStringWithFace,

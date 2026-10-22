@@ -11,6 +11,8 @@ const mocks = vi.hoisted(() => ({
     simpleAlert: vi.fn(),
     uiHandler: null as (event: any) => void,
     messageHandler: null as (event: any) => void,
+    balanceHandler: null as (event: any) => void,
+    openUrl: vi.fn(),
     stats: null as any,
     statsArgs: [] as number[][]
 }));
@@ -31,7 +33,9 @@ vi.mock('@octane/renderer', async (importOriginal) => {
         GetMarketplaceCanMakeOfferComposer: composer('canMakeOffer'),
         MakeOfferMessageComposer: composer('makeOffer'),
         MakeMultipleOffersMessageComposer: composer('makeMultipleOffers'),
-        MarketplaceCanMakeOfferResult: class {}
+        BuyMarketplaceTokensMessageComposer: composer('buyTokens'),
+        MarketplaceCanMakeOfferResult: class MarketplaceCanMakeOfferResult {},
+        NotEnoughBalanceMessageEvent: class NotEnoughBalanceMessageEvent {}
     };
 });
 
@@ -41,6 +45,8 @@ vi.mock('../../../../../../api', async (importOriginal) => {
     return {
         ...actual,
         LocalizeText: (key: string) => key,
+        GetConfigurationValue: (key: string, fallback: unknown) => (key === 'web.shop.relativeUrl' ? '/shop' : fallback),
+        OpenUrl: mocks.openUrl,
         SendMessageComposer: mocks.send
     };
 });
@@ -66,15 +72,16 @@ vi.mock('../../../../../../common', async (importOriginal) => {
 
 vi.mock('../../../../../../hooks', () => ({
     useMarketplaceConfiguration: () => ({
-        data: { minimumPrice: 5, maximumPrice: 1000, offerTime: 48, displayTime: 7, commission: 1 }
+        data: { minimumPrice: 5, maximumPrice: 1000, offerTime: 48, displayTime: 7, commission: 1, credits: 1, advertisements: 5 }
     }),
     useMarketplaceItemStats: (category: number, furniId: number) => {
         mocks.statsArgs.push([category, furniId]);
 
         return category ? mocks.stats : null;
     },
-    useMessageEvent: (_type: unknown, handler: (event: any) => void) => {
-        mocks.messageHandler = handler;
+    useMessageEvent: (type: { name?: string }, handler: (event: any) => void) => {
+        if (type?.name === 'NotEnoughBalanceMessageEvent') mocks.balanceHandler = handler;
+        else mocks.messageHandler = handler;
     },
     useUiEvent: (_type: unknown, handler: (event: any) => void) => {
         mocks.uiHandler = handler;
@@ -104,6 +111,7 @@ describe('MarketplacePostOfferView', () => {
         mocks.send.mockClear();
         mocks.showConfirm.mockClear();
         mocks.simpleAlert.mockClear();
+        mocks.openUrl.mockClear();
         mocks.stats = null;
         mocks.statsArgs.length = 0;
         vi.mocked(GetSessionDataManager).mockReturnValue({
@@ -204,5 +212,86 @@ describe('MarketplacePostOfferView', () => {
 
         expect(screen.queryByTestId('marketplace-post-offer-name')).toBeNull();
         expect(mocks.showConfirm).not.toHaveBeenCalled();
+    });
+    it('offers the token batch when no selling tokens are left and opens the offer once they are bought', () => {
+        render(<MarketplacePostOfferView />);
+
+        act(() => mocks.uiHandler({ item: furni(11), items: [furni(11)] }));
+        act(() => mocks.messageHandler({ getParser: () => ({ resultCode: 4, tokenCount: 0 }) }));
+
+        expect(screen.queryByTestId('marketplace-post-offer-name')).toBeNull();
+        expect(screen.getByTestId('marketplace-buy-tokens-info').textContent).toBe(
+            'Selling furni on the marketplace costs 1 credit for 5 advertisements. You have none left, so your next advertisement costs 1 credit. The 4 after it are free.'
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Buy (1 credit)' }));
+
+        expect(mocks.send.mock.calls.at(-1)[0].name).toBe('buyTokens');
+        expect(screen.queryByTestId('marketplace-buy-tokens-info')).toBeNull();
+
+        act(() => mocks.messageHandler({ getParser: () => ({ resultCode: 1, tokenCount: 5 }) }));
+
+        expect(screen.getByTestId('marketplace-post-offer-name').textContent).toBe('Troon');
+    });
+
+    it('shows the no-credits window when the token purchase is refused and links to the shop', () => {
+        render(<MarketplacePostOfferView />);
+
+        act(() => mocks.uiHandler({ item: furni(11), items: [furni(11)] }));
+        act(() => mocks.messageHandler({ getParser: () => ({ resultCode: 4, tokenCount: 0 }) }));
+        fireEvent.click(screen.getByRole('button', { name: 'Buy (1 credit)' }));
+        act(() => mocks.balanceHandler({ getParser: () => ({ notEnoughCredits: true, notEnoughActivityPoints: false }) }));
+
+        expect(screen.getByTestId('marketplace-no-credits-info').textContent).toBe('You need 1 credit for five advertisements.');
+
+        fireEvent.click(screen.getByRole('button', { name: 'Get credits' }));
+
+        expect(mocks.openUrl).toHaveBeenCalledWith('/shop');
+        expect(screen.queryByTestId('marketplace-no-credits-info')).toBeNull();
+
+        // The items were released: a late answer opens nothing.
+        act(() => mocks.messageHandler({ getParser: () => ({ resultCode: 1, tokenCount: 5 }) }));
+        expect(screen.queryByTestId('marketplace-post-offer-name')).toBeNull();
+    });
+
+    it('keeps the items while the user reads the buy-tokens window', () => {
+        vi.useFakeTimers();
+
+        try {
+            render(<MarketplacePostOfferView />);
+
+            act(() => mocks.uiHandler({ item: furni(11), items: [furni(11)] }));
+            act(() => mocks.messageHandler({ getParser: () => ({ resultCode: 4, tokenCount: 0 }) }));
+            act(() => vi.advanceTimersByTime(3000));
+            fireEvent.click(screen.getByRole('button', { name: 'Buy (1 credit)' }));
+            // The timer of the first check must not release the items of the purchase.
+            act(() => vi.advanceTimersByTime(4000));
+            act(() => mocks.messageHandler({ getParser: () => ({ resultCode: 1, tokenCount: 5 }) }));
+
+            expect(screen.getByTestId('marketplace-post-offer-name').textContent).toBe('Troon');
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    it('ignores a balance refusal that is not about the token purchase', () => {
+        render(<MarketplacePostOfferView />);
+
+        act(() => mocks.balanceHandler({ getParser: () => ({ notEnoughCredits: true }) }));
+
+        expect(screen.queryByTestId('marketplace-no-credits-info')).toBeNull();
+    });
+
+    it('cancelling the buy-tokens window releases the items', () => {
+        render(<MarketplacePostOfferView />);
+
+        act(() => mocks.uiHandler({ item: furni(11), items: [furni(11)] }));
+        act(() => mocks.messageHandler({ getParser: () => ({ resultCode: 4, tokenCount: 0 }) }));
+        fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+        expect(screen.queryByTestId('marketplace-buy-tokens-info')).toBeNull();
+        act(() => mocks.messageHandler({ getParser: () => ({ resultCode: 1, tokenCount: 5 }) }));
+        expect(screen.queryByTestId('marketplace-post-offer-name')).toBeNull();
+        expect(mocks.send.mock.calls.map((call) => call[0].name)).toEqual(['canMakeOffer']);
     });
 });

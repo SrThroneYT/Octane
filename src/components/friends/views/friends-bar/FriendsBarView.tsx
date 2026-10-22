@@ -5,6 +5,8 @@ import friendsBrowseArrowRight from '../../../../assets/images/toolbar/air/frien
 import friendsBrowseBg from '../../../../assets/images/toolbar/air/friends-browse-bg.png';
 import { LocalizeText, localizeWithFallback, MessengerFriend } from '../../../../api';
 import { AIR_RAIL_CHAT_RESERVED_HALF, AIR_RAIL_EDGE_GAP, resolveAirFriendTabCapacity } from '../../../toolbar/bottomDockLayout';
+import { orderFriendsForBar } from '../../../../hooks/friends/friendBarNotifications.helpers';
+import { useFriendBarNotificationsStore } from '../../../../hooks/friends/friendBarNotificationsStore';
 import { FriendBarItemView } from './FriendBarItemView';
 import { BaseButton } from '../../../../common/BaseButton';
 
@@ -77,7 +79,9 @@ export const FriendBarView: FC<{ onlineFriends: MessengerFriend[]; requestsCount
         };
     }, [requestsCount, onlineFriends.length]);
 
-    const validFriends = onlineFriends.filter(Boolean);
+    // AIR HabboFriendBarData.setFriendAt(friend, 0): a friend with new activity moves to the front.
+    const notifiedOrder = useFriendBarNotificationsStore((state) => state.order);
+    const validFriends = orderFriendsForBar(onlineFriends.filter(Boolean), notifiedOrder);
     const maxOffset = maxVisible > 0 ? Math.max(0, validFriends.length - maxVisible) : 0;
     const safeOffset = Math.min(indexOffset, maxOffset);
     const canScrollLeft = safeOffset > 0;

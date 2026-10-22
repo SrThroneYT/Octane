@@ -35,6 +35,23 @@ describe('the captioned bubbles', () => {
     });
 });
 
+describe('the nft_opening bubble', () => {
+    it('shows the reward icon and its rarity, as AIR passes them', () => {
+        const product = { productTypeId: 2, itemTypeId: '1', score: 0, amount: 0, petFigure: '', figureSetIds: [], productCode: 'fx', rarity: 'Epic' };
+        const item = new NotificationBubbleItem('Someone received a Witch Chair', NotificationBubbleType.NFT_OPENING, null, null, '', {
+            product: product as never,
+            rarity: 'Epic',
+            rarityColor: 0x6d1c66
+        });
+
+        const { container } = render(<>{GetBubbleLayout(item, () => null)}</>);
+
+        expect(screen.getByText('Rarity: Epic')).toBeTruthy();
+        expect((screen.getByText('Rarity: Epic') as HTMLElement).style.color).toBe('rgb(109, 28, 102)');
+        expect(container.querySelector('.octane-caption-notification__product img')).toBeTruthy();
+    });
+});
+
 describe('NotificationBubbleType.resolve', () => {
     it('takes the first captioned style asked for, and falls back to info', () => {
         expect(NotificationBubbleType.resolve(undefined, 'wired')).toBe('wired');

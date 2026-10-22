@@ -129,3 +129,51 @@ export const getCountdownParts = (seconds: number) => ({
 });
 
 export const padCountdown = (value: number): string => value.toString().padStart(2, '0');
+
+/** UserListWidget: ten avatars, their vertical offsets and the side each one faces (2 = right, 4 = left). */
+export const HALL_OF_FAME_MAX_USERS = 10;
+export const HALL_OF_FAME_Y_OFFSETS = [0, 10, 5, 0, 5, 10, 0, 10, 5, 10];
+export const HALL_OF_FAME_DIRECTIONS = [2, 4, 2, 2, 4, 2, 2, 2, 4, 2];
+
+/** `landing.view.<code>.avatarlist.yoffsets.array` style overrides: "0,10,5" -> [0, 10, 5]; invalid -> fallback. */
+export const parseNumberArray = (value: string, fallback: number[]): number[] => {
+    if (!value || !value.trim()) return fallback;
+
+    const parsed = value.split(',').map((part) => Number.parseInt(part.trim(), 10));
+
+    return parsed.some((entry) => Number.isNaN(entry)) ? fallback : parsed;
+};
+
+/**
+ * CommunityGoalHallOfFameWidget.onTimingCode: the answer counts only for this slot's schedule and
+ * only when the server picked a code.
+ */
+export const acceptTimingCode = (schedulingStr: string, answeredSchedulingStr: string, code: string): boolean =>
+    !!code && answeredSchedulingStr === schedulingStr;
+
+/**
+ * CommunityGoalPrizesWidget.setPrizeRankLimits: prize level n covers the ranks after the levels
+ * before it. Returns the first and last rank of the level.
+ */
+export const getPrizeRankLimits = (level: number, rewardUserLimits: number[]): { start: number; end: number } => {
+    const limits = rewardUserLimits ?? [];
+    let start = 1;
+    let end = 0;
+
+    for (let index = 0; index < level; index++) {
+        if (index < level - 1) start += limits[index] ?? 0;
+
+        end += limits[index] ?? 0;
+    }
+
+    return { start, end };
+};
+
+export type PrizesUserRankKey = 'yourfinalrank' | 'yourrank' | 'youarenotranked';
+
+/** CommunityGoalPrizesWidget.refreshContent: which `landing.view.competition.prizes.<key>` caption the player sees. */
+export const getPrizesUserRankKey = (hasGoalExpired: boolean, personalContributionRank: number): PrizesUserRankKey => {
+    if (hasGoalExpired) return 'yourfinalrank';
+
+    return personalContributionRank > 0 ? 'yourrank' : 'youarenotranked';
+};

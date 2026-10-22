@@ -12,7 +12,7 @@ import {
     RoomSessionEvent
 } from '@octane/renderer';
 import { CSSProperties, FC, PointerEvent, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { CreateLinkEvent, LocalizeText, localizeWithFallback, SendMessageComposer, TryVisitRoom } from '../../api';
+import { CreateLinkEvent, LocalizeText, localizeWithFallback, NAVIGATOR_LIFTED_VIEW_CODE, SendMessageComposer, TryVisitRoom } from '../../api';
 import createRoomImg from '../../assets/images/navigator/air/create-room.png';
 import promoteRoomImg from '../../assets/images/navigator/air/promote-room.png';
 import quicklinkAdd from '../../assets/images/navigator/air/quicklink-add.png';
@@ -36,6 +36,7 @@ import { NavigatorRoomSettingsView } from './views/room-settings/NavigatorRoomSe
 import { NavigatorRaidProtectionView } from './views/raid-protection/NavigatorRaidProtectionView';
 import { NavigatorEnforceCategoryView } from './views/NavigatorEnforceCategoryView';
 import { NavigatorEmptyStateView } from './views/search/NavigatorEmptyStateView';
+import { NavigatorLiftedRoomsView } from './views/search/NavigatorLiftedRoomsView';
 import { NavigatorRoomInfoPopupView } from './views/search/NavigatorRoomInfoPopupView';
 import { NavigatorSearchResultView } from './views/search/NavigatorSearchResultView';
 import { NavigatorSearchSavesResultView } from './views/search/NavigatorSearchSavesResultView';
@@ -56,7 +57,7 @@ const persistNavigatorBounds = (element: HTMLElement | null) => {
 };
 
 export const NavigatorView: FC<{}> = () => {
-    const { topLevelContext, topLevelContexts, navigatorData, navigatorSearches } = useNavigatorData();
+    const { topLevelContext, topLevelContexts, navigatorData, navigatorSearches, liftedRooms } = useNavigatorData();
     const { searchResult, isFetching } = useNavigatorSearch();
     const { isVisible, isCreatorOpen, isRoomInfoOpen, isRoomLinkOpen, isOpenSavesSearches, needsInit, currentTabCode, windowHeight } = useNavigatorUiState();
     const canGoBack = useNavigatorUiStore((state) => state.searchHistoryOffset > 0);
@@ -366,6 +367,7 @@ export const NavigatorView: FC<{}> = () => {
                                         <NavigatorSearchView searchResult={searchResult} />
                                         <div ref={elementRef} className="octane-navigator-air__results has-air-scrollbar" data-scrollable={resultsScrollable}>
                                             {isFetching && <div className="octane-navigator-air__busy-mask" aria-hidden="true" />}
+                                            {searchResult?.code === NAVIGATOR_LIFTED_VIEW_CODE && !searchResult.data && <NavigatorLiftedRoomsView rooms={liftedRooms} />}
                                             {searchResult &&
                                                 searchResult.results.map((result, index) => (
                                                     <NavigatorSearchResultView

@@ -167,14 +167,18 @@ const isRentableGroup = (item: GroupItem): boolean => !!item.getLastItem()?.rent
 
 const isCollectibleGroup = (item: GroupItem): boolean => !isRentableGroup(item) && (item.getLastItem()?.stuffData?.uniqueNumber ?? 0) > 0;
 
-/** What a furniture section holds: a rented item is only a rentable, a numbered one only a collectible. */
-export const inFurnitureSection = (groupItems: GroupItem[], section: FurnitureSection): GroupItem[] => {
+/**
+ * What a furniture section holds: a rented item is only a rentable, a numbered one only a collectible.
+ * With `numberedInFurni` (the hotel runs collectibles, whose tab shows the collectibles themselves) the
+ * numbered furni stay in the furni section, as in the official inventory.
+ */
+export const inFurnitureSection = (groupItems: GroupItem[], section: FurnitureSection, numberedInFurni: boolean = false): GroupItem[] => {
     switch (section) {
         case 'rentables':
             return groupItems.filter(isRentableGroup);
         case 'collectibles':
             return groupItems.filter(isCollectibleGroup);
         default:
-            return groupItems.filter((item) => !isRentableGroup(item) && !isCollectibleGroup(item));
+            return groupItems.filter((item) => !isRentableGroup(item) && (numberedInFurni || !isCollectibleGroup(item)));
     }
 };

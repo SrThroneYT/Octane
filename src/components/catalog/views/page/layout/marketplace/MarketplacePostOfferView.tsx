@@ -1,15 +1,19 @@
 import {
+    BuyMarketplaceTokensMessageComposer,
     GetMarketplaceCanMakeOfferComposer,
     GetSessionDataManager,
     MakeMultipleOffersMessageComposer,
     MakeOfferMessageComposer,
-    MarketplaceCanMakeOfferResult
+    MarketplaceCanMakeOfferResult,
+    NotEnoughBalanceMessageEvent
 } from '@octane/renderer';
 import { FC, useRef, useState } from 'react';
 import {
     checkMarketplaceOfferPrice,
     FurniCategory,
     FurnitureItem,
+    GetConfigurationValue,
+    getFurnidataText,
     getMarketplaceConfirmText,
     getMarketplaceFurniTextKeys,
     getMarketplaceOfferRevenue,
@@ -19,9 +23,9 @@ import {
     localizeWithFallback,
     MARKETPLACE_MAX_OFFER_AMOUNT,
     NotificationAlertType,
+    OpenUrl,
     ProductTypeEnum,
     parseMarketplaceOfferAmount,
-    getFurnidataText,
     pickMarketplaceFurniText,
     SendMessageComposer
 } from '../../../../../../api';
@@ -36,8 +40,12 @@ import {
 import { BaseButton } from '../../../../../../common/BaseButton';
 import { CatalogPostMarketplaceOfferEvent } from '../../../../../../events';
 import { useMarketplaceConfiguration, useMarketplaceItemStats, useMessageEvent, useNotification, useUiEvent } from '../../../../../../hooks';
+import { MarketplaceBuyTokensView, MarketplaceNoCreditsView } from './MarketplaceTokenDialogsView';
 
 let isPostingMarketplaceOffer = false;
+
+/** Can-make-offer answer 4: no selling tokens left, so AIR offers to buy a batch (MarketplaceView.showBuyTokens). */
+const CAN_MAKE_OFFER_NO_TOKENS = 4;
 
 /** Result codes of the can-make-offer check that stop the sale, with Habbo's text keys. */
 const CAN_MAKE_OFFER_ERRORS: Record<number, [string, string]> = {
@@ -93,8 +101,13 @@ export const MarketplacePostOfferView: FC<{}> = () => {
     const [items, setItems] = useState<FurnitureItem[]>([]);
     const [priceText, setPriceText] = useState('');
     const [amountText, setAmountText] = useState('1');
+    const [tokenDialog, setTokenDialog] = useState<'buy' | 'no_credits'>(null);
     const pendingOfferRef = useRef<{ item: FurnitureItem; items: FurnitureItem[] }>(null);
-    const { data: configuration = null } = useMarketplaceConfiguration({ enabled: !!item });
+    // Set while a can-make-offer answer is due (after the check, or after buying tokens).
+    const awaitingAnswerRef = useRef(false);
+    const buyingTokensRef = useRef(false);
+    const answerRequestRef = useRef(0);
+    const { data: configuration = null } = useMarketplaceConfiguration({ enabled: !!item || !!tokenDialog });
     const { showConfirm = null, simpleAlert = null } = useNotification();
     const maxAmount = Math.max(1, Math.min(items.length, MARKETPLACE_MAX_OFFER_AMOUNT));
     const uniqueNumber = item?.stuffData?.uniqueNumber ?? 0;
@@ -105,17 +118,27 @@ export const MarketplacePostOfferView: FC<{}> = () => {
         if (!event.item || pendingOfferRef.current) return;
 
         pendingOfferRef.current = { item: event.item, items: event.items };
+        awaitAnswer();
         SendMessageComposer(new GetMarketplaceCanMakeOfferComposer());
-        setTimeout(() => (pendingOfferRef.current = null), 5000);
     });
 
     useMessageEvent<MarketplaceCanMakeOfferResult>(MarketplaceCanMakeOfferResult, (event) => {
         const parser = event.getParser();
         const pending = pendingOfferRef.current;
 
-        pendingOfferRef.current = null;
+        awaitingAnswerRef.current = false;
+        buyingTokensRef.current = false;
 
         if (!parser || !pending) return;
+
+        // AIR keeps the items while the buy-tokens window is open; the purchase answers this check again.
+        if (parser.resultCode === CAN_MAKE_OFFER_NO_TOKENS) {
+            setTokenDialog('buy');
+
+            return;
+        }
+
+        pendingOfferRef.current = null;
 
         if (parser.resultCode === 1) {
             setItems(pending.items.filter((value) => value.type === pending.item.type && value.isWallItem === pending.item.isWallItem));
@@ -138,6 +161,65 @@ export const MarketplacePostOfferView: FC<{}> = () => {
             localizeWithFallback(`${error[0]}.title`, 'Marketplace')
         );
     });
+
+    // The server refuses the token purchase for lack of credits (AIR marketplace_no_credits).
+    useMessageEvent<NotEnoughBalanceMessageEvent>(NotEnoughBalanceMessageEvent, (event) => {
+        if (!buyingTokensRef.current) return;
+
+        buyingTokensRef.current = false;
+        awaitingAnswerRef.current = false;
+
+        if (!event.getParser()?.notEnoughCredits) {
+            pendingOfferRef.current = null;
+
+            return;
+        }
+
+        setTokenDialog('no_credits');
+    });
+
+    function awaitAnswer() {
+        const request = ++answerRequestRef.current;
+
+        awaitingAnswerRef.current = true;
+        setTimeout(() => {
+            if (!awaitingAnswerRef.current || answerRequestRef.current !== request) return;
+
+            awaitingAnswerRef.current = false;
+            buyingTokensRef.current = false;
+            pendingOfferRef.current = null;
+        }, 5000);
+    }
+
+    const closeTokenDialog = () => {
+        setTokenDialog(null);
+        pendingOfferRef.current = null;
+    };
+
+    const buyTokens = () => {
+        setTokenDialog(null);
+        buyingTokensRef.current = true;
+        awaitAnswer();
+        SendMessageComposer(new BuyMarketplaceTokensMessageComposer());
+    };
+
+    const getCredits = () => {
+        closeTokenDialog();
+
+        const shopUrl = GetConfigurationValue<string>('web.shop.relativeUrl', '');
+
+        if (shopUrl) OpenUrl(shopUrl);
+    };
+
+    if (tokenDialog && configuration) {
+        // The marketplace configuration's third and fourth fields are the token batch: its price and size.
+        if (tokenDialog === 'buy')
+            return (
+                <MarketplaceBuyTokensView count={configuration.advertisements} price={configuration.credits} onBuy={buyTokens} onCancel={closeTokenDialog} />
+            );
+
+        return <MarketplaceNoCreditsView price={configuration.credits} onClose={closeTokenDialog} onGetCredits={getCredits} />;
+    }
 
     if (!configuration || !item) return null;
 

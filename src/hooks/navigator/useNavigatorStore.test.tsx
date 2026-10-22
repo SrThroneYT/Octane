@@ -46,7 +46,7 @@ describe('navigator filter shapes (smoke)', () => {
         await waitFor(() => expect(result.current).not.toBeNull());
 
         expect(Object.keys(result.current).sort()).toEqual(
-            ['categories', 'eventCategories', 'navigatorData', 'navigatorSearches', 'topLevelContext', 'topLevelContexts'].sort()
+            ['categories', 'eventCategories', 'liftedRooms', 'navigatorData', 'navigatorSearches', 'topLevelContext', 'topLevelContexts'].sort()
         );
     });
 

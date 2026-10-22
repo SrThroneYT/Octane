@@ -3,6 +3,7 @@ import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { FaBars, FaCog } from 'react-icons/fa';
 import { CatalogType, GetConfigurationValue, LocalizeShortNumber, LocalizeText, SanitizeHtml } from '../../api';
 import { LayoutCurrencyIcon, OctaneCardContentView, OctaneCardHeaderView, OctaneCardTabsItemView, OctaneCardTabsView, OctaneCardView } from '../../common';
+import { BaseButton } from '../../common/BaseButton';
 import { CatalogEffectsHost, useCatalogActions, useCatalogData, useCatalogUiState, useHasPermission, usePurse } from '../../hooks';
 import { CatalogStudioProvider } from './admin/studio/CatalogStudioProvider';
 import { CatalogAdminProvider, useCatalogAdmin } from './CatalogAdminContext';
@@ -20,7 +21,7 @@ import { CatalogNavigationView } from './views/navigation/CatalogNavigationView'
 import { CatalogSearchView } from './views/page/common/CatalogSearchView';
 import { GetCatalogLayout } from './views/page/layout/GetCatalogLayout';
 import { MarketplacePostOfferView } from './views/page/layout/marketplace/MarketplacePostOfferView';
-import { BaseButton } from '../../common/BaseButton';
+import { VipBenefitsView } from './views/vip-benefits/VipBenefitsView';
 
 const CatalogViewInner: FC<{}> = () => {
     const { rootNode = null, currentPage = null, searchResult = null, isBusy = false, catalogLoadError = null } = useCatalogData();
@@ -294,6 +295,7 @@ const CatalogViewInner: FC<{}> = () => {
             <CatalogAdminOfferEditView />
             <CatalogGiftView />
             <MarketplacePostOfferView />
+            <VipBenefitsView />
         </>
     );
 };

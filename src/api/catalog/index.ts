@@ -30,3 +30,4 @@ export * from './Product';
 export * from './ProductTypeEnum';
 export * from './SearchResult';
 export * from './TargetedOfferUtilities';
+export * from './VipBenefits';

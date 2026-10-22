@@ -27,6 +27,7 @@ import {
     UnseenItemCategory
 } from '../../api';
 import { OctaneCardHeaderView, OctaneCardTabsItemView, OctaneCardTabsView, OctaneCardView } from '../../common';
+import { isCollectiblesEnabled } from '../../hooks/collectibles/useCollectibles';
 import {
     useInventoryBadges,
     useInventoryFurni,
@@ -38,6 +39,7 @@ import {
 } from '../../hooks';
 import { InventoryBadgeView } from './views/badge/InventoryBadgeView';
 import { InventoryBotView } from './views/bot/InventoryBotView';
+import { InventoryCollectiblesView } from './views/collectibles/InventoryCollectiblesView';
 import { InventoryFurnitureDeleteView } from './views/furniture/InventoryFurnitureDeleteView';
 import { InventoryTradeNameScamWarningView } from './views/furniture/InventoryTradeNameScamWarningView';
 import { InventoryFurnitureView } from './views/furniture/InventoryFurnitureView';
@@ -148,7 +150,10 @@ export const InventoryView: FC<{}> = () => {
         }
     }, [currentTab]);
 
-    const section = SECTION_BY_TAB[currentTab] ?? null;
+    // With collectibles on, their tab holds the owned collectibles and numbered furni stay with the furni.
+    const collectiblesEnabled = isCollectiblesEnabled();
+    const showsCollectibles = collectiblesEnabled && currentTab === TAB_COLLECTIBLES;
+    const section = showsCollectibles ? null : (SECTION_BY_TAB[currentTab] ?? null);
 
     useEffect(() => {
         if (!section) return;
@@ -158,8 +163,8 @@ export const InventoryView: FC<{}> = () => {
     const filteredGroupItems = useMemo(() => {
         if (!section) return groupItems;
 
-        return filterFurnitureGroupItems(inFurnitureSection(groupItems, section), appliedSearch, mainFilter as FurniMainFilter, typeFilter);
-    }, [groupItems, appliedSearch, mainFilter, typeFilter, section]);
+        return filterFurnitureGroupItems(inFurnitureSection(groupItems, section, collectiblesEnabled), appliedSearch, mainFilter as FurniMainFilter, typeFilter);
+    }, [groupItems, appliedSearch, mainFilter, typeFilter, section, collectiblesEnabled]);
 
     const filteredBadgeCodes = useMemo(() => {
         const comparison = appliedSearch.toLocaleLowerCase().trim();
@@ -315,6 +320,7 @@ export const InventoryView: FC<{}> = () => {
                                 {section && (
                                     <InventoryFurnitureView filteredGroupItems={filteredGroupItems} roomPreviewer={roomPreviewer} roomSession={roomSession} />
                                 )}
+                                {showsCollectibles && <InventoryCollectiblesView />}
                                 {currentTab === TAB_PETS && <InventoryPetView roomPreviewer={roomPreviewer} roomSession={roomSession} />}
                                 {currentTab === TAB_BADGES && <InventoryBadgeView filteredBadgeCodes={filteredBadgeCodes} />}
                                 {currentTab === TAB_BOTS && <InventoryBotView roomPreviewer={roomPreviewer} roomSession={roomSession} />}

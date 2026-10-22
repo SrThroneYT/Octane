@@ -2,6 +2,8 @@ import { FC } from 'react';
 import { localizeWithFallback, NotificationBubbleItem, NotificationBubbleType, OpenUrl, SanitizeHtml } from '../../../../api';
 import wiredIcon from '../../../../assets/images/notifications/wired/wired-notification.png';
 import { LayoutNotificationBubbleView, LayoutNotificationBubbleViewProps } from '../../../../common';
+import { toHexColor } from '../../../../hooks/collectibles/collectibles.helpers';
+import { CollectibleProductImageView } from '../../../collectibles/CollectibleProductImageView';
 
 export interface NotificationCaptionBubbleViewProps extends LayoutNotificationBubbleViewProps {
     item: NotificationBubbleItem;
@@ -27,6 +29,8 @@ export const NotificationCaptionBubbleView: FC<NotificationCaptionBubbleViewProp
     const style = STYLES[item.notificationType] ?? STYLES[NotificationBubbleType.WIRED];
     const icon = item.iconUrl ?? style.icon;
     const htmlText = item.message.replace(/\r\n|\r|\n/g, '<br />');
+    /* notification_nft_opening: icon_widget shows the reward, rarity_text "Rarity: <rarity>" in its colour. */
+    const collectible = item.notificationType === NotificationBubbleType.NFT_OPENING ? item.collectible : null;
 
     return (
         <LayoutNotificationBubbleView
@@ -38,7 +42,12 @@ export const NotificationCaptionBubbleView: FC<NotificationCaptionBubbleViewProp
         >
             <div className="octane-caption-notification__caption">{localizeWithFallback(style.caption[0], style.caption[1])}</div>
             <div className="octane-caption-notification__row">
-                {icon && <img alt="" className="octane-caption-notification__icon" src={icon} draggable={false} />}
+                {collectible && (
+                    <div className="octane-caption-notification__icon octane-caption-notification__product">
+                        <CollectibleProductImageView icon product={collectible.product} />
+                    </div>
+                )}
+                {!collectible && icon && <img alt="" className="octane-caption-notification__icon" src={icon} draggable={false} />}
                 {/* treasure_hunt_image: the gold key the official layout shows while the bubble has no icon. */}
                 {!icon && item.notificationType === NotificationBubbleType.TREASURE_HUNT && (
                     <div aria-hidden className="octane-caption-notification__treasure-key">
@@ -46,7 +55,18 @@ export const NotificationCaptionBubbleView: FC<NotificationCaptionBubbleViewProp
                         <div className="octane-caption-notification__treasure-key-overlay" />
                     </div>
                 )}
-                <span className="octane-caption-notification__text" dangerouslySetInnerHTML={{ __html: SanitizeHtml(htmlText) }} />
+                {collectible ? (
+                    <div className="octane-caption-notification__text">
+                        <span dangerouslySetInnerHTML={{ __html: SanitizeHtml(htmlText) }} />
+                        {!!collectible.rarity && (
+                            <div className="octane-caption-notification__rarity" style={{ color: toHexColor(collectible.rarityColor) }}>
+                                {`${localizeWithFallback('collectibles.item.rarity', 'Rarity')}: ${collectible.rarity}`}
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <span className="octane-caption-notification__text" dangerouslySetInnerHTML={{ __html: SanitizeHtml(htmlText) }} />
+                )}
             </div>
         </LayoutNotificationBubbleView>
     );

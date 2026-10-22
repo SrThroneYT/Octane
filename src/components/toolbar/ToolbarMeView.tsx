@@ -4,6 +4,7 @@ import { DispatchUiEvent, GetConfigurationValue, GetRoomSession, GetUserProfile,
 import { Flex, LayoutItemCountView } from '../../common';
 import { GuideToolEvent } from '../../events';
 import { useDailyTasks, useRewardTracks } from '../../hooks';
+import { isCollectiblesEnabled } from '../../hooks/collectibles/useCollectibles';
 import { useGroupForumUnreadStore } from '../../state/groupForumUnreadStore';
 import { BaseButton } from '../../common/BaseButton';
 import { Hint } from '../../common/Tooltip';
@@ -98,6 +99,16 @@ export const ToolbarMeView: FC<
                 className="navigation-item relative octane-icon icon-me-badge-creator cursor-pointer"
                 onClick={(event) => CreateLinkEvent('badge-creator/toggle')}
             /></Hint>
+            {isCollectiblesEnabled() && (
+                <Hint content={localizeWithFallback('memenu.collectibles', 'Collectibles')}>
+                    <BaseButton
+                        aria-label={localizeWithFallback('memenu.collectibles', 'Collectibles')}
+                        type="button"
+                        className="navigation-item relative icon-me-collectibles cursor-pointer"
+                        onClick={(event) => CreateLinkEvent('collectibles/open')}
+                    />
+                </Hint>
+            )}
             <BaseButton type="button" className="navigation-item relative octane-icon icon-me-settings cursor-pointer" onClick={(event) => CreateLinkEvent('user-settings/toggle')} />
             <Hint content={LocalizeText('toolbar.icon.label.forums')}><BaseButton type="button"
                 className="navigation-item relative octane-icon icon-me-forums cursor-pointer"

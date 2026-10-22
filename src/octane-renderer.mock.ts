@@ -331,6 +331,7 @@ export class FavouritesEvent extends MessageEvent {}
 export class FlatCreatedEvent extends MessageEvent {}
 export class RoomSettingsSavedEvent extends MessageEvent {}
 export class NavigatorHomeRoomEvent extends MessageEvent {}
+export class NavigatorLiftedEvent extends MessageEvent {}
 export class NavigatorMetadataEvent extends MessageEvent {}
 export class AvatarEffectsEvent extends MessageEvent {}
 export class AvatarEffectAddedEvent extends MessageEvent {}
