@@ -76,7 +76,7 @@ export const GroupBadgeCreatorView: FC<GroupBadgeCreatorViewProps> = (props) => 
                 <BaseButton className="octane-group-native__layer-part" type="button" onClick={() => setSelectedIndex(partIndex)}>
                     {part.previewCode ? (
                         <div className="octane-group-native__badge">
-                            <LayoutBadgeImageView badgeCode={part.previewCode} isGroup={true} />
+                            <LayoutBadgeImageView badgeCode={part.previewCode} isGroup={true} isPreview={true} />
                         </div>
                     ) : (
                         <img alt="" className="octane-group-native__badge" draggable={false} src={badgePartAdd} />
@@ -126,7 +126,7 @@ export const GroupBadgeCreatorView: FC<GroupBadgeCreatorViewProps> = (props) => 
                                         <GroupBox height={41} kind="tan" width={41} x={0} y={0} />
                                         <div className="octane-group-native__part-clip">
                                             <div className="octane-group-native__badge">
-                                                <LayoutBadgeImageView badgeCode={GroupBadgePart.getCode(selected.type, item.id, selected.color, selected.position)} isGroup={true} />
+                                                <LayoutBadgeImageView badgeCode={GroupBadgePart.getCode(selected.type, item.id, selected.color, selected.position)} isGroup={true} isPreview={true} />
                                             </div>
                                         </div>
                                         {selected.key === item.id && <img alt="" className="octane-group-native__part-selected" src={badgePartPicker} />}

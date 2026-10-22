@@ -9,12 +9,7 @@ import {
     LocalizeBadgeName,
     LocalizeText
 } from '../../api';
-import {
-    getBadgeRarityFromPacket,
-    getBadgeRarityGlowColor,
-    getBadgeRarityTier,
-    isBadgeRarityStandaloneTier
-} from '../../api/badges/badgeRarity';
+import { getBadgeRarityFromPacket, getBadgeRarityGlowColor, getBadgeRarityTier, isBadgeRarityStandaloneTier } from '../../api/badges/badgeRarity';
 import { Base, BaseProps } from '../Base';
 import { BadgeDetailsTooltip } from './BadgeDetailsTooltip';
 import { PIXEL_ART_RENDERING } from './PixelArtRendering';
@@ -22,6 +17,8 @@ import { PIXEL_ART_RENDERING } from './PixelArtRendering';
 export interface LayoutBadgeImageViewProps extends BaseProps<HTMLDivElement> {
     badgeCode: string;
     isGroup?: boolean;
+    /** A group badge being edited: always drawn by the client, never asked from the badge imager. */
+    isPreview?: boolean;
     showInfo?: boolean;
     customTitle?: string;
     isGrayscale?: boolean;
@@ -49,6 +46,7 @@ export const LayoutBadgeImageView: FC<LayoutBadgeImageViewProps> = (props) => {
     const {
         badgeCode = null,
         isGroup = false,
+        isPreview = false,
         showInfo = false,
         customTitle = null,
         isGrayscale = false,
@@ -117,19 +115,51 @@ export const LayoutBadgeImageView: FC<LayoutBadgeImageViewProps> = (props) => {
         if (!badgeCode || !badgeCode.length) return;
 
         let didSetBadge = false;
+        let cancelled = false;
+        // Only the newest image counts: the loading icon read back from the GPU can finish after the real badge.
+        let latestRequest = 0;
+        const allowServerImage = !isPreview;
+
+        const showImage = (element: HTMLImageElement, request: number) => {
+            const apply = () => {
+                if (!cancelled && request === latestRequest) setImageElement(element);
+            };
+
+            if (element.complete && element.naturalWidth) apply();
+            else element.onload = apply;
+        };
+
+        // A group badge has one image URL, made once by the renderer and shared by every view. Only a renderer
+        // without it (or a badge it could not draw on a canvas) still reads the texture back from the GPU.
+        const showGroupBadge = async (texture: BadgeImageReadyEvent['image']) => {
+            const request = ++latestRequest;
+            const url = GetSessionDataManager().getGroupBadgeImageUrl?.(badgeCode, allowServerImage);
+
+            if (url) {
+                const element = new Image();
+
+                element.src = url;
+                showImage(element, request);
+
+                return;
+            }
+
+            if (!texture) return;
+
+            const sprite = new OctaneSprite(texture);
+            const element = await TextureUtils.generateImage({ target: sprite, resolution: 1 });
+
+            // Drop the wrapper only; the badge texture stays with the session data manager.
+            sprite.destroy();
+
+            if (element) showImage(element, request);
+        };
 
         const onBadgeImageReadyEvent = async (event: BadgeImageReadyEvent) => {
             if (event.badgeId !== badgeCode) return;
 
             if (isGroup) {
-                const sprite = new OctaneSprite(event.image);
-                const element = await TextureUtils.generateImage({ target: sprite, resolution: 1 });
-
-                // Drop the wrapper only; the badge texture stays with the session data manager.
-                sprite.destroy();
-
-                if (element.complete && element.naturalWidth) setImageElement(element);
-                else element.onload = () => setImageElement(element);
+                await showGroupBadge(event.image);
             } else {
                 const badgeUrl = GetConfigurationValue<string>('badge.asset.url').replace('%badgename%', badgeCode.toString());
                 const img = new Image();
@@ -145,19 +175,11 @@ export const LayoutBadgeImageView: FC<LayoutBadgeImageViewProps> = (props) => {
 
         GetEventDispatcher().addEventListener(BadgeImageReadyEvent.IMAGE_READY, onBadgeImageReadyEvent);
 
-        const texture = isGroup ? GetSessionDataManager().getGroupBadgeImage(badgeCode) : GetSessionDataManager().getBadgeImage(badgeCode);
+        const texture = isGroup ? GetSessionDataManager().getGroupBadgeImage(badgeCode, allowServerImage) : GetSessionDataManager().getBadgeImage(badgeCode);
 
         if (texture && !didSetBadge) {
             if (isGroup) {
-                (async () => {
-                    const sprite = new OctaneSprite(texture);
-                    const element = await TextureUtils.generateImage({ target: sprite, resolution: 1 });
-
-                    sprite.destroy();
-
-                    if (element.complete && element.naturalWidth) setImageElement(element);
-                    else element.onload = () => setImageElement(element);
-                })();
+                void showGroupBadge(texture);
             } else {
                 const badgeUrl = GetConfigurationValue<string>('badge.asset.url').replace('%badgename%', badgeCode.toString());
                 const img = new Image();
@@ -167,8 +189,11 @@ export const LayoutBadgeImageView: FC<LayoutBadgeImageViewProps> = (props) => {
             }
         }
 
-        return () => GetEventDispatcher().removeEventListener(BadgeImageReadyEvent.IMAGE_READY, onBadgeImageReadyEvent);
-    }, [badgeCode, isGroup]);
+        return () => {
+            cancelled = true;
+            GetEventDispatcher().removeEventListener(BadgeImageReadyEvent.IMAGE_READY, onBadgeImageReadyEvent);
+        };
+    }, [badgeCode, isGroup, isPreview]);
 
     useEffect(() => {
         if (isGroup || !badgeCode || (!showRarityInfo && !highlightRarity) || getBadgeRarityFromPacket(badgeCode)) {
@@ -241,7 +266,10 @@ export const LayoutBadgeImageView: FC<LayoutBadgeImageViewProps> = (props) => {
             {canGlow && (glowRun > 0 || glowBreathing) && (
                 <span key={glowBreathing ? 'breathing' : glowRun} className="badge-glow" aria-hidden="true">
                     {/* Breathing touches only the outline: the badge pixels stay as they are. */}
-                    <span className={`badge-glow-run${glowBreathing ? ' badge-glow-run--outline' : ''}`} style={{ ...glowAnimation, backgroundImage: getStyle.backgroundImage as string }} />
+                    <span
+                        className={`badge-glow-run${glowBreathing ? ' badge-glow-run--outline' : ''}`}
+                        style={{ ...glowAnimation, backgroundImage: getStyle.backgroundImage as string }}
+                    />
                     {!glowBreathing && (
                         <span
                             className="badge-glow-tint"
