@@ -1,10 +1,10 @@
 import { FC } from 'react';
-import { LocalizeText } from '../../../../api';
+import { LocalizeText, localizeWithFallback } from '../../../../api';
 import { Button, Column, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Text } from '../../../../common';
 import { useFurnitureExchangeWidget } from '../../../../hooks';
 
 export const FurnitureExchangeCreditView: FC<{}> = (props) => {
-    const { objectId = -1, value = 0, onClose = null, redeem = null } = useFurnitureExchangeWidget();
+    const { objectId = -1, value = 0, isNft = false, onClose = null, redeem = null } = useFurnitureExchangeWidget();
 
     if (objectId === -1) return null;
 
@@ -18,8 +18,19 @@ export const FurnitureExchangeCreditView: FC<{}> = (props) => {
                     </div>
                     <div className="flex flex-col justify-between overflow-hidden grow!">
                         <Column gap={1} overflow="auto">
-                            <Text fontWeight="bold">{LocalizeText('creditfurni.description', ['credits'], [value.toString()])}</Text>
-                            <Text>{LocalizeText('creditfurni.prompt')}</Text>
+                            {isNft ? (
+                                <>
+                                    <Text fontWeight="bold">
+                                        {localizeWithFallback('nft.creditfurni.redeem.description', `This item contains ${value} emeralds.`, ['value'], [value.toString()])}
+                                    </Text>
+                                    <Text>{localizeWithFallback('nft.creditfurni.redeem.prompt', 'Do you want to redeem it for emeralds?')}</Text>
+                                </>
+                            ) : (
+                                <>
+                                    <Text fontWeight="bold">{LocalizeText('creditfurni.description', ['credits'], [value.toString()])}</Text>
+                                    <Text>{LocalizeText('creditfurni.prompt')}</Text>
+                                </>
+                            )}
                         </Column>
                         <Button variant="success" onClick={redeem}>
                             {LocalizeText('catalog.redeem.dialog.button.exchange')}

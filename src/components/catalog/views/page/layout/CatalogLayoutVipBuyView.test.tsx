@@ -45,7 +45,8 @@ vi.mock('../../../../../api', () => ({
     LocalizeText: (key: string, _names?: string[], values?: string[]) => `${key}${values?.length ? `:${values.join(',')}` : ''}`,
     OpenUrl: vi.fn(),
     SanitizeHtml: (value: string) => value,
-    SendMessageComposer: vi.fn()
+    SendMessageComposer: vi.fn(),
+    ShowVipBenefits: vi.fn()
 }));
 
 vi.mock('../../../../../common', () => ({
@@ -175,6 +176,24 @@ describe('club purchase layout', () => {
         expect(screen.getByText('catalog.vip.item.header.months:2')).toBeInTheDocument();
         expect(document.querySelector('.is-vip-page .octane-club-vip-offers')).toBeInTheDocument();
         expect(document.querySelector('.octane-club-columns')).not.toBeInTheDocument();
+    });
+
+    it('links the loyalty vip page to the VIP benefits window like AIR, and the vip page to the HC Center', async () => {
+        const { ShowVipBenefits } = await import('../../../../../api');
+
+        setCurrentPage('loyalty_vip_buy');
+        const view = renderLayout('loyalty_vip_buy');
+
+        fireEvent.click(screen.getByRole('button', { name: 'catalog.vip.buy.link' }));
+        expect(ShowVipBenefits).toHaveBeenCalledTimes(1);
+        expect(document.querySelector('.octane-club-center-link')).not.toBeInTheDocument();
+
+        view.unmount();
+        setCurrentPage('vip_buy');
+        renderLayout('vip_buy');
+
+        expect(screen.queryByRole('button', { name: 'catalog.vip.buy.link' })).not.toBeInTheDocument();
+        expect(document.querySelector('.octane-club-center-link')).toBeInTheDocument();
     });
 
     it('renders separate HC and VIP offer groups on the club page', () => {

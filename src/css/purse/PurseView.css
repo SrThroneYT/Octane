@@ -494,3 +494,16 @@
     width: 300px;
     min-height: 240px;
 }
+
+/* AIR purse_xml earnings_unseen_indicator: pursearea_unseen_indicator (10x11) at 1,0 of the earnings button, shown
+   while EarningsController.showingIndicator. */
+.octane-purse__btn--earnings > .octane-purse__earnings-unseen {
+    position: absolute;
+    top: 0;
+    left: 1px;
+    z-index: 2;
+    width: 10px;
+    height: 11px;
+    pointer-events: none;
+    image-rendering: var(--octane-pixel-art, pixelated);
+}

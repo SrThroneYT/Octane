@@ -33,6 +33,7 @@ import {
     NotificationAlertType,
     NotificationBubbleItem,
     NotificationBubbleType,
+    NotificationCollectibleReward,
     NotificationConfirmItem,
     PlaySound,
     ProductImageUtility,
@@ -168,10 +169,17 @@ const useNotificationStore = () => {
     const showOctaneAlert = useCallback(() => simpleAlert(null, NotificationAlertType.OCTANE), [simpleAlert]);
 
     const showSingleBubble = useCallback(
-        (message: string, type: string, imageUrl: string = null, internalLink: string = null, senderName: string = '') => {
+        (
+            message: string,
+            type: string,
+            imageUrl: string = null,
+            internalLink: string = null,
+            senderName: string = '',
+            collectible: NotificationCollectibleReward = null
+        ) => {
             if (bubblesDisabled) return;
 
-            const notificationItem = new NotificationBubbleItem(message, type, imageUrl, internalLink, senderName);
+            const notificationItem = new NotificationBubbleItem(message, type, imageUrl, internalLink, senderName, collectible);
 
             setBubbleAlerts((prevValue) => addSingleBubble(prevValue, notificationItem));
         },

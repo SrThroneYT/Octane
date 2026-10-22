@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+    acceptTimingCode,
     campaignizeAssetUri,
     CONCURRENT_USERS_ACTIVE,
     CONCURRENT_USERS_REDEEM,
@@ -9,9 +10,12 @@ import {
     getCommunityGoalVsNeedleFrame,
     getConcurrentUsersView,
     getNextLimitedRareMode,
+    getPrizeRankLimits,
+    getPrizesUserRankKey,
     getSecondsLeft,
     isCommunityGoalLevelLit,
     isPromoArticleButtonVisible,
+    parseNumberArray,
     PROMO_LINK_INTERNAL,
     PROMO_LINK_NONE,
     PROMO_LINK_URL,
@@ -68,5 +72,32 @@ describe('hotel view live widgets', () => {
         expect(getNextLimitedRareMode(-1, -1)).toBe('hidden');
         expect(getSecondsLeft(120, 1000, 31_500)).toBe(90);
         expect(getSecondsLeft(10, 0, 60_000)).toBe(0);
+    });
+});
+
+describe('community goal competition widgets', () => {
+    it('splits the prize levels over the reward user limits like setPrizeRankLimits', () => {
+        expect(getPrizeRankLimits(1, [1, 4, 20])).toEqual({ start: 1, end: 1 });
+        expect(getPrizeRankLimits(2, [1, 4, 20])).toEqual({ start: 2, end: 5 });
+        expect(getPrizeRankLimits(3, [1, 4, 20])).toEqual({ start: 6, end: 25 });
+        expect(getPrizeRankLimits(3, [])).toEqual({ start: 1, end: 0 });
+    });
+
+    it('picks the rank caption of the player', () => {
+        expect(getPrizesUserRankKey(true, 0)).toBe('yourfinalrank');
+        expect(getPrizesUserRankKey(false, 4)).toBe('yourrank');
+        expect(getPrizesUserRankKey(false, 0)).toBe('youarenotranked');
+    });
+
+    it('accepts only the timing code of its own schedule', () => {
+        expect(acceptTimingCode('2026-01-01 00:00,goal', '2026-01-01 00:00,goal', 'goal')).toBe(true);
+        expect(acceptTimingCode('2026-01-01 00:00,goal', 'other', 'goal')).toBe(false);
+        expect(acceptTimingCode('2026-01-01 00:00,goal', '2026-01-01 00:00,goal', '')).toBe(false);
+    });
+
+    it('reads the avatar list overrides', () => {
+        expect(parseNumberArray('0, 4,8', [1])).toEqual([0, 4, 8]);
+        expect(parseNumberArray('', [1])).toEqual([1]);
+        expect(parseNumberArray('a,2', [1])).toEqual([1]);
     });
 });

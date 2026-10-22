@@ -19,6 +19,7 @@ import {
     NavigatorCategoryDataParser,
     NavigatorEventCategoryDataParser,
     NavigatorHomeRoomEvent,
+    NavigatorLiftedEvent,
     NavigatorMetadataEvent,
     NavigatorOpenRoomCreatorEvent,
     NavigatorSavedSearch,
@@ -42,9 +43,11 @@ import {
     GenericErrorCode,
     GetConfigurationValue,
     INavigatorData,
+    INavigatorLiftedRoom,
     LocalizeText,
     NotificationAlertType,
     SendMessageComposer,
+    toNavigatorLiftedRooms,
     TryVisitRoom,
     VisitDesktop,
     IsAnyRoomController
@@ -62,6 +65,7 @@ export const useNavigatorStore = () => {
     const [navigatorSearches, setNavigatorSearches] = useState<NavigatorSavedSearch[]>(null);
     const [categoryVisitorCounts, setCategoryVisitorCounts] = useState<Map<number, number>>(null);
     const [categoryMaxVisitorCounts, setCategoryMaxVisitorCounts] = useState<Map<number, number>>(null);
+    const [liftedRooms, setLiftedRooms] = useState<INavigatorLiftedRoom[]>([]);
     const [navigatorData, setNavigatorData] = useState<INavigatorData>({
         settingsReceived: false,
         homeRoomId: 0,
@@ -398,6 +402,16 @@ export const useNavigatorStore = () => {
         }, [])
     );
 
+    // AIR HabboNewNavigator: NavigatorLifted replaces the LiftDataContainer's rooms and refreshes the view.
+    useMessageEvent<NavigatorLiftedEvent>(
+        NavigatorLiftedEvent,
+        useCallback((event) => {
+            const parser = event.getParser();
+            if (!parser) return;
+            setLiftedRooms(toNavigatorLiftedRooms(parser.rooms));
+        }, [])
+    );
+
     return {
         categories,
         eventCategories,
@@ -406,6 +420,7 @@ export const useNavigatorStore = () => {
         navigatorSearches,
         categoryVisitorCounts,
         categoryMaxVisitorCounts,
-        navigatorData
+        navigatorData,
+        liftedRooms
     };
 };

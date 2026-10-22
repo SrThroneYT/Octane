@@ -22,12 +22,12 @@ import wardrobeHangerSrc from '../../assets/images/avatareditor/wardrobe-hanger.
 import mainNftSrc from '../../assets/images/wardrobe/nft.png';
 import mainPetsSrc from '../../assets/images/wardrobe/pets.png';
 import { OctaneCardContentView, OctaneCardHeaderView, OctaneCardTabsItemView, OctaneCardTabsView, OctaneCardView } from '../../common';
-import { useAvatarEditor, useAvatarEffects, useHotLooks } from '../../hooks';
+import { useAvatarEditor, useAvatarEffects, useHotLooks, useNftWardrobe } from '../../hooks';
 import { AvatarEditorEffectsView } from './AvatarEditorEffectsView';
 import { AvatarEditorFigurePreviewView } from './AvatarEditorFigurePreviewView';
 import { AvatarEditorHotLooksView } from './AvatarEditorHotLooksView';
 import { AvatarEditorModelView } from './AvatarEditorModelView';
-import { AvatarEditorNftView } from './AvatarEditorNftView';
+import { AvatarEditorNftOutfitInfoView, AvatarEditorNftOutfitsView } from './AvatarEditorNftOutfitsView';
 import { AvatarEditorPetView } from './AvatarEditorPetView';
 import { AvatarEditorWardrobeView } from './AvatarEditorWardrobeView';
 import { BaseButton } from '../../common/BaseButton';
@@ -91,6 +91,13 @@ export const AvatarEditorView: FC<{}> = (props) => {
     const isHotLooksOpen = hotLooksEnabled && activeModelKey === AvatarEditorFigureCategory.HOTLOOKS;
     const hotLooks = useHotLooks(isVisible && hotLooksEnabled);
     const canUseWardrobe = !clothingChangeData && !isNftOpen;
+    // AIR avatar collectibles (NftAvatarsModel): the NFT tab always lists the user's collectible looks; it stays
+    // empty when the hotel doesn't run collectibles.
+    const nftWardrobe = useNftWardrobe(isVisible && !clothingChangeData, activeModelKey);
+    const selectMainTab = (modelKey: string) => {
+        nftWardrobe.onTabChange(modelKey);
+        setActiveModelKey(modelKey);
+    };
     const orderedModelKeys = [
         ...Object.keys(avatarModels),
         ...(hotLooksEnabled ? [AvatarEditorFigureCategory.HOTLOOKS] : []),
@@ -122,7 +129,8 @@ export const AvatarEditorView: FC<{}> = (props) => {
                 if (clothingChangeData) {
                     SendMessageComposer(new SetClothingChangeDataMessageComposer(clothingChangeData.objectId, gender, getFigureString));
                 } else {
-                    SendMessageComposer(new UserFigureComposer(gender, getValidFigureString));
+                    // A collectible look picked in the NFT tab is worn instead (AIR saveCurrentSelection).
+                    if (!nftWardrobe.save()) SendMessageComposer(new UserFigureComposer(gender, getValidFigureString));
 
                     if (effectSelection !== null) activateEffect(effectSelection);
                 }
@@ -210,7 +218,7 @@ export const AvatarEditorView: FC<{}> = (props) => {
                                     key={modelKey}
                                     classNames={['octane-avatar-editor-main-tab', `is-${modelKey}`]}
                                     isActive={activeModelKey === modelKey}
-                                    onClick={() => setActiveModelKey(modelKey)}
+                                    onClick={() => selectMainTab(modelKey)}
                                 >
                                     <img className="octane-avatar-editor-main-tab-icon" src={MAIN_TAB_ICONS[modelKey]} alt="" draggable={false} />
                                 </OctaneCardTabsItemView>
@@ -232,7 +240,14 @@ export const AvatarEditorView: FC<{}> = (props) => {
                             <AvatarEditorModelView categories={avatarModels[activeModelKey]} name={activeModelKey} />
                         )}
                         {isPetsOpen && <AvatarEditorPetView categories={avatarModels[activeModelKey]} />}
-                        {isNftOpen && <AvatarEditorNftView categories={avatarModels[activeModelKey]} />}
+                        {isNftOpen && (
+                            <AvatarEditorNftOutfitsView
+                                outfits={nftWardrobe.outfits}
+                                selectedOutfit={nftWardrobe.selectedOutfit}
+                                wornOutfit={nftWardrobe.wornOutfit}
+                                onSelect={nftWardrobe.selectOutfit}
+                            />
+                        )}
                         {isHotLooksOpen && (
                             <AvatarEditorHotLooksView
                                 hotLooks={hotLooks[gender === AvatarFigurePartType.FEMALE ? 'F' : 'M']}
@@ -243,7 +258,8 @@ export const AvatarEditorView: FC<{}> = (props) => {
                             <AvatarEditorEffectsView selectedType={effectSelection ?? (activeEffectType > 0 ? activeEffectType : -1)} onSelect={setEffectSelection} />
                         )}
                         <AvatarEditorFigurePreviewView effectType={effectSelection ?? 0} />
-                        {!clothingChangeData && (
+                        {isNftOpen && <AvatarEditorNftOutfitInfoView outfit={nftWardrobe.selectedOutfit} />}
+                        {!clothingChangeData && !isNftOpen && (
                             <div className="octane-avatar-editor-secondary-actions">
                                 <Hint content="Reset avatar">
                                     <BaseButton

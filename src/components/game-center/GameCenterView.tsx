@@ -29,6 +29,9 @@ export const GameCenterView = () => {
                     case 'toggle':
                         toggleGameCenter();
                         break;
+                    case 'show':
+                        setIsVisible(true);
+                        break;
                 }
             },
             eventUrlPrefix: 'games/'

@@ -421,9 +421,10 @@
     background: url('@/assets/images/infostand/rarity-level.png');
 
     div {
+        /* AIR rarity_item_overlay_preview_xml: the level text is u_bold 0x333300, centred at y 5. */
         line-height: 28px;
         text-align: center;
-        color: #000;
+        color: #333300;
         font-weight: bold;
     }
 }

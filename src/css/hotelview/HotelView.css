@@ -1205,3 +1205,207 @@
     min-width: 0;
     flex: 1;
 }
+
+/*
+ * CommunityGoalHallOfFameWidget (user_list.xml / user_entry.xml / competition_user_popup.xml): ten
+ * avatars side by side with AIR's vertical offsets, the 154x69 popup with its pointer over one of them.
+ */
+.hotelview-competition-hof {
+    width: 360px;
+}
+
+.hotelview-competition-hof-list {
+    position: relative;
+    height: 200px;
+}
+
+.hotelview-competition-hof-popup {
+    position: absolute;
+    top: 0;
+    left: clamp(0px, calc(var(--hof-index) * 36px - 59px), 206px);
+    z-index: 3;
+    width: 154px;
+    pointer-events: none;
+}
+
+.hotelview-competition-hof-popup::after {
+    content: '';
+    position: absolute;
+    top: 69px;
+    left: clamp(8px, calc(var(--hof-index) * 36px + 18px - clamp(0px, calc(var(--hof-index) * 36px - 59px), 206px) - 5px), 136px);
+    border-top: 6px solid #fff;
+    border-right: 5px solid transparent;
+    border-left: 5px solid transparent;
+}
+
+.hotelview-competition-hof-popup-body {
+    box-sizing: border-box;
+    height: 69px;
+    padding: 6px 10px;
+    border: 1px solid #b6b6b6;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 35%);
+}
+
+.hotelview-slot .hotelview-competition-hof-popup-body strong,
+.hotelview-slot .hotelview-competition-hof-popup-body span {
+    display: block;
+    margin: 0;
+    overflow: hidden;
+    color: #666;
+    text-align: left;
+    text-overflow: ellipsis;
+    text-shadow: none;
+    white-space: nowrap;
+}
+
+.hotelview-slot .hotelview-competition-hof-popup-body strong {
+    color: #000;
+    font-size: 11px;
+}
+
+.hotelview-competition-hof-points {
+    font: 700 11px Ubuntu, Arial, sans-serif;
+}
+
+.hotelview-slot .hotelview-competition-hof-rankdesc {
+    font-size: 9px;
+    line-height: 10px;
+    white-space: normal;
+}
+
+.hotelview-competition-hof-entry {
+    position: absolute;
+    top: calc(78px + var(--hof-offset, 0px));
+    left: calc(var(--hof-index) * 36px - 6px);
+    width: 48px;
+    height: 110px;
+}
+
+.hotelview-slot .hotelview-competition-hof-avatar {
+    position: relative;
+    display: block;
+    width: 48px;
+    height: 110px;
+    padding: 0;
+    overflow: visible;
+    border: 0;
+    background: none;
+    cursor: pointer;
+}
+
+.hotelview-competition-hof-avatar .avatar-image {
+    background-position: 50% 100%;
+}
+
+.hotelview-slot .hotelview-competition-hof-room-link {
+    position: absolute;
+    top: 90px;
+    left: 11px;
+    z-index: 2;
+    width: 26px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+}
+
+/* CommunityGoalPrizesWidget (achievement_competition_prizes.xml): caption, info, the reward box. */
+.hotelview-competition-prizes {
+    width: 360px;
+}
+
+.hotelview-competition-prizes-box {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 6px 10px;
+    margin-top: 6px;
+    padding: 8px;
+    border: 1px solid #b6b6b6;
+    border-radius: 6px;
+    background: rgb(255 255 255 / 92%);
+    color: #000;
+}
+
+.hotelview-competition-prizes-reward {
+    max-width: 60px;
+    max-height: 125px;
+    align-self: end;
+}
+
+.hotelview-slot .hotelview-competition-prizes-box strong,
+.hotelview-slot .hotelview-competition-prizes-box p,
+.hotelview-slot .hotelview-competition-prizes-box span {
+    color: #000;
+    text-align: left;
+    text-shadow: none;
+}
+
+.hotelview-slot .hotelview-competition-prizes-reward-copy > strong {
+    margin: 0;
+    font-size: 10px;
+    text-transform: uppercase;
+}
+
+.hotelview-slot .hotelview-competition-prizes-reward-copy > p {
+    font-size: 11px;
+}
+
+.hotelview-competition-prizes-ranks {
+    margin-top: 5px;
+    padding-top: 4px;
+    border-top: 2px solid #dcdcdc;
+}
+
+.hotelview-competition-prizes-rank {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+    font-size: 10px;
+    line-height: 15px;
+}
+
+.hotelview-slot .hotelview-competition-prizes-rank strong {
+    margin: 0;
+    font-size: 11px;
+}
+
+.hotelview-competition-prizes-user {
+    display: flex;
+    grid-column: 1 / -1;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border: 1px solid #c9c9c9;
+    border-radius: 5px;
+}
+
+.hotelview-competition-prizes-head {
+    flex: 0 0 33px;
+    width: 33px;
+    height: 34px;
+}
+
+.hotelview-slot .hotelview-competition-prizes-user strong {
+    margin: 0;
+    font-size: 11px;
+}
+
+.hotelview-slot .hotelview-competition-prizes-user p {
+    color: #666;
+    font-size: 10px;
+}
+
+.hotelview-competition-earned-prize {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.hotelview-competition-earned-prize-copy {
+    min-width: 0;
+    flex: 1;
+}

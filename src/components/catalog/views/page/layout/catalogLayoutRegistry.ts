@@ -2,6 +2,7 @@ export type CatalogLayoutRenderer =
     | 'badgeDisplay'
     | 'buildersClubBuy'
     | 'clubGifts'
+    | 'collectibles'
     | 'colorGrouping'
     | 'default'
     | 'frontpage'
@@ -83,7 +84,7 @@ export const CATALOG_LAYOUT_REGISTRY = [
     { studioCode: 'niko', runtimeCodes: ['niko'], renderer: 'info', availability: 'ready' },
     { studioCode: 'mad_money', runtimeCodes: ['mad_money'], renderer: 'info', availability: 'ready' },
     { studioCode: 'productpage1', runtimeCodes: ['productpage1'], renderer: 'default', availability: 'ready' },
-    { studioCode: 'collectibles', runtimeCodes: ['collectibles'], renderer: 'default', availability: 'ready' },
+    { studioCode: 'collectibles', runtimeCodes: ['collectibles'], renderer: 'collectibles', availability: 'ready' },
     { studioCode: 'recolorable_furniture', runtimeCodes: ['recolorable_furniture'], renderer: 'recolorableFurniture', availability: 'ready' },
     { runtimeCodes: ['default_3x3_extrainfo'], renderer: 'default', availability: 'ready' },
     { runtimeCodes: ['pixeleffects'], renderer: 'info', availability: 'ready' }

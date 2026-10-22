@@ -1,8 +1,18 @@
 import { ClubOfferData, CreateLinkEvent, PurchaseFromCatalogComposer } from '@octane/renderer';
 import { FC, useCallback, useMemo, useRef, useState } from 'react';
-import { CatalogPurchaseState, DispatchUiEvent, GetConfigurationValue, LocalizeText, OpenUrl, SanitizeHtml, SendMessageComposer } from '../../../../../api';
+import {
+    CatalogPurchaseState,
+    DispatchUiEvent,
+    GetConfigurationValue,
+    LocalizeText,
+    OpenUrl,
+    SanitizeHtml,
+    SendMessageComposer,
+    ShowVipBenefits
+} from '../../../../../api';
 import vipIconMedium from '../../../../../assets/images/catalog/air/vip-icon-medium.png';
 import { Button, LayoutCurrencyIcon, LayoutLoadingSpinnerView } from '../../../../../common';
+import { BaseButton } from '../../../../../common/BaseButton';
 import { CatalogEvent, CatalogInitGiftEvent, CatalogPurchasedEvent, CatalogPurchaseFailureEvent } from '../../../../../events';
 import {
     useCatalogActions,
@@ -18,7 +28,6 @@ import {
 import { CatalogClubPurchaseConfirmView } from './CatalogClubPurchaseConfirmView';
 import { CatalogLayoutProps } from './CatalogLayout.types';
 import { getClubMembershipSummary, groupClubOffers, isVipPurchaseLayout } from './clubPurchase.helpers';
-import { BaseButton } from '../../../../../common/BaseButton';
 
 const CLUB_WINDOW_ID = 1;
 
@@ -347,22 +356,29 @@ export const CatalogLayoutVipBuyView: FC<CatalogLayoutProps> = ({ page = null })
                         </div>
                     </div>
                     <div className="octane-club-vip-offers">{offerGroups.vip.map(renderOffer)}</div>
-                    <div
-                        className="octane-club-center-link"
-                        dangerouslySetInnerHTML={{ __html: SanitizeHtml(LocalizeText('catalog.vip.buy.hccenter')) }}
-                        role="link"
-                        tabIndex={0}
-                        onClick={(event) => {
-                            event.preventDefault();
-                            CreateLinkEvent('habboUI/open/hccenter');
-                        }}
-                        onKeyDown={(event) => {
-                            if (event.key !== 'Enter' && event.key !== ' ') return;
+                    {/* AIR layout_loyalty_vip_buy has vip_link (VipBuyCatalogWidget.initLinks -> showVipBenefits) where layout_vip_buy has the HC Center link. */}
+                    {layoutCode === 'loyalty_vip_buy' ? (
+                        <BaseButton className="octane-club-vip-benefits-link" onClick={() => ShowVipBenefits()}>
+                            {LocalizeText('catalog.vip.buy.link')}
+                        </BaseButton>
+                    ) : (
+                        <div
+                            className="octane-club-center-link"
+                            dangerouslySetInnerHTML={{ __html: SanitizeHtml(LocalizeText('catalog.vip.buy.hccenter')) }}
+                            role="link"
+                            tabIndex={0}
+                            onClick={(event) => {
+                                event.preventDefault();
+                                CreateLinkEvent('habboUI/open/hccenter');
+                            }}
+                            onKeyDown={(event) => {
+                                if (event.key !== 'Enter' && event.key !== ' ') return;
 
-                            event.preventDefault();
-                            CreateLinkEvent('habboUI/open/hccenter');
-                        }}
-                    />
+                                event.preventDefault();
+                                CreateLinkEvent('habboUI/open/hccenter');
+                            }}
+                        />
+                    )}
                 </>
             ) : (
                 <>
@@ -385,7 +401,9 @@ export const CatalogLayoutVipBuyView: FC<CatalogLayoutProps> = ({ page = null })
                         </section>
                         <section className="octane-club-vip-column">{offerGroups.vip.map(renderOffer)}</section>
                     </div>
-                    {membership.active && <div className="octane-club-remaining">{LocalizeText(remainingKey, ['days'], [membership.totalDays.toString()])}</div>}
+                    {membership.active && (
+                        <div className="octane-club-remaining">{LocalizeText(remainingKey, ['days'], [membership.totalDays.toString()])}</div>
+                    )}
                     <BaseButton className="octane-club-center-link" type="button" onClick={() => CreateLinkEvent('habboUI/open/hccenter')}>
                         {LocalizeText('catalog.club.buy.link')}
                     </BaseButton>

@@ -512,6 +512,24 @@
     text-decoration: underline;
 }
 
+/* layout_loyalty_vip_buy vip_link: x39 y433 286x17, centered, underlined, text colour 0x038ef4; opens vip_benefits. */
+.octane-club-vip-benefits-link {
+    position: absolute;
+    top: 433px;
+    left: 39px;
+    width: 286px;
+    height: 17px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #038ef4;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: underline;
+    line-height: 17px;
+    white-space: nowrap;
+}
+
 .octane-card-shell.octane-club-purchase-confirm {
     width: 369px !important;
     min-width: 369px !important;

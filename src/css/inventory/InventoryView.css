@@ -679,24 +679,30 @@
 }
 
 
-/* inventory_thumb overlays: rarity plaque (rarity_item_overlay_grid, 36x9 at the bottom) and the
-   rent_state dot (10x10 at 4,4; not started / started / ending). */
+/* AIR inventory_thumb + RarityItemGridOverlayWidget (rarity_item_overlay_griditem_xml, GroupItem.updateItemImageVisual):
+   a seed tile with a MapStuffData "rarity" shows rarity_item_rarity_item_plaque (36x9 at 0,27 of the 36x36 overlay, the
+   overlay at 2,2) with the level in the plaque glyphs (24x5 at 6,29, centred). */
 .octane-inventory-window .octane-inventory-thumb-rarity {
     position: absolute;
+    top: 29px;
     left: 2px;
-    right: 2px;
-    bottom: 2px;
-    height: 9px;
-    line-height: 9px;
-    border-radius: 2px;
-    background: #f5d35b;
-    border: 1px solid #8a6d13;
-    color: #3a2c00;
-    font-size: 8px;
-    font-weight: 700;
-    text-align: center;
     z-index: 1;
+    width: 36px;
+    height: 9px;
+    background: url('../../assets/images/inventory/rarity/rarity_item_plaque.png') no-repeat;
+    image-rendering: var(--octane-pixel-art, pixelated);
     pointer-events: none;
+}
+
+.octane-inventory-window .octane-inventory-thumb-rarity-count {
+    position: absolute;
+    top: 2px;
+    left: 6px;
+    display: flex;
+    justify-content: center;
+    width: 24px;
+    height: 5px;
+    line-height: 0;
 }
 
 

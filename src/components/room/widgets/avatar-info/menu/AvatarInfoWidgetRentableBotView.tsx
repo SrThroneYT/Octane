@@ -12,6 +12,7 @@ import {
     AvatarInfoRentableBot,
     BotSkillsEnum,
     DispatchUiEvent,
+    getRentableBotCommandButtons,
     LocalizeText,
     localizeWithFallback,
     RoomWidgetUpdateRentableBotChatEvent,
@@ -126,6 +127,16 @@ export const AvatarInfoWidgetRentableBotView: FC<AvatarInfoWidgetRentableBotView
     };
 
     const canControl = avatarInfo.amIOwner || avatarInfo.amIAnyRoomController;
+    const commandButtons = getRentableBotCommandButtons(avatarInfo.botSkillsWithCommands ?? []);
+
+    // AIR RentableBotMenuView: in-client link and navigator search buttons open their link, a NUX proceed
+    // button answers the bot with its step; every one of them closes the menu.
+    const processCommandButton = (link: string | undefined, proceedStep: string | undefined) => {
+        if (link) CreateLinkEvent(link);
+        else if (proceedStep !== undefined) SendMessageComposer(new BotSkillSaveComposer(avatarInfo.webID, BotSkillsEnum.NUX_PROCEED, proceedStep));
+
+        onClose();
+    };
 
     return (
         <ContextMenuView
@@ -190,6 +201,11 @@ export const AvatarInfoWidgetRentableBotView: FC<AvatarInfoWidgetRentableBotView
                         )}
                     </>
                 )}
+                {commandButtons.map((button) => (
+                    <ContextMenuListItemView key={button.key} onClick={(event) => processCommandButton(button.link, button.proceedStep)}>
+                        {button.label ?? localizeWithFallback('avatar.widget.nux.proceed', 'Proceed')}
+                    </ContextMenuListItemView>
+                ))}
             </div>
         </ContextMenuView>
     );

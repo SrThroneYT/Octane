@@ -3,8 +3,10 @@ import { FC, ReactNode } from 'react';
 import { WidgetErrorBoundary } from '../../../common/error-boundary/WidgetErrorBoundary';
 import { HotelViewBonusRareWidget } from './HotelViewBonusRareWidget';
 import { HotelViewCommunityGoalWidget } from './HotelViewCommunityGoalWidget';
+import { HotelViewCompetitionPrizesWidget } from './HotelViewCompetitionPrizesWidget';
 import { HotelViewConcurrentUsersWidget } from './HotelViewConcurrentUsersWidget';
 import { HotelViewDailyQuestWidget } from './HotelViewDailyQuestWidget';
+import { HotelViewHallOfFameWidget } from './HotelViewHallOfFameWidget';
 import { HotelViewNextLimitedRareWidget } from './HotelViewNextLimitedRareWidget';
 import { HotelViewPromoArticleWidget } from './HotelViewPromoArticleWidget';
 
@@ -15,6 +17,8 @@ export interface HotelViewLiveSlotConfig {
     useServerGoal?: boolean;
     useServerQuest?: boolean;
     badgeCode?: string;
+    /** The goal code of the competition hall of fame; empty = the client schedule or the active goal. */
+    goalCode?: string;
 }
 
 interface HotelViewLiveSlotViewProps {
@@ -57,6 +61,10 @@ export const HotelViewLiveSlotView: FC<HotelViewLiveSlotViewProps> = ({ slot, co
                 if (config.useServerQuest === false) return fallback;
 
                 return <HotelViewDailyQuestWidget fallback={fallback} />;
+            case 'achievementcompetition_hall_of_fame':
+                return <HotelViewHallOfFameWidget fallback={fallback} title={slot.title} goalCode={config.goalCode?.trim() ?? ''} />;
+            case 'achievementcompetition_prizes':
+                return <HotelViewCompetitionPrizesWidget fallback={fallback} />;
             default:
                 return fallback;
         }

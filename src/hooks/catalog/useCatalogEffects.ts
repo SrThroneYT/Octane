@@ -56,6 +56,7 @@ import { useNotification } from '../notification';
 import { DUMMY_PAGE_ID_FOR_OFFER_SEARCH, useCatalogStore } from './catalogStore';
 import { recolorablePlacementColor } from './recolorableColorStore';
 import { getNodesByOfferIdFromMap, restoreCatalogActivePath, RoomObjectCategory } from './useCatalog.helpers';
+import { useCatalogNewAdditions } from './useCatalogNewAdditions';
 import { useCatalogPlaceMultipleItems } from './useCatalogPlaceMultipleItems';
 import {
     bindCatalogQueryClient,
@@ -188,6 +189,9 @@ export const useCatalogEffects = (): void => {
         refreshImportedFurnidata(importedFurnidataMerged);
         SendMessageComposer(new BuildersClubQueryFurniCountMessageComposer());
     }, [isVisible, currentType]);
+
+    // AIR new additions: before the default first page, so the new_additions page can win.
+    useCatalogNewAdditions(isVisible, currentType, !!indexQuery.data);
 
     // Pending deep link and default first page, once the index is in cache.
     useEffect(() => {

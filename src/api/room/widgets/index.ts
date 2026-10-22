@@ -29,6 +29,7 @@ export * from './RoomDimmerPreset';
 export * from './RoomObjectItem';
 export * from './applyUserChatPreferences';
 export * from './resolveChatBubbleWidth';
+export * from './RentableBotSkillCommands';
 export * from './ResolveChatStyleIds';
 export * from './UseProductItem';
 export * from './VoteValue';

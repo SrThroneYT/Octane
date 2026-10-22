@@ -34,7 +34,9 @@ export const InventoryFurnitureItemView: FC<{
 
     const count = groupItem.getUnlockedCount();
     // AIR GroupItem.updateItemImageVisual: a chest tile shows its contents count on a gold (coins) or brown (furni) plaque.
-    const chestColor = getWiredChestOverlayColor(groupItem.category, groupItem.stuffData);
+    // AIR GroupItem.updateItemImageVisual: a unique number wins, then a rarity plaque, then the chest plaque.
+    const rarityLevel = groupItem.stuffData.uniqueNumber > 0 ? -1 : (groupItem.stuffData.rarityLevel ?? -1);
+    const chestColor = rarityLevel >= 0 ? null : getWiredChestOverlayColor(groupItem.category, groupItem.stuffData);
 
     return (
         <InfiniteGrid.Item
@@ -53,6 +55,13 @@ export const InventoryFurnitureItemView: FC<{
             {groupItem.stuffData.uniqueNumber <= 0 && (
                 <div className="octane-inventory-thumb-image">
                     {groupItem.iconUrl && <img src={groupItem.iconUrl} alt="" draggable={false} />}
+                </div>
+            )}
+            {rarityLevel >= 0 && (
+                <div aria-hidden className="octane-inventory-thumb-rarity">
+                    <div className="octane-inventory-thumb-rarity-count">
+                        <LayoutLimitedEditionStyledNumberView value={rarityLevel} />
+                    </div>
                 </div>
             )}
             {chestColor && (

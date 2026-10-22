@@ -22,6 +22,8 @@ import { CampaignView } from './campaign/CampaignView';
 import { CatalogView } from './catalog/CatalogView';
 import { SpecialItemsDisplayView } from './catalog/special-items/SpecialItemsDisplayView';
 import { ChatHistoryView } from './chat-history/ChatHistoryView';
+import { CollectiblesHubView } from './collectibles/CollectiblesHubView';
+import { CollectiblesRewardBoxView } from './collectibles/CollectiblesRewardBoxView';
 import { CustomizeNickIconView } from './customize/CustomizeNickIconView';
 import { DiscordSettingsView } from './discord/DiscordSettingsView';
 import { EmuStatsView } from './emustats/EmuStatsView';
@@ -210,6 +212,8 @@ export const MainView: FC<{}> = (props) =>
             <InventoryView />
             <CatalogView />
             <SpecialItemsDisplayView />
+            <CollectiblesHubView />
+            <CollectiblesRewardBoxView />
             <FriendsView />
             <RightSideView />
             <UserSettingsView />

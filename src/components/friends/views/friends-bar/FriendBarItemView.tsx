@@ -1,7 +1,9 @@
-import { FindNewFriendsMessageComposer, MouseEventType } from '@octane/renderer';
+import { CreateLinkEvent, FindNewFriendsMessageComposer, MouseEventType } from '@octane/renderer';
 import { AnimatePresence, motion } from 'framer-motion';
-import { FC, useEffect, useRef, useState } from 'react';
+import { CSSProperties, FC, useEffect, useRef, useState } from 'react';
 import { GetUserProfile, LocalizeText, MessengerFriend, OpenMessengerChat, SendMessageComposer } from '../../../../api';
+import { FriendBarNotification } from '../../../../hooks/friends/friendBarNotifications.helpers';
+import { useFriendBarNotificationsStore } from '../../../../hooks/friends/friendBarNotificationsStore';
 import staffChatFrankIcon from '../../../../assets/images/friends/staff-chat-frank.svg';
 import addFriendsIcon from '../../../../assets/images/friends/swf/add_friends_icon.png';
 import chatIcon from '../../../../assets/images/friends/swf/friendlist_chat.png';
@@ -13,12 +15,28 @@ import { useFriends } from '../../../../hooks';
 import { isStaffChatIdentity } from '../../staffChatIdentity';
 import { StaffChatFrankIconView } from '../../StaffChatFrankIconView';
 import { BaseButton } from '../../../../common/BaseButton';
+import { FriendBarNotificationIconView, FriendBarNotificationPieceView, isGameNotification } from './FriendBarNotificationViews';
+
+const NO_NOTIFICATIONS: ReadonlyArray<FriendBarNotification> = [];
+/** `message_piece_xml` height: each open notification adds one line above the controls. */
+const PIECE_HEIGHT = 37;
 
 export const FriendBarItemView: FC<{ friend: MessengerFriend }> = (props) => {
     const { friend = null } = props;
     const [isVisible, setVisible] = useState(false);
     const { followFriend = null } = useFriends();
     const elementRef = useRef<HTMLDivElement>(null);
+    const friendId = friend?.id ?? 0;
+    const notifications = useFriendBarNotificationsStore((state) => state.byFriend[friendId]) ?? NO_NOTIFICATIONS;
+    const dismissViewed = useFriendBarNotificationsStore((state) => state.dismissViewed);
+    const wasVisibleRef = useRef(false);
+
+    // AIR entity deselect: closing the open tab drops the notifications that are shown once.
+    useEffect(() => {
+        if (wasVisibleRef.current && !isVisible && friendId) dismissViewed(friendId);
+
+        wasVisibleRef.current = isVisible;
+    }, [isVisible, friendId, dismissViewed]);
 
     useEffect(() => {
         const onClick = (event: MouseEvent) => {
@@ -77,9 +95,33 @@ export const FriendBarItemView: FC<{ friend: MessengerFriend }> = (props) => {
     }
 
     const isStaffChat = isStaffChatIdentity(friend);
+    const pieceStyle = { '--friend-bar-pieces-height': `${notifications.length * PIECE_HEIGHT}px` } as CSSProperties;
+
+    const onNotificationIconClick = (notification: FriendBarNotification) => {
+        if (isGameNotification(notification)) {
+            CreateLinkEvent('games/show');
+            setVisible(false);
+            return;
+        }
+
+        setVisible((prev) => !prev);
+    };
 
     return (
-        <div ref={elementRef} className={`friend-bar-friend relative ${isVisible ? 'is-selected' : ''}`}>
+        <div
+            ref={elementRef}
+            className={`friend-bar-friend relative ${isVisible ? 'is-selected' : ''} ${notifications.length ? 'has-notifications' : ''}`}
+            style={pieceStyle}
+        >
+            {notifications.length > 0 && (
+                <div className="friend-bar-notification-icons">
+                    <AnimatePresence initial={false}>
+                        {notifications.map((notification) => (
+                            <FriendBarNotificationIconView key={notification.id} notification={notification} onClick={() => onNotificationIconClick(notification)} />
+                        ))}
+                    </AnimatePresence>
+                </div>
+            )}
             {isStaffChat ? (
                 <div className="friend-bar-item-head avatar staff-chat absolute left-[-3px] bottom-[-2px] z-10 h-[40px] w-[40px] overflow-hidden pointer-events-none">
                     <StaffChatFrankIconView size={40} className="friend-bar-staff-chat-frank" />
@@ -116,6 +158,13 @@ export const FriendBarItemView: FC<{ friend: MessengerFriend }> = (props) => {
                             transition={{ duration: 0.12 }}
                             className="friend-bar-actions friend-bar-item find-friends-active"
                         >
+                        {notifications.length > 0 && (
+                            <div className="friend-bar-notification-pieces">
+                                {notifications.map((notification) => (
+                                    <FriendBarNotificationPieceView key={notification.id} notification={notification} />
+                                ))}
+                            </div>
+                        )}
                         <div className="friend-bar-actions-buttons">
                             <div
                                 className="cursor-pointer friend-bar-action-icon"

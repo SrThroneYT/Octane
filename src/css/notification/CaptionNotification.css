@@ -59,6 +59,18 @@
     image-rendering: var(--octane-pixel-art, pixelated);
 }
 
+.octane-caption-notification__product {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.octane-caption-notification__rarity {
+    margin-top: 3px;
+    font-weight: 700;
+}
+
 .octane-caption-notification__text {
     min-width: 0;
     flex: 1;

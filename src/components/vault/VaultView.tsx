@@ -5,13 +5,14 @@ import {
     EarningsCenterEvent,
     EarningsClaimResultEvent,
     IEarningsEntry,
+    IncomeRewardNotificationEvent,
     IEarningsReward,
     ILinkEventTracker,
     RemoveLinkEventTracker,
     RequestEarningsCenterComposer
 } from '@octane/renderer';
-import { FC, useCallback, useEffect, useMemo, useState } from 'react';
-import { LocalizeText, SendMessageComposer } from '../../api';
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { LocalizeText, NotificationBubbleType, SendMessageComposer } from '../../api';
 import imgAchievements from '../../assets/images/vault/achievements.png';
 import imgBonusbag from '../../assets/images/vault/bonusbag.png';
 import imgDailygift from '../../assets/images/vault/dailygift.png';
@@ -23,7 +24,8 @@ import imgLevel from '../../assets/images/vault/levelprogression.png';
 import imgMarketplace from '../../assets/images/vault/marketplace.png';
 import imgSurprise from '../../assets/images/vault/surprise.png';
 import { LayoutCurrencyIcon, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Text } from '../../common';
-import { useMessageEvent } from '../../hooks';
+import { useMessageEvent, useNotification } from '../../hooks';
+import { hasClaimableEarnings, useEarningsIndicatorStore } from '../../state/earningsIndicatorStore';
 import { BaseButton } from '../../common/BaseButton';
 
 const localizeWithFallback = (key: string, fallback: string) => {
@@ -98,6 +100,14 @@ export const VaultView: FC<{}> = (props) => {
     }, [entries]);
 
     const anyClaimable = useMemo(() => entries.some((entry) => entry.enabled && entry.claimable), [entries]);
+    const { showSingleBubble = null } = useNotification();
+    const firstStatus = useRef(true);
+
+    // AIR SessionDataManager asks for the income reward status at login, so the purse indicator knows of rewards
+    // that were already waiting.
+    useEffect(() => {
+        SendMessageComposer(new RequestEarningsCenterComposer());
+    }, []);
 
     useMessageEvent<EarningsCenterEvent>(
         EarningsCenterEvent,
@@ -105,8 +115,39 @@ export const VaultView: FC<{}> = (props) => {
             const parser = event.getParser();
             if (!parser) return;
             setEntries(parser.entries ?? []);
+
+            // AIR EarningsController.onIncomeRewardStatus: only the first status lights the indicator.
+            if (!firstStatus.current) return;
+            firstStatus.current = false;
+            if (hasClaimableEarnings(parser.entries ?? [])) useEarningsIndicatorStore.getState().setShowing(true);
         }, [])
     );
+
+    // AIR EarningsController.onIncomeRewardNotification: the notification.earning.new bubble links to the vault; an
+    // open window refreshes, a closed one lights the purse indicator.
+    useMessageEvent<IncomeRewardNotificationEvent>(
+        IncomeRewardNotificationEvent,
+        useCallback(() => {
+            showSingleBubble?.(
+                localizeWithFallback('notification.earning.new', 'You have received new earnings! Click to see them'),
+                NotificationBubbleType.EARNING,
+                null,
+                'habboUI/open/vault'
+            );
+
+            if (isVisible) {
+                SendMessageComposer(new RequestEarningsCenterComposer());
+                return;
+            }
+
+            useEarningsIndicatorStore.getState().setShowing(true);
+        }, [isVisible, showSingleBubble])
+    );
+
+    // AIR EarningsController.showEarnings: opening the window clears the indicator.
+    useEffect(() => {
+        if (isVisible) useEarningsIndicatorStore.getState().setShowing(false);
+    }, [isVisible]);
 
     useMessageEvent<EarningsClaimResultEvent>(
         EarningsClaimResultEvent,

@@ -17,6 +17,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import {
     GetConfigurationValue,
+    GetOptionalConfigurationValue,
     getCurrentTalentTrack,
     getTalentTaskAction,
     ITalentLevel,
@@ -158,7 +159,8 @@ export const useTalentTrack = () => {
 
     useOctaneEvent<RoomSessionEvent>(RoomSessionEvent.CREATED, () => {
         if (citizenshipShownRef.current || !isTalentTrackEnabled() || !isCitizenshipEnabled()) return;
-        if (GetConfigurationValue<number>('new.identity', 0) <= 0 || !GetConfigurationValue<boolean>('new.user.citizenship.popup.enabled', false)) return;
+        // The session sets new.identity only for a new user, so it is absent for everyone else.
+        if (GetOptionalConfigurationValue<number>('new.identity', 0) <= 0 || !GetConfigurationValue<boolean>('new.user.citizenship.popup.enabled', false)) return;
 
         citizenshipShownRef.current = true;
         window.setTimeout(() => setCitizenshipPopup(true), CITIZENSHIP_POPUP_DELAY_MS);
