@@ -287,12 +287,8 @@ export const RoomToolsWidgetView: FC<{}> = (props) => {
                 <div className="octane-room-tools">
                     <div className="room-tools-zoom-row">
                         <span>{LocalizeText('room.zoom.text', ['zoom_level'], [getZoomText(zoomScale)])}</span>
-                        <Hint content={LocalizeText('room.zoom.zoom_in.tooltip')}><BaseButton aria-label={LocalizeText('room.zoom.zoom_in.tooltip')} className="room-tools-zoom-button" type="button" disabled={!canZoomIn} onClick={() => handleToolClick('zoom_in')}>
-                            +
-                        </BaseButton></Hint>
-                        <Hint content={LocalizeText('room.zoom.zoom_out.tooltip')}><BaseButton aria-label={LocalizeText('room.zoom.zoom_out.tooltip')} className="room-tools-zoom-button" type="button" disabled={!canZoomOut} onClick={() => handleToolClick('zoom_out')}>
-                            -
-                        </BaseButton></Hint>
+                        <Hint content={LocalizeText('room.zoom.zoom_in.tooltip')}><BaseButton aria-label={LocalizeText('room.zoom.zoom_in.tooltip')} className="room-tools-zoom-button is-zoom-in" type="button" disabled={!canZoomIn} onClick={() => handleToolClick('zoom_in')} /></Hint>
+                        <Hint content={LocalizeText('room.zoom.zoom_out.tooltip')}><BaseButton aria-label={LocalizeText('room.zoom.zoom_out.tooltip')} className="room-tools-zoom-button is-zoom-out" type="button" disabled={!canZoomOut} onClick={() => handleToolClick('zoom_out')} /></Hint>
                     </div>
                     {tools.map((tool) => (
                         <Hint key={tool.action} content={tool.label}><BaseButton aria-label={tool.label} type="button"
