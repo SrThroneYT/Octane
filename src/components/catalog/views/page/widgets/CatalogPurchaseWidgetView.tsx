@@ -1,4 +1,4 @@
-import { CreateLinkEvent, LtdRaffleEnteredMessageEvent, LtdRaffleResultMessageEvent, PurchaseFromCatalogComposer } from '@octane/renderer';
+import { CreateLinkEvent, LtdRaffleEnteredMessageEvent, LtdRaffleResultMessageEvent, NotEnoughBalanceMessageEvent, PurchaseFromCatalogComposer } from '@octane/renderer';
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     BuilderFurniPlaceableStatus,
@@ -103,50 +103,37 @@ export const CatalogPurchaseWidgetView: FC<CatalogPurchaseWidgetViewProps> = (pr
         purchaseGuardTimeoutRef.current = null;
     }, []);
 
-    const showInsufficientBalanceAlert = useCallback(() => {
-        if (!currentOffer || !purchaseOptions || !getCurrencyAmount) return false;
+    const alertNotEnoughCredits = useCallback(() => {
+        const description = LocalizeText('catalog.alert.notenough.credits.description');
+        const title = LocalizeText('catalog.alert.notenough.title');
 
-        const quantity = purchaseOptions.quantity;
-        const creditPrice = getCatalogBundlePrice(currentOffer.priceInCredits, quantity, currentOffer.bundlePurchaseAllowed, bundleDiscountRuleset).price;
-        const activityPointPrice = getCatalogBundlePrice(
-            currentOffer.priceInActivityPoints,
-            quantity,
-            currentOffer.bundlePurchaseAllowed,
-            bundleDiscountRuleset
-        ).price;
+        if (showConfirm) {
+            const settle = () => resetPlacedOfferData?.();
 
-        if (creditPrice > getCurrencyAmount(-1)) {
-            const description = LocalizeText('catalog.alert.notenough.credits.description');
-            const title = LocalizeText('catalog.alert.notenough.title');
+            showConfirm(
+                description,
+                () => {
+                    settle();
 
-            if (showConfirm) {
-                const settle = () => resetPlacedOfferData?.();
+                    const shopUrl = GetConfigurationValue<string>('web.shop.relativeUrl', '');
 
-                showConfirm(
-                    description,
-                    () => {
-                        settle();
-
-                        const shopUrl = GetConfigurationValue<string>('web.shop.relativeUrl', '');
-
-                        if (shopUrl) OpenUrl(shopUrl);
-                    },
-                    settle,
-                    null,
-                    null,
-                    title
-                );
-            } else {
-                simpleAlert?.(description, null, null, null, title);
-            }
-
-            return true;
+                    if (shopUrl) OpenUrl(shopUrl);
+                },
+                settle,
+                null,
+                null,
+                title
+            );
+        } else {
+            simpleAlert?.(description, null, null, null, title);
         }
+    }, [resetPlacedOfferData, showConfirm, simpleAlert]);
 
-        if (activityPointPrice > getCurrencyAmount(currentOffer.activityPointType)) {
+    const alertNotEnoughActivityPoints = useCallback(
+        (activityPointType: number) => {
             const currencyLocalization = GetConfigurationValue<string>(
-                `activitypoint.name.${currentOffer.activityPointType}`,
-                currentOffer.activityPointType === 0 ? 'tooltip.duckets' : ''
+                `activitypoint.name.${activityPointType}`,
+                activityPointType === 0 ? 'tooltip.duckets' : ''
             );
 
             if (currencyLocalization) {
@@ -154,7 +141,7 @@ export const CatalogPurchaseWidgetView: FC<CatalogPurchaseWidgetViewProps> = (pr
                 const description = LocalizeText('catalog.alert.notenough.activitypoints.description', ['currencyname'], [currencyName]);
                 const title = LocalizeText('catalog.alert.notenough.activitypoints.title', ['currencyname'], [currencyName]);
 
-                if (currentOffer.activityPointType === 0 && showConfirm) {
+                if (activityPointType === 0 && showConfirm) {
                     const settle = () => resetPlacedOfferData?.();
 
                     showConfirm(
@@ -180,15 +167,39 @@ export const CatalogPurchaseWidgetView: FC<CatalogPurchaseWidgetViewProps> = (pr
                     null,
                     null,
                     null,
-                    LocalizeText(`catalog.alert.notenough.activitypoints.title.${currentOffer.activityPointType}`)
+                    LocalizeText(`catalog.alert.notenough.activitypoints.title.${activityPointType}`)
                 );
             }
+        },
+        [resetPlacedOfferData, showConfirm, simpleAlert]
+    );
+
+    const showInsufficientBalanceAlert = useCallback(() => {
+        if (!currentOffer || !purchaseOptions || !getCurrencyAmount) return false;
+
+        const quantity = purchaseOptions.quantity;
+        const creditPrice = getCatalogBundlePrice(currentOffer.priceInCredits, quantity, currentOffer.bundlePurchaseAllowed, bundleDiscountRuleset).price;
+        const activityPointPrice = getCatalogBundlePrice(
+            currentOffer.priceInActivityPoints,
+            quantity,
+            currentOffer.bundlePurchaseAllowed,
+            bundleDiscountRuleset
+        ).price;
+
+        if (creditPrice > getCurrencyAmount(-1)) {
+            alertNotEnoughCredits();
+
+            return true;
+        }
+
+        if (activityPointPrice > getCurrencyAmount(currentOffer.activityPointType)) {
+            alertNotEnoughActivityPoints(currentOffer.activityPointType);
 
             return true;
         }
 
         return false;
-    }, [bundleDiscountRuleset, currentOffer, getCurrencyAmount, purchaseOptions, resetPlacedOfferData, showConfirm, simpleAlert]);
+    }, [alertNotEnoughActivityPoints, alertNotEnoughCredits, bundleDiscountRuleset, currentOffer, getCurrencyAmount, purchaseOptions]);
 
     const onCatalogEvent = useCallback(
         (event: CatalogEvent) => {
@@ -243,6 +254,21 @@ export const CatalogPurchaseWidgetView: FC<CatalogPurchaseWidgetViewProps> = (pr
         resetPurchaseGuard();
         setPurchaseWillBeGift(false);
         setPurchaseState(CatalogPurchaseState.NONE);
+    });
+
+    // AIR NotEnoughBalanceMessageEvent: the server refused the purchase this widget sent because the balance changed
+    // since the client checked it. The purchase ends and the player sees which currency is short.
+    useMessageEvent<NotEnoughBalanceMessageEvent>(NotEnoughBalanceMessageEvent, (event) => {
+        if (!purchasePendingRef.current || !ownsPurchaseOutcomeRef.current) return;
+
+        const parser = event.getParser();
+
+        resetPurchaseGuard();
+        setPurchaseWillBeGift(false);
+        setPurchaseState(CatalogPurchaseState.NONE);
+
+        if (parser.notEnoughCredits) alertNotEnoughCredits();
+        else if (parser.notEnoughActivityPoints) alertNotEnoughActivityPoints(parser.activityPointType);
     });
 
     useUiEvent(CatalogPurchasedEvent.PURCHASE_SUCCESS, onCatalogEvent);
