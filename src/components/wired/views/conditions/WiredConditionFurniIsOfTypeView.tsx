@@ -8,7 +8,6 @@ import { WiredConditionBaseView } from './WiredConditionBaseView';
 const SOURCE_TRIGGER = 0;
 const SOURCE_SELECTED = 100;
 const SOURCE_SECONDARY_SELECTED = 101;
-const FURNI_DELIMITER = ';';
 
 const MATCH_FURNI_SOURCES: WiredSourceOption[] = sortWiredSourceOptions(
     [...FURNI_SOURCES, { value: SOURCE_SECONDARY_SELECTED, label: 'wiredfurni.params.sources.furni.101' }],
@@ -16,28 +15,6 @@ const MATCH_FURNI_SOURCES: WiredSourceOption[] = sortWiredSourceOptions(
 );
 
 type SelectionMode = 'primary' | 'secondary';
-
-const parseIds = (data: string): number[] => {
-    if (!data || !data.length) return [];
-
-    const ids = new Set<number>();
-
-    for (const part of data.split(/[;,\t]/)) {
-        const trimmed = part.trim();
-        if (!trimmed.length) continue;
-
-        const value = parseInt(trimmed, 10);
-        if (!isNaN(value) && value > 0) ids.add(value);
-    }
-
-    return Array.from(ids);
-};
-
-const serializeIds = (ids: number[]): string => {
-    if (!ids || !ids.length) return '';
-
-    return ids.filter((id) => id > 0).join(FURNI_DELIMITER);
-};
 
 export const WiredConditionFurniIsOfTypeView: FC = () => {
     const [matchSource, setMatchSource] = useState<number>(SOURCE_TRIGGER);
@@ -48,14 +25,12 @@ export const WiredConditionFurniIsOfTypeView: FC = () => {
 
     const highlightedIds = useRef<number[]>([]);
 
-    // Official layout: the picks are the types to match (our secondary set), the furni checked come from the
-    // official source slot, the quantifier in its slot (the base view's); ours follow: [type source] and the furni
-    // checked as picks in the string.
-    const { trigger = null, furniIds = [], setFurniIds, setIntParams, setStringParam, setAllowsFurni, setSourceTypes } = useWired();
+    // Official StuffTypeMatches: no int params, the furni checked and the furni whose types they must have in the
+    // two source slots; source 100 is the picks (stuffIds), 101 the other picks (stuffIds2). The quantifier is the
+    // base view's.
+    const { trigger = null, furniIds = [], setFurniIds, setFurniIds2, setIntParams, setStringParam, setAllowsFurni, setSourceTypes } = useWired();
 
-    // AIR tints by pick list: the first slot's picks (source 100, AIR stuffIds) the first tint, the second slot's
-    // (source 101, AIR stuffIds2) the blue one. Ours carry the 101 types in stuffIds and the 100 picks in the
-    // string, so the tint follows the source, not our wire list.
+    // AIR tints by pick list: the picks (stuffIds) the first tint, the other picks (stuffIds2) the blue one.
     const syncHighlights = useCallback((nextPrimaryIds: number[], nextSecondaryIds: number[]) => {
         highlightedIds.current = WiredSelectionVisualizer.showPickLists(highlightedIds.current, nextPrimaryIds, nextSecondaryIds);
     }, []);
@@ -82,10 +57,10 @@ export const WiredConditionFurniIsOfTypeView: FC = () => {
     useEffect(() => {
         if (!trigger) return;
 
-        const nextPrimaryIds = parseIds(trigger.stringData);
-        const nextSecondaryIds = [...(trigger.selectedItems ?? [])];
-        const nextMatchSource = trigger.furniSourceTypes?.[0] ?? (nextPrimaryIds.length ? SOURCE_SELECTED : SOURCE_TRIGGER);
-        const nextCompareSource = trigger.intData.length >= 1 ? trigger.intData[0] : SOURCE_SECONDARY_SELECTED;
+        const nextPrimaryIds = [...(trigger.selectedItems ?? [])];
+        const nextSecondaryIds = [...(trigger.selectedItems2 ?? [])];
+        const nextMatchSource = trigger.furniSourceTypes?.[0] ?? SOURCE_TRIGGER;
+        const nextCompareSource = trigger.furniSourceTypes?.[1] ?? SOURCE_SECONDARY_SELECTED;
 
         setMatchSource(nextMatchSource);
         setCompareSource(nextCompareSource);
@@ -146,14 +121,31 @@ export const WiredConditionFurniIsOfTypeView: FC = () => {
         setPrimaryFurniIds(nextPrimaryIds);
         setSecondaryFurniIds(nextSecondaryIds);
 
-        // The picks sent are the types; the furni checked as picks travel in the string.
-        setFurniIds(compareSource === SOURCE_SECONDARY_SELECTED ? [...nextSecondaryIds] : []);
-        // Keep the live picks and the selection mode together if the window stays open.
-        setSelectionMode('secondary');
-        setIntParams([compareSource]);
-        setStringParam(matchSource === SOURCE_SELECTED ? serializeIds(nextPrimaryIds) : '');
-        setSourceTypes({ furni: [matchSource], users: [] });
-    }, [selectionMode, furniIds, primaryFurniIds, matchSource, compareSource, secondaryFurniIds, setFurniIds, setIntParams, setStringParam, setSourceTypes]);
+        const usesSource = (source: number) => matchSource === source || compareSource === source;
+
+        // The live picks are saved as the first list: go back to it (the server reads it only when a slot is on 100).
+        if (usesSource(SOURCE_SELECTED)) {
+            setSelectionMode('primary');
+            setFurniIds([...nextPrimaryIds]);
+        }
+
+        setFurniIds2(usesSource(SOURCE_SECONDARY_SELECTED) ? nextSecondaryIds.filter((id) => id > 0) : []);
+        setIntParams([]);
+        setStringParam('');
+        setSourceTypes({ furni: [matchSource, compareSource], users: [] });
+    }, [
+        selectionMode,
+        furniIds,
+        primaryFurniIds,
+        matchSource,
+        compareSource,
+        secondaryFurniIds,
+        setFurniIds,
+        setFurniIds2,
+        setIntParams,
+        setStringParam,
+        setSourceTypes
+    ]);
 
     const selectionLimit = trigger?.maximumItemSelectionCount ?? 0;
 

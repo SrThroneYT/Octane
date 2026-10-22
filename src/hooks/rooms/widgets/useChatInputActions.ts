@@ -251,7 +251,7 @@ export const useChatInputActions = () => {
                         return null;
                     case ':togglefps': {
                         if (GetTicker().maxFPS > 0) GetTicker().maxFPS = 0;
-                        else GetTicker().maxFPS = GetConfigurationValue('system.animation.fps');
+                        else GetTicker().maxFPS = GetConfigurationValue<number>('system.fps.animation', 24);
 
                         return null;
                     }

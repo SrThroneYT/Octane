@@ -87,8 +87,9 @@ export const App: FC<{}> = (props) => {
             }
         } catch {}
 
+        // A loading text the external texts don't have yet may come from the config; it is optional there.
         try {
-            const fromConfig = GetConfiguration().getValue<string>(key, '');
+            const fromConfig = GetConfiguration().definitions.has(key) ? GetConfiguration().getValue<string>(key, '') : '';
             if (typeof fromConfig === 'string' && fromConfig.length) return fromConfig;
         } catch {}
 
@@ -132,7 +133,7 @@ export const App: FC<{}> = (props) => {
     }, []);
 
     const showSessionExpired = useCallback(() => {
-        console.warn('[App] showSessionExpired — diagnostic shown (mid-game close)');
+        OctaneLogger.log('[App] showSessionExpired — diagnostic shown (mid-game close)');
         clearStoredCredentials();
 
         const baseUrl = window.location.origin + '/';
@@ -148,11 +149,11 @@ export const App: FC<{}> = (props) => {
         const loginScreenEnabled = rawLoginEnabled === true || rawLoginEnabled === 'true' || rawLoginEnabled === 1;
 
         if (!loginScreenEnabled) {
-            console.warn('[App] fallbackToLogin — login.screen.enabled=false, redirecting to home instead');
+            OctaneLogger.log('[App] fallbackToLogin — login.screen.enabled=false, redirecting to home instead');
             showSessionExpired();
             return;
         }
-        console.warn('[App] fallbackToLogin — surfacing login form, credentials cleared');
+        OctaneLogger.log('[App] fallbackToLogin — surfacing login form, credentials cleared');
         clearStoredCredentials();
         setHomeUrl('');
         setErrorMessage('');
@@ -189,7 +190,7 @@ export const App: FC<{}> = (props) => {
     const tryRememberLogin = useCallback(async (): Promise<string> => {
         const remembered = GetRememberLogin();
 
-        console.warn('[App] tryRememberLogin start', {
+        OctaneLogger.log('[App] tryRememberLogin start', {
             hasRemembered: !!remembered,
             hasToken: !!remembered?.token?.length,
             hasStoredSso: !!remembered?.ssoTicket?.length
@@ -197,7 +198,7 @@ export const App: FC<{}> = (props) => {
 
         if (!remembered?.token?.length) {
             if (remembered) ClearRememberLogin();
-            console.warn('[App] tryRememberLogin → no token, returning empty');
+            OctaneLogger.log('[App] tryRememberLogin → no token, returning empty');
             return '';
         }
 
@@ -222,7 +223,7 @@ export const App: FC<{}> = (props) => {
 
             const ssoTicket = typeof payload.ssoTicket === 'string' ? payload.ssoTicket : typeof payload.sso === 'string' ? payload.sso : '';
 
-            console.warn('[App] tryRememberLogin → remember endpoint replied', {
+            OctaneLogger.log('[App] tryRememberLogin → remember endpoint replied', {
                 status: response.status,
                 ok: response.ok,
                 gotSsoTicket: !!ssoTicket
@@ -238,7 +239,7 @@ export const App: FC<{}> = (props) => {
         }
 
         ClearRememberLogin();
-        console.warn('[App] tryRememberLogin → cleared remember, returning empty');
+        OctaneLogger.log('[App] tryRememberLogin → cleared remember, returning empty');
 
         return '';
     }, []);
@@ -421,7 +422,7 @@ export const App: FC<{}> = (props) => {
         const prepare = async (width: number, height: number) => {
             const run = ++prepareRunRef.current;
 
-            console.warn('[App] prepare() start', {
+            OctaneLogger.log('[App] prepare() start', {
                 hasOctaneConfig: !!window.OctaneConfig,
                 ssoTicketInConfig: !!window.OctaneConfig?.['sso.ticket'],
                 hasRememberLocal: !!GetRememberLogin(),
@@ -459,7 +460,7 @@ export const App: FC<{}> = (props) => {
                     const rawLoginEnabled = GetConfiguration().getValue<unknown>('login.screen.enabled', false);
                     const loginScreenEnabled = rawLoginEnabled === true || rawLoginEnabled === 'true' || rawLoginEnabled === 1;
 
-                    console.warn('[App] no SSO path — login gate', {
+                    OctaneLogger.log('[App] no SSO path — login gate', {
                         configInitError: configInitError ? String((configInitError as Error)?.message ?? configInitError) : null,
                         rawLoginEnabled,
                         rawLoginEnabledType: typeof rawLoginEnabled,

@@ -1,21 +1,35 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { PurseView } from './PurseView';
+
+const mocks = vi.hoisted(() => ({
+    links: [] as string[],
+    openUrl: vi.fn(),
+    config: {} as Record<string, unknown>
+}));
+
+vi.mock('@octane/renderer', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@octane/renderer')>()),
+    CreateLinkEvent: (link: string) => mocks.links.push(link)
+}));
 
 vi.mock('../../api', async (importOriginal) => {
     const actual = await importOriginal<typeof import('../../api')>();
+    const value = (key: string, fallback: unknown) => {
+        if (key in mocks.config) return mocks.config[key];
+        if (key === 'system.currency.types') return [0, 5];
+        if (key === 'currency.display.number.short') return false;
+        if (key === 'currency.asset.icon.url') return '/currency/%type%.png';
+
+        return fallback;
+    };
 
     return {
         ...actual,
-        GetConfigurationValue: (key: string, fallback: unknown) => {
-            if (key === 'system.currency.types') return [0, 5];
-            if (key === 'currency.display.number.short') return false;
-            if (key === 'currency.asset.icon.url') return '/currency/%type%.png';
-
-            return fallback;
-        },
+        GetConfigurationValue: value,
+        GetOptionalConfigurationValue: value,
         LocalizeText: (key: string) => key,
-        localizeWithFallback: (_key: string, fallback: string) => fallback
+        localizeWithFallback: (_key: string, fallback: string) => fallback,
+        OpenUrl: mocks.openUrl
     };
 });
 
@@ -33,51 +47,73 @@ vi.mock('../../hooks', async (importOriginal) => {
                 ]),
                 clubDays: 0,
                 clubPeriods: 0,
-                credits: 37,
+                clubLevel: 0,
+                credits: 1234567,
                 minutesUntilExpiration: -1
             }
         })
     };
 });
 
-describe('PurseView', () => {
-    afterEach(() => cleanup());
+import { PurseView } from './PurseView';
 
-    it('shortens large currency amounts and keeps the exact value in a tooltip', async () => {
+describe('PurseView (AIR purse_xml / PurseAreaExtension)', () => {
+    afterEach(() => {
+        cleanup();
+        mocks.links.length = 0;
+        mocks.config = {};
+        mocks.openUrl.mockClear();
+    });
+
+    it('shows each amount as the whole number, as AIR does', () => {
         const { container } = render(<PurseView />);
         const amounts = Array.from(container.querySelectorAll('.octane-purse-button__amount')).map((element) => element.textContent?.trim());
 
-        expect(screen.getByText('3.7k')).toBeInTheDocument();
-        expect(amounts).toContain('3.7k');
-        expect(amounts).not.toContain('3 692');
-
-        expect(screen.queryByRole('tooltip')).toBeNull();
-
-        fireEvent.mouseEnter(screen.getByText('3.7k').closest('.relative') as HTMLElement);
-
-        expect(await screen.findByRole('tooltip')).toHaveTextContent('3 692');
+        expect(amounts).toEqual(['760', '1234567', '3692']);
     });
 
-    it('keeps official Help / Logout / Settings inside the 77px purse and Translate in the settings menu', () => {
+    it('opens what a currency row is about', () => {
+        mocks.config['web.shop.relativeUrl'] = '/shop';
+        render(<PurseView />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Duckets: 3692' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Diamonds: 760' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Credits: 1234567' }));
+
+        expect(mocks.links).toEqual(['catalog/open/ducket_info', 'catalog/open/loyalty_info']);
+        expect(mocks.openUrl).toHaveBeenCalledWith('/shop');
+    });
+
+    it('offers to join the club without club days', () => {
+        render(<PurseView />);
+
+        expect(screen.getByText('Get')).toBeInTheDocument();
+    });
+
+    it('keeps Help / Log out / Settings in the action column and opens AIR settings rows', () => {
         const { container } = render(<PurseView />);
 
-        const actionColumn = container.querySelector('.octane-purse__col--actions');
-        expect(actionColumn).toBeTruthy();
+        const actionButtons = within(container.querySelector('.octane-purse__col--actions') as HTMLElement).getAllByRole('button');
+        expect(actionButtons.map((button) => button.textContent?.trim() || button.getAttribute('aria-label'))).toEqual(['Help', 'Log out', 'Settings']);
 
-        const actionButtons = within(actionColumn as HTMLElement).getAllByRole('button');
-        expect(actionButtons.map((button) => button.textContent?.trim() || button.getAttribute('aria-label'))).toEqual([
-            'Help',
-            'Log out',
-            'widget.memenu.settings.title'
-        ]);
+        fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
 
-        const settingsButton = container.querySelector('.octane-purse__btn--settings');
-        expect(settingsButton).toBeTruthy();
+        const rows = within(screen.getByRole('menu')).getAllByRole('menuitem');
+        expect(rows.map((row) => row.textContent)).toEqual(['Sound settings', 'Chat settings', 'Other settings', 'Word filter']);
 
-        fireEvent.click(settingsButton!);
+        fireEvent.click(rows[0]);
+        expect(mocks.links).toEqual(['user-settings/show/audio']);
+        expect(screen.queryByRole('menu')).toBeNull();
+    });
 
-        const settingsMenu = container.querySelector('.octane-purse-menu');
-        expect(settingsMenu).toBeTruthy();
-        expect(within(settingsMenu as HTMLElement).getByRole('button', { name: 'Translate' })).toBeInTheDocument();
+    it('adds the Discord row with discord.enabled and drops the word filter without user.custom.filter.enabled', () => {
+        mocks.config['discord.enabled'] = true;
+        mocks.config['user.custom.filter.enabled'] = false;
+        render(<PurseView />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+
+        const rows = within(screen.getByRole('menu')).getAllByRole('menuitem');
+        expect(rows.map((row) => row.textContent)).toEqual(['Sound settings', 'Discord settings', 'Chat settings', 'Other settings']);
     });
 });

@@ -2,7 +2,7 @@ import { KeyboardEvent } from 'react';
 import { GetConfigurationValue, LocalizeText, localizeWithFallback } from '../../api';
 import wiredGlobalPlaceholderImage from '../../assets/images/wiredtools/wired_global_placeholder.png';
 import { Button, LayoutAvatarImageView, LayoutPetImageView, LayoutRoomObjectImageView, Text } from '../../common';
-import { INSPECTION_ELEMENTS } from './WiredCreatorTools.constants';
+import { INSPECTION_ELEMENTS, PACKED_WIRED_VARIABLE_KEYS } from './WiredCreatorTools.constants';
 import { InspectionFurniSelection, InspectionUserSelection, InspectionVariable } from './WiredCreatorTools.types';
 import { wiredSourceTypeLabelKey } from './WiredCreatorTools.helpers';
 import { useWiredCreatorToolsUiStore } from './wiredCreatorToolsUiStore';
@@ -214,7 +214,20 @@ export const WiredInspectionTabView = (props: WiredInspectionTabViewProps) => {
                                                 className={`${selectedInspectionVariableKey === variable.key ? 'bg-[#d7dfea]' : index % 2 === 0 ? 'bg-white' : 'bg-[#f3f3f3]'} ${variable.editable ? 'cursor-pointer hover:bg-[#e8eefc]' : 'cursor-pointer'}`}
                                                 onClick={() => onSelectInspectionVariable(variable)}
                                             >
-                                                <td className="px-3 py-1 text-[#444]">{variable.key}</td>
+                                                <td className="px-3 py-1 text-[#444]">
+                                                    {PACKED_WIRED_VARIABLE_KEYS.has(variable.key) ? (
+                                                        <Hint
+                                                            content={localizeWithFallback(
+                                                                'wiredmenu.inspection.packed_variable.desc',
+                                                                'This is a packed variable that lets you read and write\nseveral other variables at once'
+                                                            )}
+                                                        >
+                                                            <span className="cursor-help underline decoration-dotted">{variable.key}</span>
+                                                        </Hint>
+                                                    ) : (
+                                                        variable.key
+                                                    )}
+                                                </td>
                                                 <td className="px-3 py-1 text-right text-[#222]">
                                                     {editingVariable === variable.key && (
                                                         <input

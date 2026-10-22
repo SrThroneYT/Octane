@@ -83,14 +83,29 @@
     gap: 2px;
     padding: 0 1px 0 0;
     overflow: visible;
+    cursor: pointer;
+    font: inherit;
     border: 0 !important;
     border-radius: 0 !important;
     background: transparent !important;
     box-shadow: none !important;
 }
 
+/* AIR dynamic_style brightness_and_shadow_under on the rows and the HC / earnings regions. */
+.octane-purse .octane-purse-button:hover {
+    filter: brightness(1.15);
+}
+
+.octane-purse .octane-purse-button:active {
+    filter: brightness(0.9);
+}
+
+/* auto_size left: a long amount grows to the left of the row, never cut. */
 .octane-purse .currency-info .currency-text,
 .octane-purse .allcurrencypurse .text-white {
+    flex: 0 0 auto;
+    overflow: visible;
+    white-space: nowrap;
     width: auto;
     min-width: 10px;
     margin: 0;
@@ -333,14 +348,19 @@
     max-height: 19px;
 }
 
+/* AIR settings_xml + setting_category_xml: 192 wide, the rows 17 px white labels 7 px in, 3 px apart, on a dark
+   inner panel (style 3, 0x201e19 at 0.8) inside the frame. */
 .octane-purse-menu {
+    position: relative;
     box-sizing: border-box;
-    width: 188px;
-    max-width: 188px;
+    width: 192px;
+    max-width: 192px;
     margin-top: 1px;
     margin-left: auto;
     display: flex;
     flex-direction: column;
+    gap: 3px;
+    padding: 7px;
     overflow: hidden;
     border: 6px solid transparent;
     border-image-source: url("../../assets/images/habbo-skin/slices/border-ubuntu-9.png");
@@ -352,27 +372,33 @@
     image-rendering: var(--octane-pixel-art, pixelated);
 }
 
+.octane-purse-menu::before {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 3px;
+    background: rgba(32, 30, 25, 0.8);
+    pointer-events: none;
+}
+
 .octane-purse-menu__item {
-    padding: 4px 10px;
+    position: relative;
+    width: 120px;
+    height: 17px;
+    padding: 0;
     border: 0;
     background: transparent;
-    color: rgba(255, 255, 255, 0.9);
+    color: #ffffff;
     font-size: 12px;
-    font-weight: 500;
-    line-height: 1.3;
+    font-weight: 400;
+    line-height: 17px;
     text-align: left;
+    white-space: nowrap;
     cursor: pointer;
 }
 
 .octane-purse-menu__item:hover {
-    background: rgba(255, 255, 255, 0.08);
-}
-
-.octane-purse-menu__item--disabled,
-.octane-purse-menu__item--disabled:hover {
-    color: rgba(255, 255, 255, 0.35);
-    background: transparent;
-    cursor: default;
+    text-decoration: underline;
 }
 
 /* track_promo / seasonal: style-9 192x29 color 0x686661 */
@@ -388,111 +414,147 @@
 
 .octane-purse__other .octane-purse-seasonal-currency {
     position: relative;
+    display: block;
     box-sizing: border-box;
     width: 192px;
     height: 29px;
     min-height: 29px;
     padding: 0;
     overflow: hidden;
-    border: 7px solid transparent;
-    border-bottom-width: 8px;
+    border: 0;
     border-radius: 0;
-    border-image-source: url("../../assets/images/habbo-skin/slices/border-ubuntu-9.png");
-    border-image-slice: 28 28 32 28 fill;
-    border-image-width: 7px 7px 8px 7px;
     background: transparent;
     box-shadow: none;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
     image-rendering: var(--octane-pixel-art, pixelated);
 }
 
-.octane-purse-seasonal-currency .seasonal-row {
-    position: relative;
-    display: block;
-    width: 178px;
-    height: 14px;
+/* border style 9, 192 x 29, 0x686661 */
+.octane-purse__other .octane-purse-seasonal-currency::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    box-sizing: border-box;
+    border: 7px solid transparent;
+    border-bottom-width: 8px;
+    border-image-source: url("../../assets/images/habbo-skin/slices/border-ubuntu-9.png");
+    border-image-slice: 28 28 32 28 fill;
+    border-image-width: 7px 7px 8px 7px;
+    pointer-events: none;
 }
 
+.octane-purse__other .octane-purse-seasonal-currency:hover {
+    filter: brightness(1.1);
+}
+
+/* seasonal_name: x 5, y 6, 105 wide, bold, 0xbb7dc3 */
 .octane-purse-seasonal-currency .seasonal-text {
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 6px;
+    left: 5px;
     width: 105px;
     overflow: hidden;
     font-size: 11px;
     font-weight: 700;
-    line-height: 14px;
-    color: #ffffff !important;
+    line-height: 16px;
+    color: #bb7dc3;
     text-shadow: 1px 1px 0 #000000;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
+/* amount: x 90, y 6, 60 wide, bold white; at 0 the zero text, underlined */
 .octane-purse-seasonal-currency .seasonal-amount {
     position: absolute;
-    top: 0;
+    top: 6px;
     left: 90px;
     width: 60px;
     font-size: 11px;
     font-weight: 700;
-    line-height: 14px;
-    color: #ffffff !important;
+    line-height: 16px;
+    color: #ffffff;
     text-align: right;
     text-shadow: 1px 1px 0 #000000;
+    white-space: nowrap;
 }
 
+.octane-purse-seasonal-currency .seasonal-amount.is-zero {
+    text-decoration: underline;
+}
+
+/* seasonal_bg: x 163, 29 x 29, 0x7adde9, the 23 px icon at 3, 3 */
 .octane-purse-seasonal-currency .octane-seasonal-box {
     position: absolute;
-    top: -7px;
-    left: 156px;
+    top: 0;
+    left: 163px;
     display: flex;
     width: 29px;
     height: 29px;
     align-items: center;
     justify-content: center;
-    padding: 0;
-    border: 0;
-    background: transparent;
+    border-radius: 0 4px 4px 0;
+    background: #7adde9;
 }
 
 .octane-purse-seasonal-currency .seasonal-image {
     display: block;
-    width: auto;
-    height: auto;
     max-width: 23px;
     max-height: 23px;
     object-fit: contain;
     image-rendering: var(--octane-pixel-art, pixelated);
 }
 
-.octane-purse-extend-promo {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 4px;
-    padding: 4px 8px;
-    border: 1px solid #c49b1c;
+/* change_overlay: 33 wide, 0xbb7dc3, slides from x 0 to the right edge while fading in and out */
+.octane-purse-seasonal-currency .seasonal-change {
+    position: absolute;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    min-width: 33px;
+    height: 29px;
+    padding: 6px 6px 7px 4px;
     border-radius: 4px;
-    background: #fbd33a;
-    color: #3d2b00;
+    background: #bb7dc3;
+    color: #ffffff;
     font-size: 11px;
-    font-weight: bold;
-    cursor: pointer;
-    pointer-events: auto;
+    font-weight: 700;
+    line-height: 16px;
+    white-space: nowrap;
+    pointer-events: none;
+    animation: octane-purse-seasonal-change 1000ms linear forwards;
 }
 
-.octane-purse-extend-promo:hover {
-    background: #ffdf61;
-}
-
-.octane-purse-extend-promo img {
-    width: 16px;
-    height: 16px;
-    image-rendering: pixelated;
+@keyframes octane-purse-seasonal-change {
+    0% { opacity: 0; transform: translateX(0); }
+    50% { opacity: 1; transform: translateX(79px); }
+    100% { opacity: 0; transform: translateX(159px); }
 }
 
 .octane-club-extend {
     width: 300px;
     min-height: 240px;
+}
+
+/* AIR PurseClubArea: DropBounce(hc_join_button, 900 ms, 16 px) when the club days change. */
+.octane-purse__btn--join.is-bouncing {
+    animation: octane-purse-drop-bounce 900ms ease-out;
+}
+
+@keyframes octane-purse-drop-bounce {
+    0% { transform: translateY(-16px); }
+    40% { transform: translateY(0); }
+    60% { transform: translateY(-6px); }
+    80% { transform: translateY(0); }
+    90% { transform: translateY(-2px); }
+    100% { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .octane-purse__btn--join.is-bouncing {
+        animation: none;
+    }
 }
 
 /* AIR purse_xml earnings_unseen_indicator: pursearea_unseen_indicator (10x11) at 1,0 of the earnings button, shown
@@ -506,4 +568,167 @@
     height: 11px;
     pointer-events: none;
     image-rendering: var(--octane-pixel-art, pixelated);
+}
+
+/* AIR notices under the purse (club_gift_notification_xml 192 x 82, safety_locked_notification_xml 192 x 80):
+   style 9 frame, Ubuntu 12 white text, the underlined link turning 0xBAE2F9 on hover. */
+.octane-purse-notice {
+    position: relative;
+    box-sizing: border-box;
+    width: 192px;
+    min-height: 80px;
+    margin-left: auto;
+    padding: 0 1px 1px;
+    color: #ffffff;
+    font-family: Ubuntu, sans-serif;
+    font-size: 12px;
+    line-height: 1.25;
+    pointer-events: all;
+    border: 7px solid transparent;
+    border-bottom-width: 8px;
+    border-image-source: url("../../assets/images/habbo-skin/slices/border-ubuntu-9.png");
+    border-image-slice: 28 28 32 28 fill;
+    border-image-width: 7px 7px 8px 7px;
+    border-image-repeat: stretch;
+    image-rendering: var(--octane-pixel-art, pixelated);
+}
+
+.octane-purse-notice__icon {
+    position: absolute;
+    top: 0;
+    left: -1px;
+    width: 15px;
+    height: 15px;
+}
+
+.octane-purse-notice__text {
+    min-height: 36px;
+    padding: 0 0 0 1px;
+    overflow-wrap: anywhere;
+}
+
+.octane-purse-notice__text--with-icon {
+    padding-left: 18px;
+}
+
+.octane-purse-notice--club-gift {
+    display: flex;
+    min-height: 82px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+}
+
+.octane-purse-notice--club-gift .octane-purse-notice__text {
+    flex: 1 0 100%;
+}
+
+.octane-purse-notice__link {
+    padding: 0 1px;
+    border: 0;
+    background: transparent;
+    color: #ffffff;
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.octane-purse-notice__link:hover {
+    color: #bae2f9;
+}
+
+/* button style 4 */
+.octane-purse-notice__button {
+    display: inline-flex;
+    height: 24px;
+    align-items: center;
+    padding: 0 8px;
+    border: 3px solid transparent;
+    border-image-source: var(--habbo-skin-button);
+    border-image-slice: 3 fill;
+    border-image-width: 3px;
+    border-image-repeat: stretch;
+    background: transparent;
+    color: #000000;
+    font: 12px Ubuntu, sans-serif;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.octane-purse-notice__button:hover {
+    border-image-source: var(--habbo-skin-button-hover);
+}
+
+.octane-purse-notice__button:active {
+    border-image-source: var(--habbo-skin-button-pressed);
+}
+
+/* AIR club_discount_promotion_xml: 192 x 44, style 9 frame, the club icon at 6,7, the underlined text from 26,6
+   with a 1 px shadow, and the extend_hilite sweep (26 steps of 25 ms) every 15 s. */
+.octane-purse-club-promo {
+    position: relative;
+    box-sizing: border-box;
+    width: 192px;
+    height: 44px;
+    margin-top: 3px;
+    margin-left: auto;
+    overflow: hidden;
+    pointer-events: all;
+    border: 7px solid transparent;
+    border-bottom-width: 8px;
+    border-image-source: url("../../assets/images/habbo-skin/slices/border-ubuntu-9.png");
+    border-image-slice: 28 28 32 28 fill;
+    border-image-width: 7px 7px 8px 7px;
+    image-rendering: var(--octane-pixel-art, pixelated);
+}
+
+.octane-purse-club-promo__icon {
+    position: absolute;
+    top: 0;
+    left: -1px;
+    width: 15px;
+    height: 15px;
+}
+
+.octane-purse-club-promo__text {
+    position: absolute;
+    top: -1px;
+    left: 19px;
+    width: 160px;
+    height: 30px;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    background: transparent;
+    color: #ffffff;
+    font: 12px/15px Ubuntu, sans-serif;
+    text-align: left;
+    text-decoration: underline;
+    text-shadow: 1px 1px 0 #000000;
+    cursor: pointer;
+}
+
+.octane-purse-club-promo__text:hover {
+    color: #bae2f9;
+}
+
+.octane-purse-club-promo__sweep {
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    height: 37px;
+    pointer-events: none;
+    animation: octane-purse-club-sweep 650ms linear forwards;
+}
+
+@keyframes octane-purse-club-sweep {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(139px); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .octane-purse-club-promo__sweep {
+        display: none;
+    }
 }

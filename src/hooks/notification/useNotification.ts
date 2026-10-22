@@ -3,7 +3,6 @@ import {
     ActivityPointNotificationMessageEvent,
     BadgeReceivedEvent,
     ChestNotificationEvent,
-    ClubGiftNotificationEvent,
     ClubGiftSelectedEvent,
     ConnectionErrorEvent,
     GetLocalizationManager,
@@ -429,18 +428,7 @@ const useNotificationStore = () => {
         showSingleBubble(ltdRaffleResultText(!!parser?.hasWon), NotificationBubbleType.LTD);
     });
 
-    useMessageEvent<ClubGiftNotificationEvent>(ClubGiftNotificationEvent, (event) => {
-        const parser = event.getParser();
-
-        if (parser.numGifts <= 0) return;
-
-        showSingleBubble(
-            parser.numGifts.toString(),
-            NotificationBubbleType.CLUBGIFT,
-            null,
-            'catalog/open/' + GetConfigurationValue('catalog.links')['hc.hc_gifts']
-        );
-    });
+    // ClubGiftNotificationEvent: AIR shows the panel under the purse (components/purse/views/PurseNoticesView).
 
     useMessageEvent<ModeratorMessageEvent>(ModeratorMessageEvent, (event) => {
         const parser = event.getParser();

@@ -10,6 +10,7 @@
     "link.format.club": "",
     "link.format.duckets": "",
     "link.format.collectibles": "",
+    "link.format.safetylock_unlock": "",
     "link.format.bots.help": "",
     "niko.appstore.link.url": "",
     "niko.trophy.appstore.image": "",
@@ -41,6 +42,8 @@
     "loading.task.userdata": "Loading user data...",
     "loading.task.rooms": "Loading rooms...",
     "onboarding.button.ready": "Ready!",
+    "client.starting.revolving": "For science, you monster/Loading funny message…please wait./Would you like fries with that?/Follow the yellow duck./Time is just an illusion./Are we there yet?!/I like your t-shirt./Look left. Look right. Blink twice. Ta da!/It's not you, it's me./Shhh! I'm trying to think here./Loading pixel universe.",
+    "client.loading.failed": "Loading failed",
     "// ---- Login screen ----": "",
     "loginview": {
         "images": {
@@ -125,6 +128,8 @@
     "hc.disabled": false,
     "club.membership.extend.promotion.enabled": true,
     "raid.protection.enabled": true,
+    "discord.enabled": false,
+    "user.custom.filter.enabled": true,
     "// ---- Currencies and purse ----": "",
     "system.currency.types": [
         -1,
@@ -149,8 +154,8 @@
         "sound": "sound_respect_received"
     },
     "respect.replenish_cost_duckets": 50,
+    "seasonalcurrencyindicator.page": "",
     "// ---- Catalog ----": "",
-    "catalog.classic.style": false,
     "catalog.tab.icons": false,
     "catalog.headers": false,
     "catalog.links": {

@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { ButtonHTMLAttributes, PropsWithChildren } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -21,7 +21,8 @@ vi.mock('../../common', () => ({
 }));
 
 vi.mock('./WiredCreatorTools.constants', () => ({
-    INSPECTION_ELEMENTS: []
+    INSPECTION_ELEMENTS: [],
+    PACKED_WIRED_VARIABLE_KEYS: new Set(['@position'])
 }));
 
 const uiState = {
@@ -112,6 +113,23 @@ describe('WiredInspectionTabView', () => {
         expect(screen.getByText('Hidden')).toBeInTheDocument();
         expect(screen.queryByText('2147483647')).toBeNull();
         expect(screen.getByRole('button', { name: '5' })).toBeInTheDocument();
+    });
+
+    it('explains a packed variable with the official packed_variable text', () => {
+        vi.useFakeTimers();
+
+        try {
+            renderTab({ displayedVariables: [{ key: '@position', value: '3600', editable: false }, { key: '@id', value: '7', editable: false }] });
+
+            fireEvent.mouseEnter(screen.getByText('@position'));
+            act(() => {
+                vi.advanceTimersByTime(2000);
+            });
+            expect(screen.getByRole('tooltip')).toHaveTextContent('This is a packed variable');
+            expect(screen.getByText('@id').classList.contains('cursor-help')).toBe(false);
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     it('uses the official texts for its labels', () => {

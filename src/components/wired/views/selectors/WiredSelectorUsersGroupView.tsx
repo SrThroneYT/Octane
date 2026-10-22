@@ -3,7 +3,6 @@ import { LocalizeText } from '../../../../api';
 import { Text } from '../../../../common';
 import { useUserGroups, useWired } from '../../../../hooks';
 import { WiredSelectorBaseView } from './WiredSelectorBaseView';
-import { Checkbox } from '../../../../common/Checkbox';
 import { Radio } from '../../../../common/Radio';
 import { Select } from '../../../../common/Select';
 
@@ -14,10 +13,8 @@ export const WiredSelectorUsersGroupView: FC<{}> = () => {
     const { data: groups = [] } = useUserGroups();
     const [groupType, setGroupType] = useState(GROUP_CURRENT_ROOM);
     const [selectedGroupId, setSelectedGroupId] = useState(0);
-    const [filterExisting, setFilterExisting] = useState(false);
-    const [invert, setInvert] = useState(false);
     // Official layout: the group id in the string (empty: the room's group), no int params.
-    const { trigger = null, setIntParams = null, setStringParam = null, setSelectorOptions = null } = useWired();
+    const { trigger = null, setIntParams = null, setStringParam = null } = useWired();
 
     useEffect(() => {
         if (!trigger) return;
@@ -26,8 +23,6 @@ export const WiredSelectorUsersGroupView: FC<{}> = () => {
 
         setGroupType(groupId > 0 ? GROUP_SELECTED : GROUP_CURRENT_ROOM);
         setSelectedGroupId(groupId > 0 ? groupId : 0);
-        setFilterExisting(trigger.isFilter ?? false);
-        setInvert(trigger.isInvert ?? false);
     }, [trigger]);
 
     useEffect(() => {
@@ -41,7 +36,6 @@ export const WiredSelectorUsersGroupView: FC<{}> = () => {
     const save = () => {
         setIntParams([]);
         setStringParam(groupType === GROUP_SELECTED && selectedGroupId > 0 ? String(selectedGroupId) : '');
-        setSelectorOptions({ filter: filterExisting, invert });
     };
 
     return (
@@ -72,19 +66,6 @@ export const WiredSelectorUsersGroupView: FC<{}> = () => {
                     </Select>
                 )}
 
-                <hr className="m-0 bg-dark" />
-
-                <Text bold>{LocalizeText('wiredfurni.params.selector_options_selector')}</Text>
-
-                <label className="flex items-center gap-2">
-                    <Checkbox checked={filterExisting} onCheckedChange={(nextChecked) => setFilterExisting(nextChecked)} />
-                    <Text small>{LocalizeText('wiredfurni.params.selector_option.0')}</Text>
-                </label>
-
-                <label className="flex items-center gap-2">
-                    <Checkbox checked={invert} onCheckedChange={(nextChecked) => setInvert(nextChecked)} />
-                    <Text small>{LocalizeText('wiredfurni.params.selector_option.1')}</Text>
-                </label>
             </div>
         </WiredSelectorBaseView>
     );

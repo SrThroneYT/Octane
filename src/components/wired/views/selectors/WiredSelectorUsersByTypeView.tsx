@@ -9,9 +9,7 @@ const USER_TYPES = [1, 2, 4];
 
 export const WiredSelectorUsersByTypeView: FC<{}> = () => {
     const [userType, setUserType] = useState(1);
-    const [filterExisting, setFilterExisting] = useState(false);
-    const [invert, setInvert] = useState(false);
-    const { trigger = null, setIntParams = null, setSelectorOptions = null } = useWired();
+    const { trigger = null, setIntParams = null } = useWired();
 
     useEffect(() => {
         if (!trigger) return;
@@ -19,15 +17,12 @@ export const WiredSelectorUsersByTypeView: FC<{}> = () => {
         const params = trigger.intData;
 
         setUserType(params.length > 0 ? params[0] : 1);
-        setFilterExisting(trigger.isFilter ?? false);
-        setInvert(trigger.isInvert ?? false);
     }, [trigger]);
 
     const save = useCallback(() => {
         // Official type mask: any of Habbo (1), pet (2) and bot (4).
         setIntParams([userType || 1]);
-        setSelectorOptions({ filter: filterExisting, invert });
-    }, [userType, filterExisting, invert, setIntParams]);
+    }, [userType, setIntParams]);
 
     return (
         <WiredSelectorBaseView hasSpecialInput={true} requiresFurni={0} save={save} hideDelay={true} cardStyle={{ width: 400 }}>
@@ -42,19 +37,6 @@ export const WiredSelectorUsersByTypeView: FC<{}> = () => {
                     ))}
                 </div>
 
-                <hr className="m-0 bg-dark" />
-
-                <Text bold>{LocalizeText('wiredfurni.params.selector_options_selector')}</Text>
-
-                <label className="flex items-center gap-2">
-                    <Checkbox checked={filterExisting} onCheckedChange={(nextChecked) => setFilterExisting(nextChecked)} />
-                    <Text small>{LocalizeText('wiredfurni.params.selector_option.0')}</Text>
-                </label>
-
-                <label className="flex items-center gap-2">
-                    <Checkbox checked={invert} onCheckedChange={(nextChecked) => setInvert(nextChecked)} />
-                    <Text small>{LocalizeText('wiredfurni.params.selector_option.1')}</Text>
-                </label>
             </div>
         </WiredSelectorBaseView>
     );

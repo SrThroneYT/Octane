@@ -1,6 +1,16 @@
-import { CreateLinkEvent, DisconnectMessageComposer, GetCommunication, HabboClubExtendConfirmMessageComposer } from '@octane/renderer';
-import { FC, useCallback, useMemo, useState } from 'react';
-import { clearAccessToken, ClearRememberLogin, FriendlyTime, GetConfigurationValue, GetRememberLogin, LocalizeText, localizeWithFallback, SendMessageComposer } from '../../api';
+import { CreateLinkEvent, DisconnectMessageComposer, GetCommunication } from '@octane/renderer';
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    clearAccessToken,
+    ClearRememberLogin,
+    FriendlyTime,
+    GetConfigurationValue,
+    GetOptionalConfigurationValue,
+    GetRememberLogin,
+    localizeWithFallback,
+    OpenUrl,
+    SendMessageComposer
+} from '../../api';
 import earningsIcon from '../../assets/images/purse-swf/icons/1747_icon_earnings_png$5e39e03f65fbbb9a85bedd0d577dc12d307477063.png';
 import earningsUnseenIcon from '../../assets/images/purse-swf/icons/1784_unseen_indicator_png$d0b67597beeb8511b482f84737b145d2-1005700014.png';
 import hcIcon from '../../assets/images/purse-swf/icons/1801_hc_icon_png$2f8b554609e9c5cbbdc46bcbe5764be5-210881771.png';
@@ -10,6 +20,7 @@ import { Column } from '../../common';
 import { ClearStoredChatHistory, usePurse } from '../../hooks';
 import { useEarningsIndicatorStore } from '../../state/earningsIndicatorStore';
 import { ClubExtendView } from './views/ClubExtendView';
+import { ClubPromoView, isClubPromoVisible } from './views/ClubPromoView';
 import { CurrencyView } from './views/CurrencyView';
 import { SeasonalView } from './views/SeasonalView';
 import { BaseButton } from '../../common/BaseButton';
@@ -20,8 +31,9 @@ export const PurseView: FC<{}> = (props) => {
     const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
     const earningsUnseen = useEarningsIndicatorStore((state) => state.showing);
 
-    const openSettingsSection = useCallback((section: string) => {
-        CreateLinkEvent('user-settings/show/' + section);
+    // AIR SettingsExtension: one row per settings window, each closing the menu.
+    const openSettingsLink = useCallback((link: string) => {
+        CreateLinkEvent(link);
         setSettingsMenuOpen(false);
     }, []);
 
@@ -47,10 +59,10 @@ export const PurseView: FC<{}> = (props) => {
     const hasDuckets = currencyTypes.indexOf(0) >= 0;
     const otherCurrencies = currencyTypes.filter((type) => type !== 0 && type !== 5);
 
-    const joinLabel = useMemo(() => localizeWithFallback('purse.join', 'Join'), []);
+    // AIR PurseClubArea: without club days the "join" label shows purse.clubdays.zero.amount.text.
+    const joinLabel = useMemo(() => localizeWithFallback('purse.clubdays.zero.amount.text', 'Get'), []);
 
-    // When the user has active HC, show the remaining time instead of "Join"
-    // (same formula as the HC Center's getClubText).
+    // With HC, the time left: minutes under a day, else (periods x 31 + days) days.
     const clubLabel = useMemo(() => {
         if (!purse || purse.clubDays <= 0) return joinLabel;
         if (purse.minutesUntilExpiration > -1 && purse.minutesUntilExpiration < 60 * 24) {
@@ -60,8 +72,38 @@ export const PurseView: FC<{}> = (props) => {
     }, [purse, joinLabel]);
 
     const earningsLabel = useMemo(() => localizeWithFallback('earnings.title', 'Earnings'), []);
-    const helpLabel = useMemo(() => localizeWithFallback('help.button.name', 'Help'), []);
-    const translateLabel = useMemo(() => localizeWithFallback('purse.settings.translate', 'Translate'), []);
+    const helpLabel = useMemo(() => localizeWithFallback('toolbar.help', 'Help'), []);
+    const logoutLabel = useMemo(() => localizeWithFallback('toolbar.logout', 'Log out'), []);
+    const settingsLabel = useMemo(() => localizeWithFallback('widget.memenu.settings', 'Settings'), []);
+    const clubTooltip = useMemo(() => localizeWithFallback('catalog.club.hc', 'Habbo Club'), []);
+
+    // AIR PurseClubArea.onClubChanged: when the club days change while a member, the HC button drops and bounces.
+    const clubDayCount = purse ? purse.clubPeriods * 31 + purse.clubDays : -1;
+    const previousClubDays = useRef(-1);
+    const [clubBouncing, setClubBouncing] = useState(false);
+
+    useEffect(() => {
+        if (clubDayCount < 0) return;
+
+        const previous = previousClubDays.current;
+
+        previousClubDays.current = clubDayCount;
+
+        if (previous === -1 || previous === clubDayCount || !purse?.clubLevel) return;
+
+        setClubBouncing(true);
+
+        const timeout = window.setTimeout(() => setClubBouncing(false), 900);
+
+        return () => window.clearTimeout(timeout);
+    }, [clubDayCount, purse?.clubLevel]);
+
+    // AIR PurseAreaExtension.windowProcedure: credits open the web shop, duckets and diamonds their catalog page.
+    const openCredits = useCallback(() => {
+        const shopUrl = GetConfigurationValue<string>('web.shop.relativeUrl', '');
+
+        if (shopUrl) OpenUrl(shopUrl);
+    }, []);
 
     const openClub = useCallback((event: React.MouseEvent) => {
         event.stopPropagation();
@@ -133,8 +175,21 @@ export const PurseView: FC<{}> = (props) => {
 
     if (!purse) return null;
 
-    // While HC is about to run out the server marks the subscription as discountable; offer to renew.
-    const showExtendPromo = !hcDisabled && purse.isExpiring && GetConfigurationValue<boolean>('club.membership.extend.promotion.enabled', true);
+    // AIR SettingsExtension rows: sound, Discord (discord.enabled), chat, other, word filter (user.custom.filter.enabled).
+    const settingsMenuRows = [
+        { link: 'user-settings/show/audio', label: localizeWithFallback('widget.memenu.settings.audio', 'Sound settings') },
+        GetOptionalConfigurationValue<boolean>('discord.enabled', false)
+            ? { link: 'discord-settings/show', label: localizeWithFallback('widget.memenu.settings.discord', 'Discord settings') }
+            : null,
+        { link: 'user-settings/show/chat', label: localizeWithFallback('widget.memenu.settings.chat', 'Chat settings') },
+        { link: 'user-settings/show/other', label: localizeWithFallback('widget.memenu.settings.other', 'Other settings') },
+        GetOptionalConfigurationValue<boolean>('user.custom.filter.enabled', true)
+            ? { link: 'user-settings/show/wordfilter', label: localizeWithFallback('word_filter.settings.title', 'Word filter') }
+            : null
+    ].filter(Boolean);
+
+    // AIR ClubDiscountPromoExtension: the renewal offer while the membership runs out.
+    const showClubPromo = isClubPromoVisible(purse, hcDisabled);
 
     return (
         <Column alignItems="end" className="octane-purse-container" gap={0}>
@@ -142,45 +197,66 @@ export const PurseView: FC<{}> = (props) => {
                 <div className="octane-purse__chrome" aria-hidden="true" />
                 <div className="octane-purse__body">
                     <div className="octane-purse__currencies">
-                        {hasDiamonds && <CurrencyView type={5} amount={purse.activityPoints.get(5) || 0} short={currencyDisplayNumberShort} />}
-                        <CurrencyView type={-1} amount={purse.credits} short={currencyDisplayNumberShort} />
-                        {hasDuckets && <CurrencyView type={0} amount={purse.activityPoints.get(0) || 0} short={currencyDisplayNumberShort} />}
+                        {hasDiamonds && (
+                            <CurrencyView
+                                type={5}
+                                amount={purse.activityPoints.get(5) || 0}
+                                short={currencyDisplayNumberShort}
+                                onClick={() => CreateLinkEvent('catalog/open/loyalty_info')}
+                            />
+                        )}
+                        <CurrencyView type={-1} amount={purse.credits} short={currencyDisplayNumberShort} onClick={openCredits} />
+                        {hasDuckets && (
+                            <CurrencyView
+                                type={0}
+                                amount={purse.activityPoints.get(0) || 0}
+                                short={currencyDisplayNumberShort}
+                                onClick={() => CreateLinkEvent('catalog/open/ducket_info')}
+                            />
+                        )}
                     </div>
                     <div className="octane-purse__col octane-purse__col--primary subscription-container">
                         {!hcDisabled && (
-                            <Hint content={clubLabel}><BaseButton
-                                type="button"
-                                className="octane-purse__btn octane-purse__btn--join octane-purse-subscription club-text"
-                                onClick={openClub}
-                            >
-                                <img src={hcIcon} alt="" className="octane-purse__btn-img" />
-                                <span>{clubLabel}</span>
-                            </BaseButton></Hint>
+                            <Hint content={clubTooltip}>
+                                <BaseButton
+                                    type="button"
+                                    className={`octane-purse__btn octane-purse__btn--join octane-purse-subscription club-text${clubBouncing ? ' is-bouncing' : ''}`}
+                                    onClick={openClub}
+                                >
+                                    <img src={hcIcon} alt="" className="octane-purse__btn-img" />
+                                    <span>{clubLabel}</span>
+                                </BaseButton>
+                            </Hint>
                         )}
-                        <Hint content={earningsLabel}><BaseButton
-                            type="button"
-                            className="octane-purse__btn octane-purse__btn--earnings octane-purse-subscription club-text"
-                            onClick={openEarnings}
-                        >
-                            <img src={earningsIcon} alt="" className="octane-purse__btn-img" />
-                            <span>{earningsLabel}</span>
-                            {earningsUnseen && <img src={earningsUnseenIcon} alt="" className="octane-purse__earnings-unseen" />}
-                        </BaseButton></Hint>
+                        <Hint content={earningsLabel}>
+                            <BaseButton
+                                type="button"
+                                className="octane-purse__btn octane-purse__btn--earnings octane-purse-subscription club-text"
+                                onClick={openEarnings}
+                            >
+                                <img src={earningsIcon} alt="" className="octane-purse__btn-img" />
+                                <span>{earningsLabel}</span>
+                                {earningsUnseen && <img src={earningsUnseenIcon} alt="" className="octane-purse__earnings-unseen" />}
+                            </BaseButton>
+                        </Hint>
                     </div>
                     <div className="octane-purse__divider" aria-hidden="true" />
                     <div className="octane-purse__col octane-purse__col--actions">
-                        <Hint content={helpLabel}><BaseButton
-                            type="button"
-                            className="octane-purse__btn octane-purse__btn--help octane-purse-right-button help"
-                            onClick={(event) => {
-                                event.stopPropagation();
-                                CreateLinkEvent('help/show');
-                            }}
-                        >
-                            <span>{helpLabel}</span>
-                        </BaseButton></Hint>
-                        <Hint content="Log out">
-                            <BaseButton aria-label="Log out"
+                        <Hint content={helpLabel}>
+                            <BaseButton
+                                type="button"
+                                className="octane-purse__btn octane-purse__btn--help octane-purse-right-button help"
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    CreateLinkEvent('help/show');
+                                }}
+                            >
+                                <span>{helpLabel}</span>
+                            </BaseButton>
+                        </Hint>
+                        <Hint content={logoutLabel}>
+                            <BaseButton
+                                aria-label={logoutLabel}
                                 type="button"
                                 className="octane-purse__btn octane-purse__btn--icon octane-purse__btn--logout octane-purse-right-button disconnect"
                                 onClick={handleLogout}
@@ -188,8 +264,10 @@ export const PurseView: FC<{}> = (props) => {
                                 <img src={logoutIcon} alt="" className="octane-purse__btn-img" />
                             </BaseButton>
                         </Hint>
-                        <Hint content={LocalizeText('widget.memenu.settings.title')}>
-                            <BaseButton aria-label={LocalizeText('widget.memenu.settings.title')}
+                        <Hint content={settingsLabel}>
+                            <BaseButton
+                                aria-label={settingsLabel}
+                                aria-expanded={settingsMenuOpen}
                                 type="button"
                                 className="octane-purse__btn octane-purse__btn--icon octane-purse__btn--settings octane-purse-right-button settings"
                                 onClick={(event) => {
@@ -203,48 +281,15 @@ export const PurseView: FC<{}> = (props) => {
                     </div>
                 </div>
             </div>
-            {showExtendPromo && (
-                <BaseButton
-                    type="button"
-                    className="octane-purse-extend-promo"
-                    onClick={() => SendMessageComposer(new HabboClubExtendConfirmMessageComposer())}
-                >
-                    <img src={hcIcon} alt="" />
-                    <span>{localizeWithFallback('club.bar.hc.expiring', 'Save credits by renewing HC now!')}</span>
-                </BaseButton>
-            )}
+            {showClubPromo && <ClubPromoView purse={purse} />}
             <ClubExtendView />
             {settingsMenuOpen && (
-                <div className="octane-purse-menu">
-                    <BaseButton type="button" className="octane-purse-menu__item" onClick={() => openSettingsSection('')}>
-                        {localizeWithFallback('widget.memenu.settings.title', 'Settings')}
-                    </BaseButton>
-                    <BaseButton type="button" className="octane-purse-menu__item" onClick={() => openSettingsSection('privacy')}>
-                        {localizeWithFallback('purse.settings.game_privacy', 'Game Privacy')}
-                    </BaseButton>
-                    <BaseButton
-                        type="button"
-                        className="octane-purse-menu__item"
-                        onClick={() => {
-                            CreateLinkEvent('translation-settings/toggle');
-                            setSettingsMenuOpen(false);
-                        }}
-                    >
-                        {translateLabel}
-                    </BaseButton>
-                    <BaseButton
-                        type="button"
-                        className="octane-purse-menu__item"
-                        onClick={() => {
-                            CreateLinkEvent('user-account-settings/show');
-                            setSettingsMenuOpen(false);
-                        }}
-                    >
-                        {localizeWithFallback('purse.settings.account', 'Account Management')}
-                    </BaseButton>
-                    <BaseButton type="button" className="octane-purse-menu__item octane-purse-menu__item--disabled" disabled>
-                        {localizeWithFallback('purse.settings.wordfilter', 'Word Filter')}
-                    </BaseButton>
+                <div className="octane-purse-menu" role="menu">
+                    {settingsMenuRows.map((row) => (
+                        <BaseButton key={row.link} type="button" role="menuitem" className="octane-purse-menu__item" onClick={() => openSettingsLink(row.link)}>
+                            {row.label}
+                        </BaseButton>
+                    ))}
                 </div>
             )}
             {otherCurrencies.length > 0 && (

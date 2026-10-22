@@ -42,7 +42,7 @@ export const WiredMonitorTabView = (props: WiredMonitorTabViewProps) => {
                             type="button"
                             onClick={onOpenMonitorInfo}
                         >
-                            Info
+                            {localizeWithFallback('wiredmenu.monitor.info', 'Info')}
                         </BaseButton>
                     </div>
                     {monitorStats.map((stat) => (
@@ -109,7 +109,7 @@ export const WiredMonitorTabView = (props: WiredMonitorTabViewProps) => {
                             {localizeWithFallback('wiredmenu.monitor.log_overview', 'View full logs')}
                         </Button>
                         <Button disabled={!monitorHistoryRows.length} variant="secondary" onClick={onOpenMonitorHistory}>
-                            History
+                            {localizeWithFallback('wiredmenu.monitor.history', 'History')}
                         </Button>
                     </div>
                 </div>

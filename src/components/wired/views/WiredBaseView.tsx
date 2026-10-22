@@ -68,6 +68,8 @@ export interface WiredBaseViewProps {
     widthModifier?: number;
     /** Official: the action delay comes after the furni picks. */
     delaySection?: ReactNode;
+    /** Official createSelectorOptions: between the element's inputs and the furni picks. */
+    selectorOptions?: ReactNode;
     /** A save that must be confirmed first (a box that would lose stored data): the confirmation's texts, or null. */
     confirmSave?: () => { title: string; body: string } | null;
     /**
@@ -112,6 +114,7 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
         footer = null,
         footerCollapsible = true,
         selectionPreview = null,
+        selectorOptions = null,
         showSelection = true,
         widthModifier = 1,
         delaySection = null,
@@ -142,8 +145,7 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
         clearWiredPicks = null,
         furniIds2 = null,
         pasteIntoMode = false,
-        setPasteIntoMode = null,
-        getSelectorOptions = null
+        setPasteIntoMode = null
     } = useWired();
     const { roomSettings, accountPreferences } = useWiredTools();
     const { showSingleBubble = null, showConfirm = null, simpleAlert = null } = useNotification();
@@ -164,9 +166,13 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
             case 'apply_snapshot':
                 SendMessageComposer(new ApplySnapshotMessageComposer(trigger.id));
                 return;
-            case 'view_in_menu':
-                CreateLinkEvent('wired-tools/tab/variables');
+            case 'view_in_menu': {
+                // Official: the variable overview on this box's saved variable.
+                const name = (trigger.stringData ?? '').split(/[=\t]/)[0].trim();
+
+                CreateLinkEvent(name ? `wiredmenu/open/variable_overview/${name}` : 'wiredmenu/open/variable_overview');
                 return;
+            }
             case 'view_logs':
                 CreateLinkEvent('wired-tools/logs');
                 return;
@@ -234,25 +240,6 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
 
         if (confirmation && showConfirm) {
             showConfirm(confirmation.body, proceed, null, null, null, confirmation.title);
-            return;
-        }
-
-        const options = wiredType === 'selector' ? getSelectorOptions?.() : null;
-
-        // Official: inverting without filtering selects everything that does NOT match, which can be
-        // the whole room; it asks first.
-        if (options?.invert && !options.filter && showConfirm) {
-            showConfirm(
-                localizeWithFallback(
-                    'wiredfurni.danger.1.change.confirm.body',
-                    'You selected "Invert" without filtering. This selects all furni/users that do NOT meet the requirements, which may be the whole room. Are you sure? (DANGEROUS!)'
-                ),
-                proceed,
-                null,
-                null,
-                null,
-                localizeWithFallback('wiredfurni.danger.1.change.confirm.title', 'Are you sure?')
-            );
             return;
         }
 
@@ -332,7 +319,7 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
             id: 'open-menu',
             label: localizeWithFallback('wiredfurni.params.menu.open_menu', 'Open the Wired Creator Tools'),
             disabled: false,
-            onClick: () => CreateLinkEvent('wired-tools/show')
+            onClick: () => CreateLinkEvent('wiredmenu/open')
         },
         null,
         {
@@ -521,6 +508,12 @@ export const WiredBaseView: FC<PropsWithChildren<WiredBaseViewProps>> = (props) 
                     <div className="octane-wired__sections">
                         {!!children && <div className="octane-wired__divider" />}
                         {!!children && <div className="octane-wired__section octane-wired__section--body">{children}</div>}
+                        {selectorOptions && (
+                            <>
+                                <div className="octane-wired__divider" />
+                                <div className="octane-wired__section octane-wired__section--selector-options">{selectorOptions}</div>
+                            </>
+                        )}
                         {showSelection && requiresFurni > WiredFurniType.STUFF_SELECTION_OPTION_NONE && (
                             <>
                                 <div className="octane-wired__divider" />

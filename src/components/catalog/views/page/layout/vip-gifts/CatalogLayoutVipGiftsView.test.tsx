@@ -7,6 +7,19 @@ import { CatalogLayoutVipGiftsView } from './CatalogLayoutVipGiftsView';
 
 const textOverrides = vi.hoisted(() => new Map<string, string>());
 
+const furniData = vi.hoisted(
+    () =>
+        new Map<number, { className: string; name: string; description: string }>([
+            [10, { className: 'hc19_1', name: 'HC Sofa', description: 'hc19_1.desc' }],
+            [20, { className: 'vip_lamp', name: 'VIP Lamp', description: 'Shines for VIPs' }]
+        ])
+);
+
+vi.mock('@octane/renderer', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@octane/renderer')>()),
+    GetSessionDataManager: () => ({ getFloorItemData: (id: number) => furniData.get(id) ?? null, getWallItemData: () => null })
+}));
+
 vi.mock('../../../../../../api', async (importOriginal) => {
     const actual = await importOriginal<typeof import('../../../../../../api')>();
 
@@ -65,12 +78,12 @@ beforeEach(() => {
 });
 
 describe('club gifts page', () => {
-    it('shows the gift state and the past club and vip days', () => {
+    it('shows the gift state and the past club days (AIR hides the past vip days)', () => {
         renderView();
 
         expect(screen.getByText('catalog.club_gift.available:2')).toBeInTheDocument();
         expect(screen.getByText('catalog.club_gift.past_club.long:2,1')).toBeInTheDocument();
-        expect(screen.getByText('catalog.club_gift.past_vip:13,0')).toBeInTheDocument();
+        expect(screen.queryByText(/catalog\.club_gift\.past_vip/)).not.toBeInTheDocument();
     });
 
     it('omits the past days lines while the purse is unknown', () => {
@@ -91,10 +104,9 @@ describe('club gifts page', () => {
         renderView();
 
         expect(screen.getByText('catalog.club_gift.past_club.long:12,0')).toBeInTheDocument();
-        expect(screen.getByText('catalog.club_gift.past_vip:2,0')).toBeInTheDocument();
     });
 
-    it('lists each gift with its requirement, description and vip mark, by days required', () => {
+    it('lists each gift with its furnidata name, description, requirement and vip mark, by days required', () => {
         const { container } = renderView();
         const rows = container.querySelectorAll('.octane-catalog-club-gift');
 
@@ -102,15 +114,15 @@ describe('club gifts page', () => {
 
         const [clubGift, vipGift] = Array.from(rows) as HTMLElement[];
 
-        expect(within(clubGift).getByText('roomItem.name.10')).toBeInTheDocument();
-        expect(within(clubGift).getByText('roomItem.desc.10')).toBeInTheDocument();
+        expect(within(clubGift).getByText('HC Sofa')).toBeInTheDocument();
+        expect(clubGift).not.toHaveTextContent('hc19_1.desc');
         expect(within(clubGift).getByText('catalog.club_gift.selectable')).toBeInTheDocument();
-        expect(clubGift.querySelector('.octane-club-compact-mark.is-vip')).toBeNull();
+        expect(clubGift.querySelector('.octane-catalog-club-gift__vip')).toBeNull();
 
-        expect(within(vipGift).getByText('roomItem.name.20')).toBeInTheDocument();
-        expect(within(vipGift).getByText('roomItem.desc.20')).toBeInTheDocument();
+        expect(within(vipGift).getByText('VIP Lamp')).toBeInTheDocument();
+        expect(within(vipGift).getByText('Shines for VIPs')).toBeInTheDocument();
         expect(within(vipGift).getByText('catalog.club_gift.vip_missing.long:18,2')).toBeInTheDocument();
-        expect(vipGift.querySelector('.octane-club-compact-mark.is-vip')).not.toBeNull();
+        expect(vipGift.querySelector('.octane-catalog-club-gift__vip')).not.toBeNull();
     });
 
     it('enables the select button only for a selectable gift while gifts are available', () => {
