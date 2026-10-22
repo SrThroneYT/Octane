@@ -93,10 +93,11 @@
 }
 
 /* The tool icons after the divider are narrower than the 45px slot the AIR icons fill, and their images carry
-   transparent edges. Their slot takes the width of the drawing itself, so the shell's 8px gap is the only
-   space between them, as between the icons before the divider. */
+   transparent edges. Their slot takes the width of the drawing itself plus 4px a side: with the shell's 8px
+   gap that leaves 16px between two drawings, the 14-19px the icons before the divider are apart. */
 .tb-slot-fit {
     width: auto;
+    padding: 0 4px;
 }
 
 .tb-slot-fit .icon-soundboard { margin: 0 -4px 0 -3px; }
