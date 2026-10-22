@@ -10,3 +10,4 @@
 .native3-button { cursor: pointer; }
 .native3-button__label { position: absolute; pointer-events: none; }
 .native3-button__band { position: absolute; left: 0; overflow: hidden; pointer-events: none; }
+.native3-button:disabled { cursor: default; }
