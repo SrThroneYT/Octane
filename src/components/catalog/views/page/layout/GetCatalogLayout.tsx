@@ -9,7 +9,8 @@ import { CatalogLayoutDefaultView } from './CatalogLayoutDefaultView';
 import { CatalogLayouGuildCustomFurniView } from './CatalogLayoutGuildCustomFurniView';
 import { CatalogLayouGuildForumView } from './CatalogLayoutGuildForumView';
 import { CatalogLayouGuildFrontpageView } from './CatalogLayoutGuildFrontpageView';
-import { CatalogLayoutInfoLoyaltyView } from './CatalogLayoutInfoLoyaltyView';
+import { CatalogLayoutInfoRentablesView, CatalogLayoutMonkeyView, CatalogLayoutRecyclerInfoView } from './CatalogLayoutAirInfoPagesView';
+import { CatalogLayoutInfoDucketsView, CatalogLayoutInfoLoyaltyView } from './CatalogLayoutInfoIllustrationView';
 import { CatalogLayoutInformationView } from './CatalogLayoutInformationView';
 import { CatalogLayoutPetCustomizationView } from './CatalogLayoutPetCustomizationView';
 import { CatalogLayoutPets2View } from './CatalogLayoutPets2View';
@@ -46,6 +47,10 @@ const layoutRenderers: Record<CatalogLayoutRenderer, FC<CatalogLayoutProps>> = {
     guildFrontpage: CatalogLayouGuildFrontpageView,
     info: CatalogLayoutInformationView,
     infoLoyalty: CatalogLayoutInfoLoyaltyView,
+    infoDuckets: CatalogLayoutInfoDucketsView,
+    infoRentables: CatalogLayoutInfoRentablesView,
+    recyclerInfo: CatalogLayoutRecyclerInfoView,
+    monkey: CatalogLayoutMonkeyView,
     marketplaceOwnItems: CatalogLayoutMarketplaceOwnItemsView,
     marketplacePublicItems: CatalogLayoutMarketplacePublicItemsView,
     petCustomization: CatalogLayoutPetCustomizationView,
