@@ -7,12 +7,13 @@ import { BadgeLeaderboardResponse } from '../../api';
 import { BadgeLeaderboardView } from './BadgeLeaderboardView';
 
 const board = { entries: [], totalPlayers: 0 };
-const response = {
+const response: BadgeLeaderboardResponse = {
     viewerUserId: 0,
     badgeStats: [],
     thresholds: {},
     leaderboards: { totalBadges: board, achievementLevel: board, rarity: {} }
 } as unknown as BadgeLeaderboardResponse;
+const emptyLeaderboards = response.leaderboards;
 
 vi.mock('../../api', async (importOriginal) => ({
     ...(await importOriginal<typeof import('../../api')>()),
@@ -60,5 +61,46 @@ describe('BadgeLeaderboardView category dropdown', () => {
         fireEvent.keyDown(screen.getByRole('listbox'), { key: 'Escape' });
 
         await waitFor(() => expect(screen.queryByRole('option')).toBeNull());
+    });
+});
+
+describe('BadgeLeaderboardView ranking', () => {
+    const entry = (userId: number, rank: number, score: number) => ({ userId, rank, score, username: `user${userId}`, figure: '' });
+    const names = () => Array.from(document.querySelectorAll('.octane-badge-leaderboard__username')).map((node) => node.textContent);
+    const showBoard = (entries: ReturnType<typeof entry>[], viewerEntry: ReturnType<typeof entry>) => {
+        const total = { entries, totalPlayers: entries.length, viewerEntry };
+
+        response.viewerUserId = viewerEntry.userId;
+        response.leaderboards = { totalBadges: total, achievementLevel: board, rarity: {} } as unknown as BadgeLeaderboardResponse['leaderboards'];
+    };
+
+    beforeEach(() => vi.mocked(AddLinkEventTracker).mockClear());
+    afterEach(() => {
+        cleanup();
+        response.viewerUserId = 0;
+        response.leaderboards = emptyLeaderboards;
+    });
+
+    it('keeps the viewer at their place in the ranking', async () => {
+        showBoard([entry(1, 1, 36), entry(2, 2, 14), entry(3, 3, 3)], entry(1, 1, 36));
+        render(<BadgeLeaderboardView />);
+        open();
+
+        await screen.findByRole('combobox');
+
+        expect(names()).toEqual(['user1', 'user2', 'user3']);
+        expect(document.querySelectorAll('.is-current-user')).toHaveLength(1);
+        expect(document.querySelector('.is-current-user .octane-badge-leaderboard__username')).toHaveTextContent('user1');
+    });
+
+    it('adds the viewer below the page when they are not on it', async () => {
+        showBoard([entry(2, 1, 14), entry(3, 2, 3)], entry(9, 40, 1));
+        render(<BadgeLeaderboardView />);
+        open();
+
+        await screen.findByRole('combobox');
+
+        expect(names()).toEqual(['user2', 'user3', 'user9']);
+        expect(document.querySelector('.is-current-user .octane-badge-leaderboard__username')).toHaveTextContent('user9');
     });
 });
