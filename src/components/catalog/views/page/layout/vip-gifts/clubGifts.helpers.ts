@@ -33,7 +33,8 @@ const daysText = (baseKey: string, totalDays: number): ClubGiftText => ({
     params: splitDays(totalDays)
 });
 
-export const getPastClubDaysText = (pastClubDays: number, pastVipDays: number): ClubGiftText => daysText('catalog.club_gift.past_club', pastClubDays + pastVipDays);
+export const getPastClubDaysText = (pastClubDays: number, pastVipDays: number): ClubGiftText =>
+    daysText('catalog.club_gift.past_club', pastClubDays + pastVipDays);
 
 export const getPastVipDaysText = (pastVipDays: number): ClubGiftText => daysText('catalog.club_gift.past_vip', pastVipDays);
 
@@ -46,4 +47,30 @@ export const getGiftRequirementText = (gift: ClubGiftRequirementLike, purse: Clu
     if (giftsAvailable > 0) return { key: 'catalog.club_gift.selectable', params: null };
 
     return null;
+};
+
+type GiftFurniData = { name?: string; description?: string; className?: string } | null | undefined;
+
+/** A furnidata text that is only an unresolved localization key (`hc19_1.desc`, `roomItem.name.10`). */
+const isRawKey = (text: string, className: string): boolean =>
+    /^\S+\.(name|desc)$/.test(text) || /^(roomItem|wallItem)\.(name|desc)\.\d+$/.test(text) || (!!className && text.startsWith(`${className}.`));
+
+/**
+ * AIR ClubGiftWidget names a gift from its product data (furnidata name / description). A text that is only a
+ * key is looked up once (`localize`), and shown as nothing when that does not resolve either; a missing name
+ * falls back to the class name.
+ */
+export const getClubGiftFurniText = (furniData: GiftFurniData, field: 'name' | 'desc', localize: (key: string) => string): string => {
+    const className = furniData?.className ?? '';
+    const text = ((field === 'name' ? furniData?.name : furniData?.description) ?? '').trim();
+
+    if (text && !isRawKey(text, className)) return text;
+
+    if (text) {
+        const localized = localize(text);
+
+        if (localized && localized !== text) return localized;
+    }
+
+    return field === 'name' ? className : '';
 };

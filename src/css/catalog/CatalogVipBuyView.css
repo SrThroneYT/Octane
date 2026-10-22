@@ -815,3 +815,138 @@
     border-image-source: var(--habbo-skin-shiny-thick-green-disabled);
     cursor: default;
 }
+
+/* AIR layout_club_gifts_xml (360 x 460) and club_gift_list_item_xml (320 x 58). */
+.octane-catalog-club-gifts {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    font-family: HabboAirUbuntu, Ubuntu, sans-serif;
+    color: #000;
+}
+
+.octane-catalog-club-gifts__info {
+    flex: 0 0 auto;
+    min-height: 35px;
+    padding: 2px 4px;
+    font-size: 12px;
+    font-style: italic;
+    line-height: 15px;
+    overflow-wrap: anywhere;
+}
+
+.octane-catalog-club-gifts__list {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 2px;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.octane-catalog-club-gifts__past {
+    flex: 0 0 auto;
+    min-height: 15px;
+    padding-top: 1px;
+    font-size: 11px;
+    line-height: 14px;
+    text-align: center;
+}
+
+.octane-catalog-club-gift {
+    position: relative;
+    flex: 0 0 58px;
+    height: 58px;
+    border: 1px solid #e3e3e3;
+    border-radius: 3px;
+    background: #fff;
+}
+
+.octane-catalog-club-gift__image {
+    position: absolute;
+    top: 6px;
+    left: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 46px;
+    overflow: hidden;
+}
+
+.octane-catalog-club-gift__vip {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    image-rendering: pixelated;
+}
+
+.octane-catalog-club-gift__name,
+.octane-catalog-club-gift__desc,
+.octane-catalog-club-gift__requirement {
+    position: absolute;
+    left: 58px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.octane-catalog-club-gift__name {
+    top: 7px;
+    right: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 14px;
+}
+
+.octane-catalog-club-gift__desc {
+    top: 22px;
+    right: 6px;
+    font-size: 11px;
+    line-height: 13px;
+}
+
+.octane-catalog-club-gift__requirement {
+    top: 37px;
+    right: 80px;
+    font-size: 11px;
+    line-height: 13px;
+}
+
+.octane-catalog-club-gift__select {
+    position: absolute;
+    right: 5px;
+    bottom: 4px;
+    min-width: 61px;
+    max-width: 148px;
+    height: 22px;
+    padding: 0 8px;
+    border-style: solid;
+    border-width: 3px;
+    border-image-source: var(--habbo-skin-button);
+    border-image-slice: 3 fill;
+    border-image-width: 3px;
+    border-image-repeat: stretch;
+    background: transparent;
+    color: #111;
+    font-family: HabboAirUbuntu, Ubuntu, sans-serif;
+    font-size: 12px;
+    line-height: 16px;
+}
+
+.octane-catalog-club-gift__select:hover:not(:disabled) {
+    border-image-source: var(--habbo-skin-button-hover);
+}
+
+.octane-catalog-club-gift__select:active:not(:disabled) {
+    border-image-source: var(--habbo-skin-button-pressed);
+}
+
+.octane-catalog-club-gift__select:disabled {
+    border-image-source: var(--habbo-skin-button-disabled);
+    color: #777;
+    cursor: default;
+}

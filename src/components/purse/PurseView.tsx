@@ -1,4 +1,4 @@
-import { CreateLinkEvent, DisconnectMessageComposer, GetCommunication, HabboClubExtendConfirmMessageComposer } from '@octane/renderer';
+import { CreateLinkEvent, DisconnectMessageComposer, GetCommunication } from '@octane/renderer';
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     clearAccessToken,
@@ -20,6 +20,7 @@ import { Column } from '../../common';
 import { ClearStoredChatHistory, usePurse } from '../../hooks';
 import { useEarningsIndicatorStore } from '../../state/earningsIndicatorStore';
 import { ClubExtendView } from './views/ClubExtendView';
+import { ClubPromoView, isClubPromoVisible } from './views/ClubPromoView';
 import { CurrencyView } from './views/CurrencyView';
 import { SeasonalView } from './views/SeasonalView';
 import { BaseButton } from '../../common/BaseButton';
@@ -187,8 +188,8 @@ export const PurseView: FC<{}> = (props) => {
             : null
     ].filter(Boolean);
 
-    // While HC is about to run out the server marks the subscription as discountable; offer to renew.
-    const showExtendPromo = !hcDisabled && purse.isExpiring && GetConfigurationValue<boolean>('club.membership.extend.promotion.enabled', true);
+    // AIR ClubDiscountPromoExtension: the renewal offer while the membership runs out.
+    const showClubPromo = isClubPromoVisible(purse, hcDisabled);
 
     return (
         <Column alignItems="end" className="octane-purse-container" gap={0}>
@@ -280,16 +281,7 @@ export const PurseView: FC<{}> = (props) => {
                     </div>
                 </div>
             </div>
-            {showExtendPromo && (
-                <BaseButton
-                    type="button"
-                    className="octane-purse-extend-promo"
-                    onClick={() => SendMessageComposer(new HabboClubExtendConfirmMessageComposer())}
-                >
-                    <img src={hcIcon} alt="" />
-                    <span>{localizeWithFallback('club.bar.hc.expiring', 'Save credits by renewing HC now!')}</span>
-                </BaseButton>
-            )}
+            {showClubPromo && <ClubPromoView purse={purse} />}
             <ClubExtendView />
             {settingsMenuOpen && (
                 <div className="octane-purse-menu" role="menu">

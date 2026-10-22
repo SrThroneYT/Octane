@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getGiftRequirementText, getPastClubDaysText, getPastVipDaysText } from './clubGifts.helpers';
+import { getClubGiftFurniText, getGiftRequirementText, getPastClubDaysText, getPastVipDaysText } from './clubGifts.helpers';
 
 const gift = (overrides: Partial<{ isVip: boolean; isSelectable: boolean; daysRequired: number }> = {}) => ({
     isVip: false,
@@ -75,5 +75,25 @@ describe('club gift requirement text', () => {
 
     it('says nothing for a gift that is not selectable without missing days', () => {
         expect(getGiftRequirementText(gift({ daysRequired: 31 }), { pastClubDays: 31, pastVipDays: 0 }, 0)).toBeNull();
+    });
+});
+
+describe('getClubGiftFurniText', () => {
+    const localize = (key: string) => (key === 'known.desc' ? 'Known text' : key);
+
+    it('uses the furnidata text', () => {
+        expect(getClubGiftFurniText({ className: 'hc19_1', name: 'HC Sofa', description: 'Comfy' }, 'name', localize)).toBe('HC Sofa');
+        expect(getClubGiftFurniText({ className: 'hc19_1', name: 'HC Sofa', description: 'Comfy' }, 'desc', localize)).toBe('Comfy');
+    });
+
+    it('never shows a raw key', () => {
+        expect(getClubGiftFurniText({ className: 'hc19_1', name: 'HC Sofa', description: 'hc19_1.desc' }, 'desc', localize)).toBe('');
+        expect(getClubGiftFurniText({ className: 'hc19_1', name: 'hc19_1.name', description: '' }, 'name', localize)).toBe('hc19_1');
+        expect(getClubGiftFurniText({ className: 'x', description: 'known.desc' }, 'desc', localize)).toBe('Known text');
+    });
+
+    it('falls back to the class name for a missing name', () => {
+        expect(getClubGiftFurniText(null, 'name', localize)).toBe('');
+        expect(getClubGiftFurniText({ className: 'hc19_2' }, 'name', localize)).toBe('hc19_2');
     });
 });

@@ -1,10 +1,9 @@
 import { SelectClubGiftComposer } from '@octane/renderer';
 import { FC, useCallback, useMemo } from 'react';
 import { LocalizeText, SendMessageComposer } from '../../../../../../api';
-import { AutoGrid, Text } from '../../../../../../common';
 import { useClubGifts, useNotification, usePurse } from '../../../../../../hooks';
 import { CatalogLayoutProps } from '../CatalogLayout.types';
-import { ClubGiftText, getGiftRequirementText, getPastClubDaysText, getPastVipDaysText } from './clubGifts.helpers';
+import { ClubGiftText, getGiftRequirementText, getPastClubDaysText } from './clubGifts.helpers';
 import { VipGiftItem } from './VipGiftItemView';
 
 let isSelectingGift = false;
@@ -42,7 +41,6 @@ export const CatalogLayoutVipGiftsView: FC<CatalogLayoutProps> = (props) => {
     }, [clubGifts, purse]);
 
     const pastClubDaysText = purse ? localizeClubGiftText(getPastClubDaysText(purse.pastClubDays, purse.pastVipDays)) : '';
-    const pastVipDaysText = purse ? localizeClubGiftText(getPastVipDaysText(purse.pastVipDays)) : '';
 
     const selectGift = useCallback(
         (localizationId: string) => {
@@ -74,24 +72,13 @@ export const CatalogLayoutVipGiftsView: FC<CatalogLayoutProps> = (props) => {
         return [...clubGifts.offers].sort((a, b) => clubGifts.getOfferExtraData(a.offerId).daysRequired - clubGifts.getOfferExtraData(b.offerId).daysRequired);
     }, [clubGifts]);
 
+    // AIR layout_club_gifts_xml (360 x 460): the info text, the gift list and the past club days under it
+    // (past_vip_days is in the layout but hidden).
     return (
-        <>
-            <Text shrink truncate fontWeight="bold">
-                {giftsAvailable()}
-            </Text>
-            {!!pastClubDaysText && (
-                <Text shrink truncate small>
-                    {pastClubDaysText}
-                </Text>
-            )}
-            {!!pastVipDaysText && (
-                <Text shrink truncate small>
-                    {pastVipDaysText}
-                </Text>
-            )}
-            <AutoGrid className="octane-catalog-layout-vip-gifts-grid" columnCount={1}>
+        <div className="octane-catalog-club-gifts">
+            <div className="octane-catalog-club-gifts__info">{giftsAvailable()}</div>
+            <div className="octane-catalog-club-gifts__list">
                 {clubGifts &&
-                    clubGifts.offers.length > 0 &&
                     sortGifts.map((offer) => {
                         const giftData = clubGifts.getOfferExtraData(offer.offerId);
 
@@ -106,7 +93,8 @@ export const CatalogLayoutVipGiftsView: FC<CatalogLayoutProps> = (props) => {
                             />
                         );
                     })}
-            </AutoGrid>
-        </>
+            </div>
+            <div className="octane-catalog-club-gifts__past">{pastClubDaysText}</div>
+        </div>
     );
 };

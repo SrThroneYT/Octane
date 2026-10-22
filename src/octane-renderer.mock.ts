@@ -384,6 +384,18 @@ export class FurnitureFloorRemoveEvent extends MessageEvent {}
 export class FurnitureWallRemoveEvent extends MessageEvent {}
 export class RoomRightsEvent extends MessageEvent {}
 export class ClubGiftNotificationEvent extends MessageEvent {}
+export class ClubGiftInfoEvent extends MessageEvent {}
+export class AccountSafetyLockStatusChangeMessageEvent extends MessageEvent {}
+export class HabboClubExtendConfirmMessageComposer {
+    getMessageArray() {
+        return [];
+    }
+}
+export class GetClubGiftInfo {
+    getMessageArray() {
+        return [];
+    }
+}
 export class ClubGiftSelectedEvent extends MessageEvent {}
 export class ConnectionErrorEvent extends MessageEvent {}
 export class HabboBroadcastMessageEvent extends MessageEvent {}

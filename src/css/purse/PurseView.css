@@ -532,32 +532,6 @@
     100% { opacity: 0; transform: translateX(159px); }
 }
 
-.octane-purse-extend-promo {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 4px;
-    padding: 4px 8px;
-    border: 1px solid #c49b1c;
-    border-radius: 4px;
-    background: #fbd33a;
-    color: #3d2b00;
-    font-size: 11px;
-    font-weight: bold;
-    cursor: pointer;
-    pointer-events: auto;
-}
-
-.octane-purse-extend-promo:hover {
-    background: #ffdf61;
-}
-
-.octane-purse-extend-promo img {
-    width: 16px;
-    height: 16px;
-    image-rendering: pixelated;
-}
-
 .octane-club-extend {
     width: 300px;
     min-height: 240px;
@@ -594,4 +568,167 @@
     height: 11px;
     pointer-events: none;
     image-rendering: var(--octane-pixel-art, pixelated);
+}
+
+/* AIR notices under the purse (club_gift_notification_xml 192 x 82, safety_locked_notification_xml 192 x 80):
+   style 9 frame, Ubuntu 12 white text, the underlined link turning 0xBAE2F9 on hover. */
+.octane-purse-notice {
+    position: relative;
+    box-sizing: border-box;
+    width: 192px;
+    min-height: 80px;
+    margin-left: auto;
+    padding: 0 1px 1px;
+    color: #ffffff;
+    font-family: Ubuntu, sans-serif;
+    font-size: 12px;
+    line-height: 1.25;
+    pointer-events: all;
+    border: 7px solid transparent;
+    border-bottom-width: 8px;
+    border-image-source: url("../../assets/images/habbo-skin/slices/border-ubuntu-9.png");
+    border-image-slice: 28 28 32 28 fill;
+    border-image-width: 7px 7px 8px 7px;
+    border-image-repeat: stretch;
+    image-rendering: var(--octane-pixel-art, pixelated);
+}
+
+.octane-purse-notice__icon {
+    position: absolute;
+    top: 0;
+    left: -1px;
+    width: 15px;
+    height: 15px;
+}
+
+.octane-purse-notice__text {
+    min-height: 36px;
+    padding: 0 0 0 1px;
+    overflow-wrap: anywhere;
+}
+
+.octane-purse-notice__text--with-icon {
+    padding-left: 18px;
+}
+
+.octane-purse-notice--club-gift {
+    display: flex;
+    min-height: 82px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+}
+
+.octane-purse-notice--club-gift .octane-purse-notice__text {
+    flex: 1 0 100%;
+}
+
+.octane-purse-notice__link {
+    padding: 0 1px;
+    border: 0;
+    background: transparent;
+    color: #ffffff;
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.octane-purse-notice__link:hover {
+    color: #bae2f9;
+}
+
+/* button style 4 */
+.octane-purse-notice__button {
+    display: inline-flex;
+    height: 24px;
+    align-items: center;
+    padding: 0 8px;
+    border: 3px solid transparent;
+    border-image-source: var(--habbo-skin-button);
+    border-image-slice: 3 fill;
+    border-image-width: 3px;
+    border-image-repeat: stretch;
+    background: transparent;
+    color: #000000;
+    font: 12px Ubuntu, sans-serif;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.octane-purse-notice__button:hover {
+    border-image-source: var(--habbo-skin-button-hover);
+}
+
+.octane-purse-notice__button:active {
+    border-image-source: var(--habbo-skin-button-pressed);
+}
+
+/* AIR club_discount_promotion_xml: 192 x 44, style 9 frame, the club icon at 6,7, the underlined text from 26,6
+   with a 1 px shadow, and the extend_hilite sweep (26 steps of 25 ms) every 15 s. */
+.octane-purse-club-promo {
+    position: relative;
+    box-sizing: border-box;
+    width: 192px;
+    height: 44px;
+    margin-top: 3px;
+    margin-left: auto;
+    overflow: hidden;
+    pointer-events: all;
+    border: 7px solid transparent;
+    border-bottom-width: 8px;
+    border-image-source: url("../../assets/images/habbo-skin/slices/border-ubuntu-9.png");
+    border-image-slice: 28 28 32 28 fill;
+    border-image-width: 7px 7px 8px 7px;
+    image-rendering: var(--octane-pixel-art, pixelated);
+}
+
+.octane-purse-club-promo__icon {
+    position: absolute;
+    top: 0;
+    left: -1px;
+    width: 15px;
+    height: 15px;
+}
+
+.octane-purse-club-promo__text {
+    position: absolute;
+    top: -1px;
+    left: 19px;
+    width: 160px;
+    height: 30px;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    background: transparent;
+    color: #ffffff;
+    font: 12px/15px Ubuntu, sans-serif;
+    text-align: left;
+    text-decoration: underline;
+    text-shadow: 1px 1px 0 #000000;
+    cursor: pointer;
+}
+
+.octane-purse-club-promo__text:hover {
+    color: #bae2f9;
+}
+
+.octane-purse-club-promo__sweep {
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    height: 37px;
+    pointer-events: none;
+    animation: octane-purse-club-sweep 650ms linear forwards;
+}
+
+@keyframes octane-purse-club-sweep {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(139px); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .octane-purse-club-promo__sweep {
+        display: none;
+    }
 }
