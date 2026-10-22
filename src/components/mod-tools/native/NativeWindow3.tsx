@@ -138,12 +138,13 @@ export const Native3ThickButton: FC<Native3ThickButtonProps> = ({ x, y, width, h
     );
 };
 
-// The face of the 22px button_shiny per state, sampled from habbo_blue_skin (the disabled face is a translucent grey over the window).
+// The face of the 22px button_shiny per state, sampled from habbo_blue_skin; the disabled face is the translucent grey as it lands on the
+// 0xe9e9e1 window body (0xc2c2c0, measured on the AIR pet commands window).
 const SHINY_FACE_BANDS: Record<string, { from: number; to: number; color: number }[]> = {
     default: [{ from: 0, to: 2, color: 0xd9d9d9 }, { from: 2, to: 11, color: 0xf3f3f3 }, { from: 11, to: 22, color: 0xd9d9d9 }],
     hovering: [{ from: 0, to: 11, color: 0xffffff }, { from: 11, to: 18, color: 0xeeeeee }, { from: 18, to: 22, color: 0xffffff }],
     pressed: [{ from: 0, to: 2, color: 0xa3a3a3 }, { from: 2, to: 11, color: 0xe1e1e1 }, { from: 11, to: 22, color: 0xa3a3a3 }],
-    disabled: [{ from: 0, to: 22, color: 0xc3c3c1 }]
+    disabled: [{ from: 0, to: 22, color: 0xc2c2c0 }]
 };
 
 interface Native3ButtonProps {
@@ -156,9 +157,14 @@ interface Native3ButtonProps {
 }
 
 /**
- * `button` of style 3 (button_shiny, 22px): habbo_window_layout_button_shiny sets the label in button_shiny_regular inside 8/2/8/3 margins,
- * centred; each band of the face gets the label drawn against its own colour.
+ * `button` of style 3 (button_shiny, 22px): habbo_window_layout_button_shiny sets the label in button_shiny_regular in a field 2px down and 8px in
+ * from both sides, centred in it; a label wider than the field starts at its left edge and the button cuts it. A disabled button draws the label
+ * at half alpha. Each band of the face gets the label drawn against its own colour. Measured on the AIR pet commands window: capitals start 5px
+ * down, "Libero" 27px in, an overflowing label 11px in.
  */
+const LABEL_MARGIN = 8;
+const LABEL_TOP = 2;
+
 export const Native3Button: FC<Native3ButtonProps> = ({ x, y, width, label, enabled = true, onClick }) => {
     const height = 22;
     const [over, setOver] = useState(false);
@@ -172,7 +178,7 @@ export const Native3Button: FC<Native3ButtonProps> = ({ x, y, width, label, enab
 
         if (!element) return;
 
-        const place = () => setOffset({ left: Math.floor((width - element.offsetWidth) / 2), top: 2 + Math.floor((height - 5 - element.offsetHeight) / 2) });
+        const place = () => setOffset({ left: LABEL_MARGIN + 1 + Math.max(0, Math.floor((width - 2 * LABEL_MARGIN - element.offsetWidth) / 2)), top: LABEL_TOP });
 
         place();
 
@@ -206,7 +212,7 @@ export const Native3Button: FC<Native3ButtonProps> = ({ x, y, width, label, enab
             </div>
             {SHINY_FACE_BANDS[state].map((band) => (
                 <div key={band.from} className="native3-button__band" style={{ top: band.from, height: band.to - band.from, width }}>
-                    <div className="native3-button__label" style={{ left: offset.left, top: offset.top - band.from }}>
+                    <div className="native3-button__label" style={{ left: offset.left, top: offset.top - band.from, opacity: enabled ? 1 : 0.5 }}>
                         <NativeText background={band.color} text={label} textStyle="button_shiny_regular" />
                     </div>
                 </div>
