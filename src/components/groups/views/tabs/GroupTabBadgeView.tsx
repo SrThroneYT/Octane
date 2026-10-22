@@ -112,7 +112,7 @@ export const GroupTabBadgeView: FC<GroupTabBadgeViewProps> = (props) => {
             <GroupBox height={94} kind="white" width={94} x={17} y={29}>
                 <GroupBox height={86} kind="tan" width={86} x={4} y={4} />
                 <div className="octane-group-native__badge" style={{ left: 27, top: 27 }}>
-                    <LayoutBadgeImageView badgeCode={getModifiedBadgeCode()} isGroup={true} />
+                    <LayoutBadgeImageView badgeCode={getModifiedBadgeCode()} isGroup={true} isPreview={true} />
                 </div>
             </GroupBox>
             {groupData.groupId > 0 && (

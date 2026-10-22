@@ -43,7 +43,7 @@ export const GroupTabCreatorConfirmationView: FC<GroupTabCreatorConfirmationView
             <GroupBox height={92} kind="white" width={92} x={15} y={50}>
                 <GroupBox height={84} kind="tan" width={84} x={4} y={4} />
                 <div className="octane-group-native__badge" style={{ left: 26, top: 26 }}>
-                    <LayoutBadgeImageView badgeCode={getCompleteBadgeCode()} isGroup={true} />
+                    <LayoutBadgeImageView badgeCode={getCompleteBadgeCode()} isGroup={true} isPreview={true} />
                 </div>
             </GroupBox>
             <GroupText align="center" text={LocalizeText('group.create.confirm.guildcolors')} textStyle="u_bold" width={92} x={15} y={155} />
