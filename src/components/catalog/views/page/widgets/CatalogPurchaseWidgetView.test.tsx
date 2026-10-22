@@ -16,6 +16,7 @@ vi.mock('@octane/renderer', () => ({
     CreateLinkEvent: vi.fn(),
     LtdRaffleEnteredMessageEvent: class LtdRaffleEnteredMessageEvent {},
     LtdRaffleResultMessageEvent: class LtdRaffleResultMessageEvent {},
+    NotEnoughBalanceMessageEvent: class NotEnoughBalanceMessageEvent {},
     PurchaseFromCatalogComposer: class {}
 }));
 
@@ -197,6 +198,62 @@ describe('catalog purchase widget', () => {
 
         expect(screen.getByRole('button', { name: 'catalog.purchase_confirmation.gift' })).toBeDisabled();
         expect(screen.getByRole('button', { name: 'catalog.purchase_confirmation.buy' })).toBeDisabled();
+    });
+
+    describe('a balance the server finds short (AIR NotEnoughBalanceMessageEvent)', () => {
+        const notEnough = (notEnoughCredits: boolean, notEnoughActivityPoints: boolean, activityPointType: number) => ({
+            getParser: () => ({ activityPointType, notEnoughActivityPoints, notEnoughCredits })
+        });
+
+        const startPurchase = () => {
+            render(<CatalogPurchaseWidgetView />);
+
+            fireEvent.click(screen.getByRole('button', { name: 'catalog.purchase_confirmation.buy' }));
+            act(() => confirmProps.current.onConfirm());
+            confirmProps.current = null;
+        };
+
+        it('ends the purchase and offers the shop when credits are short', () => {
+            const { showConfirm } = vi.mocked(useNotification)();
+
+            startPurchase();
+            act(() => messageHandlers.get('NotEnoughBalanceMessageEvent')(notEnough(true, false, 0)));
+
+            expect(confirmProps.current).toBeNull();
+            expect(showConfirm).toHaveBeenCalledWith(
+                'catalog.alert.notenough.credits.description',
+                expect.any(Function),
+                expect.any(Function),
+                null,
+                null,
+                'catalog.alert.notenough.title'
+            );
+        });
+
+        it('names the short currency when activity points are short', () => {
+            const { simpleAlert } = vi.mocked(useNotification)();
+
+            startPurchase();
+            act(() => messageHandlers.get('NotEnoughBalanceMessageEvent')(notEnough(false, true, 5)));
+
+            expect(simpleAlert).toHaveBeenCalledWith(
+                'catalog.alert.notenough.activitypoints.description',
+                null,
+                null,
+                null,
+                'catalog.alert.notenough.activitypoints.title.5'
+            );
+        });
+
+        it('ignores a short balance for a purchase this widget did not send', () => {
+            const { showConfirm, simpleAlert } = vi.mocked(useNotification)();
+
+            render(<CatalogPurchaseWidgetView />);
+            act(() => messageHandlers.get('NotEnoughBalanceMessageEvent')(notEnough(true, false, 0)));
+
+            expect(showConfirm).not.toHaveBeenCalled();
+            expect(simpleAlert).not.toHaveBeenCalled();
+        });
     });
 
     describe('LTD raffle (AIR PurchaseConfirmationDialog raffle_container)', () => {
