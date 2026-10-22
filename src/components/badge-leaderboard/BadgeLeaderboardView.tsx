@@ -193,19 +193,15 @@ export const BadgeLeaderboardView: FC<{}> = (props) => {
             rank: 0
         } as BadgeLeaderboardEntry;
     }, [currentPage?.board?.viewerEntry, leaderboard?.viewerUserId]);
-    const rankedEntries = useMemo(() => {
-        if (!allEntries.length) return [];
-        if (!viewerEntry?.userId) return allEntries;
-
-        return allEntries.filter((entry) => entry.userId !== viewerEntry.userId);
-    }, [allEntries, viewerEntry?.userId]);
-    const viewerHasRankedScore = (viewerEntry?.rank || 0) > 0;
-    const rankedTotalPlayers = Math.max((currentPage?.board?.totalPlayers || 0) - (viewerHasRankedScore ? 1 : 0), rankedEntries.length);
+    // The viewer keeps their place in the ranking and is highlighted there; the extra row at the bottom shows them only when
+    // they are not on the page in view.
+    const rankedTotalPlayers = Math.max(currentPage?.board?.totalPlayers || 0, allEntries.length);
     const totalEntryPages = Math.max(1, Math.ceil(rankedTotalPlayers / PAGE_SIZE));
     const clampedEntryPageIndex = Math.min(entryPageIndex, totalEntryPages - 1);
     const pageStart = clampedEntryPageIndex * PAGE_SIZE;
-    const pageEntries = rankedEntries.slice(pageStart, pageStart + PAGE_SIZE);
-    const showViewerEntry = !!viewerEntry?.userId;
+    const pageEntries = allEntries.slice(pageStart, pageStart + PAGE_SIZE);
+    const isViewer = (entry: BadgeLeaderboardEntry) => !!viewerEntry?.userId && entry.userId === viewerEntry.userId;
+    const showViewerEntry = !!viewerEntry?.userId && !pageEntries.some(isViewer);
 
     if (!isVisible) return null;
 
@@ -278,11 +274,11 @@ export const BadgeLeaderboardView: FC<{}> = (props) => {
                                             entry={entry}
                                             emblem={currentPage.emblem}
                                             rowIndex={pageStart + index}
-                                            isCurrentUser={false}
+                                            isCurrentUser={isViewer(entry)}
                                         />
                                     ))}
                                     {showViewerEntry && (
-                                        <LeaderboardRow entry={viewerEntry} emblem={currentPage.emblem} rowIndex={pageEntries.length} isCurrentUser={true} />
+                                        <LeaderboardRow entry={viewerEntry} emblem={currentPage.emblem} rowIndex={pageStart + pageEntries.length} isCurrentUser={true} />
                                     )}
                                 </div>
                                 <img className="octane-badge-leaderboard__divider" src={leaderboardDivider} alt="" />
