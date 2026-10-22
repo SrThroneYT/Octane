@@ -5,11 +5,12 @@ import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NumberInput } from './NumberInput';
 
-const Demo = ({ onValue, min, max }: { onValue?: (value: number) => void; min?: number; max?: number }) => {
+const Demo = ({ onValue, min, max, allowOutOfRange }: { onValue?: (value: number) => void; min?: number; max?: number; allowOutOfRange?: boolean }) => {
     const [value, setValue] = useState(5);
 
     return (
         <NumberInput
+            allowOutOfRange={allowOutOfRange}
             aria-label="Amount"
             className="form-control"
             max={max}
@@ -77,6 +78,23 @@ describe('NumberInput', () => {
 
         fireEvent.keyDown(input, { key: 'ArrowUp' });
         expect(onValue).toHaveBeenLastCalledWith(6);
+    });
+
+    it('lets typed text leave the range with allowOutOfRange, while the arrows stay inside it', () => {
+        const onValue = vi.fn();
+
+        render(<Demo allowOutOfRange max={6} min={4} onValue={onValue} />);
+
+        const input = screen.getByRole('spinbutton');
+
+        expect(input).toHaveAttribute('aria-valuemin', '4');
+        expect(input).toHaveAttribute('aria-valuemax', '6');
+
+        fireEvent.change(input, { target: { value: '2' } });
+        expect(onValue).toHaveBeenLastCalledWith(2);
+
+        fireEvent.keyDown(input, { key: 'ArrowDown' });
+        expect(onValue).toHaveBeenLastCalledWith(4);
     });
 
     it('shows up / down buttons on hover and steps with them', () => {

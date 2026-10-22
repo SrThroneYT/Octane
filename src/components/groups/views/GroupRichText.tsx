@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from 'react';
 import { loadNativeFont, measureNativeText } from '../../../common/native-text/NativeFont';
-import { resolveLineMetrics } from '../../../common/native-text/Air32NativeTextRenderer';
+import { resolveLineMetrics } from '../../../common/native-text/NativeTextRenderer';
 import { NativeText } from '../../../common/native-text/NativeText';
 import { nativeTextStyles } from '../../../common/native-text/NativeTextStyles';
 

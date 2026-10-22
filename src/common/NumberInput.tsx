@@ -16,6 +16,11 @@ export interface NumberInputProps extends Omit<InputHTMLAttributes<HTMLInputElem
     min?: number | string;
     max?: number | string;
     step?: number | string;
+    /**
+     * Like a native field with min / max: typed text may leave the range (the caller validates it),
+     * while arrows, buttons and the wheel stay inside it. Without it Base UI clamps the typed text too.
+     */
+    allowOutOfRange?: boolean;
     ref?: Ref<HTMLInputElement>;
 }
 
@@ -108,8 +113,26 @@ const assignRef = <T,>(ref: Ref<T> | undefined, node: T | null) => {
  * step too. The wrapper span is `display: contents`.
  */
 export const NumberInput = (props: NumberInputProps) => {
-    const { value, onChange, min, max, step, className, disabled, readOnly, name, id, required, ref, onMouseEnter, onMouseLeave, onFocus, onBlur, ...rest } =
-        props;
+    const {
+        value,
+        onChange,
+        min,
+        max,
+        step,
+        allowOutOfRange,
+        className,
+        disabled,
+        readOnly,
+        name,
+        id,
+        required,
+        ref,
+        onMouseEnter,
+        onMouseLeave,
+        onFocus,
+        onBlur,
+        ...rest
+    } = props;
     const [input, setInput] = useState<HTMLInputElement | null>(null);
     const [pointerOver, setPointerOver] = useState(false);
     const [focused, setFocused] = useState(false);
@@ -145,6 +168,7 @@ export const NumberInput = (props: NumberInputProps) => {
 
     return (
         <NumberField.Root
+            allowOutOfRange={allowOutOfRange}
             className="octane-number-field"
             disabled={disabled}
             format={FORMAT}

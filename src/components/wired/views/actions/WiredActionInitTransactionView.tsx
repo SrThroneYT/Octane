@@ -1,12 +1,15 @@
 import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { localizeWithFallback, WiredFurniType, WiredSelectionVisualizer } from '../../../../api';
 import { Text } from '../../../../common';
+import { Checkbox } from '../../../../common/Checkbox';
+import { NumberInput } from '../../../../common/NumberInput';
+import { Radio } from '../../../../common/Radio';
 import { useWired } from '../../../../hooks';
 import { WiredFurniSelectionSourceRow } from '../WiredFurniSelectionSourceRow';
 import { FURNI_SOURCES, sortWiredSourceOptions, WiredSourceOption, WiredSourcesSelector } from '../WiredSourcesSelector';
-import { getCustomVariableItemId } from '../WiredVariablePickerData';
 import { variableTokenFromId, WIRED_FIXED_HOLDER_SOURCE, WiredValueOrVariableField } from '../WiredValueOrVariableField';
 import { toWiredVariableIdOnTarget } from '../WiredVariableIds';
+import { getCustomVariableItemId } from '../WiredVariablePickerData';
 import { WiredActionBaseView } from './WiredActionBaseView';
 
 export const TRANSACTION_MODE_NORMAL = 0;
@@ -39,7 +42,8 @@ const CONTRACT_SOURCES: WiredSourceOption[] = sortWiredSourceOptions(
 
 type SelectionMode = 'chests' | 'contracts';
 
-const clampTimeout = (value: number) => Math.min(TRANSACTION_TIMEOUT_MAX, Math.max(TRANSACTION_TIMEOUT_MIN, Number.isFinite(value) ? Math.round(value) : TRANSACTION_TIMEOUT_DEFAULT));
+const clampTimeout = (value: number) =>
+    Math.min(TRANSACTION_TIMEOUT_MAX, Math.max(TRANSACTION_TIMEOUT_MIN, Number.isFinite(value) ? Math.round(value) : TRANSACTION_TIMEOUT_DEFAULT));
 
 /**
  * The official Initiate Transaction (47, AIR `chests/class_4135`): the transaction mode (normal, multiplier, auto
@@ -49,7 +53,17 @@ const clampTimeout = (value: number) => Math.min(TRANSACTION_TIMEOUT_MAX, Math.m
  * the contracts (second picks), user slot 0 the trading users.
  */
 export const WiredActionInitTransactionView: FC<{}> = () => {
-    const { trigger = null, furniIds = [], setFurniIds, setFurniIds2, setIntParams, setStringParam, setVariableIds, setSourceTypes, setAllowsFurni } = useWired();
+    const {
+        trigger = null,
+        furniIds = [],
+        setFurniIds,
+        setFurniIds2,
+        setIntParams,
+        setStringParam,
+        setVariableIds,
+        setSourceTypes,
+        setAllowsFurni
+    } = useWired();
     const [mode, setMode] = useState(TRANSACTION_MODE_NORMAL);
     const [multiplier, setMultiplier] = useState('1');
     const [isVariable, setIsVariable] = useState(false);
@@ -237,7 +251,7 @@ export const WiredActionInitTransactionView: FC<{}> = () => {
                 <Text bold>{localizeWithFallback('wiredfurni.params.contract.mode', 'Transaction method:')}</Text>
                 {MODES.map((value) => (
                     <label key={value} className="flex items-center gap-1">
-                        <input type="radio" className="form-check-input" name="transactionMode" checked={mode === value} onChange={() => setMode(value)} />
+                        <Radio name="transactionMode" checked={mode === value} onCheckedChange={() => setMode(value)} />
                         <Text>{localizeWithFallback(`wiredfurni.params.contract.mode.${value}`, MODE_LABELS[value])}</Text>
                     </label>
                 ))}
@@ -267,17 +281,17 @@ export const WiredActionInitTransactionView: FC<{}> = () => {
             <div className="flex flex-col gap-1">
                 <Text bold>{localizeWithFallback('wiredfurni.params.contract.timeout', 'Timeout:')}</Text>
                 <label className="flex items-center gap-1">
-                    <input type="checkbox" className="form-check-input" checked={timeoutEnabled} onChange={(event) => setTimeoutEnabled(event.target.checked)} />
+                    <Checkbox checked={timeoutEnabled} onCheckedChange={(nextChecked) => setTimeoutEnabled(nextChecked)} />
                     <Text>{localizeWithFallback('wiredfurni.params.contract.timeout.desc', 'Cancel a trade automatically on timeout')}</Text>
                 </label>
                 <label className="flex items-center gap-1">
                     <Text>{localizeWithFallback('wiredfurni.params.contract.timeout.selection', 'Timeout (seconds):')}</Text>
-                    <input
+                    <NumberInput
+                        allowOutOfRange
                         aria-label="timeout seconds"
                         className="form-control form-control-sm"
                         max={TRANSACTION_TIMEOUT_MAX}
                         min={TRANSACTION_TIMEOUT_MIN}
-                        type="number"
                         value={timeoutSeconds}
                         onBlur={() => setTimeoutSeconds(String(clampTimeout(parseInt(timeoutSeconds, 10))))}
                         onChange={(event) => setTimeoutSeconds(event.target.value)}

@@ -11,6 +11,11 @@ Negli esempi usa i tuoi domini reali al posto di:
 - `https://hotel.example.com`
 - `https://nitro.example.com:2096`
 
+Scorciatoia: `node install.mjs --secure=on --emulator-config=<percorso>/config.ini` imposta i flag di
+`client-mode.json` (sezione 2), genera `nitro.secure.master_key` e aggiorna `config.ini` (sezione 5, con backup).
+Senza `--emulator-config` stampa le righe da incollare. Una master key già impostata non viene mai sostituita.
+`nitro.secure.config.root` e `nitro.secure.gamedata.root` restano da impostare a mano.
+
 ## 1. Build Octane
 
 Nel repo `octane`:
@@ -63,6 +68,8 @@ Significato:
 - `secureApiEnabled: true` cifra automaticamente le chiamate `/api/*`.
 - `apiBaseUrl` deve puntare all'emulatore/API.
 - `plainConfigBaseUrl` e `plainGamedataBaseUrl` restano fallback quando spegni secure assets.
+- Se `/nitro-sec/bootstrap` non risponde con una chiave (secure spento sul server, emulatore vecchio, rete), il client carica config, gamedata e `/api` in chiaro invece di fallire, e riprova la via cifrata dopo 5 minuti. Con `nitro.secure.api.required=true` il server rifiuta comunque con 403 le chiamate in chiaro a `/api/auth/*` e `/api/badges/*`.
+- Il client rinnova la sua chiave ogni `nitro.secure.session_ttl_sec` secondi del server (tra 60 e 3600; 300 se il server non lo indica).
 
 ## 3. `configuration/renderer-config.json`
 
