@@ -5,13 +5,14 @@ import blueAtlas from '../../../assets/mod-tools/skins/habbo-blue-skin.png';
 import closeXml from '../../../assets/mod-tools/skins/skin-button_close_3.xml?raw';
 import frameXml from '../../../assets/mod-tools/skins/skin-frame_3.xml?raw';
 import thickXml from '../../../assets/mod-tools/skins/skin-button_shiny_thick.xml?raw';
+import shinyXml from '../../../assets/mod-tools/skins/skin-button_shiny.xml?raw';
 import '../../../css/mod-tools/NativeWindow3.css';
 import { parseNativeSkin } from './NativeSkin';
 import { NativeSkinView } from './NativeSkinView';
 import { BaseButton } from '../../../common/BaseButton';
 
 // Window-manager style 3 (the Ubuntu skin): frame_3 coloured 0xff418db0, close button, shiny thick button, Ubuntu text styles.
-const SKINS = { frame: parseNativeSkin(frameXml), close: parseNativeSkin(closeXml), thick: parseNativeSkin(thickXml) };
+const SKINS = { frame: parseNativeSkin(frameXml), close: parseNativeSkin(closeXml), thick: parseNativeSkin(thickXml), shiny: parseNativeSkin(shinyXml) };
 
 export const FRAME3_COLOR = 0x418db0;
 /** The title bar of frame_3 after the frame colour multiplies the skin (the title text sits on it). */
@@ -19,23 +20,33 @@ export const FRAME3_TITLE_COLOR = 0x377998;
 
 const rect = (x: number, y: number, width: number, height: number): CSSProperties => ({ left: x, top: y, width, height });
 
+/** The title bar under another frame colour: the skin's title grey multiplied by that colour, scaled from the default pair. */
+const titleColorFor = (color: number): number =>
+    [16, 8, 0].reduce((value, shift) => {
+        const base = ((FRAME3_TITLE_COLOR >> shift) & 0xff) / ((FRAME3_COLOR >> shift) & 0xff);
+
+        return value | (Math.min(255, Math.round(((color >> shift) & 0xff) * base)) << shift);
+    }, 0);
+
 interface Native3FrameProps {
     width: number;
     height: number;
     title: string;
     onClose: () => void;
     children?: ReactNode;
+    /** The frame colour of the layout (default 0xff418db0). */
+    color?: number;
 }
 
 /** Frame style 3: the 9-slice frame_3 skin, a 19x20 close button at (width - 29, 8) and the content area at the frame margins (6, 25). */
-export const Native3Frame: FC<Native3FrameProps> = ({ width, height, title, onClose, children }) => {
+export const Native3Frame: FC<Native3FrameProps> = ({ width, height, title, onClose, children, color = FRAME3_COLOR }) => {
     const [closeState, setCloseState] = useState<'default' | 'hovering' | 'pressed'>('default');
 
     return (
         <section aria-label={title} className="native3-frame" role="dialog" style={{ width, height }}>
-            <NativeSkinView atlas={ubuntuAtlas} color={FRAME3_COLOR} height={height} layout="frame_3" skin={SKINS.frame} width={width} />
+            <NativeSkinView atlas={ubuntuAtlas} color={color} height={height} layout="frame_3" skin={SKINS.frame} width={width} />
             <div className="native3-title" style={{ left: 0, top: 4, width, height: 27 }}>
-                <NativeText background={FRAME3_TITLE_COLOR} overrides={{ color: 0xffffff }} text={title} textStyle="u_frame_title" />
+                <NativeText background={color === FRAME3_COLOR ? FRAME3_TITLE_COLOR : titleColorFor(color)} overrides={{ color: 0xffffff }} text={title} textStyle="u_frame_title" />
             </div>
             <BaseButton
                 aria-label="Close"
@@ -120,6 +131,83 @@ export const Native3ThickButton: FC<Native3ThickButtonProps> = ({ x, y, width, h
                 <div key={band.from} className="native3-button__band" style={{ top: band.from, height: band.to - band.from, width }}>
                     <div className="native3-button__label" style={{ left: offset.left, top: offset.top - band.from }}>
                         <NativeText background={band.color} text={label} textStyle="u_bold" />
+                    </div>
+                </div>
+            ))}
+        </BaseButton>
+    );
+};
+
+// The face of the 22px button_shiny per state, sampled from habbo_blue_skin (the disabled face is a translucent grey over the window).
+const SHINY_FACE_BANDS: Record<string, { from: number; to: number; color: number }[]> = {
+    default: [{ from: 0, to: 2, color: 0xd9d9d9 }, { from: 2, to: 11, color: 0xf3f3f3 }, { from: 11, to: 22, color: 0xd9d9d9 }],
+    hovering: [{ from: 0, to: 11, color: 0xffffff }, { from: 11, to: 18, color: 0xeeeeee }, { from: 18, to: 22, color: 0xffffff }],
+    pressed: [{ from: 0, to: 2, color: 0xa3a3a3 }, { from: 2, to: 11, color: 0xe1e1e1 }, { from: 11, to: 22, color: 0xa3a3a3 }],
+    disabled: [{ from: 0, to: 22, color: 0xc3c3c1 }]
+};
+
+interface Native3ButtonProps {
+    x: number;
+    y: number;
+    width: number;
+    label: string;
+    enabled?: boolean;
+    onClick?: () => void;
+}
+
+/**
+ * `button` of style 3 (button_shiny, 22px): habbo_window_layout_button_shiny sets the label in button_shiny_regular inside 8/2/8/3 margins,
+ * centred; each band of the face gets the label drawn against its own colour.
+ */
+export const Native3Button: FC<Native3ButtonProps> = ({ x, y, width, label, enabled = true, onClick }) => {
+    const height = 22;
+    const [over, setOver] = useState(false);
+    const [down, setDown] = useState(false);
+    const state = !enabled ? 'disabled' : down ? 'pressed' : over ? 'hovering' : 'default';
+    const labelRef = useRef<HTMLDivElement>(null);
+    const [offset, setOffset] = useState({ left: 0, top: 0 });
+
+    useLayoutEffect(() => {
+        const element = labelRef.current;
+
+        if (!element) return;
+
+        const place = () => setOffset({ left: Math.floor((width - element.offsetWidth) / 2), top: 2 + Math.floor((height - 5 - element.offsetHeight) / 2) });
+
+        place();
+
+        if (typeof ResizeObserver === 'undefined') return;
+
+        const observer = new ResizeObserver(place);
+
+        observer.observe(element);
+
+        return () => observer.disconnect();
+    }, [label, width]);
+
+    return (
+        <BaseButton
+            type="button"
+            className="native3-box native3-button"
+            disabled={!enabled}
+            style={rect(x, y, width, height)}
+            onClick={onClick}
+            onPointerDown={() => setDown(true)}
+            onPointerEnter={() => setOver(true)}
+            onPointerLeave={() => {
+                setOver(false);
+                setDown(false);
+            }}
+            onPointerUp={() => setDown(false)}
+        >
+            <NativeSkinView atlas={blueAtlas} height={height} layout="button_shiny" skin={SKINS.shiny} state={state} width={width} />
+            <div ref={labelRef} className="native3-button__label" style={offset}>
+                <NativeText background={SHINY_FACE_BANDS[state][0].color} text={label} textStyle="button_shiny_regular" style={{ visibility: 'hidden' }} />
+            </div>
+            {SHINY_FACE_BANDS[state].map((band) => (
+                <div key={band.from} className="native3-button__band" style={{ top: band.from, height: band.to - band.from, width }}>
+                    <div className="native3-button__label" style={{ left: offset.left, top: offset.top - band.from }}>
+                        <NativeText background={band.color} text={label} textStyle="button_shiny_regular" />
                     </div>
                 </div>
             ))}
