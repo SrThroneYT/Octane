@@ -92,6 +92,13 @@
     height: 43px;
 }
 
+/* The tool icons after the divider are narrower than the 45px slot the AIR icons fill: the slot takes the
+   icon's width plus 4px a side, so they sit as close together as the icons before the divider. */
+.tb-slot-fit {
+    width: auto;
+    padding: 0 4px;
+}
+
 .tb-slot-messenger {
     width: 31px;
     margin-left: -6px;
