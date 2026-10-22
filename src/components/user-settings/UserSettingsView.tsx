@@ -285,6 +285,16 @@ export const UserSettingsView: FC<{}> = () => {
                     <BaseButton className="air-settings-button" onClick={() => CreateLinkEvent('user-account-settings/show')} type="button">
                         {localizeWithFallback('usersettings.open.title', 'User Settings')}
                     </BaseButton>
+                    <BaseButton
+                        className="air-settings-button"
+                        onClick={() => {
+                            CreateLinkEvent('translation-settings/toggle');
+                            closeView();
+                        }}
+                        type="button"
+                    >
+                        {localizeWithFallback('purse.settings.translate', 'Translate')}
+                    </BaseButton>
                 </div>
             </AirSettingsFrame>
         );
