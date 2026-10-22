@@ -3,7 +3,6 @@ import { LocalizeText, WiredFurniType } from '../../../../api';
 import { Slider, Text } from '../../../../common';
 import { useWired } from '../../../../hooks';
 import { WiredSelectorBaseView } from './WiredSelectorBaseView';
-import { Checkbox } from '../../../../common/Checkbox';
 import { Radio } from '../../../../common/Radio';
 
 const MIN_ALTITUDE = 0;
@@ -27,10 +26,8 @@ const formatAltitude = (value: number) => {
 };
 
 export const WiredSelectorFurniAltitudeView: FC<{}> = () => {
-    const { trigger = null, setIntParams = null, setStringParam = null, setSelectorOptions = null } = useWired();
+    const { trigger = null, setIntParams = null, setStringParam = null } = useWired();
     const [comparison, setComparison] = useState(1);
-    const [filterExisting, setFilterExisting] = useState(false);
-    const [invert, setInvert] = useState(false);
     const [altitude, setAltitude] = useState(0);
     const [altitudeInput, setAltitudeInput] = useState('0');
 
@@ -41,8 +38,6 @@ export const WiredSelectorFurniAltitudeView: FC<{}> = () => {
         const nextAltitude = clampAltitude((trigger.intData[0] ?? 0) / 100);
 
         setComparison(trigger.intData.length > 1 ? trigger.intData[1] : 1);
-        setFilterExisting(trigger.isFilter ?? false);
-        setInvert(trigger.isInvert ?? false);
         setAltitude(nextAltitude);
         setAltitudeInput(formatAltitude(nextAltitude));
     }, [trigger]);
@@ -78,9 +73,8 @@ export const WiredSelectorFurniAltitudeView: FC<{}> = () => {
 
     const save = useCallback(() => {
         setIntParams([Math.round(altitude * 100), comparison]);
-        setSelectorOptions({ filter: filterExisting, invert });
         setStringParam('');
-    }, [altitude, comparison, filterExisting, invert, setIntParams, setStringParam]);
+    }, [altitude, comparison, setIntParams, setStringParam]);
 
     return (
         <WiredSelectorBaseView
@@ -119,19 +113,6 @@ export const WiredSelectorFurniAltitudeView: FC<{}> = () => {
                     <Text small>{formatAltitude(altitude)}</Text>
                 </div>
 
-                <hr className="m-0 bg-dark" />
-
-                <Text bold>{LocalizeText('wiredfurni.params.selector_options_selector')}</Text>
-
-                <label className="flex items-center gap-2">
-                    <Checkbox checked={filterExisting} onCheckedChange={(nextChecked) => setFilterExisting(nextChecked)} />
-                    <Text small>{LocalizeText('wiredfurni.params.selector_option.0')}</Text>
-                </label>
-
-                <label className="flex items-center gap-2">
-                    <Checkbox checked={invert} onCheckedChange={(nextChecked) => setInvert(nextChecked)} />
-                    <Text small>{LocalizeText('wiredfurni.params.selector_option.1')}</Text>
-                </label>
             </div>
         </WiredSelectorBaseView>
     );

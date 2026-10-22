@@ -125,6 +125,8 @@
     "hc.disabled": false,
     "club.membership.extend.promotion.enabled": true,
     "raid.protection.enabled": true,
+    "discord.enabled": false,
+    "user.custom.filter.enabled": true,
     "// ---- Currencies and purse ----": "",
     "system.currency.types": [
         -1,
@@ -149,8 +151,8 @@
         "sound": "sound_respect_received"
     },
     "respect.replenish_cost_duckets": 50,
+    "seasonalcurrencyindicator.page": "",
     "// ---- Catalog ----": "",
-    "catalog.classic.style": false,
     "catalog.tab.icons": false,
     "catalog.headers": false,
     "catalog.links": {

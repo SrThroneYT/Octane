@@ -119,7 +119,7 @@ vi.mock('../../../hooks', () => ({
 
 vi.mock('./WiredFurniSelectorView', () => ({ WiredFurniSelectorView: () => null }));
 
-import { TriggerDefinition, WiredActionDefinition } from '@octane/renderer';
+import { TriggerDefinition, WiredActionDefinition, WiredVariableDefinition } from '@octane/renderer';
 import { WiredBaseView } from './WiredBaseView';
 
 const openMenu = () => {
@@ -212,7 +212,7 @@ describe('WiredBaseView quick menu', () => {
         expect(screen.getByText('Toggle state')).toBeInTheDocument();
         openMenu();
         fireEvent.click(screen.getByRole('menuitem', { name: 'Open the Wired Creator Tools' }));
-        expect(mocks.links).toEqual(['wired-tools/show']);
+        expect(mocks.links).toEqual(['wiredmenu/open']);
         openMenu();
         fireEvent.click(screen.getByRole('menuitem', { name: 'Close' }));
         expect(mocks.wired.setTrigger).toHaveBeenCalledWith(null);
@@ -254,15 +254,24 @@ describe('WiredBaseView quick menu', () => {
         expect(screen.getByTestId('wired-window')).toHaveClass('octane-wired--scrolling');
     });
 
-    it('asks before saving a selector that inverts without filtering', () => {
+    it('opens the variable overview on the saved variable from a variable box', () => {
+        const original = mocks.wired.trigger;
+
+        mocks.links.length = 0;
+        mocks.wired.trigger = Object.assign(Object.create(WiredVariableDefinition.prototype), { ...original, code: 0, stringData: 'score' });
+        render(<WiredBaseView hasSpecialInput={false} requiresFurni={0} save={vi.fn()} wiredType="variable" />);
+        mocks.wired.trigger = original;
+
+        fireEvent.click(screen.getByRole('button', { name: 'View in menu' }));
+        expect(mocks.links).toEqual(['wiredmenu/open/variable_overview/score']);
+    });
+
+    it('leaves the invert-without-filter question to the save itself, so it is asked once', () => {
         mocks.wired.getSelectorOptions.mockReturnValue({ filter: false, invert: true });
         render(<WiredBaseView hasSpecialInput={false} requiresFurni={0} save={vi.fn()} wiredType="selector" />);
 
         fireEvent.click(screen.getByText('wiredfurni.ready'));
-        expect(mocks.showConfirm).toHaveBeenCalledTimes(1);
-        expect(mocks.wired.saveWired).not.toHaveBeenCalled();
-
-        act(() => mocks.showConfirm.mock.calls[0][1]());
+        expect(mocks.showConfirm).not.toHaveBeenCalled();
         expect(mocks.wired.saveWired).toHaveBeenCalledTimes(1);
     });
 });

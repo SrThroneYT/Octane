@@ -387,3 +387,9 @@ export const TEAM_COLOR_NAMES: Record<number, string> = {
 export const WEEKDAY_NAMES: string[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 export const MONTH_NAMES: string[] = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 export const DIRECTION_NAMES: string[] = ['North', 'North-East', 'East', 'South-East', 'South', 'South-West', 'West', 'North-West'];
+
+/**
+ * The built-ins Habbo sends packed (an empty text table, RoomWiredInternalVariables `packed()`): one value
+ * that holds several, shown unpacked. The inspection explains them with `wiredmenu.inspection.packed_variable.desc`.
+ */
+export const PACKED_WIRED_VARIABLE_KEYS: ReadonlySet<string> = new Set(['@position', '@occupation', '~recolorable_furni.color.rgb']);

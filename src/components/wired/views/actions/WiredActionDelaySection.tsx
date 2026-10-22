@@ -6,9 +6,9 @@ import {
     LocalizeText,
     WIRED_ACTION_DELAY_MAX_PRECISE_STEPS,
     WIRED_ACTION_DELAY_MAX_PULSES,
-    wiredDelayFromSeconds,
     wiredDelayUnits
 } from '../../../../api';
+import { restrictWiredNumberInput, validateWiredNumberInput, WiredNumberInputError, WiredNumberInputRange, wiredNumberInputMessage } from '../../../../api/wired/WiredNumberInput';
 import delayPreciseIcon from '../../../../assets/images/wired/delay/delay_precise.png';
 import delayStandardIcon from '../../../../assets/images/wired/delay/delay_standard.png';
 import { Slider, Text } from '../../../../common';
@@ -29,6 +29,7 @@ export const WiredActionDelaySection: FC<WiredActionDelaySectionProps> = ({ valu
     const [precise, setPrecise] = useState(isPreciseWiredDelay(value));
     const [menuOpen, setMenuOpen] = useState(false);
     const [typed, setTyped] = useState<string>(null);
+    const [error, setError] = useState<WiredNumberInputError | null>(null);
 
     // A loaded delay says its mode; zero keeps the mode the user picked.
     useEffect(() => {
@@ -37,6 +38,25 @@ export const WiredActionDelaySection: FC<WiredActionDelaySectionProps> = ({ valu
     }, [value]);
 
     const units = wiredDelayUnits(value);
+    // Official NumberInputPreset on the delay: whole steps of 0.5 s (standard) or 0.05 s (precise).
+    const range: WiredNumberInputRange = precise
+        ? { min: 0, max: WIRED_ACTION_DELAY_MAX_PRECISE_STEPS, toDisplay: (steps) => steps / 20, fromDisplay: (seconds) => seconds * 20 }
+        : { min: 0, max: WIRED_ACTION_DELAY_MAX_PULSES, toDisplay: (pulses) => pulses / 2, fromDisplay: (seconds) => seconds * 2 };
+
+    const onType = (text: string) => {
+        const restricted = restrictWiredNumberInput(text, range);
+        const result = validateWiredNumberInput(restricted, range);
+
+        setTyped(restricted);
+
+        if ('error' in result) {
+            setError(result.error);
+            return;
+        }
+
+        setError(null);
+        onChange(encodeWiredDelay(result.value, precise));
+    };
 
     const selectMode = (nextPrecise: boolean) => {
         setMenuOpen(false);
@@ -52,20 +72,26 @@ export const WiredActionDelaySection: FC<WiredActionDelaySectionProps> = ({ valu
         <div className="flex flex-col octane-wired__section octane-wired__section--delay">
             <div className="octane-wired__delay-head">
                 <Text bold>{LocalizeText('wiredfurni.params.delay.seconds')}</Text>
-                <input
-                    className="octane-wired__delay-input"
-                    inputMode="decimal"
-                    type="text"
-                    value={typed ?? formatWiredDelaySeconds(value)}
-                    onBlur={() => setTyped(null)}
-                    onChange={(event) => {
-                        setTyped(event.target.value);
-
-                        const seconds = parseFloat(event.target.value.replace(',', '.'));
-
-                        if (Number.isFinite(seconds)) onChange(wiredDelayFromSeconds(seconds, precise));
-                    }}
-                />
+                <div className="relative">
+                    <input
+                        aria-invalid={!!error}
+                        className={`octane-wired__delay-input ${error ? 'is-invalid' : ''}`}
+                        inputMode="decimal"
+                        type="text"
+                        value={typed ?? formatWiredDelaySeconds(value)}
+                        onBlur={() => {
+                            // An invalid number is dropped for the stored delay, as the slider still shows it.
+                            setTyped(null);
+                            setError(null);
+                        }}
+                        onChange={(event) => onType(event.target.value)}
+                    />
+                    {error && (
+                        <div className="octane-wired__value-input-error" role="alert">
+                            {wiredNumberInputMessage(error)}
+                        </div>
+                    )}
+                </div>
                 <div className="octane-wired__delay-mode">
                     <Hint content={LocalizeText(precise ? 'wiredfurni.params.delay.mode.precise' : 'wiredfurni.params.delay.mode.standard')}>
                         <BaseButton aria-label={LocalizeText(precise ? 'wiredfurni.params.delay.mode.precise' : 'wiredfurni.params.delay.mode.standard')}
@@ -94,6 +120,7 @@ export const WiredActionDelaySection: FC<WiredActionDelaySectionProps> = ({ valu
                 value={units}
                 onChange={(next) => {
                     setTyped(null);
+                    setError(null);
                     onChange(encodeWiredDelay(next, precise));
                 }}
             />

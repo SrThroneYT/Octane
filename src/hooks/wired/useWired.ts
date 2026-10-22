@@ -184,11 +184,14 @@ const useWiredState = () => {
         const invert = selectorOptionsRef.current?.invert ?? (isSelector ? trigger.isInvert : false) ?? false;
         const filter = selectorOptionsRef.current?.filter ?? (isSelector ? trigger.isFilter : false) ?? false;
 
-        // Official: a selector saved with Invert but without Filter asks first. Accepting any of these
-        // confirmations also counts as the non-owner confirmation.
+        // Official: a selector saved with Invert but without Filter asks first (only here, so every save
+        // path asks once). Accepting any of these confirmations also counts as the non-owner confirmation.
         if (isSelector && invert && !filter) {
             showConfirm(
-                LocalizeText('wiredfurni.danger.1.change.confirm.body'),
+                localizeWithFallback(
+                    'wiredfurni.danger.1.change.confirm.body',
+                    'You selected "Invert" without filtering. This selects all furni/users that do NOT meet the requirements, which may be the whole room. Are you sure? (DANGEROUS!)'
+                ),
                 () => {
                     nonOwnerConfirmedRef.current = true;
                     save(trigger);
@@ -196,7 +199,7 @@ const useWiredState = () => {
                 null,
                 null,
                 null,
-                LocalizeText('wiredfurni.danger.1.change.confirm.title')
+                localizeWithFallback('wiredfurni.danger.1.change.confirm.title', 'Are you sure?')
             );
         } else if (!nonOwnerConfirmedRef.current && !IsOwnerOfFloorFurniture(target ? target.id : trigger.id)) {
             showConfirm(

@@ -183,8 +183,9 @@
         z-index: 3;
     }
 
+    /* Official quick menu: 145 px base, width = widest row + 12. */
     .octane-wired__menu-list {
-        min-width: 190px;
+        min-width: 145px;
         padding: 2px;
         border: 1px solid #000;
         border-radius: 3px;
@@ -194,12 +195,15 @@
         flex-direction: column;
     }
 
+    /* Rows 20 px high, text at x 28, the checkbox at x 6. */
     .octane-wired__menu-item {
+        position: relative;
         display: flex;
         align-items: center;
-        gap: 6px;
         width: 100%;
-        padding: 3px 8px;
+        height: 20px;
+        padding: 0 12px 0 28px;
+        white-space: nowrap;
         border: 0;
         background: transparent;
         color: #222;
@@ -210,7 +214,7 @@
 
     .octane-wired__menu-item:hover:not(:disabled),
     .octane-wired__menu-item[data-highlighted]:not([data-disabled]) {
-        background: #dbeaf4;
+        background: #b2b2b2;
     }
 
     .octane-wired__menu-item:disabled,
@@ -219,10 +223,16 @@
         cursor: default;
     }
 
+    /* A 3 px spacer with a 1 px line inset 6 px. */
     .octane-wired__menu-spacer {
         height: 1px;
-        margin: 2px 6px;
-        background: #b8b2a4;
+        margin: 1px 6px;
+        background: #aaaaaa;
+    }
+
+    .octane-wired__menu-check {
+        position: absolute;
+        left: 6px;
     }
 
     .octane-wired__summary-copy {
@@ -285,6 +295,11 @@
     .octane-wired__picker-label {
         font-size: 12px;
         line-height: 1.15;
+    }
+
+    /* Official: the pick-furni description in the style's softTextColor. */
+    .octane-wired__furni-selector-description {
+        color: var(--wired-soft-text, #444444);
     }
 
     .octane-wired__source-row,
@@ -1263,7 +1278,8 @@
 
 /* WiredStyle.invalidInputBackgroundColor (IlluminaWiredStyle: 0xffc6c9). */
 .octane-wired__value-input.is-invalid,
-.octane-wired .octane-wired__number-input.is-invalid {
+.octane-wired .octane-wired__number-input.is-invalid,
+.octane-wired .octane-wired__delay-input.is-invalid {
     background: #ffc6c9 !important;
 }
 

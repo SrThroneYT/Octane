@@ -2,7 +2,6 @@ import { GetRoomEngine, RoomAreaSelectionManager } from '@octane/renderer';
 import { FC, useCallback, useEffect, useState } from 'react';
 import { LocalizeText } from '../../../../api';
 import { Button, Text } from '../../../../common';
-import { Checkbox } from '../../../../common/Checkbox';
 import { useWired } from '../../../../hooks';
 import { WiredSelectorBaseView } from './WiredSelectorBaseView';
 
@@ -17,16 +16,13 @@ export const WiredSelectorInAreaView: FC<{}> = () => {
     const [rootY, setRootY] = useState(0);
     const [areaWidth, setAreaWidth] = useState(0);
     const [areaHeight, setAreaHeight] = useState(0);
-    const [filterExisting, setFilterExisting] = useState(false);
-    const [invert, setInvert] = useState(false);
     const [isActive, setIsActive] = useState(false);
     const [isSelecting, setIsSelecting] = useState(false);
-    const { trigger = null, setIntParams, setSelectorOptions = null } = useWired();
+    const { trigger = null, setIntParams } = useWired();
 
     const save = useCallback(() => {
         setIntParams([rootX, rootY, areaWidth, areaHeight]);
-        setSelectorOptions({ filter: filterExisting, invert });
-    }, [rootX, rootY, areaWidth, areaHeight, filterExisting, invert, setIntParams, setSelectorOptions]);
+    }, [rootX, rootY, areaWidth, areaHeight, setIntParams]);
 
     useEffect(() => {
         if (!trigger) return;
@@ -63,8 +59,6 @@ export const WiredSelectorInAreaView: FC<{}> = () => {
         setRootY(hasStoredArea ? trigger.intData[1] : 0);
         setAreaWidth(hasStoredArea ? trigger.intData[2] : 0);
         setAreaHeight(hasStoredArea ? trigger.intData[3] : 0);
-        setFilterExisting(trigger.isFilter ?? false);
-        setInvert(trigger.isInvert ?? false);
     }, [trigger]);
 
     const startSelecting = () => {
@@ -87,19 +81,6 @@ export const WiredSelectorInAreaView: FC<{}> = () => {
                     </Button>
                 </div>
 
-                <hr className="m-0 bg-dark" />
-
-                <Text bold>{LocalizeText('wiredfurni.params.selector_options_selector')}</Text>
-
-                <label className="flex items-center gap-1">
-                    <Checkbox checked={filterExisting} onCheckedChange={(nextChecked) => setFilterExisting(nextChecked)} />
-                    <Text small>{LocalizeText('wiredfurni.params.selector_option.0')}</Text>
-                </label>
-
-                <label className="flex items-center gap-1">
-                    <Checkbox checked={invert} onCheckedChange={(nextChecked) => setInvert(nextChecked)} />
-                    <Text small>{LocalizeText('wiredfurni.params.selector_option.1')}</Text>
-                </label>
             </div>
         </WiredSelectorBaseView>
     );

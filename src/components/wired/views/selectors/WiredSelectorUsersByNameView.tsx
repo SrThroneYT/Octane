@@ -3,7 +3,6 @@ import { LocalizeText } from '../../../../api';
 import { Text } from '../../../../common';
 import { useWired } from '../../../../hooks';
 import { WiredSelectorBaseView } from './WiredSelectorBaseView';
-import { Checkbox } from '../../../../common/Checkbox';
 
 /** Official UsersByName: TextAreaParam(140, -1, 20, -1, 1000), at most 20 lines of 1000 characters in all. */
 export const MAX_NAMES_LENGTH = 1000;
@@ -18,23 +17,18 @@ export const limitNamesText = (text: string) => text.slice(0, MAX_NAMES_LENGTH).
 
 export const WiredSelectorUsersByNameView: FC<{}> = () => {
     const [namesText, setNamesText] = useState('');
-    const [filterExisting, setFilterExisting] = useState(false);
-    const [invert, setInvert] = useState(false);
-    const { trigger = null, setIntParams = null, setStringParam = null, setSelectorOptions = null } = useWired();
+    const { trigger = null, setIntParams = null, setStringParam = null } = useWired();
 
     useEffect(() => {
         if (!trigger) return;
 
         setNamesText(decodeNames(trigger.stringData || ''));
-        setFilterExisting(trigger.isFilter ?? false);
-        setInvert(trigger.isInvert ?? false);
     }, [trigger]);
 
     const save = useCallback(() => {
         setStringParam(encodeNames(namesText));
         setIntParams([]);
-        setSelectorOptions({ filter: filterExisting, invert });
-    }, [namesText, filterExisting, invert, setStringParam, setIntParams]);
+    }, [namesText, setStringParam, setIntParams]);
 
     return (
         <WiredSelectorBaseView hasSpecialInput={true} requiresFurni={0} save={save} hideDelay={true} cardStyle={{ width: 400 }}>
@@ -49,19 +43,6 @@ export const WiredSelectorUsersByNameView: FC<{}> = () => {
                     />
                 </div>
 
-                <hr className="m-0 bg-dark" />
-
-                <Text bold>{LocalizeText('wiredfurni.params.selector_options_selector')}</Text>
-
-                <label className="flex items-center gap-2">
-                    <Checkbox checked={filterExisting} onCheckedChange={(nextChecked) => setFilterExisting(nextChecked)} />
-                    <Text small>{LocalizeText('wiredfurni.params.selector_option.0')}</Text>
-                </label>
-
-                <label className="flex items-center gap-2">
-                    <Checkbox checked={invert} onCheckedChange={(nextChecked) => setInvert(nextChecked)} />
-                    <Text small>{LocalizeText('wiredfurni.params.selector_option.1')}</Text>
-                </label>
             </div>
         </WiredSelectorBaseView>
     );

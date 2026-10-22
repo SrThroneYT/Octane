@@ -134,7 +134,7 @@ export const WiredSelectorWithVariableView: FC<WiredSelectorWithVariableViewProp
     // Official layout: [comparison, reference (0 none, 1 value, 2 variable), value high, value low, reference
     // target, same holder]; the reference is read on the official source slots, filter / invert are the
     // official selector fields.
-    const { trigger = null, furniIds = [], setFurniIds = null, setIntParams = null, setStringParam = null, setSourceTypes = null, setSelectorOptions = null, setVariableIds = null } = useWired();
+    const { trigger = null, furniIds = [], setFurniIds = null, setIntParams = null, setStringParam = null, setSourceTypes = null, setVariableIds = null } = useWired();
     const [sameHolder, setSameHolder] = useState(false);
     const { userVariableDefinitions = [], furniVariableDefinitions = [], roomVariableDefinitions = [], contextVariableDefinitions = [] } = useWiredTools();
     const [variableToken, setVariableToken] = useState('');
@@ -147,8 +147,6 @@ export const WiredSelectorWithVariableView: FC<WiredSelectorWithVariableViewProp
     const [referenceUserSource, setReferenceUserSource] = useState(SOURCE_TRIGGER);
     const [referenceFurniSource, setReferenceFurniSource] = useState(SOURCE_TRIGGER);
     const [referenceFurniIds, setReferenceFurniIds] = useState<number[]>([]);
-    const [filterExisting, setFilterExisting] = useState(false);
-    const [invert, setInvert] = useState(false);
     const [referenceValid, setReferenceValid] = useState(true);
 
     const availableUserSources = useAvailableUserSources(trigger, USER_SOURCES);
@@ -235,8 +233,6 @@ export const WiredSelectorWithVariableView: FC<WiredSelectorWithVariableViewProp
         setSameHolder(d[5] === 1);
         setReferenceUserSource(trigger.userSourceTypes?.[0] ?? SOURCE_TRIGGER);
         setReferenceFurniSource(trigger.furniSourceTypes?.[0] ?? (nextReferenceFurniIds.length ? SOURCE_SECONDARY_SELECTED : SOURCE_TRIGGER));
-        setFilterExisting(trigger.isFilter ?? false);
-        setInvert(trigger.isInvert ?? false);
         setReferenceFurniIds(nextReferenceFurniIds);
         setFurniIds(nextReferenceFurniIds);
     }, [setFurniIds, trigger]);
@@ -285,7 +281,6 @@ export const WiredSelectorWithVariableView: FC<WiredSelectorWithVariableViewProp
             sameHolderActive ? 1 : 0
         ]);
         setSourceTypes({ furni: [referenceFurniSource], users: [referenceUserSource] });
-        setSelectorOptions({ filter: filterExisting, invert });
         setFurniIds(referenceSelectionEnabled ? nextReferenceFurniIds : []);
     };
 
@@ -395,19 +390,6 @@ export const WiredSelectorWithVariableView: FC<WiredSelectorWithVariableViewProp
                     </div>
                 </div>
 
-                <div className="octane-wired__divider" />
-
-                <Text bold>{LocalizeText('wiredfurni.params.selector_options_selector')}</Text>
-
-                <label className="flex items-center gap-2">
-                    <Checkbox checked={filterExisting} onCheckedChange={ nextChecked => setFilterExisting(nextChecked) } />
-                    <Text small>{LocalizeText('wiredfurni.params.selector_option.0')}</Text>
-                </label>
-
-                <label className="flex items-center gap-2">
-                    <Checkbox checked={invert} onCheckedChange={ nextChecked => setInvert(nextChecked) } />
-                    <Text small>{LocalizeText('wiredfurni.params.selector_option.1')}</Text>
-                </label>
             </div>
         </WiredSelectorBaseView>
     );

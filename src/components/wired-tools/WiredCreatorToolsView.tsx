@@ -166,6 +166,8 @@ import { BaseButton } from '../../common/BaseButton';
 import { isDerivedVariableItemId } from '../wired/views/WiredVariablePickerData';
 
 const WIRED_FURNI_GRAVITY_MODEL_KEY = 'wired_furni_gravity';
+/** Our variable types as the official idtype (0 made with a box, 1 internal). */
+const VARIABLE_ID_TYPES: Record<string, number> = { Custom: 0, Internal: 1 };
 
 export const WiredCreatorToolsView: FC<{}> = () => {
     const openVariablesExplorer = useVariablesExplorerStore((s) => s.open);
@@ -445,16 +447,13 @@ export const WiredCreatorToolsView: FC<{}> = () => {
 
     const getVariableAvailabilityLabel = (value: number, targetType: 'user' | 'furni' | 'global' | 'context'): string => {
         if (targetType === 'context') return 'Current wired execution';
+        if (value === 11) return localizeWithFallback('wiredfurni.params.variables.availability.11', 'Permanent, shared between rooms');
+        if (value === 10) return localizeWithFallback('wiredfurni.params.variables.availability.10', 'Permanent');
 
-        if (value === 11) {
-            const localizedValue = LocalizeText('wiredfurni.params.variables.availability.11');
-
-            return localizedValue && localizedValue !== 'wiredfurni.params.variables.availability.11' ? localizedValue : 'Permanent, shared between rooms';
-        }
-
-        if (value === 10) return 'Permanent';
-
-        return targetType === 'furni' || targetType === 'global' ? 'While the room is active' : 'While the user is in the room';
+        // Official availability 0 (user in the room) and 1 (room active).
+        return targetType === 'furni' || targetType === 'global'
+            ? localizeWithFallback('wiredfurni.params.variables.availability.1', 'While the room is active')
+            : localizeWithFallback('wiredfurni.params.variables.availability.0', 'While the user is in the room');
     };
 
     const getTeamColorDisplayName = (value: number): string => {
@@ -1972,19 +1971,31 @@ export const WiredCreatorToolsView: FC<{}> = () => {
     const selectedVariableProperties = useMemo(() => {
         if (!selectedVariableDefinition) return [];
 
+        // Official rows wiredmenu.variable_overview.properties.<name>, booleans as wiredmenu.bool.*, the type as idtype.*.
+        const row = (name: string, fallback: string, value: string) => ({
+            key: localizeWithFallback(`wiredmenu.variable_overview.properties.${name}`, fallback),
+            value
+        });
+        const bool = (value: boolean) => (value ? localizeWithFallback('wiredmenu.bool.yes', 'Yes') : localizeWithFallback('wiredmenu.bool.no', 'No'));
+        const typeId = VARIABLE_ID_TYPES[selectedVariableDefinition.type];
+        const type =
+            typeId === undefined
+                ? selectedVariableDefinition.type
+                : localizeWithFallback(`wiredfurni.params.variables.idtype.${typeId}`, selectedVariableDefinition.type);
+
         return [
-            { key: 'Name', value: selectedVariableDefinition.key },
-            { key: 'Type', value: selectedVariableDefinition.type },
-            { key: 'Target', value: selectedVariableDefinition.target },
-            { key: 'Availability', value: selectedVariableDefinition.availability },
-            { key: 'Has value', value: selectedVariableHasInspectionValue ? 'Yes' : 'No' },
-            { key: 'Can write to', value: selectedVariableDefinition.canWriteTo && roomSettings.canModify ? 'Yes' : 'No' },
-            { key: 'Can create/delete', value: selectedVariableDefinition.canCreateDelete ? 'Yes' : 'No' },
-            { key: 'Can intercept', value: selectedVariableDefinition.canIntercept ? 'Yes' : 'No' },
-            { key: 'Is always available', value: selectedVariableDefinition.isAlwaysAvailable ? 'Yes' : 'No' },
-            { key: 'Has creation time', value: selectedVariableDefinition.hasCreationTime ? 'Yes' : 'No' },
-            { key: 'Has update time', value: selectedVariableDefinition.hasUpdateTime ? 'Yes' : 'No' },
-            { key: 'Is text connected', value: selectedVariableDefinition.isTextConnected ? 'Yes' : 'No' }
+            row('name', 'Name', selectedVariableDefinition.key),
+            row('type', 'Type', type),
+            row('target', 'Target', selectedVariableDefinition.target),
+            row('availability', 'Availability', selectedVariableDefinition.availability),
+            row('has_value', 'Has value', bool(selectedVariableHasInspectionValue)),
+            row('can_write_to', 'Can write to', bool(selectedVariableDefinition.canWriteTo && roomSettings.canModify)),
+            row('can_create_delete', 'Can create/delete', bool(selectedVariableDefinition.canCreateDelete)),
+            row('can_intercept', 'Can intercept', bool(selectedVariableDefinition.canIntercept)),
+            row('is_always_available', 'Is always available', bool(selectedVariableDefinition.isAlwaysAvailable)),
+            row('can_read_creation_time', 'Has creation time', bool(selectedVariableDefinition.hasCreationTime)),
+            row('can_read_last_update_time', 'Has update time', bool(selectedVariableDefinition.hasUpdateTime)),
+            row('is_text_connected', 'Is text connected', bool(selectedVariableDefinition.isTextConnected))
         ];
     }, [selectedVariableDefinition, selectedVariableHasInspectionValue, roomSettings.canModify]);
     const selectedVariableTextValues = useMemo((): VariableTextValue[] => {
@@ -3410,7 +3421,7 @@ export const WiredCreatorToolsView: FC<{}> = () => {
                 uniqueKey="wired-creator-tools"
                 windowPosition={DraggableWindowPosition.TOP_LEFT}
             >
-                <OctaneCardHeaderView headerText="Wired Creator Tools (:wired)" onCloseClick={() => setIsVisible(false)} />
+                <OctaneCardHeaderView headerText={localizeWithFallback('wiredmenu.title', 'Wired Creator Tools (:wired)')} onCloseClick={() => setIsVisible(false)} />
                 <OctaneCardTabsView justifyContent="start">
                     {TABS.map((tab) => (
                         <OctaneCardTabsItemView key={tab.key} isActive={activeTab === tab.key} onClick={() => setActiveTab(tab.key)}>
@@ -3503,7 +3514,7 @@ export const WiredCreatorToolsView: FC<{}> = () => {
                     offsetLeft={560}
                     offsetTop={40}
                 >
-                    <OctaneCardHeaderView headerText="Wired Monitor Logs" onCloseClick={() => setIsMonitorHistoryOpen(false)} />
+                    <OctaneCardHeaderView headerText={localizeWithFallback('wiredmenu.monitor.history.title', 'Wired Monitor Logs')} onCloseClick={() => setIsMonitorHistoryOpen(false)} />
                     <OctaneCardContentView className="text-black bg-[#f4efe3] p-3 flex flex-col gap-3" overflow="hidden">
                         <div className="flex flex-wrap items-center gap-2 text-[12px]">
                             <span className="text-[#555]">Severity:</span>
@@ -3585,7 +3596,7 @@ export const WiredCreatorToolsView: FC<{}> = () => {
                     offsetLeft={610}
                     offsetTop={80}
                 >
-                    <OctaneCardHeaderView headerText="Wired Monitor Information" onCloseClick={() => setIsMonitorInfoOpen(false)} />
+                    <OctaneCardHeaderView headerText={localizeWithFallback('wiredmenu.monitor.info.title', 'Wired Monitor Information')} onCloseClick={() => setIsMonitorInfoOpen(false)} />
                     <OctaneCardContentView className="text-black bg-[#f4efe3] p-4 flex flex-col gap-4 overflow-y-auto">
                         {monitorInfoSections.map((section) => (
                             <div key={section.title} className="flex flex-col gap-1">

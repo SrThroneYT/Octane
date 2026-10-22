@@ -1,5 +1,5 @@
-import { FC, useEffect, useMemo, useState } from 'react';
-import { localizeWithFallback, WiredFurniType } from '../../../../api';
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { localizeWithFallback, WiredFurniType, WiredSelectionVisualizer } from '../../../../api';
 import {
     emptySendRow,
     ILinkSendRow,
@@ -20,6 +20,7 @@ import {
 } from '../../../../api/wired/WiredLinkDataframe';
 import { Text } from '../../../../common';
 import { useNotification, useWired, useWiredTools } from '../../../../hooks';
+import { WiredFurniSelectionSourceRow } from '../WiredFurniSelectionSourceRow';
 import { WiredSourcesSelector } from '../WiredSourcesSelector';
 import { WiredVariablePicker } from '../WiredVariablePicker';
 import { buildWiredVariablePickerEntries, IWiredVariablePickerEntry, normalizeVariableTokenFromWire, WiredVariablePickerTarget } from '../WiredVariablePickerData';
@@ -50,6 +51,11 @@ const TARGETS: { value: number; picker: WiredVariablePickerTarget; key: string }
     { value: LINK_TARGET_CONTEXT, picker: 'context', key: 'wiredfurni.params.variables.target.context' }
 ];
 
+/** Row furni source 101: the second pick list (stuffIds2), as AIR's "other picked furni". */
+const SOURCE_OTHER_PICKS = 101;
+
+type PickList = 'endpoints' | 'other';
+
 interface IRowState extends ILinkSendRow
 {
     furniSource: number;
@@ -63,12 +69,16 @@ interface IRowState extends ILinkSendRow
  */
 export const WiredActionSendLinkDataframeView: FC<{}> = () =>
 {
-    const { trigger = null, setIntParams = null, setStringParam = null, setVariableIds = null, setSourceTypes = null } = useWired();
+    const { trigger = null, furniIds = [], setFurniIds = null, setFurniIds2 = null, setIntParams = null, setStringParam = null, setVariableIds = null, setSourceTypes = null } = useWired();
     const { userVariableDefinitions = [], furniVariableDefinitions = [], roomVariableDefinitions = [], contextVariableDefinitions = [] } = useWiredTools();
     const { simpleAlert = null } = useNotification();
     const [ endpointSource, setEndpointSource ] = useState(100);
     const [ rows, setRows ] = useState<IRowState[]>([]);
     const [ invalid, setInvalid ] = useState(false);
+    const [ endpointIds, setEndpointIds ] = useState<number[]>([]);
+    const [ otherIds, setOtherIds ] = useState<number[]>([]);
+    const [ pickList, setPickList ] = useState<PickList>('endpoints');
+    const highlightedIds = useRef<number[]>([]);
 
     useEffect(() =>
     {
@@ -84,7 +94,61 @@ export const WiredActionSendLinkDataframeView: FC<{}> = () =>
             furniSource: trigger.furniSourceTypes?.[index + 1] ?? 0,
             userSource: trigger.userSourceTypes?.[index] ?? 0
         })));
+        setEndpointIds(trigger.selectedItems ?? []);
+        setOtherIds(trigger.selectedItems2 ? [ ...trigger.selectedItems2 ] : []);
+        setPickList('endpoints');
     }, [ trigger ]);
+
+    // A furni variable row on "other picked furni" reads the second pick list (AIR's dual furni picking).
+    const usesOtherPicks = rows.some(row => (row.target === LINK_TARGET_FURNI) && (row.mode === LINK_SEND_VARIABLE_VALUE || row.mode === LINK_SEND_VARIABLE_TEXT) && (row.furniSource === SOURCE_OTHER_PICKS));
+
+    // The picking in the room edits the active list.
+    useEffect(() =>
+    {
+        if(pickList === 'endpoints') setEndpointIds(furniIds);
+        else setOtherIds(furniIds);
+    }, [ furniIds, pickList ]);
+
+    useEffect(() =>
+    {
+        highlightedIds.current = WiredSelectionVisualizer.showPickLists(highlightedIds.current, endpointIds, usesOtherPicks ? otherIds : []);
+    }, [ endpointIds, otherIds, usesOtherPicks ]);
+
+    useEffect(() =>
+    {
+        WiredSelectionVisualizer.setEditingPickList((pickList === 'other') ? 2 : 1);
+    }, [ pickList ]);
+
+    useEffect(() => () =>
+    {
+        WiredSelectionVisualizer.setEditingPickList(1);
+
+        if(!highlightedIds.current.length) return;
+
+        WiredSelectionVisualizer.clearSelectionShaderFromFurni(highlightedIds.current);
+        WiredSelectionVisualizer.clearSecondarySelectionShaderFromFurni(highlightedIds.current);
+        highlightedIds.current = [];
+    }, []);
+
+    const switchPickList = useCallback((next: PickList) =>
+    {
+        if(next === pickList) return;
+        if(next === 'other' && !usesOtherPicks) return;
+
+        const nextEndpointIds = (pickList === 'endpoints') ? [ ...furniIds ] : [ ...endpointIds ];
+        const nextOtherIds = (pickList === 'other') ? [ ...furniIds ] : [ ...otherIds ];
+
+        setEndpointIds(nextEndpointIds);
+        setOtherIds(nextOtherIds);
+        setPickList(next);
+        setFurniIds?.([ ...((next === 'endpoints') ? nextEndpointIds : nextOtherIds) ]);
+    }, [ pickList, usesOtherPicks, furniIds, endpointIds, otherIds, setFurniIds ]);
+
+    // No row reads the second list any more: go back to picking the endpoints.
+    useEffect(() =>
+    {
+        if(!usesOtherPicks && pickList === 'other') switchPickList('endpoints');
+    }, [ usesOtherPicks, pickList, switchPickList ]);
 
     const entriesByTarget = useMemo(() => ({
         user: buildWiredVariablePickerEntries('user', 'change-reference', userVariableDefinitions),
@@ -119,6 +183,16 @@ export const WiredActionSendLinkDataframeView: FC<{}> = () =>
 
     const save = () =>
     {
+        const nextEndpointIds = (pickList === 'endpoints') ? [ ...furniIds ] : [ ...endpointIds ];
+        const nextOtherIds = (pickList === 'other') ? [ ...furniIds ] : [ ...otherIds ];
+
+        // The first list is what the box saves as its picks.
+        if(pickList === 'other')
+        {
+            setPickList('endpoints');
+            setFurniIds?.(nextEndpointIds);
+        }
+
         const stored = writeLinkSend(rows);
         const furni = [ endpointSource ];
         const users: number[] = [];
@@ -133,7 +207,10 @@ export const WiredActionSendLinkDataframeView: FC<{}> = () =>
         setStringParam(stored.stringParam);
         setVariableIds(stored.variableIds);
         setSourceTypes({ furni, users });
+        setFurniIds2?.(usesOtherPicks ? nextOtherIds.filter(id => (id > 0)) : []);
     };
+
+    const selectionLimit = trigger?.maximumItemSelectionCount ?? 0;
 
     // The dropdown offers number, variable text and message; "number" is a typed value or a variable's value.
     const modeChoice = (row: IRowState) => ((row.mode === LINK_SEND_VARIABLE_VALUE) ? LINK_SEND_NUMBER : row.mode);
@@ -146,6 +223,39 @@ export const WiredActionSendLinkDataframeView: FC<{}> = () =>
             validate={ validate }
             widthModifier={ 1.4 }
             allowScrolling
+            selectionPreview={
+                <div className="flex flex-col gap-2">
+                    <WiredFurniSelectionSourceRow
+                        title={ localizeWithFallback('wiredfurni.params.link.endpoints', 'WIRED Links') }
+                        titleIsLiteral={ true }
+                        options={ [ { value: 100, label: 'wiredfurni.params.sources.furni.100' } ] }
+                        value={ 100 }
+                        selectionKind="primary"
+                        selectionActive={ pickList === 'endpoints' }
+                        selectionCount={ endpointIds.length }
+                        selectionLimit={ selectionLimit }
+                        selectionEnabledValues={ [ 100 ] }
+                        showSelectionToggle={ usesOtherPicks }
+                        onChange={ () =>
+                        {} }
+                        onSelectionActivate={ () => switchPickList('endpoints') } />
+                    { usesOtherPicks && (
+                        <WiredFurniSelectionSourceRow
+                            title={ localizeWithFallback('wiredfurni.params.link.source_furni', 'Variable source furni') }
+                            titleIsLiteral={ true }
+                            options={ [ { value: SOURCE_OTHER_PICKS, label: 'wiredfurni.params.sources.furni.101' } ] }
+                            value={ SOURCE_OTHER_PICKS }
+                            selectionKind="secondary"
+                            selectionActive={ pickList === 'other' }
+                            selectionCount={ otherIds.length }
+                            selectionLimit={ selectionLimit }
+                            selectionEnabledValues={ [ SOURCE_OTHER_PICKS ] }
+                            onChange={ () =>
+                            {} }
+                            onSelectionActivate={ () => switchPickList('other') } />
+                    ) }
+                </div>
+            }
             footer={ <WiredSourcesSelector showFurni={ true } furniSource={ endpointSource } furniSources={ LINK_SOURCES } furniTitle={ localizeWithFallback('wiredfurni.params.link.endpoints', 'WIRED Links') } onChangeFurni={ setEndpointSource } /> }
         >
             { invalid && <Text small className="text-[#ad3434]">{ localizeWithFallback('wiredfurni.error.link.invalid_dataframe', 'The dataframe configuration is invalid.') }</Text> }

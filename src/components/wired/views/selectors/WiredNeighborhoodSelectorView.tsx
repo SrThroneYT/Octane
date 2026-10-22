@@ -20,7 +20,6 @@ import { useWired } from '../../../../hooks';
 import { WiredFurniSelectionSourceRow } from '../WiredFurniSelectionSourceRow';
 import { sortWiredSourceOptions, useAvailableUserSources } from '../WiredSourcesSelector';
 import { WiredSelectorBaseView } from './WiredSelectorBaseView';
-import { Checkbox } from '../../../../common/Checkbox';
 import { NumberInput } from '../../../../common/NumberInput';
 import { BaseButton } from '../../../../common/BaseButton';
 
@@ -149,15 +148,13 @@ const NeighborhoodFloor: FC<NeighborhoodFloorProps> = ({ radius, tiles, root, on
 
 export const WiredNeighborhoodSelectorView: FC<{}> = () =>
 {
-    const { trigger = null, furniIds = [], setIntParams, setSourceTypes, setSelectorOptions } = useWired();
+    const { trigger = null, furniIds = [], setIntParams, setSourceTypes } = useWired();
     const [ isUser, setIsUser ] = useState(false);
     const [ source, setSource ] = useState(SOURCE_TRIGGER);
     const [ root, setRoot ] = useState<NeighborhoodTile>({ x: 0, y: 0 });
     const [ tiles, setTiles ] = useState<Set<string>>(() => new Set());
     const [ drawMode, setDrawMode ] = useState<DrawMode>('add_tile');
     const [ bigMode, setBigMode ] = useState(false);
-    const [ filterExisting, setFilterExisting ] = useState(false);
-    const [ invert, setInvert ] = useState(false);
     const availableUserSources = useAvailableUserSources(trigger, USER_SOURCES);
 
     useEffect(() =>
@@ -182,8 +179,6 @@ export const WiredNeighborhoodSelectorView: FC<{}> = () =>
         setTiles(new Set(drawn.map(tile => tileKey(tile.x, tile.y))));
         setBigMode(!neighborhoodFitsSmall(drawn));
         setDrawMode('add_tile');
-        setFilterExisting(trigger.isFilter ?? false);
-        setInvert(trigger.isInvert ?? false);
     }, [ trigger ]);
 
     const tileList = useMemo(() => [ ...tiles ].map(key =>
@@ -231,8 +226,7 @@ export const WiredNeighborhoodSelectorView: FC<{}> = () =>
     {
         setIntParams([ isUser ? 1 : 0, root.x, root.y, ...encodeNeighborhood(tileList) ]);
         setSourceTypes({ furni: [ isUser ? SOURCE_TRIGGER : source ], users: [ isUser ? source : SOURCE_TRIGGER ] });
-        setSelectorOptions({ filter: filterExisting, invert });
-    }, [ filterExisting, invert, isUser, root, setIntParams, setSelectorOptions, setSourceTypes, source, tileList ]);
+    }, [ isUser, root, setIntParams, setSourceTypes, source, tileList ]);
 
     const modeButton = (mode: DrawMode, icon: JSX.Element, titleKey: string, fallback: string) => (
         <Button
@@ -281,17 +275,6 @@ export const WiredNeighborhoodSelectorView: FC<{}> = () =>
                     <NumberInput className="form-control form-control-sm" style={ { width: 56 } } min={ -NEIGHBORHOOD_MAX_ROOT } max={ NEIGHBORHOOD_MAX_ROOT } value={ root.y } onChange={ event => setRoot({ x: root.x, y: clampRoot(parseInt(event.target.value)) }) } />
                 </div>
 
-                <hr className="m-0 bg-dark" />
-
-                <Text bold>{ LocalizeText('wiredfurni.params.selector_options_selector') }</Text>
-                <label className="flex items-center gap-1">
-                    <Checkbox checked={ filterExisting } onCheckedChange={(nextChecked) => setFilterExisting(nextChecked)} />
-                    <Text small>{ LocalizeText('wiredfurni.params.selector_option.0') }</Text>
-                </label>
-                <label className="flex items-center gap-1">
-                    <Checkbox checked={ invert } onCheckedChange={(nextChecked) => setInvert(nextChecked)} />
-                    <Text small>{ LocalizeText('wiredfurni.params.selector_option.1') }</Text>
-                </label>
 
                 <hr className="m-0 bg-dark" />
 

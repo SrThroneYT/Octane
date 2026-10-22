@@ -1,6 +1,7 @@
 import { CSSProperties, FC, PropsWithChildren, ReactNode } from 'react';
 import { WiredFurniType } from '../../../../api';
 import { WiredBaseView } from '../WiredBaseView';
+import { WiredSelectorOptionsSection } from './WiredSelectorOptionsSection';
 
 export interface WiredSelectorBaseViewProps {
     hasSpecialInput: boolean;
@@ -38,6 +39,7 @@ export const WiredSelectorBaseView: FC<PropsWithChildren<WiredSelectorBaseViewPr
             footer={footer}
             footerCollapsible={footerCollapsible}
             selectionPreview={selectionPreview}
+            selectorOptions={<WiredSelectorOptionsSection />}
         >
             {children}
         </WiredBaseView>
