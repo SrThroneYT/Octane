@@ -149,6 +149,9 @@
         return;
       } catch(error) {
         console.warn("[Octane] Secure bootstrap fallback:", error?.message || error);
+        // The loader now comes in the clear: the rest of the page goes in the clear too, instead of
+        // asking an unreachable /nitro-sec for every file.
+        window.__octaneClientMode = Object.assign({}, mode, { secureAssetsEnabled: false, secureApiEnabled: false });
       }
     }
 

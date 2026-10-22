@@ -13,10 +13,11 @@ export type OctaneClientMode = {
     plainGamedataBaseUrl?: string;
 };
 
+// The same defaults as asset-loader.js: without a client-mode the client asks for nothing encrypted.
 const CLIENT_MODE_DEFAULTS: OctaneClientMode = {
-    distObfuscationEnabled: true,
-    secureAssetsEnabled: true,
-    secureApiEnabled: true
+    distObfuscationEnabled: false,
+    secureAssetsEnabled: false,
+    secureApiEnabled: false
 };
 
 const getDeployBaseUrl = (): string => {
@@ -94,7 +95,14 @@ let installed = false;
 const secureResponseCache = new Map<string, Promise<Response>>();
 const SECURE_RESPONSE_CACHE_LIMIT = 128;
 let secureSessionCreatedAt = 0;
-const SECURE_SESSION_TTL_MS = 5 * 60 * 1000;
+const DEFAULT_SECURE_SESSION_TTL_MS = 5 * 60 * 1000;
+const MIN_SECURE_SESSION_TTL_MS = 60 * 1000;
+const MAX_SECURE_SESSION_TTL_MS = 60 * 60 * 1000;
+// Renewed from the server's bootstrap answer (`ttl`, seconds); a server that sends none keeps the default.
+let secureSessionTtlMs = DEFAULT_SECURE_SESSION_TTL_MS;
+// After a failed bootstrap the client works in the clear until this time, then tries again.
+let secureUnavailableUntil = 0;
+const SECURE_RETRY_MS = 5 * 60 * 1000;
 const REKEY_ENDPOINTS = new Set(['/api/auth/login', '/api/auth/remember', '/api/auth/logout']);
 
 let clientModeCache: OctaneClientMode | null = null;
@@ -267,7 +275,8 @@ const createSecureSession = async (): Promise<SecureSession> => {
 
     if (!serverKey) throw new Error('Secure bootstrap returned an invalid server key.');
 
-    setDebugState(`secure: bootstrap ok fp=${fingerprint}`);
+    secureSessionTtlMs = resolveSessionTtlMs(payload.ttl);
+    setDebugState(`secure: bootstrap ok fp=${fingerprint} ttl=${secureSessionTtlMs / 1000}s`);
 
     const derived = await deriveAesKey(pair.privateKey, serverKey);
 
@@ -282,8 +291,14 @@ const clearSecureSession = (clearCache = false): void => {
     if (clearCache) secureResponseCache.clear();
 };
 
+export const resolveSessionTtlMs = (ttlSeconds: unknown): number => {
+    if (typeof ttlSeconds !== 'number' || !Number.isFinite(ttlSeconds) || ttlSeconds <= 0) return DEFAULT_SECURE_SESSION_TTL_MS;
+
+    return Math.min(MAX_SECURE_SESSION_TTL_MS, Math.max(MIN_SECURE_SESSION_TTL_MS, Math.round(ttlSeconds * 1000)));
+};
+
 export const getSecureSession = (): Promise<SecureSession> => {
-    if (secureSessionPromise && secureSessionCreatedAt && Date.now() - secureSessionCreatedAt > SECURE_SESSION_TTL_MS) {
+    if (secureSessionPromise && secureSessionCreatedAt && Date.now() - secureSessionCreatedAt > secureSessionTtlMs) {
         setDebugState('secure: session expired, rotating');
         clearSecureSession();
     }
@@ -291,6 +306,26 @@ export const getSecureSession = (): Promise<SecureSession> => {
     if (!secureSessionPromise) secureSessionPromise = createSecureSession();
 
     return secureSessionPromise;
+};
+
+/**
+ * The secure session, or null when the server does not answer the bootstrap (secure mode off on the
+ * server, an old server, a network error). The caller then goes in the clear instead of failing every
+ * request, and the bootstrap is tried again after SECURE_RETRY_MS. A server that requires encryption
+ * still refuses those plain calls itself.
+ */
+const getSecureSessionOrPlain = async (): Promise<SecureSession | null> => {
+    if (Date.now() < secureUnavailableUntil) return null;
+
+    try {
+        return await getSecureSession();
+    } catch (error) {
+        clearSecureSession();
+        secureUnavailableUntil = Date.now() + SECURE_RETRY_MS;
+        setDebugState(`secure: bootstrap unavailable, plain until retry (${(error as Error)?.message || error})`);
+
+        return null;
+    }
 };
 
 const decryptResponse = async (session: SecureSession, response: Response): Promise<Response> => {
@@ -444,7 +479,10 @@ export const installSecureFetch = (): void => {
             if (cacheKey && secureResponseCache.has(cacheKey)) return cloneCachedResponse(secureResponseCache.get(cacheKey));
 
             const responsePromise = (async () => {
-                const session = await getSecureSession();
+                const session = await getSecureSessionOrPlain();
+
+                if (!session) return nativeFetch(mapSecureAssetRequestToPlainUrl(requestUrl), init);
+
                 setDebugState(`secure: fetching ${requestUrl}`);
                 const headers = new Headers(init?.headers || (input instanceof Request ? input.headers : undefined));
 
@@ -478,7 +516,10 @@ export const installSecureFetch = (): void => {
 
         if (getClientMode().secureApiEnabled && isApiUrl(requestUrl)) {
             const method = (init?.method || (input instanceof Request ? input.method : 'GET')).toUpperCase();
-            const session = await getSecureSession();
+            const session = await getSecureSessionOrPlain();
+
+            if (!session) return nativeFetch(input, init);
+
             const headers = new Headers(init?.headers || (input instanceof Request ? input.headers : undefined));
             const clearBody = await readRequestBody(input, init, method);
             const secureBody = buildSecureApiEnvelope(requestUrl, method, clearBody);
