@@ -1,10 +1,7 @@
 import { GetConfiguration, GetModeratorUserInfoMessageComposer, ModeratorInitData, ModeratorUserInfoData, ModeratorUserInfoEvent } from '@octane/renderer';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { localizeWithFallback, OpenUrl, SendMessageComposer } from '../../../api';
-import { LayoutAvatarImageView } from '../../../common';
 import { useMessageEvent, useRoomUserListSnapshot } from '../../../hooks';
-import { resolveAvatarFigure } from '../../friends/views/friends-list/resolveAvatarFigure';
-import { resolveAvatarGender } from '../../friends/views/friends-list/resolveAvatarGender';
 import userInfoXml from '../../../assets/mod-tools/xml/user_info.xml?raw';
 import { findNativeNode, nativeCaption, nativeNumber, NativeNode, parseNativeLayout } from '../native/NativeLayout';
 import { Native0Border, Native0Button, Native0Text } from '../native/NativeWindow0';
@@ -33,7 +30,7 @@ export interface UserInfoPanelProps {
 
 // Classic v75 UserInfoCtrl (og): the user_info border with its fields and buttons. It is the content of the user info window (X5) and of the caller / reported panels of the issue handler: GetModeratorUserInfo(userId) goes out when the window opens, the fields stay hidden behind "Loading..."
 // until the answer for this user arrives; the sanction counts show a "view" link when they are above zero. Kept from the earlier user info: "Online" also says when the
-// user is in the moderator's room, and the free space under the buttons holds a refresh button and the user's head.
+// user is in the moderator's room, and the free space under the buttons holds a refresh button.
 export const UserInfoPanel: FC<UserInfoPanelProps> = ({ userId, settings, onOpenChatlog, onOpenSendMessage, onOpenModAction, onOpenRoomVisits }) => {
     const frame = useMemo(() => parseNativeLayout(userInfoXml), []);
     const fields = useMemo(() => findNativeNode(frame, 'fields'), [frame]);
@@ -118,19 +115,6 @@ export const UserInfoPanel: FC<UserInfoPanelProps> = ({ userId, settings, onOpen
                             />
                             <Native0Button enabled={canModAction} height={21} label={text(findNativeNode(buttons, 'modaction_but'))} width={80} x={button('modaction_but').x} y={button('modaction_but').y} onClick={() => onOpenModAction(data.userName)} />
                             <Native0Button height={21} label={localizeWithFallback('modtools.native.refresh', 'Refresh')} width={80} x={button('modaction_but').x} y={button('modaction_but').y + 22} onClick={refresh} />
-                            {(data.figure || roomUser?.figure) && (
-                                <div className="native0-user-head" style={{ left: 20, top: button('modaction_but').y + 48 }}>
-                                    <LayoutAvatarImageView
-                                        compactHead
-                                        compactHeadPadding={0}
-                                        compactHeadSize={40}
-                                        direction={2}
-                                        figure={resolveAvatarFigure(data.figure || roomUser.figure, roomUser?.sex)}
-                                        gender={resolveAvatarGender(roomUser?.sex)}
-                                        headOnly
-                                    />
-                                </div>
-                            )}
                         </div>
                     </div>
                 )}
