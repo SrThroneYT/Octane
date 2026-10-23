@@ -49,11 +49,11 @@ export const AvatarInfoRentableBotChatView: FC<AvatarInfoRentableBotChatViewProp
             />
             <label className="air-bot-skill-row">
                 <span className="air-bot-skill-label">{LocalizeText('bot.skill.chatter.configuration.automatic.chat')}</span>
-                <Checkbox checked={automaticChat} onCheckedChange={ nextChecked => setAutomaticChat(nextChecked) } />
+                <Checkbox checked={automaticChat} className="air-bot-skill-checkbox" onCheckedChange={ nextChecked => setAutomaticChat(nextChecked) } />
             </label>
             <label className="air-bot-skill-row">
                 <span className="air-bot-skill-label">{LocalizeText('bot.skill.chatter.configuration.markov')}</span>
-                <Checkbox checked={mixSentences} onCheckedChange={ nextChecked => setMixSentences(nextChecked) } />
+                <Checkbox checked={mixSentences} className="air-bot-skill-checkbox" onCheckedChange={ nextChecked => setMixSentences(nextChecked) } />
             </label>
             <label className="air-bot-skill-row">
                 <span className="air-bot-skill-label">{LocalizeText('bot.skill.chatter.configuration.chat.delay')}</span>

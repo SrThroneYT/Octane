@@ -480,29 +480,29 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
                     <img src={ dividerImg } alt="" className="tb-divider" />
                     { !leftCollapsed && (<>
                     { fortuneWheelEnabled &&
-                        <motion.div variants={ itemVariants } className="tb-slot">
+                        <motion.div variants={ itemVariants } className="tb-slot tb-slot-fit">
                             <ToolbarItemView icon="fortune-wheel" onClick={ () => CreateLinkEvent('fortune-wheel/toggle') } className="tb-icon" />
                         </motion.div> }
                     { (isInRoom && youtubeEnabled) &&
-                        <motion.div variants={ itemVariants } className="tb-slot">
+                        <motion.div variants={ itemVariants } className="tb-slot tb-slot-fit">
                             <ToolbarItemView icon="youtube" onClick={ openYouTubePlayer } className="tb-icon" />
                         </motion.div> }
                     { (isInRoom && soundboardEnabled) &&
-                        <motion.div variants={ itemVariants } className="tb-slot">
+                        <motion.div variants={ itemVariants } className="tb-slot tb-slot-fit">
                             <ToolbarItemView icon="soundboard" onClick={ () => CreateLinkEvent('soundboard/toggle') } className={ `tb-icon ${ soundboardPulse ? 'animate-pulse' : '' }` } />
                         </motion.div> }
                     { (isInRoom && buildHeightAvailable) &&
-                        <motion.div variants={ itemVariants } className="tb-slot">
+                        <motion.div variants={ itemVariants } className="tb-slot tb-slot-fit">
                             <ToolbarItemView icon="buildheight" onClick={ toggleBuildHeight } className="tb-icon" />
                         </motion.div> }
                     { isMod &&
-                        <motion.div variants={ itemVariants } className="relative tb-slot">
+                        <motion.div variants={ itemVariants } className="relative tb-slot tb-slot-fit">
                             <ToolbarItemView icon="modtools" onClick={ () => CreateLinkEvent('mod-tools/show') } className="tb-icon" />
                             { (openTicketsCount > 0) &&
                                 <LayoutItemCountView count={ openTicketsCount } className="pointer-events-none absolute -right-1 -top-1 z-10" /> }
                         </motion.div> }
                     { (isHk && hkEnabled) &&
-                        <motion.div variants={ itemVariants } className="tb-slot">
+                        <motion.div variants={ itemVariants } className="tb-slot tb-slot-fit">
                             <ToolbarItemView icon="housekeeping" onClick={ () => CreateLinkEvent('housekeeping/toggle') } className="tb-icon" />
                         </motion.div> }
                     </>) }

@@ -11,6 +11,10 @@ export type CatalogLayoutRenderer =
     | 'guildFrontpage'
     | 'info'
     | 'infoLoyalty'
+    | 'infoDuckets'
+    | 'infoRentables'
+    | 'recyclerInfo'
+    | 'monkey'
     | 'marketplaceOwnItems'
     | 'marketplacePublicItems'
     | 'petCustomization'
@@ -62,11 +66,11 @@ export const CATALOG_LAYOUT_REGISTRY = [
     { studioCode: 'marketplace', runtimeCodes: ['marketplace'], renderer: 'marketplacePublicItems', availability: 'ready' },
     { studioCode: 'marketplace_own_items', runtimeCodes: ['marketplace_own_items'], renderer: 'marketplaceOwnItems', availability: 'ready' },
     { studioCode: 'recycler', runtimeCodes: ['recycler'], renderer: 'recycler', availability: 'ready' },
-    { studioCode: 'recycler_info', runtimeCodes: ['recycler_info', 'info_recycler'], renderer: 'info', availability: 'ready' },
+    { studioCode: 'recycler_info', runtimeCodes: ['recycler_info', 'info_recycler'], renderer: 'recyclerInfo', availability: 'ready' },
     { studioCode: 'recycler_prizes', runtimeCodes: ['recycler_prizes'], renderer: 'recyclerPrizes', availability: 'ready' },
     { studioCode: 'info_loyalty', runtimeCodes: ['info_loyalty'], renderer: 'infoLoyalty', availability: 'ready' },
-    { studioCode: 'info_duckets', runtimeCodes: ['info_duckets'], renderer: 'info', availability: 'ready' },
-    { studioCode: 'info_rentables', runtimeCodes: ['info_rentables'], renderer: 'info', availability: 'ready' },
+    { studioCode: 'info_duckets', runtimeCodes: ['info_duckets'], renderer: 'infoDuckets', availability: 'ready' },
+    { studioCode: 'info_rentables', runtimeCodes: ['info_rentables'], renderer: 'infoRentables', availability: 'ready' },
     { studioCode: 'info_pets', runtimeCodes: ['info_pets'], renderer: 'info', availability: 'ready' },
     { studioCode: 'loyalty_vip_buy', runtimeCodes: ['loyalty_vip_buy'], renderer: 'vipBuy', availability: 'ready' },
     { studioCode: 'badge_display', runtimeCodes: ['badge_display'], renderer: 'badgeDisplay', availability: 'ready' },
@@ -80,7 +84,7 @@ export const CATALOG_LAYOUT_REGISTRY = [
     { studioCode: 'petcustomization', runtimeCodes: ['petcustomization'], renderer: 'petCustomization', availability: 'ready' },
     { studioCode: 'frontpage_featured', runtimeCodes: ['frontpage_featured'], renderer: 'frontpage', availability: 'ready' },
     { studioCode: 'root', runtimeCodes: ['root'], renderer: 'default', availability: 'ready' },
-    { studioCode: 'monkey', runtimeCodes: ['monkey'], renderer: 'info', availability: 'ready' },
+    { studioCode: 'monkey', runtimeCodes: ['monkey'], renderer: 'monkey', availability: 'ready' },
     { studioCode: 'niko', runtimeCodes: ['niko'], renderer: 'info', availability: 'ready' },
     { studioCode: 'mad_money', runtimeCodes: ['mad_money'], renderer: 'info', availability: 'ready' },
     { studioCode: 'productpage1', runtimeCodes: ['productpage1'], renderer: 'default', availability: 'ready' },

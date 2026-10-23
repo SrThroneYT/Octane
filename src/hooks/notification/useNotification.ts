@@ -46,6 +46,7 @@ import { useMessageEvent } from '../events';
 import { useHotelAlertToastStore } from './hotelAlertToastStore';
 import { useHotelStatusNotifications } from './useHotelStatusNotifications';
 import { usePetNotifications } from './usePetNotifications';
+import { useRecyclerNotifications } from './useRecyclerNotifications';
 import { useWiredTransactionNotifications } from './useWiredTransactionNotifications';
 
 const cleanText = (text: string) => (text && text.length ? text.replace(/\\r/g, '\r') : '');
@@ -330,6 +331,7 @@ const useNotificationStore = () => {
     useHotelStatusNotifications(simpleAlert);
     usePetNotifications(simpleAlert, showSingleBubble);
     useWiredTransactionNotifications(simpleAlert, showSingleBubble);
+    useRecyclerNotifications(showSingleBubble);
 
     useMessageEvent<RespectReceivedEvent>(RespectReceivedEvent, (event) => {
         const parser = event.getParser();

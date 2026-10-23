@@ -1,14 +1,15 @@
 import { FC, useEffect, useRef } from 'react';
-import { GetProductIconUrl } from '../../../../../api';
+import { GetProductIconUrl, ProductTypeEnum } from '../../../../../api';
 import { AutoGrid, AutoGridProps, LayoutGridItem } from '../../../../../common';
 import { useCatalogData } from '../../../../../hooks';
 
 interface CatalogBundleGridWidgetViewProps extends AutoGridProps {
-    hideMainProduct?: boolean;
+    /** AIR BundleProductContainer: list every product of the bundle except its badges. */
+    hideBadges?: boolean;
 }
 
 export const CatalogBundleGridWidgetView: FC<CatalogBundleGridWidgetViewProps> = (props) => {
-    const { columnCount = 5, children = null, hideMainProduct = false, ...rest } = props;
+    const { columnCount = 5, children = null, hideBadges = false, ...rest } = props;
     const { currentOffer = null } = useCatalogData();
     const elementRef = useRef<HTMLDivElement>(null);
 
@@ -18,8 +19,7 @@ export const CatalogBundleGridWidgetView: FC<CatalogBundleGridWidgetViewProps> =
 
     if (!currentOffer) return null;
 
-    const mainProduct = hideMainProduct ? currentOffer.product : null;
-    const products = mainProduct ? currentOffer.products.filter((product) => product !== mainProduct) : currentOffer.products;
+    const products = hideBadges ? currentOffer.products?.filter((product) => product.productType !== ProductTypeEnum.BADGE) : currentOffer.products;
 
     return (
         <AutoGrid columnCount={columnCount} innerRef={elementRef} {...rest}>

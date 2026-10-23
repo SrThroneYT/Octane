@@ -75,38 +75,43 @@
         white-space: nowrap;
     }
 
+    /* room_tools_toolbar: zoom_in_btn and zoom_out_btn are 18x19 regions 2px apart, each drawing the roomtools_zoom_in/out bitmap with the
+       "button" dynamic style: brighter on hover (x1.1 +15), darker and 1px lower when pressed (x0.8), half alpha when disabled. */
     .room-tools-zoom-button {
         width: 18px;
-        height: 18px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        height: 19px;
+        flex: 0 0 auto;
         padding: 0;
-        border: 1px solid #0f0f0f;
-        border-radius: 50%;
-        background: linear-gradient(#8b8b8b, #575757);
-        box-shadow: inset 0 1px rgba(255, 255, 255, 0.45);
-        color: #ffffff;
-        font-family: Arial, sans-serif;
-        font-size: 15px;
-        font-weight: 700;
-        line-height: 16px;
-        text-shadow: 0 1px #000000;
+        border: 0;
+        border-radius: 0;
+        background: transparent no-repeat 0 0 / 18px 18px;
         cursor: pointer;
+        image-rendering: var(--octane-pixel-art, pixelated);
+    }
+
+    .room-tools-zoom-button.is-zoom-in {
+        background-image: url('@/assets/images/room-widgets/room-tools/zoom-in.png');
+    }
+
+    .room-tools-zoom-button.is-zoom-out {
+        margin-left: -2px;
+        background-image: url('@/assets/images/room-widgets/room-tools/zoom-out.png');
     }
 
     .room-tools-zoom-button:hover {
-        filter: brightness(1.12);
+        filter: brightness(1.17);
+    }
+
+    .room-tools-zoom-button:active {
+        background-position: 0 1px;
+        filter: brightness(0.8);
     }
 
     .room-tools-zoom-button:disabled {
-        opacity: 0.45;
-        filter: grayscale(1);
+        opacity: 0.5;
+        filter: none;
+        background-position: 0 0;
         cursor: default;
-    }
-
-    .room-tools-zoom-button:disabled:hover {
-        filter: grayscale(1);
     }
 
     .room-tool-row {
@@ -775,8 +780,30 @@
     transform: translateY(-1px);
 }
 
+/* Same surface as .swf-chat-style-menu; the picker keeps its own layout and takes the colours through its variables. */
 .swf-chat-emoji-popover {
     outline: 0;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 7px;
+    background: #1f1f1f;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 2px 0 rgba(0, 0, 0, 0.9),
+        4px 4px 0 rgba(0, 0, 0, 0.45);
+}
+
+.swf-chat-emoji-popover em-emoji-picker {
+    --rgb-background: 31, 31, 31;
+    --rgb-input: 20, 20, 20;
+    --rgb-color: 210, 210, 210;
+    --rgb-accent: 255, 255, 255;
+    --color-border: rgba(255, 255, 255, 0.08);
+    --color-border-over: rgba(255, 255, 255, 0.16);
+    --border-radius: 6px;
+    --shadow: none;
+    --font-family: inherit;
+    --font-size: 12px;
 }
 
 .octane-mobile-furni-infostand-trigger {
@@ -1641,21 +1668,27 @@
     width: 207px;
 }
 
-.air-bot-skill-checkbox {
+/* chatter_configuration draws its two checkboxes as style 100, which habbo_element_description skins with
+   illumina_light_skin_switch: a 38x21 switch, off from y=22 of the sheet, on (selected) from y=0. */
+.air-bot-skill-row .air-bot-skill-checkbox {
     position: absolute;
     top: 1px;
     left: 209px;
-    width: 19px;
-    height: 20px;
+    width: 38px;
+    min-width: 38px;
+    height: 21px;
     margin: 0;
     appearance: none;
-    background: var(--habbo-skin-checkbox) 0 0 / 19px 20px no-repeat;
+    background: url('../../assets/images/avatar-menu/air/switch.png') 0 -22px / 38px 43px no-repeat;
     cursor: pointer;
     image-rendering: var(--octane-pixel-art, pixelated);
 }
 
-.air-bot-skill-checkbox:checked {
-    background-image: var(--habbo-skin-checkbox-checked);
+.air-bot-skill-row .air-bot-skill-checkbox:checked,
+.air-bot-skill-row .air-bot-skill-checkbox[data-checked] {
+    /* the image again: the theme's checked rule swaps in the plain checkbox art */
+    background-image: url('../../assets/images/avatar-menu/air/switch.png');
+    background-position: 0 0;
 }
 
 .air-bot-skill-chat-delay {

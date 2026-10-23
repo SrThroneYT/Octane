@@ -1,6 +1,5 @@
 import { FC } from 'react';
-import { GetProductIconUrl, SanitizeHtml } from '../../../../../api';
-import { Column, Flex, Grid, Text } from '../../../../../common';
+import { GetConfigurationValue, GetProductIconUrl, handleInternalLinkClick, SanitizeHtmlWithInternalLinks } from '../../../../../api';
 import { useCatalogData } from '../../../../../hooks';
 import { CatalogAddOnBadgeWidgetView } from '../widgets/CatalogAddOnBadgeWidgetView';
 import { CatalogAddOnChatStyleWidgetView } from '../widgets/CatalogAddOnChatStyleWidgetView';
@@ -10,70 +9,55 @@ import { CatalogPurchaseWidgetView } from '../widgets/CatalogPurchaseWidgetView'
 import { CatalogSimplePriceWidgetView } from '../widgets/CatalogSimplePriceWidgetView';
 import { CatalogLayoutProps } from './CatalogLayout.types';
 
+const PageHtml: FC<{ html: string; className: string }> = ({ html, className }) =>
+    html ? <div className={className} onClick={handleInternalLinkClick} dangerouslySetInnerHTML={{ __html: SanitizeHtmlWithInternalLinks(html) }} /> : null;
+
+/**
+ * AIR layout_single_bundle_xml, in AIR's arrangement but stretched over the whole catalog page: the description
+ * (`ctlg_description`, text 1) on top, the teaser image (`ctlg_teaserimg_1`, image 1, else small_movie_roomteaser.gif)
+ * on the left with the add-on badge and the main product with its price on it, the special text (`ctlg_special_txt`,
+ * text 2) over the bundle grid on the right, the box with the special image (image 2) and `ctlg_text_1` (text 3), and
+ * the purchase row. Text 0 is the header description.
+ */
 export const CatalogLayoutSingleBundleView: FC<CatalogLayoutProps> = (props) => {
     const { page = null } = props;
     const { currentOffer = null } = useCatalogData();
+    const localization = page?.localization;
     const mainProduct = currentOffer?.product ?? null;
     const mainIconUrl = mainProduct ? GetProductIconUrl(mainProduct, currentOffer) : null;
-    const hasDetails = !!page.localization.getText(1);
+    const imageLibraryUrl = GetConfigurationValue<string>('image.library.url', '');
+    const teaser = localization?.getImage(1) || (imageLibraryUrl ? `${imageLibraryUrl}catalogue/small_movie_roomteaser.gif` : '');
+    const specialImage = localization?.getImage(2);
+    const footerText = localization?.getText(3) ?? '';
 
     return (
-        <>
+        <div className="octane-catalog-air-bundle">
             <CatalogFirstProductSelectorWidgetView />
-            <Grid style={{ gridTemplateRows: hasDetails ? 'auto minmax(0, 1fr) auto' : 'minmax(0, 1fr) auto' }}>
-                {hasDetails && (
-                    <div className="col-span-12 octane-catalog-bundle-details">
-                        <Text small>{page.localization.getText(1)}</Text>
-                    </div>
-                )}
-                <Column gap={1} overflow="hidden" size={5}>
-                    {!!page.localization.getText(2) && (
-                        <>
-                            <Text
-                                aria-hidden
-                                className="octane-catalog-bundle-header-spacer"
-                                dangerouslySetInnerHTML={{ __html: SanitizeHtml(page.localization.getText(2)) }}
-                            />
-                            <Text
-                                aria-hidden
-                                className="octane-catalog-bundle-header-spacer"
-                                dangerouslySetInnerHTML={{ __html: SanitizeHtml(page.localization.getText(2)) }}
-                            />
-                        </>
-                    )}
-                    <Flex alignItems="center" gap={2}>
-                        {mainIconUrl && (
-                            <div className="octane-catalog-bundle-main-item">
-                                <img alt="" className="octane-catalog-grid-offer-icon" draggable={false} src={mainIconUrl} />
-                            </div>
-                        )}
-                        <div className="octane-catalog-bundle-price">
-                            <CatalogSimplePriceWidgetView />
-                        </div>
-                    </Flex>
-                    <Column grow gap={0} overflow="hidden" position="relative">
-                        {!!page.localization.getImage(1) && <img alt="" className="w-full h-full object-contain object-top" src={page.localization.getImage(1)} />}
-                        <CatalogAddOnBadgeWidgetView className="bg-muted rounded bottom-0 inset-s-0" position="absolute" />
-                        <CatalogAddOnChatStyleWidgetView className="absolute bottom-0 inset-s-0" />
-                    </Column>
-                </Column>
-                <Column gap={1} overflow="hidden" size={7}>
-                    {!!page.localization.getText(2) && (
-                        <Text
-                            aria-hidden
-                            className="octane-catalog-bundle-header-spacer"
-                            dangerouslySetInnerHTML={{ __html: SanitizeHtml(page.localization.getText(2)) }}
-                        />
-                    )}
-                    {!!page.localization.getText(2) && <Text dangerouslySetInnerHTML={{ __html: SanitizeHtml(page.localization.getText(2)) }} />}
-                    <Column className="octane-catalog-bundle-frame has-classic-scrollbar" overflow="hidden">
-                        <CatalogBundleGridWidgetView hideMainProduct fullWidth className="octane-catalog-layout-bundle-grid" columnCount={4} />
-                    </Column>
-                </Column>
-                <div className="col-span-12 octane-catalog-bundle-actions">
-                    <CatalogPurchaseWidgetView />
+            <PageHtml className="octane-catalog-air-bundle__description" html={localization?.getText(1) ?? ''} />
+            <PageHtml className="octane-catalog-air-bundle__special" html={localization?.getText(2) ?? ''} />
+            {!!teaser && <img alt="" draggable={false} className="octane-catalog-air-bundle__teaser" src={teaser} />}
+            <div className="octane-catalog-air-bundle__addon">
+                <CatalogAddOnBadgeWidgetView />
+                <CatalogAddOnChatStyleWidgetView />
+            </div>
+            {!!currentOffer && (
+                <div className="octane-catalog-air-bundle__price">
+                    {mainIconUrl && <img alt="" draggable={false} src={mainIconUrl} />}
+                    <CatalogSimplePriceWidgetView />
                 </div>
-            </Grid>
-        </>
+            )}
+            <div className="octane-catalog-air-bundle__grid">
+                <CatalogBundleGridWidgetView hideBadges fullWidth className="octane-catalog-air-bundle__items" columnCount={4} />
+            </div>
+            {(!!specialImage || !!footerText) && (
+                <div className="octane-catalog-air-bundle__footer">
+                    {!!specialImage && <img alt="" draggable={false} src={specialImage} />}
+                    <PageHtml className="octane-catalog-air-bundle__footer-text" html={footerText} />
+                </div>
+            )}
+            <div className="octane-catalog-air-bundle__purchase">
+                <CatalogPurchaseWidgetView />
+            </div>
+        </div>
     );
 };
