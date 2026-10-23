@@ -6114,3 +6114,50 @@
     bottom: 0;
     font-size: 9px;
 }
+
+/* AIR layout_guild_frontpage_xml, stretched over the catalog page: the title and description on top, the
+   start-a-guild button centred under them, the teaser at the bottom. */
+.octane-catalog-air-info.is-guild-frontpage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    padding: 20px 15px 0;
+}
+
+.octane-catalog-air-info__guild-title {
+    align-self: stretch;
+    flex: none;
+    overflow: hidden;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 18px;
+}
+
+.octane-catalog-air-info__guild-text {
+    align-self: stretch;
+    flex: 0 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.octane-catalog-air-info .octane-catalog-air-info__guild-buy {
+    flex: none;
+    width: 213px;
+    height: 28px;
+}
+
+.octane-catalog-air-info__guild-teaser {
+    flex: none;
+    max-width: 100%;
+    max-height: 163px;
+    margin-top: auto;
+}
