@@ -1998,23 +1998,6 @@
     background-size: contain;
 }
 
-.octane-catalog-trophy-card {
-    box-shadow: 0 0 8px rgba(255, 193, 7, 0.15);
-}
-
-.octane-catalog-trophy-preview {
-    background: linear-gradient(180deg, #fff9e6 0%, #fff3cc 100%);
-}
-
-.octane-catalog-trophy-inscription {
-    background: #ffffff;
-}
-
-.octane-catalog-trophy-inscription.has-text {
-    background: linear-gradient(180deg, #fffdf5 0%, #fff8e8 100%);
-    border-color: rgba(255, 193, 7, 0.4) !important;
-}
-
 .octane-catalog-offer-info {
     display: none !important;
 }
@@ -5221,4 +5204,147 @@
     display: block;
     max-width: 100%;
     max-height: 100%;
+}
+
+/* AIR layout_trophies_xml with TrophyCatalogWidget, stretched over the catalog page: the description on top, the
+   preview takes the free height, then the metals, the inscription box and the purchase row, all full width. */
+.octane-catalog-air-trophies {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    color: #000;
+    font-size: 12px;
+    line-height: 15px;
+}
+
+.octane-catalog-air-trophies__description {
+    flex: 0 1 auto;
+    max-height: 145px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.octane-catalog-air-trophies__description a {
+    color: inherit;
+    text-decoration: underline;
+}
+
+.octane-catalog-air-trophies__preview {
+    position: relative;
+    display: flex;
+    flex: 1 1 135px;
+    align-items: center;
+    justify-content: center;
+    min-height: 135px;
+    background: #fff;
+}
+
+.octane-catalog-air-trophies__price {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+}
+
+.octane-catalog-air-trophies__model {
+    position: absolute;
+    bottom: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border-style: solid;
+    border-width: 3px;
+    border-image-source: var(--habbo-skin-button);
+    border-image-slice: 3 fill;
+    border-image-width: 3px;
+    background: transparent;
+    color: #333;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.octane-catalog-air-trophies__model:hover {
+    border-image-source: var(--habbo-skin-button-hover);
+}
+
+/* AIR keeps the buttons 95 px apart around the middle of the preview. */
+.octane-catalog-air-trophies__model.is-previous {
+    left: calc(50% - 65px);
+}
+
+.octane-catalog-air-trophies__model.is-next {
+    left: calc(50% + 30px);
+}
+
+.octane-catalog-air-trophies__metals {
+    display: flex;
+    flex: none;
+    justify-content: center;
+    gap: 6px;
+    height: 36px;
+}
+
+.octane-catalog-air-trophies__metal {
+    width: 40px;
+    height: 32px;
+    padding: 0;
+    border: 2px solid #fff;
+    outline: 1px solid #8c8c8c;
+    cursor: pointer;
+}
+
+.octane-catalog-air-trophies__metal.is-selected {
+    outline: 2px solid #000;
+}
+
+.octane-catalog-air-trophies__inscription-label {
+    flex: none;
+    padding-left: 6px;
+    overflow: hidden;
+    font-size: 11px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.octane-catalog-air-trophies__inscription-label:empty {
+    display: none;
+}
+
+.octane-catalog-air-trophies__inscription {
+    flex: none;
+    box-sizing: border-box;
+    height: 83px;
+    padding: 6px;
+    border: 1px solid #8c8c8c;
+    border-radius: 3px;
+    background: #fff;
+}
+
+.octane-catalog-air-trophies__inscription textarea {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font: inherit;
+    resize: none;
+}
+
+.octane-catalog-air-trophies__purchase {
+    display: flex;
+    flex: none;
+    gap: 6px;
+}
+
+.octane-catalog-air-trophies__purchase > .octane-catalog-standard-button {
+    flex: 1 1 0;
 }

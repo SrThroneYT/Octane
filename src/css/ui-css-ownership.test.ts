@@ -114,7 +114,7 @@ describe('UI CSS ownership', () =>
         expect(catalogLayoutMarketplaceItemView).not.toContain('style={ { width: 40, height: 40 } }');
         expect(catalogLayoutTrophiesView).not.toContain('boxShadow: \'0 0 8px');
         expect(catalogLayoutTrophiesView).not.toContain('background: trophyText.length');
-        expect(catalogLayoutTrophiesView).toContain('octane-catalog-trophy-inscription');
+        expect(catalogLayoutTrophiesView).toContain('octane-catalog-air-trophies__inscription');
         expect(catalogAdminPageEditView).toContain('<CatalogAdminModalView');
         expect(catalogAdminPageEditView).toContain('widthClassName="w-[540px]"');
         expect(catalogAdminPageEditView).toContain('octane-catalog-admin-form-sheet');
@@ -130,7 +130,7 @@ describe('UI CSS ownership', () =>
         expect(catalogCss).toContain('.octane-catalog-admin-form-sheet');
         expect(catalogCss).toContain('.octane-catalog-admin-form-section');
         expect(catalogCss).toContain('.octane-catalog-admin-button.is-primary');
-        expect(catalogCss).toContain('.octane-catalog-trophy-inscription.has-text');
+        expect(catalogCss).toContain('.octane-catalog-air-trophies__inscription textarea');
         expect(catalogCss).toContain('.octane-catalog-marketplace-item-icon');
         expect(catalogCss).toContain('.octane-catalog-vip-hc-banner');
         expect(inventoryCategoryFilterView).not.toContain('style={ { width: currentTab === TAB_BADGES');
