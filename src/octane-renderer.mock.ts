@@ -1255,6 +1255,31 @@ export class ConditionDefinition extends Triggerable {
 // Club gifts: the selection composer carries the chosen gift's localization id.
 export class SelectClubGiftComposer extends RecordingComposer {}
 
+// Recycler catalog page (CatalogLayoutRecyclerView).
+export class CatalogRuntimeConfigurationComposer extends RecordingComposer {}
+export class CatalogRuntimeConfigurationEvent extends MessageEvent {}
+export class FurnitureListComposer extends RecordingComposer {}
+export class GetRecyclerStatusMessageComposer extends RecordingComposer {}
+export class RecycleItemsEntry {
+    constructor(public readonly itemId: number) {}
+}
+export class RecycleItemsMessageComposer extends RecordingComposer {}
+export class RecyclerFinishedMessageEvent extends MessageEvent {
+    public static FINISHED_OK = 1;
+    public static FINISHED_FAIL = 2;
+}
+export class RecyclerStatusMessageEvent extends MessageEvent {
+    public static SYSTEM_STATUS_ENABLED = 1;
+    public static SYSTEM_STATUS_DISABLED = 2;
+    public static SYSTEM_STATUS_TIMEOUT = 3;
+}
+
+// Room ads catalog page (CatalogLayoutRoomAdsView).
+export class GetRoomAdPurchaseInfoComposer extends RecordingComposer {}
+export class PurchaseRoomAdMessageComposer extends RecordingComposer {}
+export class RoomAdPurchaseInfoEvent extends MessageEvent {}
+export class RoomEntryData extends StubClass {}
+
 // Catalog store, queries and effects hook: the events they subscribe to and
 // the composers they send.
 export class BuildersClubFurniCountMessageEvent extends MessageEvent {}

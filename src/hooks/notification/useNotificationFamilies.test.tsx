@@ -4,6 +4,7 @@ import {
     HotelClosedAndOpensEvent,
     HotelClosesAndWillOpenAtEvent,
     PetLevelNotificationEvent,
+    RecyclerFinishedMessageEvent,
     WiredRewardResultMessageEvent,
     WiredTransactionFailEvent
 } from '@octane/renderer';
@@ -12,6 +13,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NotificationAlertType, NotificationBubbleType } from '../../api';
 import { useHotelStatusNotifications } from './useHotelStatusNotifications';
 import { usePetNotifications } from './usePetNotifications';
+import { useRecyclerNotifications } from './useRecyclerNotifications';
 import { useWiredTransactionNotifications } from './useWiredTransactionNotifications';
 
 vi.mock('../../api/utils/LocalizeText', () => ({ LocalizeText: (key: string) => key }));
@@ -53,6 +55,18 @@ describe('the notification families split out of useNotification', () => {
         emit(HotelClosesAndWillOpenAtEvent, { userThrowOutAtClose: false, openHour: 9, openMinute: 30 });
 
         expect(simpleAlert.mock.calls.map((call) => call[0])).toEqual(['opening.hours.disconnected', 'opening.hours.closed']);
+    });
+
+    it('shows a recycler bubble for a finished recycle, and none for a failed one', () => {
+        const emit = listen();
+        const showSingleBubble = vi.fn();
+
+        renderHook(() => useRecyclerNotifications(showSingleBubble));
+        emit(RecyclerFinishedMessageEvent, { recyclerFinishedStatus: RecyclerFinishedMessageEvent.FINISHED_FAIL });
+        emit(RecyclerFinishedMessageEvent, { recyclerFinishedStatus: RecyclerFinishedMessageEvent.FINISHED_OK });
+
+        expect(showSingleBubble).toHaveBeenCalledTimes(1);
+        expect(showSingleBubble.mock.calls[0][1]).toBe(NotificationBubbleType.RECYCLEROK);
     });
 
     it('shows a failed wired transaction as an info bubble and a reward refusal as an alert', () => {

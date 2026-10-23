@@ -5579,3 +5579,420 @@
     grid-auto-rows: 48px;
     align-content: start;
 }
+
+/* AIR layout_roomads_xml, stretched over the catalog page: every field full width, the description box takes the
+   free height, the price and the purchase button share the bottom row. */
+.octane-catalog-air-roomads {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto auto auto auto minmax(60px, 1fr) auto auto auto;
+    grid-template-areas:
+        'text text'
+        'categories categories'
+        'name-label name-label'
+        'name name'
+        'description-label description-label'
+        'description description'
+        'room-label room-label'
+        'rooms rooms'
+        'price purchase';
+    gap: 4px 8px;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    padding: 4px 6px 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    color: #000;
+    font-size: 12px;
+}
+
+.octane-catalog-air-roomads__text {
+    grid-area: text;
+    max-height: 42px;
+    margin-bottom: 4px;
+    overflow: hidden;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 14px;
+}
+
+.octane-catalog-air-roomads__categories {
+    grid-area: categories;
+}
+
+.octane-catalog-air-roomads__rooms {
+    grid-area: rooms;
+}
+
+.octane-catalog-air-roomads__categories > *,
+.octane-catalog-air-roomads__rooms > *,
+.octane-catalog-air-roomads__name > * {
+    width: 100%;
+}
+
+.octane-catalog-air-roomads__label {
+    margin-top: 4px;
+    font-size: 11px;
+    line-height: 15px;
+}
+
+.octane-catalog-air-roomads__label.is-name {
+    grid-area: name-label;
+}
+
+.octane-catalog-air-roomads__label.is-description {
+    grid-area: description-label;
+}
+
+.octane-catalog-air-roomads__label.is-room {
+    grid-area: room-label;
+}
+
+.octane-catalog-air-roomads__name {
+    grid-area: name;
+}
+
+.octane-catalog-air-roomads__description {
+    grid-area: description;
+    box-sizing: border-box;
+    min-height: 0;
+    padding: 4px 5px;
+    border: 1px solid #8c8c8c;
+    border-radius: 3px;
+    background: #fff;
+    font: inherit;
+    resize: none;
+}
+
+.octane-catalog-air-roomads__price {
+    grid-area: price;
+    align-self: center;
+    justify-self: end;
+}
+
+.octane-catalog-air-roomads__purchase {
+    grid-area: purchase;
+    display: flex;
+    align-items: center;
+    min-width: 160px;
+    padding: 6px 0;
+}
+
+.octane-catalog-air-roomads__purchase > * {
+    flex: 1 1 auto;
+}
+
+/* AIR layout_frontpage_featured_xml, stretched over the catalog page: the first item as the 184 px column on the left,
+   the featured list beside it taking the free height, the voucher box under the list. */
+.octane-catalog-air-frontpage {
+    display: grid;
+    grid-template-columns: 184px minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-areas:
+        'first list'
+        'first voucher';
+    gap: 7px 8px;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    color: #000;
+}
+
+.octane-catalog-air-frontpage__first,
+.octane-catalog-air-frontpage__item {
+    position: relative;
+    display: block;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    background-color: #fff;
+    background-repeat: no-repeat;
+    background-position: center top;
+    background-size: cover;
+    image-rendering: var(--octane-pixel-art, pixelated);
+    cursor: pointer;
+    text-align: left;
+}
+
+.octane-catalog-air-frontpage__first {
+    grid-area: first;
+    width: 100%;
+    height: 100%;
+}
+
+.octane-catalog-air-frontpage__list {
+    grid-area: list;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.octane-catalog-air-frontpage__item {
+    flex: none;
+    width: 100%;
+    aspect-ratio: 360 / 126;
+}
+
+.octane-catalog-air-frontpage__title {
+    position: absolute;
+    right: 5px;
+    bottom: 3px;
+    left: 5px;
+    padding: 5px;
+    overflow: hidden;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-family: 'Ubuntu Condensed', Ubuntu, Arial, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 19px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.octane-catalog-air-frontpage__voucher {
+    grid-area: voucher;
+    box-sizing: border-box;
+    min-height: 61px;
+    padding: 6px 10px;
+    border-style: solid;
+    border-width: 6px;
+    border-color: transparent;
+    border-image-source: var(--habbo-skin-border-white);
+    border-image-slice: 6 fill;
+    border-image-width: 6px;
+    border-image-repeat: stretch;
+}
+
+.octane-catalog-air-frontpage__voucher-label {
+    height: 17px;
+    overflow: hidden;
+    font-size: 12px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* AIR layout_recycler_xml + recyclerWidget_xml. The Furnimatic is pixel art at AIR's sizes, so it is not stretched:
+   the title and machine are centred at the top, the widget (status, button, slots, dial) is centred at the bottom of
+   the catalog page, whatever its size. Offsets are AIR's, measured from the middle of its 360 px page. */
+.octane-catalog-air-recycler {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    color: #000;
+    font-size: 12px;
+}
+
+.octane-catalog-air-recycler img {
+    image-rendering: pixelated;
+}
+
+.octane-catalog-air-recycler__title {
+    position: absolute;
+    top: 5px;
+    left: calc(50% - 129px);
+}
+
+.octane-catalog-air-recycler__machine {
+    position: absolute;
+    top: 58px;
+    left: calc(50% - 99px);
+}
+
+.octane-catalog-air-recycler__widget {
+    position: absolute;
+    bottom: 0;
+    left: calc(50% - 180px);
+    width: 360px;
+    height: 202px;
+    overflow: hidden;
+}
+
+/* AIR shows the status in the catalog header; here it sits beside the button, clear of the machine. */
+.octane-catalog-air-recycler__status {
+    position: absolute;
+    top: 41px;
+    left: 220px;
+    box-sizing: border-box;
+    width: 130px;
+    height: 30px;
+    padding: 1px 4px;
+    overflow: hidden;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.9);
+    font-size: 10px;
+    line-height: 13px;
+}
+
+.octane-catalog-air-recycler .octane-catalog-air-recycler__recycle {
+    position: absolute;
+    top: 41px;
+    left: 19px;
+    width: 194px;
+    height: 30px;
+}
+
+.octane-catalog-air-recycler__frame {
+    position: absolute;
+    top: 85px;
+    height: 115px;
+    background:
+        url('../../assets/images/catalog/air/recycler/container-left.png') left top no-repeat,
+        url('../../assets/images/catalog/air/recycler/container-right.png') right top no-repeat,
+        url('../../assets/images/catalog/air/recycler/container-slice.png') left top repeat-x;
+    background-origin: border-box;
+}
+
+.octane-catalog-air-recycler__frame.is-slots {
+    left: 16px;
+    width: 185px;
+}
+
+.octane-catalog-air-recycler__frame.is-indicator {
+    left: 214px;
+    width: 123px;
+}
+
+.octane-catalog-air-recycler__slots {
+    position: absolute;
+    top: 16px;
+    left: 21px;
+    width: 145px;
+    height: 124px;
+}
+
+.octane-catalog-air-recycler__slot {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 0;
+    background: url('../../assets/images/catalog/air/recycler/slot-bg.png') no-repeat;
+    cursor: pointer;
+}
+
+.octane-catalog-air-recycler__slot:disabled {
+    cursor: default;
+}
+
+.octane-catalog-air-recycler__slot img {
+    max-width: 30px;
+    max-height: 30px;
+}
+
+.octane-catalog-air-recycler__dial {
+    position: absolute;
+    top: 2px;
+    left: 15px;
+}
+
+.octane-catalog-air-recycler__pointer {
+    position: absolute;
+    top: 43px;
+    left: 37px;
+    width: 50px;
+    height: 50px;
+}
+
+.octane-catalog-air-recycler__pointer img {
+    position: absolute;
+    inset: 0;
+}
+
+.octane-catalog-air-recycler__closed {
+    position: absolute;
+    inset: 0;
+}
+
+.octane-catalog-air-recycler__bubble {
+    position: absolute;
+    top: 98px;
+    left: 107px;
+    box-sizing: border-box;
+    width: 155px;
+    min-height: 60px;
+    padding: 6px 8px;
+    border: 1px solid #000;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 11px;
+    line-height: 14px;
+}
+
+.octane-catalog-air-recycler__frank {
+    position: absolute;
+    top: 99px;
+    left: 235px;
+}
+
+.octane-catalog-air-recycler__chooser {
+    position: absolute;
+    top: 58px;
+    left: calc(50% - 160px);
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    box-sizing: border-box;
+    width: 320px;
+    height: 200px;
+    padding: 8px;
+    border-style: solid;
+    border-width: 6px;
+    border-color: transparent;
+    border-image-source: var(--habbo-skin-border-white);
+    border-image-slice: 6 fill;
+    border-image-width: 6px;
+    border-image-repeat: stretch;
+}
+
+.octane-catalog-air-recycler__chooser-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 700;
+}
+
+.octane-catalog-air-recycler__chooser-close {
+    padding: 0 4px;
+    border: 0;
+    background: transparent;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.octane-catalog-air-recycler__choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    overflow-y: auto;
+}
+
+.octane-catalog-air-recycler__choice {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid #b6b6b6;
+    border-radius: 3px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.octane-catalog-air-recycler__choice img {
+    max-width: 36px;
+    max-height: 36px;
+}
