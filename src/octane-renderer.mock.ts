@@ -1264,6 +1264,9 @@ export class RecycleItemsEntry {
     constructor(public readonly itemId: number) {}
 }
 export class RecycleItemsMessageComposer extends RecordingComposer {}
+export class GetRecyclerPrizesMessageComposer extends RecordingComposer {}
+export class RecyclerPrizesMessageEvent extends MessageEvent {}
+export class RecyclerPrizeLevel extends StubClass {}
 export class RecyclerFinishedMessageEvent extends MessageEvent {
     public static FINISHED_OK = 1;
     public static FINISHED_FAIL = 2;

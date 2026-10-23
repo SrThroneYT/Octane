@@ -5996,3 +5996,121 @@
     max-width: 36px;
     max-height: 36px;
 }
+
+/* AIR layout_recycler_prizes_xml + recyclerPrizesWidgetLevelItem_xml, stretched over the catalog page: the product
+   view on top, under it the scrolling list of levels, all full width. */
+.octane-catalog-air-prizes {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    color: #000;
+    font-size: 12px;
+}
+
+.octane-catalog-air-prizes__view {
+    position: relative;
+    flex: 0 0 240px;
+    height: 240px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.octane-catalog-air-prizes__teaser {
+    display: block;
+    max-width: 100%;
+    max-height: 240px;
+    margin: 0 auto;
+}
+
+.octane-catalog-air-prizes__preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.octane-catalog-air-prizes__name {
+    position: absolute;
+    top: 16px;
+    right: 10px;
+    left: 10px;
+    overflow: hidden;
+    font-weight: 700;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.octane-catalog-air-prizes__list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.octane-catalog-air-prizes__level {
+    box-sizing: border-box;
+    width: 100%;
+    margin-bottom: 4px;
+    padding: 5px;
+    border: 1px solid #b6b6b6;
+    border-radius: 3px;
+    background: #fff;
+}
+
+.octane-catalog-air-prizes__level-head {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    height: 23px;
+    border-bottom: 1px solid #d0d0d0;
+}
+
+.octane-catalog-air-prizes__star {
+    font-size: 15px;
+    line-height: 17px;
+    text-shadow: 0 0 1px #000;
+}
+
+.octane-catalog-air-prizes__items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    padding: 5px;
+}
+
+.octane-catalog-air-prizes__item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    background: transparent;
+    cursor: pointer;
+}
+
+/* The furni icon at its own size; one larger than the tile shrinks to fit instead of being cut off. */
+.octane-catalog-air-prizes__item img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.octane-catalog-air-prizes__item.is-selected {
+    border-color: #3a7ac2;
+}
+
+.octane-catalog-air-prizes__item small {
+    position: absolute;
+    right: 1px;
+    bottom: 0;
+    font-size: 9px;
+}
