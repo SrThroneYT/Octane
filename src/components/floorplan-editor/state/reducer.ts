@@ -10,6 +10,7 @@ export const initialState: FloorplanState = {
     brush: { h: 0, action: 'SET' },
     selection: new Set<`${number},${number}`>(),
     squareSelect: false,
+    pickUpBlocking: false,
     lease: { holder: null, me: false, expiresAt: null },
     seq: 0
 };
@@ -36,9 +37,15 @@ const ensureRect = (tiles: Tile[][], rows: number, cols: number): Tile[][] => {
 const setTile = (tiles: Tile[][], row: number, col: number, tile: Tile): Tile[][] => {
     const current = tiles[row]?.[col];
     if (current && current.h === tile.h && current.blocked === tile.blocked) return tiles;
-    const next = tiles.map((r, ri) => (ri === row ? r.map((t, ci) => (ci === col ? tile : t)) : r));
+    // A tile edited while its furniture is to be picked up stays marked, so it keeps its tint and locks again when
+    // picking up is switched off.
+    const kept = current?.occupied ? { ...tile, occupied: true } : tile;
+    const next = tiles.map((r, ri) => (ri === row ? r.map((t, ci) => (ci === col ? kept : t)) : r));
     return next;
 };
+
+/** An occupied tile can only be edited when the save is going to pick its furniture up. */
+const isLocked = (state: FloorplanState, tile: Tile | undefined): boolean => !!tile?.occupied && !state.pickUpBlocking;
 
 /**
  * Occupied flags mark tiles that hold furniture. They come from the server,
@@ -54,7 +61,7 @@ export const reducer = (state: FloorplanState, action: FloorplanAction): Floorpl
         case 'PAINT_TILE': {
             const row = clamp64(action.row);
             const col = clamp64(action.col);
-            if (state.tiles[row]?.[col]?.occupied) return state;
+            if (isLocked(state, state.tiles[row]?.[col])) return state;
             const tiles = ensureRect(state.tiles, row + 1, col + 1);
             const target = { h: clampHeight(action.h), blocked: false };
             const next = setTile(tiles, row, col, target);
@@ -66,7 +73,7 @@ export const reducer = (state: FloorplanState, action: FloorplanAction): Floorpl
             const col = action.col | 0;
             if (row < 0 || col < 0 || row >= state.tiles.length || col >= (state.tiles[0]?.length ?? 0)) return state;
             const current = state.tiles[row][col];
-            if (current.occupied) return state;
+            if (isLocked(state, current)) return state;
             const target = { h: current.h, blocked: true };
             const next = setTile(state.tiles, row, col, target);
             if (next === state.tiles) return state;
@@ -77,7 +84,7 @@ export const reducer = (state: FloorplanState, action: FloorplanAction): Floorpl
             const col = action.col | 0;
             if (row < 0 || col < 0 || row >= state.tiles.length || col >= (state.tiles[0]?.length ?? 0)) return state;
             const current = state.tiles[row][col];
-            if (current.blocked || current.occupied) return state;
+            if (current.blocked || isLocked(state, current)) return state;
             const newH = clampHeight(current.h + action.delta);
             if (newH === current.h) return state;
             const next = setTile(state.tiles, row, col, { h: newH, blocked: false });
@@ -177,7 +184,7 @@ export const reducer = (state: FloorplanState, action: FloorplanAction): Floorpl
                 const col = parseInt(cStr, 10);
                 const current = tiles[row]?.[col];
                 if (!current) continue;
-                if (current.occupied) continue;
+                if (isLocked(state, current)) continue;
 
                 switch (state.brush.action) {
                     case 'SET':
@@ -202,6 +209,8 @@ export const reducer = (state: FloorplanState, action: FloorplanAction): Floorpl
         }
         case 'SQUARE_SELECT_TOGGLE':
             return { ...state, squareSelect: !state.squareSelect };
+        case 'SET_PICK_UP_BLOCKING':
+            return state.pickUpBlocking === action.value ? state : { ...state, pickUpBlocking: action.value };
         case 'IMPORT_STRING': {
             const tiles = carryOccupied(state.tiles, parseTilemap(action.raw));
             const next: FloorplanState = { ...state, tiles };
