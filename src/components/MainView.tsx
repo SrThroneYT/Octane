@@ -244,7 +244,7 @@ export const MainView: FC<{}> = (props) =>
             <FloorplanEditorView />
             <FurniEditorView />
             <RareValuesView />
-            <FortuneWheelView />
+            {GetConfigurationValue<boolean>('toolbar.fortunewheel.enabled', true) && <FortuneWheelView />}
             <SoundboardView />
             <TraxEditorView />
             {GetConfigurationValue<boolean>('radio_ui.enabled', false) && !IsTouchDevice() && <RadioView />}
