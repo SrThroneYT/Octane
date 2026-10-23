@@ -8,6 +8,8 @@ vi.mock('../../../../../../api', async (importOriginal) => ({
     GetFurnitureData: () => null,
     GetImageIconUrlForProduct: (_type: string, classId: number) => (classId === 30 ? null : `icon/${classId}.png`),
     LocalizeText: (key: string, _names?: string[], values?: string[]) => (values?.length ? `${key}:${values.join(',')}` : key),
+    // The hotel's texts have the AIR levels 1-5, not level 6.
+    localizeWithFallback: (key: string, fallback: string) => (key === 'recycler.prizes.category.6' ? fallback : key),
     SendMessageComposer: vi.fn()
 }));
 
@@ -39,6 +41,7 @@ describe('recycler prizes page (AIR layout_recycler_prizes_xml)', () => {
             state.handlers.get(RecyclerPrizesMessageEvent)?.({
                 getParser: () => ({
                     levels: [
+                        { levelId: 6, chance: 5000, products: [prize('Dragon lamp', 60)] },
                         { levelId: 2, chance: 4, products: [prize('Lamp', 20)] },
                         { levelId: 1, chance: 1, products: [prize('Chair', 10)] }
                     ]
@@ -48,7 +51,12 @@ describe('recycler prizes page (AIR layout_recycler_prizes_xml)', () => {
 
         const heads = Array.from(container.querySelectorAll('.octane-catalog-air-prizes__level-head')).map((head) => head.textContent);
 
-        expect(heads).toEqual(['★recycler.prizes.category.1', '★recycler.prizes.category.2 - recycler.prizes.odds:1:4']);
+        expect(heads).toEqual([
+            '★recycler.prizes.category.1',
+            '★recycler.prizes.category.2 - recycler.prizes.odds:1:4',
+            // Mythic, level 6: the client's own name when the texts lack one.
+            '★Mythic - recycler.prizes.odds:1:5000'
+        ]);
         expect(container.querySelector('.octane-catalog-air-prizes__teaser')).toHaveAttribute('src', 'teaser.png');
 
         fireEvent.click(screen.getByRole('button', { name: 'Lamp' }));

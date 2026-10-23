@@ -6161,3 +6161,168 @@
     max-height: 163px;
     margin-top: auto;
 }
+
+/* AIR layout_builders_club_frontpage / _addons / _loyalty, stretched over the catalog page: the description and the
+   offer rows on the left, the Builders Club art (bc_top.png, bc_bottom.png) on the right of add-ons and loyalty. */
+.octane-catalog-air-bc {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+        'description art'
+        'list art';
+    gap: 8px 10px;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    padding: 10px 0 0 15px;
+    overflow: hidden;
+    color: #000;
+    font-size: 12px;
+    line-height: 15px;
+}
+
+.octane-catalog-air-bc.is-frontpage {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+        'description'
+        'list';
+    padding-right: 15px;
+}
+
+.octane-catalog-air-bc a {
+    color: inherit;
+    text-decoration: underline;
+}
+
+.octane-catalog-air-bc__description {
+    grid-area: description;
+    max-height: 200px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.octane-catalog-air-bc__list {
+    grid-area: list;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 0;
+    padding: 0 2px 6px 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.octane-catalog-air-bc__item {
+    flex: none;
+    box-sizing: border-box;
+    padding: 5px;
+    border-radius: 4px;
+    background: #d7d7cf;
+}
+
+.octane-catalog-air-bc__item-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 25px;
+    padding: 0 8px;
+    border-radius: 3px;
+    background: #afafa9;
+    color: #fff;
+    font-family: 'Ubuntu Condensed', Ubuntu, Arial, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.octane-catalog-air-bc__item-head span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.octane-catalog-air-bc__item-head img {
+    width: 15px;
+    height: 15px;
+    image-rendering: pixelated;
+}
+
+.octane-catalog-air-bc__item-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 7px 0 0 4px;
+}
+
+.octane-catalog-air-bc__price {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.octane-catalog-air-bc__price small {
+    margin-left: 6px;
+    font-size: 11px;
+    font-weight: 400;
+}
+
+.octane-catalog-air-bc__buy {
+    min-width: 142px;
+    height: 35px;
+    padding: 0 10px;
+    border: 1px solid #077a9c;
+    border-radius: 4px;
+    background: linear-gradient(#2ab3dc, #0a9bc5);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.octane-catalog-air-bc__buy:hover:not(:disabled) {
+    background: linear-gradient(#3cc2ea, #10a7d3);
+}
+
+.octane-catalog-air-bc__buy.is-confirm {
+    border-color: #b57b00;
+    background: linear-gradient(#ffcc4d, #f0a800);
+    color: #000;
+}
+
+.octane-catalog-air-bc__buy:disabled {
+    border-color: #9a9a94;
+    background: #c9c9c2;
+    color: #5c5c58;
+    cursor: default;
+}
+
+.octane-catalog-air-bc__buy.is-short:disabled {
+    border-color: #a81a12;
+    background: #e9a49e;
+    color: #6b0c07;
+}
+
+.octane-catalog-air-bc__warning {
+    color: #cc0000;
+    font-weight: 700;
+}
+
+.octane-catalog-air-bc__art {
+    grid-area: art;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.octane-catalog-air-bc__art img {
+    max-width: 111px;
+    image-rendering: pixelated;
+}

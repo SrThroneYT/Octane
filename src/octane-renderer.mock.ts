@@ -1315,7 +1315,7 @@ export class RecolorFurniComposer extends StubClass {}
 export class LimitedEditionSoldOutEvent extends MessageEvent {}
 export class MarketplaceMakeOfferResult extends MessageEvent {}
 export class ProductOfferEvent extends MessageEvent {}
-export class PurchaseFromCatalogComposer extends StubClass {}
+export class PurchaseFromCatalogComposer extends RecordingComposer {}
 export class RoomEngineObjectPlacedEvent extends StubClass {
     static PLACED = 'REOPE_PLACED';
 }

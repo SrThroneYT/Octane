@@ -1,6 +1,6 @@
 import { GetRecyclerPrizesMessageComposer, RecyclerPrizeLevel, RecyclerPrizesMessageEvent } from '@octane/renderer';
 import { FC, useEffect, useState } from 'react';
-import { GetFurnitureData, GetImageIconUrlForProduct, LocalizeText, SendMessageComposer } from '../../../../../../api';
+import { GetFurnitureData, GetImageIconUrlForProduct, LocalizeText, localizeWithFallback, SendMessageComposer } from '../../../../../../api';
 import { LayoutFurniImageView } from '../../../../../../common';
 import { BaseButton } from '../../../../../../common/BaseButton';
 import { useMessageEvent } from '../../../../../../hooks';
@@ -10,6 +10,9 @@ import { CatalogLayoutProps } from '../CatalogLayout.types';
 const STAR_COLOURS = ['#cd7f32', '#c0c0c0', '#ffcc00', '#9ee7ff', '#e0115f', '#ff8fd6', '#3fbf3f', '#8c8c8c'];
 
 type RecyclerPrize = RecyclerPrizeLevel['products'][number];
+
+/** Used only when the hotel's texts lack recycler.prizes.category.N (level 6, mythic, is not an AIR level). */
+const CATEGORY_FALLBACK = ['Common', 'Uncommon', 'Rare', 'Very rare', 'Legendary', 'Mythic'];
 
 const prizeName = (prize: RecyclerPrize) => GetFurnitureData(prize.productClassId, prize.productType)?.name || prize.name;
 
@@ -82,7 +85,9 @@ export const CatalogLayoutRecyclerPrizesView: FC<CatalogLayoutProps> = ({ page }
                             >
                                 ★
                             </span>
-                            <strong>{LocalizeText(`recycler.prizes.category.${level.levelId}`)}</strong>
+                            <strong>
+                                {localizeWithFallback(`recycler.prizes.category.${level.levelId}`, CATEGORY_FALLBACK[level.levelId - 1] ?? `${level.levelId}`)}
+                            </strong>
                             {level.levelId > 1 && <span> - {LocalizeText('recycler.prizes.odds', ['odds'], [`1:${level.chance}`])}</span>}
                         </header>
                         <div className="octane-catalog-air-prizes__items">
