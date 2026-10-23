@@ -4,6 +4,7 @@ import { useCatalogData, useCatalogUiState, useUserGroups } from '../../../../..
 import { CatalogLayouGuildForumView } from './CatalogLayoutGuildForumView';
 
 vi.mock('../../../../../api', () => ({
+    GetConfigurationValue: (key: string, fallback: unknown) => (key === 'image.library.url' ? 'https://cdn.example/c_images/' : fallback),
     LocalizeText: (key: string) => key,
     SanitizeHtml: (value: string) => value
 }));
@@ -14,7 +15,9 @@ vi.mock('../../../../../common', () => ({
     Grid: ({ children, overflow: _overflow, ...props }: any) => <div {...props}>{children}</div>
 }));
 
-vi.mock('../../../../../common/layout/LayoutImage', () => ({ LayoutImage: () => null }));
+vi.mock('../../../../../common/layout/LayoutImage', () => ({
+    LayoutImage: ({ imageUrl }: { imageUrl: string }) => <img alt="" data-testid="teaser" src={imageUrl} />
+}));
 
 vi.mock('../../../../../hooks', () => ({
     useCatalogData: vi.fn(),
@@ -62,6 +65,12 @@ beforeEach(() => {
 });
 
 describe('guild forum page', () => {
+    it("shows AIR's guild_forums_teaser.gif when the page sets no teaser", () => {
+        renderView();
+
+        expect(screen.getByTestId('teaser')).toHaveAttribute('src', 'https://cdn.example/c_images/catalogue/guild_forums_teaser.gif');
+    });
+
     it('previews the selected guild badge next to the selector', () => {
         renderView();
 
