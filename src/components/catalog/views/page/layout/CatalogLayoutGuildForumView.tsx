@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { LocalizeText, SanitizeHtml } from '../../../../../api';
+import { GetConfigurationValue, LocalizeText, SanitizeHtml } from '../../../../../api';
 import { Column, Flex, Grid } from '../../../../../common';
 import { LayoutImage } from '../../../../../common/layout/LayoutImage';
 import { useCatalogData, useCatalogUiState, useUserGroups } from '../../../../../hooks';
@@ -16,7 +16,9 @@ export const CatalogLayouGuildForumView: FC<CatalogLayoutProps> = (props) => {
     const { purchaseOptions = null } = useCatalogUiState();
     const { data: groups = null } = useUserGroups();
 
-    const teaserImage = page.localization.getImage(1);
+    // AIR layout_guild_forum_xml: the page's teaser, else the library's guild_forums_teaser.gif.
+    const imageLibraryUrl = GetConfigurationValue<string>('image.library.url', '');
+    const teaserImage = page.localization.getImage(1) || (imageLibraryUrl ? `${imageLibraryUrl}catalogue/guild_forums_teaser.gif` : '');
     const hasGroups = !!(groups && groups.length);
     // The guild selector stores the chosen guild id as the purchase parameter.
     const selectedGroupId = purchaseOptions?.extraData ?? null;
