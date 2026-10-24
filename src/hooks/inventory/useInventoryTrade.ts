@@ -36,6 +36,24 @@ import { useMessageEvent } from '../events';
 import { useNotification } from '../notification';
 import { useInventoryFurni } from './useInventoryFurni';
 
+/**
+ * Gives the inventory back every item a trade had locked.
+ *
+ * Offering an item locks it so it cannot be placed, sold or recycled while the trade
+ * holds it. Nothing released that lock: on a cancelled trade the server returns the
+ * items and sends no inventory packet at all, so a rare that was offered and then taken
+ * back stayed locked - Place disabled, no sale, no recycle - until the inventory was
+ * reloaded.
+ */
+export const unlockAllGroups = (groupItems: GroupItem[]): GroupItem[] =>
+    groupItems.map((groupItem) => {
+        const copy = groupItem.clone();
+
+        copy.unlockAllItems();
+
+        return copy;
+    });
+
 const useInventoryTradeState = () => {
     const [ownUser, setOwnUser] = useState<TradeUserData>(null);
     const [otherUser, setOtherUser] = useState<TradeUserData>(null);
@@ -72,6 +90,8 @@ const useInventoryTradeState = () => {
 
         SendMessageComposer(new TradingListItemRemoveComposer(item.id));
     };
+
+    const unlockOfferedItems = () => setGroupItems(unlockAllGroups);
 
     const stopTrading = () => {
         if (!isTrading) return;
@@ -121,6 +141,8 @@ const useInventoryTradeState = () => {
             }
         }
 
+        unlockOfferedItems();
+
         setOwnUser(null);
         setOtherUser(null);
         setTradeState(TradeState.TRADING_STATE_READY);
@@ -128,6 +150,8 @@ const useInventoryTradeState = () => {
 
     useMessageEvent<TradingCompletedEvent>(TradingCompletedEvent, (event) => {
         const parser = event.getParser();
+
+        unlockOfferedItems();
 
         setOwnUser(null);
         setOtherUser(null);
