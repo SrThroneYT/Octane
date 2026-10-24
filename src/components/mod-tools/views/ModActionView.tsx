@@ -20,6 +20,7 @@ import { findNativeNode, nativeCaption, nativeNumber, NativeNode, parseNativeLay
 import { Native0Button, Native0Dropmenu, Native0Frame, Native0Input, Native0Text } from '../native/NativeWindow0';
 import { NativeWindowShell } from '../native/NativeWindowShell';
 import { ModConfirmView } from './ModConfirmView';
+import { tradeLockSeconds } from './tradeLockSeconds';
 
 const rectOf = (node: NativeNode) => ({ x: nativeNumber(node, 'x'), y: nativeNumber(node, 'y'), width: nativeNumber(node, 'width'), height: nativeNumber(node, 'height') });
 const FRAME_COLOR = 0x418db0;
@@ -183,7 +184,7 @@ export const ModActionView: FC<ModActionProps> = ({ userId, userName, settings, 
                 SendMessageComposer(new ModKickMessageComposer(userId, text, topicId));
                 break;
             case ModActionDefinition.TRADE_LOCK:
-                SendMessageComposer(new ModTradingLockMessageComposer(userId, text, sanction.actionLengthHours * 60, topicId));
+                SendMessageComposer(new ModTradingLockMessageComposer(userId, text, tradeLockSeconds(sanction.actionLengthHours), topicId));
                 break;
             case ModActionDefinition.MESSAGE:
                 if (message.trim().length === 0) {
