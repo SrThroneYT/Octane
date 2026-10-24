@@ -23,7 +23,14 @@ export const FriendsListView: FC<{}> = (props) => {
     const [friendSearchValue, setFriendSearchValue] = useState('');
     const [isOnlineExpanded, setIsOnlineExpanded] = useState<boolean>(true);
     const [isOfflineExpanded, setIsOfflineExpanded] = useState<boolean>(false);
-    const { onlineFriends = [], offlineFriends = [], requests = [], requestFriend = null, requestResponse = null } = useFriends();
+    const {
+        onlineFriends = [],
+        offlineFriends = [],
+        requests = [],
+        requestFriend = null,
+        requestResponse = null,
+        requestResponseAll = null
+    } = useFriends();
 
     const friendSearch = friendSearchValue.trim().toLocaleLowerCase();
     const filteredOnlineFriends = filterFriendsByCategory(onlineFriends, 0).filter(
@@ -147,9 +154,7 @@ export const FriendsListView: FC<{}> = (props) => {
 
     if (!isVisible) return null;
 
-    const respondToAllRequests = (accept: boolean) => {
-        for (const request of requests) requestResponse(request.id, accept);
-    };
+    const respondToAllRequests = (accept: boolean) => requestResponseAll(accept);
 
     return (
         <>
