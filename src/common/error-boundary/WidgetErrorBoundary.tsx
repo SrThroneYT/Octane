@@ -5,6 +5,12 @@ import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 interface WidgetErrorBoundaryProps {
     name?: string;
     fallback?: ReactNode;
+    /**
+     * Values that, when they change, give the widget another go. Without them a widget
+     * that crashed once stays gone for the rest of the session, even when what broke it
+     * is over - a room id is the usual key.
+     */
+    resetKeys?: unknown[];
     children: ReactNode;
 }
 
@@ -17,8 +23,12 @@ const SilentFallback = (_props: FallbackProps) => null;
  *
  * Bonus addition from docs/ARCHITECTURE.md.
  */
-export const WidgetErrorBoundary: FC<WidgetErrorBoundaryProps> = ({ name = 'unknown', fallback, children }) => (
-    <ErrorBoundary FallbackComponent={fallback ? () => <>{fallback}</> : SilentFallback} onError={(err) => OctaneLogger.error(`[Widget:${name}] crashed`, err)}>
+export const WidgetErrorBoundary: FC<WidgetErrorBoundaryProps> = ({ name = 'unknown', fallback, resetKeys, children }) => (
+    <ErrorBoundary
+        FallbackComponent={fallback ? () => <>{fallback}</> : SilentFallback}
+        onError={(err) => OctaneLogger.error(`[Widget:${name}] crashed`, err)}
+        resetKeys={resetKeys}
+    >
         {children}
     </ErrorBoundary>
 );
