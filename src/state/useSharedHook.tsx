@@ -1,4 +1,6 @@
+import { OctaneLogger } from '@octane/renderer';
 import { ReactNode, Suspense, useLayoutEffect, useSyncExternalStore } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 import { useStore } from 'zustand';
 import { createStore, StoreApi } from 'zustand/vanilla';
 
@@ -8,6 +10,8 @@ interface SharedHookResource<T> {
     Host: () => null;
     ready: boolean;
     readyPromise: Promise<void>;
+    /** Lets consumers through, with whatever the store holds. */
+    markReady(): void;
     request(): void;
     store: StoreApi<T>;
 }
@@ -39,6 +43,9 @@ const subscribeRegistry = (listener: () => void) => {
 
 const getRegistrySnapshot = () => registryVersion;
 
+/** A host renders nothing, so neither does a host that failed. */
+const HostFallback = () => null;
+
 const createSharedHookResource = <T,>(useSourceHook: SourceHook<T>): SharedHookResource<T> => {
     let resolveReady: () => void;
     const readyPromise = new Promise<void>((resolve) => {
@@ -49,6 +56,12 @@ const createSharedHookResource = <T,>(useSourceHook: SourceHook<T>): SharedHookR
         Host: null,
         ready: false,
         readyPromise,
+        markReady: () => {
+            if (resource.ready) return;
+
+            resource.ready = true;
+            resolveReady();
+        },
         request: () => {
             if (requestedResources.has(resource as SharedHookResource<unknown>)) return;
 
@@ -63,11 +76,7 @@ const createSharedHookResource = <T,>(useSourceHook: SourceHook<T>): SharedHookR
 
         useLayoutEffect(() => {
             store.setState(snapshot, true);
-
-            if (!resource.ready) {
-                resource.ready = true;
-                resolveReady();
-            }
+            resource.markReady();
         }, [snapshot]);
 
         return null;
@@ -117,7 +126,20 @@ export const SharedHookRegistry = ({ children, fallback = null }: { children: Re
 
                 return (
                     <Suspense fallback={null} key={index}>
-                        <Host />
+                        <ErrorBoundary
+                            FallbackComponent={HostFallback}
+                            onError={(error) => {
+                                // A host that throws before its first layout effect never
+                                // resolves readyPromise, and every consumer of that hook
+                                // stays suspended - MainView sits on "Loading..." for the
+                                // rest of the session. Let them through with the empty
+                                // default snapshot instead.
+                                OctaneLogger.error('[SharedHook] host crashed', error);
+                                resource.markReady();
+                            }}
+                        >
+                            <Host />
+                        </ErrorBoundary>
                     </Suspense>
                 );
             })}
