@@ -145,7 +145,7 @@ export const ChatWidgetWindowView: FC<{}> = () => {
                                 )}
                                 {hideBalloons && (
                                     <div onClick={onClickChat}>
-                                        <b dangerouslySetInnerHTML={{ __html: SanitizeHtml(`${chat.name}: `) }} />
+                                        <b>{`${chat.name}: `}</b>
                                         {!chat.showTranslation && (
                                             <span className={messageClassName} dangerouslySetInnerHTML={{ __html: SanitizeHtml(chat.message) }} />
                                         )}
@@ -192,7 +192,7 @@ export const ChatWidgetWindowView: FC<{}> = () => {
                                             <div
                                                 className={`chat-content py-[5px] px-[6px] leading-none min-h-[25px] ${!hideAvatars ? (isOwnMessage ? 'mr-[27px]' : 'ml-[27px]') : ''}`}
                                             >
-                                                <b className="username" dangerouslySetInnerHTML={{ __html: SanitizeHtml(`${chat.name}: `) }} />
+                                                <b className="username">{`${chat.name}: `}</b>
                                                 {!chat.showTranslation && (
                                                     <span
                                                         className={messageClassName}

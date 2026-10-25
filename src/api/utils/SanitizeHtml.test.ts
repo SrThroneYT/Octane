@@ -1,4 +1,5 @@
 /* @vitest-environment jsdom */
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import { SanitizeHtml, SanitizePageHtml } from './SanitizeHtml';
@@ -85,6 +86,53 @@ describe('SanitizeHtml — link safety', () => {
     it('overrides an attacker-supplied rel on a target=_blank anchor', () => {
         const a = parse('<a href="https://example.com" target="_blank" rel="opener">x</a>').querySelector('a');
         expect(a?.getAttribute('rel')).toBe('noopener noreferrer');
+    });
+});
+
+describe('SanitizeHtml — no overlays, no foreign images, no page takeover', () => {
+    it('keeps text formatting in a style and drops layout that could cover the client', () => {
+        const span = parse('<span style="color:red; position:fixed; inset:0; width:100vw">hi</span>').querySelector('span') as HTMLElement;
+
+        expect(span.style.color).toBe('red');
+        expect(span.style.position).toBe('');
+        expect(span.style.width).toBe('');
+    });
+
+    it('drops a style that only positions', () => {
+        expect(parse('<img src="/x.png" style="position:fixed;inset:0">').querySelector('img')?.hasAttribute('style')).toBe(false);
+    });
+
+    it('keeps an image from the client origin and takes the source off one from elsewhere', () => {
+        expect(parse('<img src="/c_images/a.png">').querySelector('img')?.getAttribute('src')).toBe('/c_images/a.png');
+        expect(parse('<img src="https://tracker.example/p.gif">').querySelector('img')?.hasAttribute('src')).toBe(false);
+        expect(parse('<img src="//tracker.example/p.gif">').querySelector('img')?.hasAttribute('src')).toBe(false);
+    });
+
+    it('never lets a link replace the page that embeds the client', () => {
+        const a = parse('<a href="https://example.com" target="_top">x</a>').querySelector('a');
+
+        expect(a?.getAttribute('target')).toBe('_blank');
+        expect(a?.getAttribute('rel')).toBe('noopener noreferrer');
+    });
+
+    it('leaves the richer help pages to their own rules', () => {
+        const div = document.createElement('div');
+        div.innerHTML = SanitizePageHtml('<div style="position:absolute;left:4px">page</div>');
+
+        expect((div.firstElementChild as HTMLElement).style.position).toBe('absolute');
+    });
+});
+
+describe('names are text, not HTML', () => {
+    it('renders user, bot and pet names without SanitizeHtml', () => {
+        const files = [
+            'src/components/room/widgets/avatar-info/menu/AvatarInfoWidgetNameView.tsx',
+            'src/components/room/widgets/avatar-info/menu/AvatarInfoWidgetAvatarView.tsx',
+            'src/components/room/widgets/chat/ChatWidgetWindowView.tsx',
+            'src/components/help/views/SelectReportedUserView.tsx'
+        ];
+
+        for (const file of files) expect(readFileSync(file, 'utf8'), file).not.toMatch(/SanitizeHtml\(`?\$?\{?(nameInfo\.name|avatarInfo\.name|chat\.name|user\.username)/);
     });
 });
 

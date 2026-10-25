@@ -326,11 +326,9 @@ export const AvatarInfoWidgetAvatarView: FC<AvatarInfoWidgetAvatarViewProps> = (
             userType={avatarInfo.userType}
             onClose={onClose}
         >
-            <ContextMenuHeaderView
-                className="cursor-pointer"
-                onClick={(event) => GetUserProfile(avatarInfo.webID)}
-                dangerouslySetInnerHTML={{ __html: SanitizeHtml(`${avatarInfo.name}`) }}
-            ></ContextMenuHeaderView>
+            <ContextMenuHeaderView className="cursor-pointer" onClick={(event) => GetUserProfile(avatarInfo.webID)}>
+                {avatarInfo.name}
+            </ContextMenuHeaderView>
             {isBlocked && <div className="px-2 pb-1 text-[11px] italic opacity-80">{localizeWithFallback('infostand.blocked_user', 'Blocked user')}</div>}
             <div className="air-avatar-menu-buttons">
                 {mode === MODE_NORMAL && (

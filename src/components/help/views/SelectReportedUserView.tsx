@@ -1,6 +1,6 @@
 import { ChatReviewSessionCreateMessageComposer, GetSessionDataManager, RoomObjectType } from '@octane/renderer';
 import { FC, useMemo, useState } from 'react';
-import { ChatEntryType, GetRoomSession, guardianText, IReportedUser, LocalizeText, ReportState, ReportType, SanitizeHtml, SendMessageComposer } from '../../../api';
+import { ChatEntryType, GetRoomSession, guardianText, IReportedUser, LocalizeText, ReportState, ReportType, SendMessageComposer } from '../../../api';
 import { AutoGrid, Button, Column, Flex, LayoutAvatarImageView, LayoutGridItem, Text } from '../../../common';
 import { isGuardiansEnabled, useChatHistory, useHelp } from '../../../hooks';
 
@@ -85,7 +85,7 @@ export const SelectReportedUserView: FC<{}> = (props) => {
                                         <span className="octane-help-user__avatar">
                                             <LayoutAvatarImageView headOnly compactHead compactHeadSize={30} compactHeadPadding={0} direction={2} figure={user.look ?? ''} />
                                         </span>
-                                        <span dangerouslySetInnerHTML={{ __html: SanitizeHtml(user.username) }} />
+                                        <span>{user.username}</span>
                                     </span>
                                 </LayoutGridItem>
                             );
