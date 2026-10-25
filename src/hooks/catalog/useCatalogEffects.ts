@@ -5,6 +5,8 @@ import {
     BuildersClubPlaceWallItemMessageComposer,
     BuildersClubQueryFurniCountMessageComposer,
     BuildersClubSubscriptionStatusMessageEvent,
+    CatalogPageMessageEvent,
+    CatalogPagesListEvent,
     CatalogPublishedMessageEvent,
     FurniturePlaceComposer,
     FurniturePlacePaintComposer,
@@ -61,6 +63,8 @@ import { useCatalogPlaceMultipleItems } from './useCatalogPlaceMultipleItems';
 import {
     bindCatalogQueryClient,
     buildPurchasableOffer,
+    cacheLateCatalogIndex,
+    cacheLateCatalogPage,
     cloneCachedCatalogPages,
     dropCatalogCache,
     invalidateCatalogIndex,
@@ -70,7 +74,8 @@ import {
     readCatalogIndex,
     useCatalogIndexQuery,
     useCatalogPageQuery,
-    isOfferAllowedInCatalogType
+    isOfferAllowedInCatalogType,
+    ParserPage
 } from './useCatalogQueries';
 import { useCatalogSkipPurchaseConfirmation } from './useCatalogSkipPurchaseConfirmation';
 
@@ -135,6 +140,11 @@ export const useCatalogEffects = (): void => {
 
         return () => bindCatalogQueryClient(null);
     }, [queryClient]);
+
+    // Catalog replies that arrive while no request waits for them are kept too: a one-shot listener that gave up
+    // used to drop them, and the window stayed empty or on its placeholder page.
+    useMessageEvent<CatalogPagesListEvent>(CatalogPagesListEvent, (event) => cacheLateCatalogIndex(queryClient, event.getParser()));
+    useMessageEvent<CatalogPageMessageEvent>(CatalogPageMessageEvent, (event) => cacheLateCatalogPage(queryClient, event.getParser() as unknown as ParserPage));
 
     useEffect(() => {
         useCatalogStore.getState().setRoomPreviewer(new RoomPreviewer(GetRoomEngine(), ++RoomPreviewer.PREVIEW_COUNTER));
