@@ -72,7 +72,7 @@ export interface ParserOffer {
     haveOffer: boolean;
 }
 
-interface ParserPage {
+export interface ParserPage {
     pageId: number;
     catalogType: string;
     layoutCode: string;
@@ -164,12 +164,17 @@ const indexQueryConfig = (type: string) => ({
     select: (event: CatalogPagesListEvent) => selectCatalogIndex(event.getParser())
 });
 
+// One retry: the catalog is the main content of its window, and a request the server dropped left it empty or on
+// the placeholder page until the window was reopened. A reply that lands after the wait gave up is still kept, by
+// cacheLateCatalogIndex / cacheLateCatalogPage below.
+const CATALOG_QUERY_RETRIES = 1;
+
 export const useCatalogIndexQuery = (type: string, enabled: boolean): UseQueryResult<CatalogIndexData> =>
     useOctaneQuery<CatalogPagesListEvent, CatalogIndexData>({
         ...indexQueryConfig(type),
         enabled,
         staleTime: Infinity,
-        retry: false
+        retry: CATALOG_QUERY_RETRIES
     });
 
 // The page last shown per catalog type. While the next page loads every caller
@@ -198,7 +203,7 @@ export const useCatalogPageQuery = (type: string, pageId: number, enabled: boole
         staleTime: CATALOG_PAGE_STALE_MS,
         timeoutMs: CATALOG_PAGE_TIMEOUT_MS,
         placeholderData: () => lastShownCatalogPage(type),
-        retry: false
+        retry: CATALOG_QUERY_RETRIES
     });
 
     const shown = query.isPlaceholderData ? undefined : query.data;
@@ -208,6 +213,32 @@ export const useCatalogPageQuery = (type: string, pageId: number, enabled: boole
     }, [type, shown]);
 
     return query;
+};
+
+/**
+ * Keeps a catalog index the server sent while no request was waiting for it - a reply after the wait gave up, or one
+ * the server pushed on its own - instead of losing it. While a request waits, its own listener stores the reply.
+ */
+export const cacheLateCatalogIndex = (client: QueryClient, parser: { catalogType: string; root: NodeData }): boolean => {
+    const key = catalogIndexKey(normalizeCatalogType(parser.catalogType));
+
+    if (client.getQueryState(key)?.fetchStatus === 'fetching') return false;
+
+    client.setQueryData(key, selectCatalogIndex(parser));
+
+    return true;
+};
+
+/** The same for a catalog page. */
+export const cacheLateCatalogPage = (client: QueryClient, parser: ParserPage): boolean => {
+    const type = normalizeCatalogType(parser.catalogType);
+    const key = catalogPageKey(type, parser.pageId);
+
+    if (client.getQueryState(key)?.fetchStatus === 'fetching') return false;
+
+    client.setQueryData(key, selectCatalogPage(parser, type));
+
+    return true;
 };
 
 // The store's actions run outside React; the effects hook binds the app's
