@@ -33,13 +33,27 @@ export const getAccessTokenExpiresAt = (): number => {
     }
 };
 
+// The SSO ticket the stored token was issued with, in memory only. A token found in storage at start-up has none:
+// it may belong to whoever used this browser last, so a new ticket never trusts it.
+let tokenTicket: string | null = null;
+
 export const clearAccessToken = (): void => {
+    tokenTicket = null;
     setAccessToken(null);
 };
 
-export const persistAccessTokenFromPayload = (payload: Record<string, unknown> | null | undefined): void => {
+/** Whether the stored token was issued for the session of this SSO ticket. */
+export const isAccessTokenFor = (ssoTicket: string): boolean => !!ssoTicket && tokenTicket === ssoTicket && !!getAccessToken();
+
+/**
+ * Stores the access token of a login, remember or refresh reply. Pass the SSO ticket of that session when the reply
+ * came with one; a refresh keeps the session the token already belonged to.
+ */
+export const persistAccessTokenFromPayload = (payload: Record<string, unknown> | null | undefined, ssoTicket?: string): void => {
     if (!payload) return;
     const token = typeof payload.accessToken === 'string' ? payload.accessToken : '';
     const expiresAt = typeof payload.accessTokenExpiresAt === 'number' ? payload.accessTokenExpiresAt : null;
-    if (token) setAccessToken(token, expiresAt);
+    if (!token) return;
+    setAccessToken(token, expiresAt);
+    if (ssoTicket) tokenTicket = ssoTicket;
 };
