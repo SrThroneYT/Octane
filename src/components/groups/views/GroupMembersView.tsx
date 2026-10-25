@@ -22,7 +22,7 @@ import {
 } from '@octane/renderer';
 import { FC, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { FaBan, FaChevronLeft, FaChevronRight, FaUndo } from 'react-icons/fa';
-import { GetConfigurationValue, GetUserProfile, LocalizeText, localizeWithFallback, SendMessageComposer } from '../../../api';
+import { GetConfigurationValue, GetUserProfile, LocalizeText, localizeWithFallback, SendMessageComposer, TrailingThrottle } from '../../../api';
 import {
     Button,
     Column,
@@ -41,6 +41,8 @@ import { Select } from '../../../common/Select';
 import { NumberInput } from '../../../common/NumberInput';
 import { BaseButton } from '../../../common/BaseButton';
 import { Hint } from '../../../common/Tooltip';
+
+const MEMBERS_REQUEST_INTERVAL_MS = 550;
 
 export const GroupMembersView: FC<{}> = (props) => {
     const [groupId, setGroupId] = useState<number>(-1);
@@ -79,11 +81,16 @@ export const GroupMembersView: FC<{}> = (props) => {
         return '';
     };
 
+    // The server answers one members request per 500 ms and drops the rest, and a reply that is not for the current
+    // query and page is ignored: typing "abc" fast got only the reply for "a", and the list stayed unfiltered.
+    // The latest request is sent once the interval has passed.
+    const [membersRequests] = useState(() => new TrailingThrottle(MEMBERS_REQUEST_INTERVAL_MS));
+
     const refreshMembers = useCallback(() => {
         if (groupId === -1 || levelId === -1 || pageId === -1) return;
 
-        SendMessageComposer(new GroupMembersComposer(groupId, pageId, searchQuery, levelId));
-    }, [groupId, levelId, pageId, searchQuery]);
+        membersRequests.run(() => SendMessageComposer(new GroupMembersComposer(groupId, pageId, searchQuery, levelId)));
+    }, [groupId, levelId, pageId, searchQuery, membersRequests]);
 
     const toggleAdmin = (member: GroupMemberParser) => {
         if (!membersData.admin || member.rank === GroupRank.OWNER) return;
@@ -249,11 +256,9 @@ export const GroupMembersView: FC<{}> = (props) => {
         setPageId(0);
     }, [groupId, levelId, searchQuery]);
 
-    useEffect(() => {
-        if (groupId === -1 || levelId === -1 || pageId === -1) return;
+    useEffect(() => refreshMembers(), [refreshMembers]);
 
-        SendMessageComposer(new GroupMembersComposer(groupId, pageId, searchQuery, levelId));
-    }, [groupId, levelId, pageId, searchQuery]);
+    useEffect(() => () => membersRequests.cancel(), [membersRequests]);
 
     useEffect(() => {
         if (groupId === -1) return;
