@@ -1,6 +1,6 @@
 /* @vitest-environment jsdom */
 import { describe, expect, it } from 'vitest';
-import { mergeAddedEffect, OwnedAvatarEffect } from './useAvatarEffects';
+import { mergeAddedEffect, needsActivation, OwnedAvatarEffect } from './useAvatarEffects';
 
 const effect = (overrides: Partial<OwnedAvatarEffect> = {}): OwnedAvatarEffect => ({
     type: 10,
@@ -27,5 +27,20 @@ describe('mergeAddedEffect', () => {
         const merged = mergeAddedEffect([effect({ secondsLeft: 120 })], effect({ isPermanent: true, duration: 2147483647 }));
 
         expect(merged[0]).toMatchObject({ isPermanent: true, secondsLeft: 120, inactiveCount: 1 });
+    });
+});
+
+describe('needsActivation', () => {
+    it('starts the timer of a timed effect that is not running', () => {
+        expect(needsActivation(effect({ secondsLeft: 0 }))).toBe(true);
+    });
+
+    it('leaves a running timed effect alone, so choosing it again does not refill its time', () => {
+        expect(needsActivation(effect({ secondsLeft: 1200 }))).toBe(false);
+    });
+
+    it('still activates a permanent effect and an effect the list does not know yet', () => {
+        expect(needsActivation(effect({ isPermanent: true, secondsLeft: 1200 }))).toBe(true);
+        expect(needsActivation(undefined)).toBe(true);
     });
 });
