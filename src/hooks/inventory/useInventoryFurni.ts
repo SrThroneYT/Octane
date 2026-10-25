@@ -4,7 +4,8 @@ import {
     FurnitureListEvent,
     FurnitureListInvalidateEvent,
     FurnitureListItemParser,
-    FurnitureListRemovedEvent
+    FurnitureListRemovedEvent,
+    FurnitureListRemoveMultipleEvent
 } from '@octane/renderer';
 import { useEffect, useRef, useState } from 'react';
 import { registerSharedHook, useSharedHook } from '@/state/useSharedHook';
@@ -15,6 +16,7 @@ import { useSharedVisibility } from '../useSharedVisibility';
 import {
     applyFurnitureListAddOrUpdate,
     applyFurnitureListRemoved,
+    applyFurnitureListRemovedMany,
     applyMergedFurnitureList,
     clearUnseenFlags,
     FurniReducerContext,
@@ -94,6 +96,12 @@ const useInventoryFurniState = () => {
 
     useMessageEvent<FurnitureListRemovedEvent>(FurnitureListRemovedEvent, (event) => {
         setGroupItems((prev) => applyFurnitureListRemoved(prev, event));
+    });
+
+    useMessageEvent<FurnitureListRemoveMultipleEvent>(FurnitureListRemoveMultipleEvent, (event) => {
+        const itemIds = event.getParser().stripIds;
+
+        setGroupItems((prev) => applyFurnitureListRemovedMany(prev, itemIds));
     });
 
     useEffect(() => {
