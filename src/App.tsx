@@ -192,8 +192,7 @@ export const App: FC<{}> = (props) => {
 
         OctaneLogger.log('[App] tryRememberLogin start', {
             hasRemembered: !!remembered,
-            hasToken: !!remembered?.token?.length,
-            hasStoredSso: !!remembered?.ssoTicket?.length
+            hasToken: !!remembered?.token?.length
         });
 
         if (!remembered?.token?.length) {
@@ -231,7 +230,7 @@ export const App: FC<{}> = (props) => {
 
             if (response.ok && ssoTicket) {
                 persistAccessTokenFromPayload(payload, ssoTicket);
-                StoreRememberLoginFromPayload(payload, typeof payload.username === 'string' ? payload.username : remembered.username, ssoTicket);
+                StoreRememberLoginFromPayload(payload, typeof payload.username === 'string' ? payload.username : remembered.username);
                 return ssoTicket;
             }
         } catch (error) {
@@ -270,7 +269,7 @@ export const App: FC<{}> = (props) => {
 
             if (response.ok) {
                 persistAccessTokenFromPayload(payload);
-                StoreRememberLoginFromPayload(payload, remembered.username, remembered.ssoTicket);
+                StoreRememberLoginFromPayload(payload, remembered.username);
                 return;
             }
 

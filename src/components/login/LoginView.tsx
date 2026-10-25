@@ -552,7 +552,7 @@ export const LoginView: FC<LoginViewProps> = ({ onAuthenticated, isEntering = fa
                     clearLock();
                     persistAccessTokenFromPayload(payload, ssoTicket);
                     if (rememberFlag)
-                        StoreRememberLoginFromPayload(payload, typeof payload.username === 'string' ? payload.username : usernameInput, ssoTicket);
+                        StoreRememberLoginFromPayload(payload, typeof payload.username === 'string' ? payload.username : usernameInput);
                     else ClearRememberLogin();
                     onAuthenticated(ssoTicket);
                     return null;
