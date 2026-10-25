@@ -7,6 +7,7 @@ const chat = { id: 1, webId: 7, name: 'Alice', look: 'hd-180-1', message: 'hello
 
 vi.mock('@octane/renderer', () => ({ RoomObjectType: { USER: 1 } }));
 vi.mock('../../../api', () => ({
+    ChatEntryPlainText: (entry: { text?: string; message?: string }) => entry.text ?? entry.message,
     ChatEntryType: { TYPE_CHAT: 0, TYPE_IM: 1 },
     localizeWithFallback: (_key: string, fallback: string) => fallback,
     LocalizeText: (key: string) => key,
