@@ -21,7 +21,7 @@ import {
     PrepareRenderer
 } from '@octane/renderer';
 import { FC, useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
-import { clearAccessToken, ClearRememberLogin, createBootSteps, exchangeSsoTicketForAccessToken, GetRememberLogin, GetUIVersion, persistAccessTokenFromPayload, SetRememberLogin, StoreRememberLoginFromPayload, takeLoginTokenFromUrl } from './api';
+import { clearAccessToken, ClearRememberLogin, createBootSteps, exchangeSsoTicketForAccessToken, GetRememberLogin, GetUIVersion, persistAccessTokenFromPayload, StoreRememberLoginFromPayload } from './api';
 import { Base } from './common';
 import { LoadingView } from './components/loading/LoadingView';
 import { LoginView } from './components/login/LoginView';
@@ -439,13 +439,6 @@ export const App: FC<{}> = (props) => {
 
                 let ssoTicket = window.OctaneConfig['sso.ticket'];
                 if (ssoTicket) GetConfiguration().setValue('sso.ticket', ssoTicket);
-
-                try {
-                    const urlToken = takeLoginTokenFromUrl();
-                    if (urlToken && !GetRememberLogin()) SetRememberLogin(urlToken);
-                } catch (e) {
-                    console.warn('[App] failed to persist remember token from URL', e);
-                }
 
                 bumpProgress(10, taskLabel('loading.task.session', 'Verifying session...'));
 

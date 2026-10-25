@@ -1,3 +1,6 @@
+import { ClearRememberLogin, SetRememberLogin } from '../utils/RememberLogin';
+import { clearAccessToken } from './accessToken';
+
 const THIRTY_DAYS_SECONDS = 30 * 24 * 60 * 60;
 
 export interface UrlLoginToken {
@@ -23,4 +26,21 @@ export const takeLoginTokenFromUrl = (location: Location = window.location, hist
     if (!token) return null;
 
     return { token, expiresAt: Number.isFinite(expiry) && expiry > 0 ? expiry : Math.floor(Date.now() / 1000) + THIRTY_DAYS_SECONDS };
+};
+
+/**
+ * Takes the CMS login token out of the address and makes it the remembered login. It always wins over what this
+ * browser remembered: the CMS just logged someone in, and keeping an older remember would enter the hotel as whoever
+ * was remembered before. Runs at boot, before the first fetch, so the token never reaches a Referer.
+ */
+export const adoptLoginTokenFromUrl = (location: Location = window.location, history: History = window.history): boolean => {
+    const urlToken = takeLoginTokenFromUrl(location, history);
+
+    if (!urlToken) return false;
+
+    ClearRememberLogin();
+    clearAccessToken();
+    SetRememberLogin(urlToken);
+
+    return true;
 };
