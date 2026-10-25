@@ -19,6 +19,7 @@ import { AutoGrid, BaseButton, Button, Column, Flex, Grid, LayoutGridItem, Text 
 import { useInventoryTrade, useNotification } from '../../../../hooks';
 import { InventoryFurnitureSearchView } from './InventoryFurnitureSearchView';
 import { NumberInput } from '../../../../common/NumberInput';
+import { clampTradeQuantity } from '../../../../api/inventory/TradeQuantity';
 
 interface InventoryTradeViewProps {
     cancelTrade: () => void;
@@ -124,20 +125,14 @@ export const InventoryTradeView: FC<InventoryTradeViewProps> = (props) => {
         }
     };
 
-    const updateQuantity = (value: number, totalItemCount: number) => {
-        if (isNaN(Number(value)) || Number(value) < 0 || !value) value = 1;
-
-        value = Math.max(Number(value), 1);
-        value = Math.min(Number(value), totalItemCount);
-
-        if (value === quantity) return;
-
-        setQuantity(value);
-    };
-
     const changeCount = (totalItemCount: number) => {
-        updateQuantity(quantity, totalItemCount);
-        attemptItemOffer(quantity);
+        // Offer the amount once checked: the raw field could be NaN, which offered the whole stack.
+        const count = clampTradeQuantity(quantity, totalItemCount);
+
+        if (count <= 0) return;
+
+        setQuantity(count);
+        attemptItemOffer(count);
     };
 
     useEffect(() => {
@@ -173,9 +168,17 @@ export const InventoryTradeView: FC<InventoryTradeViewProps> = (props) => {
     // The server says when an account may not trade; without this the trade just never completes.
     let tradeBlockedWarning: string = null;
 
-    if (!ownUser.canTrade && !otherUser.canTrade) tradeBlockedWarning = localizeWithFallback('inventory.trading.warning.both_accounts_disabled', 'Neither of you can trade right now.');
-    else if (!ownUser.canTrade) tradeBlockedWarning = localizeWithFallback('inventory.trading.warning.own_account_disabled', 'Your account can not trade right now.');
-    else if (!otherUser.canTrade) tradeBlockedWarning = localizeWithFallback('inventory.trading.warning.others_account_disabled', `${otherUser.userName} can not trade right now.`, ['otherusername'], [otherUser.userName]);
+    if (!ownUser.canTrade && !otherUser.canTrade)
+        tradeBlockedWarning = localizeWithFallback('inventory.trading.warning.both_accounts_disabled', 'Neither of you can trade right now.');
+    else if (!ownUser.canTrade)
+        tradeBlockedWarning = localizeWithFallback('inventory.trading.warning.own_account_disabled', 'Your account can not trade right now.');
+    else if (!otherUser.canTrade)
+        tradeBlockedWarning = localizeWithFallback(
+            'inventory.trading.warning.others_account_disabled',
+            `${otherUser.userName} can not trade right now.`,
+            ['otherusername'],
+            [otherUser.userName]
+        );
 
     // AIR TradingView.showOfferInfo / updateActionState: with trading.warning.enabled each side shows its item count and
     // credit value, and an orange line warns that credit furni turns into wallet credits once either side offers some.
@@ -239,7 +242,13 @@ export const InventoryTradeView: FC<InventoryTradeViewProps> = (props) => {
                         <Column alignItems="end" gap={1}>
                             <Grid overflow="hidden">
                                 <Column overflow="hidden" size={6}>
-                                    <NumberInput className="w-[49px] min-h-[calc(1.5em+ .5rem+2px)] px-[.5rem] py-[.25rem] rounded-[.2rem] form-control-sm" disabled={!groupItem} placeholder={LocalizeText('catalog.bundlewidget.spinner.select.amount')} value={quantity} onChange={(event) => setQuantity(event.target.valueAsNumber)} />
+                                    <NumberInput
+                                        className="w-[49px] min-h-[calc(1.5em+ .5rem+2px)] px-[.5rem] py-[.25rem] rounded-[.2rem] form-control-sm"
+                                        disabled={!groupItem}
+                                        placeholder={LocalizeText('catalog.bundlewidget.spinner.select.amount')}
+                                        value={quantity}
+                                        onChange={(event) => setQuantity(event.target.valueAsNumber)}
+                                    />
                                 </Column>
                                 <Column overflow="hidden" size={6}>
                                     <Button disabled={!groupItem} variant="secondary" onClick={(event) => changeCount(groupItem.getUnlockedCount())}>
@@ -326,7 +335,10 @@ export const InventoryTradeView: FC<InventoryTradeViewProps> = (props) => {
                         </Column>
                     </Grid>
                     {creditWarning && (
-                        <div className="octane-trade-credit-warning mb-1 rounded border border-[#fc9228] bg-[#fc9228] px-[5px] py-[5px] text-xs text-black" role="status">
+                        <div
+                            className="octane-trade-credit-warning mb-1 rounded border border-[#fc9228] bg-[#fc9228] px-[5px] py-[5px] text-xs text-black"
+                            role="status"
+                        >
                             {creditWarning}
                         </div>
                     )}
@@ -354,7 +366,9 @@ export const InventoryTradeView: FC<InventoryTradeViewProps> = (props) => {
                                 {LocalizeText('inventory.trading.button.restore')}
                             </Button>
                         )}
-                        {tradeState === TradeState.TRADING_STATE_CONFIRMED && <Button variant="secondary">{LocalizeText('inventory.trading.info.waiting')}</Button>}
+                        {tradeState === TradeState.TRADING_STATE_CONFIRMED && (
+                            <Button variant="secondary">{LocalizeText('inventory.trading.info.waiting')}</Button>
+                        )}
                     </div>
                 </Column>
             </Grid>
