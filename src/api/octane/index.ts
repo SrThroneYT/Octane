@@ -1,4 +1,5 @@
 export * from './awaitMessageEvent';
+export * from './SerialRequestChannel';
 export * from './CreateLinkEvent';
 export * from './GetConfigurationValue';
 export * from './OpenUrl';
