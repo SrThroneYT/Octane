@@ -16,6 +16,7 @@ import {
     MessengerInitEvent,
     MoveFriendToCategoryComposer,
     NewFriendRequestEvent,
+    OctaneEventType,
     RemoveFriendCategoryComposer,
     RenameFriendCategoryComposer,
     RequestFriendComposer,
@@ -37,7 +38,7 @@ import {
     SendMessageComposer,
     withUpdatedFriendCategories
 } from '../../api';
-import { useMessageEvent } from '../events';
+import { useMessageEvent, useOctaneEvent } from '../events';
 import { useNotification } from '../notification';
 
 /** AcceptFriendRequestEvent refuses a count above this. */
@@ -355,6 +356,18 @@ const useFriendsStore = () => {
 
             return newRequests;
         });
+    });
+
+    // After an automatic reconnection nothing asked the server again: private messages that arrived meanwhile were
+    // stored as offline messages and shown only at the next full login, and friends removed meanwhile stayed listed.
+    // Start the messenger over, as at login: the init brings the requests, the friend list and then the offline
+    // messages.
+    useOctaneEvent(OctaneEventType.SOCKET_REAUTHENTICATED, () => {
+        friendsRef.current = [];
+        setFriends([]);
+        setRequests([]);
+        setOfflineMessagesReady(false);
+        SendMessageComposer(new MessengerInitComposer());
     });
 
     useEffect(() => {
