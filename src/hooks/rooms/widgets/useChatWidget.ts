@@ -295,6 +295,7 @@ const useChatWidgetState = () => {
                       chatType: chatType,
                       entityType: userData.type,
                       message: formattedText,
+                      text: originalText,
                       timestamp: ChatHistoryCurrentDate(),
                       type: ChatEntryType.TYPE_CHAT,
                       roomId: roomSession.roomId,
