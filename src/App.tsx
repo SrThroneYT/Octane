@@ -230,7 +230,7 @@ export const App: FC<{}> = (props) => {
             });
 
             if (response.ok && ssoTicket) {
-                persistAccessTokenFromPayload(payload);
+                persistAccessTokenFromPayload(payload, ssoTicket);
                 StoreRememberLoginFromPayload(payload, typeof payload.username === 'string' ? payload.username : remembered.username, ssoTicket);
                 return ssoTicket;
             }
