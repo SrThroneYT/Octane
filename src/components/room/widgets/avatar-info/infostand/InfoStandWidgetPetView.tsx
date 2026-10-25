@@ -1,6 +1,6 @@
 import { CreateLinkEvent, PetRespectComposer, PetType } from '@octane/renderer';
 import { FC, useCallback, useEffect, useState } from 'react';
-import { ConvertSeconds, GetConfigurationValue, LocalizeText, SendMessageComposer } from '../../../../../api';
+import { ConvertSeconds, GetConfigurationRecord, LocalizeText, SendMessageComposer } from '../../../../../api';
 import { Button, Column, Flex, LayoutCounterTimeView, LayoutPetImageView, LayoutRarityLevelView, Text, UserProfileIconView } from '../../../../../common';
 import { useRoom, useSessionInfo } from '../../../../../hooks';
 import { InfoStandHeaderView } from './InfoStandHeaderView';
@@ -216,7 +216,7 @@ export const InfoStandWidgetPetView: FC<InfoStandWidgetPetViewProps> = ({ avatar
                         if (petRespectRemaining - 1 >= 1) hideMenu = false;
                         break;
                     case 'buyfood':
-                        CreateLinkEvent('catalog/open/' + GetConfigurationValue('catalog.links')['pets.buy_food']);
+                        CreateLinkEvent('catalog/open/' + GetConfigurationRecord('catalog.links')['pets.buy_food']);
                         break;
                     case 'train':
                         roomSession?.requestPetCommands(avatarInfo.id);

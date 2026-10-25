@@ -22,6 +22,7 @@ import {
     ChatBubbleUtilities,
     ChatEntryType,
     ChatHistoryCurrentDate,
+    GetConfigurationRecord,
     GetConfigurationValue,
     GetRoomObjectScreenLocation,
     IRoomChatSettings,
@@ -173,7 +174,7 @@ const useChatWidgetState = () => {
             case RoomSessionChatEvent.CHAT_TYPE_RESPECT:
                 text = LocalizeText('widgets.chatbubble.respect', ['username'], [username]);
 
-                if (GetConfigurationValue('respect.options')['enabled']) PlaySound(GetConfigurationValue('respect.options')['sound']);
+                if (GetConfigurationRecord('respect.options')['enabled']) PlaySound(GetConfigurationRecord('respect.options')['sound']);
 
                 break;
             case RoomSessionChatEvent.CHAT_TYPE_PETREVIVE:
