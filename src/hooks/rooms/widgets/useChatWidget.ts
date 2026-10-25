@@ -132,14 +132,21 @@ const useChatWidgetState = () => {
         }
     }, [effectiveChatSettings]);
 
-    useOctaneEvent<RoomSessionChatEvent>(RoomSessionChatEvent.CHAT_EVENT, async (event) => {
+    // Synchronous on purpose: the bubble and the history entry go in the order the messages arrived. The head image
+    // is downloaded afterwards and put on the bubble when it is ready; awaiting it first let a message from a user
+    // whose figure was cached overtake an earlier one.
+    useOctaneEvent<RoomSessionChatEvent>(RoomSessionChatEvent.CHAT_EVENT, (event) => {
         const roomObject = GetRoomEngine().getRoomObject(roomSession.roomId, event.objectId, RoomObjectCategory.UNIT);
         const bubbleLocation = roomObject ? GetRoomObjectScreenLocation(roomSession.roomId, roomObject?.id, RoomObjectCategory.UNIT) : { x: 0, y: 0 };
         const userData = roomObject ? roomSession.userDataManager.getUserDataByIndex(event.objectId) : new RoomUserData(-1);
 
+        // The unit is in the room but its user data is not (yet): there is no one to put the bubble on.
+        if (!userData) return;
+
         let username = '';
         let avatarColor = 0;
-        let imageUrl: string = null;
+        const imageUrl: string = null;
+        let imageRequest: Promise<string> = null;
         let chatType = event.chatType;
         let styleId = event.style;
         let userType = 0;
@@ -153,11 +160,11 @@ const useChatWidgetState = () => {
 
             switch (userType) {
                 case RoomObjectType.PET:
-                    imageUrl = await ChatBubbleUtilities.getPetImage(figure, 2, true, 64, roomObject.model.getValue<string>(RoomObjectVariable.FIGURE_POSTURE));
+                    imageRequest = ChatBubbleUtilities.getPetImage(figure, 2, true, 64, roomObject.model.getValue<string>(RoomObjectVariable.FIGURE_POSTURE));
                     petType = new PetFigureData(figure).typeId;
                     break;
                 case RoomObjectType.USER:
-                    imageUrl = await ChatBubbleUtilities.getUserImage(figure);
+                    imageRequest = ChatBubbleUtilities.getUserImage(figure);
                     break;
                 case RoomObjectType.RENTABLE_BOT:
                 case RoomObjectType.BOT:
@@ -308,6 +315,32 @@ const useChatWidgetState = () => {
                           : {})
                   })
                 : -1;
+
+        if (imageRequest) {
+            const bubbleId = chatMessage.id;
+
+            void imageRequest
+                .then((url) => {
+                    if (!url || isDisposed.current) return;
+
+                    setChatMessages((prevValue) => {
+                        const index = prevValue.findIndex((chat) => chat.id === bubbleId);
+
+                        if (index === -1) return prevValue;
+
+                        // A new object, so the bubble view sees the change.
+                        const bubble = Object.assign(Object.create(Object.getPrototypeOf(prevValue[index])), prevValue[index], { imageUrl: url });
+                        const newValue = [...prevValue];
+
+                        newValue[index] = bubble;
+
+                        return newValue;
+                    });
+
+                    updateChatEntry(chatEntryId, { imageUrl: url });
+                })
+                .catch(() => undefined);
+        }
 
         if (!settings.enabled || outgoingTranslation || !isTranslatableChatType || !text.trim().length) return;
 
