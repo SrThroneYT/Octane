@@ -9,6 +9,7 @@ import {
     getNodesByOfferIdFromMap,
     normalizeCatalogType,
     resolveBuilderFurniPlaceableStatus,
+    resolveOfferPageId,
     restoreCatalogActivePath
 } from './useCatalog.helpers';
 
@@ -308,5 +309,38 @@ describe('resolveBuilderFurniPlaceableStatus', () => {
         const input = { ...baseInput, secondsLeft: 0, visitorCount: 0 };
 
         expect(resolveBuilderFurniPlaceableStatus(input)).toBe(BuilderFurniPlaceableStatus.OKAY);
+    });
+});
+
+describe('resolveOfferPageId', () => {
+    const offersToNodes = new Map<number, any[]>([
+        [
+            42,
+            [
+                { pageId: 7, isVisible: false },
+                { pageId: 9, isVisible: true }
+            ]
+        ]
+    ]);
+
+    it("names the offer's own page, not the page on screen", () => {
+        expect(resolveOfferPageId({ offerId: 42, page: { pageId: 3 } } as any, offersToNodes)).toBe(3);
+    });
+
+    it('finds the page that holds an offer opened from a search or a link', () => {
+        expect(resolveOfferPageId({ offerId: 42, page: { pageId: -12345678 } } as any, offersToNodes)).toBe(9);
+        expect(resolveOfferPageId({ offerId: 42, page: { pageId: -1 } } as any, offersToNodes)).toBe(9);
+    });
+
+    it('answers -1 when no page holds the offer', () => {
+        expect(resolveOfferPageId({ offerId: 5, page: null } as any, offersToNodes)).toBe(-1);
+    });
+
+    it('is what a skip-confirm placement buys with', async () => {
+        const { readFileSync } = await import('node:fs');
+        const source = readFileSync('src/hooks/catalog/useCatalogEffects.ts', 'utf8');
+
+        expect(source).not.toContain('new PurchaseFromCatalogComposer(state.pageId,');
+        expect(source).toContain('resolveOfferPageId(purchasableOffer, readCatalogIndex(state.currentType)?.offersToNodes)');
     });
 });
