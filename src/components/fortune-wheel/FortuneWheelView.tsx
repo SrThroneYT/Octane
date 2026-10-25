@@ -122,6 +122,17 @@ export const FortuneWheelView: FC<{}> = () => {
         const target = current - (current % 360) + FULL_TURNS * 360 + (360 - centerAngle);
         targetRef.current = target;
 
+        // A closed window has no wheel whose transition could end the spin, so it ended never: the spin button
+        // stayed disabled until a reload. Land on the prize at once; the reveal waits for the next open.
+        if (!isVisible) {
+            setSpinPhase('idle');
+            rotationRef.current = target;
+            setRotation(target);
+            setRevealPrize(list[idx]);
+            finishSpin();
+            return;
+        }
+
         if (reducedMotion) {
             // Single straightforward move to the target, no flourish.
             setSpinPhase('spin');
@@ -135,7 +146,7 @@ export const FortuneWheelView: FC<{}> = () => {
         const back = current - WINDBACK_DEG;
         rotationRef.current = back;
         setRotation(back);
-    }, [pendingPrizeId, finishSpin, reducedMotion]);
+    }, [pendingPrizeId, finishSpin, reducedMotion, isVisible]);
 
     const finishReveal = () => {
         setSpinPhase('idle');
