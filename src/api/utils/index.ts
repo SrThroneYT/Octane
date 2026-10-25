@@ -28,4 +28,5 @@ export * from './RoomChatFormatter';
 export * from './SanitizeHtml';
 export * from './SetLocalStorage';
 export * from './SoundNames';
+export * from './TrailingThrottle';
 export * from './WindowSaveOptions';
