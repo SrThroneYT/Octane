@@ -15,7 +15,7 @@ const h = vi.hoisted(() => {
         handlers: new Map<string, (event: unknown) => void>(),
         images: new Map<string, ReturnType<typeof deferred>>(),
         users: new Map<number, unknown>(),
-        addChatEntry: vi.fn((entry: { id: number; text?: string }) => entry.id),
+        addChatEntry: vi.fn((entry: { id: number; webId: number }) => entry.id),
         updateChatEntry: vi.fn()
     };
 });
@@ -92,7 +92,7 @@ describe('room chat order', () => {
         await act(async () => h.images.get('cached-figure').resolve('cached.png'));
 
         expect(result.current.chatMessages.map((message) => message.text)).toEqual(['ciao', 'come va']);
-        expect(h.addChatEntry.mock.calls.map(([entry]) => entry.text)).toEqual(['ciao', 'come va']);
+        expect(h.addChatEntry.mock.calls.map(([entry]) => entry.webId)).toEqual([1, 2]);
 
         await act(async () => h.images.get('new-figure').resolve('new.png'));
 
