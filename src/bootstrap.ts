@@ -1,4 +1,5 @@
 import { GetConfiguration } from '@octane/renderer';
+import { adoptLoginTokenFromUrl } from './api/auth/urlToken';
 import { derivePetConfig, DerivedPetConfig, PetDefinition } from './api/octane/PetData';
 import { parseJsonDocument, UiJsonMode } from './json/JsonDocumentParser';
 import { configFileUrl, getClientMode, installSecureFetch } from './secure-assets';
@@ -103,12 +104,30 @@ const loadPetConfig = async (): Promise<DerivedPetConfig | null> => {
     }
 };
 
+// The login secrets in the address - the SSO ticket and the CMS login token - come out of it before the first fetch,
+// so none of them reaches the history, a bookmark or the Referer of a request.
+const search = new URLSearchParams(window.location.search);
+
+if (search.has('sso')) {
+    try {
+        const url = new URL(window.location.href);
+
+        url.searchParams.delete('sso');
+        window.history.replaceState(window.history.state, '', url.toString());
+    } catch {}
+}
+
+try {
+    adoptLoginTokenFromUrl();
+} catch (error) {
+    setBootDebug(`boot: login token from the address not kept ${error?.message || error}`);
+}
+
 await loadClientMode();
 
 installSecureFetch();
 setBootDebug('boot: secure fetch installed');
 
-const search = new URLSearchParams(window.location.search);
 const clientMode = getClientMode();
 // The pet list, the configuration files and the UI bundle download together.
 const petConfigLoad = loadPetConfig();
@@ -122,17 +141,6 @@ const petConfigLoad = loadPetConfig();
     'forward.id': search.get('room') || 0,
     'friend.id': search.get('friend') || 0
 };
-
-// The ticket now lives in the config: take it out of the address bar so it can't leak through
-// history, bookmarks, screenshots or a shared link.
-if (search.has('sso')) {
-    try {
-        const url = new URL(window.location.href);
-
-        url.searchParams.delete('sso');
-        window.history.replaceState(window.history.state, '', url.toString());
-    } catch {}
-}
 
 // Legacy aliases so external scripts written against the old Nitro globals keep working
 (window as any).NitroConfig = (window as any).OctaneConfig;
