@@ -55,7 +55,7 @@ import { useConnectionState, useMessageEvent, useOctaneEvent, useUiEvent } from 
 import { useNotification } from '../notification';
 import { DUMMY_PAGE_ID_FOR_OFFER_SEARCH, useCatalogStore } from './catalogStore';
 import { recolorablePlacementColor } from './recolorableColorStore';
-import { getNodesByOfferIdFromMap, restoreCatalogActivePath, RoomObjectCategory } from './useCatalog.helpers';
+import { getNodesByOfferIdFromMap, resolveOfferPageId, restoreCatalogActivePath, RoomObjectCategory } from './useCatalog.helpers';
 import { useCatalogNewAdditions } from './useCatalogNewAdditions';
 import { useCatalogPlaceMultipleItems } from './useCatalogPlaceMultipleItems';
 import {
@@ -435,7 +435,9 @@ export const useCatalogEffects = (): void => {
                 if (roomObject) roomObject.model.setValue(RoomObjectVariable.FURNITURE_ALPHA_MULTIPLIER, 0.5);
 
                 if (catalogSkipPurchaseConfirmation && !(product && product.isUniqueLimitedItem)) {
-                    SendMessageComposer(new PurchaseFromCatalogComposer(state.pageId, purchasableOffer.offerId, product.extraParam, 1));
+                    const pageId = resolveOfferPageId(purchasableOffer, readCatalogIndex(state.currentType)?.offersToNodes);
+
+                    SendMessageComposer(new PurchaseFromCatalogComposer(pageId, purchasableOffer.offerId, product.extraParam, 1));
                 }
 
                 if (state.catalogPlaceMultipleObjects) state.requestOfferToMover(purchasableOffer);

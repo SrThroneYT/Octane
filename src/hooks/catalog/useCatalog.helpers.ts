@@ -76,6 +76,21 @@ export const getNodesByOfferIdFromMap = (
     return offersToNodes.get(offerId) ?? null;
 };
 
+/**
+ * The catalog page a purchase of this offer names: the offer's own page, or - for an offer opened from a search or
+ * a link, whose page is a placeholder - the first page that holds it. The page on screen is not it: the server
+ * refuses an offer that is not on the page named.
+ */
+export const resolveOfferPageId = (offer: IPurchasableOffer, offersToNodes: Map<number, ICatalogNode[]> | null | undefined): number => {
+    const pageId = offer?.page?.pageId ?? -1;
+
+    if (pageId >= 0) return pageId;
+
+    const nodes = getNodesByOfferIdFromMap(offer?.offerId, offersToNodes, true) || getNodesByOfferIdFromMap(offer?.offerId, offersToNodes);
+
+    return nodes?.length ? nodes[0].pageId : -1;
+};
+
 export const buildCatalogNodeTree = (root: NodeData): { rootNode: ICatalogNode; offersToNodes: Map<number, ICatalogNode[]> } => {
     const offersToNodes: Map<number, ICatalogNode[]> = new Map();
 
