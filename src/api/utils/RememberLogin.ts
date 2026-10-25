@@ -65,3 +65,22 @@ export const StoreRememberLoginFromPayload = (payload: Record<string, unknown>, 
 
     SetRememberLogin({ token: token || undefined, ssoTicket: ssoTicket || undefined, expiresAt, username });
 };
+
+/** Clears the remembered login only if it still holds this token: another tab may have rotated it meanwhile. */
+export const ClearRememberLoginIfStill = (token: string): void => {
+    if (GetRememberLogin()?.token === token) ClearRememberLogin();
+};
+
+/**
+ * Runs a remember or refresh call under a lock shared by every tab of this origin. The server revokes the whole
+ * token family when an older version comes back, so two tabs rotating the same token at once - a browser restoring
+ * its tabs is enough - logged the user out. The task reads the stored token inside the lock, where it is the one the
+ * previous tab just stored.
+ */
+export const withRememberLock = <T>(task: () => Promise<T>): Promise<T> => {
+    const locks = typeof navigator !== 'undefined' ? navigator.locks : undefined;
+
+    if (!locks?.request) return task();
+
+    return locks.request('octane-remember', task) as Promise<T>;
+};
