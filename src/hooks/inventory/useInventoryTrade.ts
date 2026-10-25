@@ -34,6 +34,7 @@ import {
 } from '../../api';
 import { useMessageEvent } from '../events';
 import { useNotification } from '../notification';
+import { reopenedTradeState } from '../../api/inventory/TradeReopen';
 import { useInventoryFurni } from './useInventoryFurni';
 
 /**
@@ -128,6 +129,9 @@ const useInventoryTradeState = () => {
                 return newValue;
             });
         }
+
+        // A side taking back its acceptance during the countdown stops it, as on the server.
+        if (!parser.userAccepts) setTradeState(reopenedTradeState);
     });
 
     useMessageEvent<TradingCloseEvent>(TradingCloseEvent, (event) => {
@@ -182,6 +186,9 @@ const useInventoryTradeState = () => {
                 newValue.userItems = secondUserItems;
             }
 
+            // Every change to the offer clears both acceptances on the server, which does not say so.
+            newValue.accepts = false;
+
             const tradeIds: number[] = [];
 
             for (const groupItem of newValue.userItems.getValues()) {
@@ -220,8 +227,12 @@ const useInventoryTradeState = () => {
                 newValue.userItems = secondUserItems;
             }
 
+            newValue.accepts = false;
+
             return newValue;
         });
+
+        setTradeState(reopenedTradeState);
     });
 
     useMessageEvent<TradingNotOpenEvent>(TradingNotOpenEvent, (event) => {
