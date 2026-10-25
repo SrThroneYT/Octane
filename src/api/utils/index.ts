@@ -11,6 +11,7 @@ export * from './GetLocalStorage';
 export * from './InternalHtmlLinks';
 export * from './IsTouchDevice';
 export * from './isSafeExternalUrl';
+export * from './resolveGameFrame';
 export * from './LocalizeBadgeDescription';
 export * from './LocalizeBageName';
 export * from './LocalizeFormattedNumber';

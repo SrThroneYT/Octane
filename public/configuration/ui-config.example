@@ -120,6 +120,7 @@
     "toolbar.new_additions.notification.enabled": true,
     "buildersclub.enabled": true,
     "game.center.enabled": false,
+    "game.center.allowed.hosts": [],
     "games.highscores.enabled": true,
     "dailytasks.enabled": true,
     "friendbar.notifications.enabled": true,
