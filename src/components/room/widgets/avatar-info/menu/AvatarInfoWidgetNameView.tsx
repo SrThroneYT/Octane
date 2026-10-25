@@ -1,6 +1,6 @@
 import { GetSessionDataManager } from '@octane/renderer';
 import { FC, useMemo } from 'react';
-import { AvatarInfoName, MessengerFriend, SanitizeHtml } from '../../../../../api';
+import { AvatarInfoName, MessengerFriend } from '../../../../../api';
 import { ContextMenuView } from '../../context-menu/ContextMenuView';
 
 interface AvatarInfoWidgetNameViewProps {
@@ -43,7 +43,7 @@ export const AvatarInfoWidgetNameView: FC<AvatarInfoWidgetNameViewProps> = (prop
         >
             <div className="flex items-center justify-center gap-1">
                 {relationIconClass && <div className={`octane-friends-spritesheet ${relationIconClass}`} />}
-                <div className="text-shadow" dangerouslySetInnerHTML={{ __html: SanitizeHtml(`${nameInfo.name}`) }}></div>
+                <div className="text-shadow">{nameInfo.name}</div>
             </div>
         </ContextMenuView>
     );
