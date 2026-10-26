@@ -13,7 +13,6 @@ import {
     createCustomVariableToken,
     createFallbackVariableEntry,
     flattenWiredVariablePickerEntries,
-    getCustomVariableItemId,
     normalizeVariableTokenFromWire
 } from '../WiredVariablePickerData';
 import { isWiredSameHolderEligible, WiredValueOrVariableInput } from '../WiredValueOrVariableInput';
@@ -197,9 +196,8 @@ export const WiredActionGiveVariableView: FC<{}> = () => {
         setFurniIds(selectedTargetType === 'furni' && furniSource === SOURCE_SELECTED ? [...furniIds] : []);
     };
 
-    const validate = () =>
-        getCustomVariableItemId(selectedVariableToken) > 0 &&
-        (!selectedVariableDefinition?.hasValue || (initialValueValid && (!fromVariable || getCustomVariableItemId(referenceToken) > 0)));
+    // AIR saves any variable; one of another kind than the target just does nothing.
+    const validate = () => !!selectedVariableToken && (!selectedVariableDefinition?.hasValue || initialValueValid);
 
     const requiresFurni =
         selectedTargetType === 'furni' ? WiredFurniType.STUFF_SELECTION_OPTION_BY_ID_BY_TYPE_OR_FROM_CONTEXT : WiredFurniType.STUFF_SELECTION_OPTION_NONE;
