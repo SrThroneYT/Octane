@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getClubMembershipSummary, groupClubOffers, isVipPurchaseLayout } from './clubPurchase.helpers';
+import { clubOffersWindowId, getClubMembershipSummary, groupClubOffers, isVipPurchaseLayout } from './clubPurchase.helpers';
 
 const offer = (offerId: number, vip: boolean) => ({ offerId, vip });
 
@@ -45,5 +45,12 @@ describe('club purchase rules', () => {
             tier: 'vip',
             totalDays: 4
         });
+    });
+
+    it('asks for the offer window AIR asks for on each club page', () => {
+        expect(clubOffersWindowId('club_buy')).toBe(0);
+        expect(clubOffersWindowId('vip_buy')).toBe(1);
+        expect(clubOffersWindowId('loyalty_vip_buy')).toBe(6);
+        expect(clubOffersWindowId('something_else')).toBe(0);
     });
 });
