@@ -140,3 +140,81 @@ export const resolveLineByLineLayout = (bubbles: readonly FreeFlowLayoutBubble[]
         pointerX: Math.max(POINTER_LEFT_MARGIN, Math.min(bubble.width - POINTER_RIGHT_MARGIN, bubble.anchorX - bubble.left))
     }));
 };
+
+/**
+ * Runs a layout pass until the bubbles stop moving, at most `maxPasses` times, each pass starting where the last
+ * one left the bubbles. Every collision moves a bubble by at least a pixel, so a pass that moves nothing means no
+ * bubble overlaps and any further pass would change nothing: the result equals `maxPasses` chained passes.
+ */
+export const resolveUntilSettled = <TBubble extends FreeFlowLayoutBubble>(
+    bubbles: readonly TBubble[],
+    resolver: (bubbles: readonly FreeFlowLayoutBubble[]) => FreeFlowLayoutPosition[],
+    maxPasses: number
+): { positions: FreeFlowLayoutPosition[]; passes: number } => {
+    let current: FreeFlowLayoutBubble[] = bubbles.map((bubble) => ({ ...bubble }));
+    let positions: FreeFlowLayoutPosition[] = [];
+    let passes = 0;
+
+    while (passes < Math.max(1, maxPasses)) {
+        positions = resolver(current);
+        passes++;
+
+        const byId = new Map(positions.map((position) => [position.id, position]));
+        let moved = false;
+
+        current = current.map((bubble) => {
+            const position = byId.get(bubble.id);
+
+            if (!position || (position.left === bubble.left && position.top === bubble.top)) return bubble;
+
+            moved = true;
+
+            return { ...bubble, left: position.left, top: position.top };
+        });
+
+        if (!moved) break;
+    }
+
+    return { positions, passes };
+};
+
+/** One animation frame for any number of layout requests: requests are counted and flushed together. */
+export const createLayoutBatcher = (
+    flush: (pending: number) => void,
+    schedule: (callback: () => void) => number = (callback) => window.requestAnimationFrame(callback),
+    cancel: (handle: number) => void = (handle) => window.cancelAnimationFrame(handle)
+) => {
+    let pending = 0;
+    let handle: number = null;
+
+    const run = () => {
+        if (handle !== null) cancel(handle);
+
+        handle = null;
+
+        const count = pending;
+
+        pending = 0;
+
+        if (count > 0) flush(count);
+    };
+
+    return {
+        request: () => {
+            pending++;
+
+            if (handle === null) handle = schedule(() => {
+                handle = null;
+                run();
+            });
+        },
+        /** Flushes now what is pending, so a pass that follows starts from the settled layout. */
+        flushNow: run,
+        dispose: () => {
+            if (handle !== null) cancel(handle);
+
+            handle = null;
+            pending = 0;
+        }
+    };
+};

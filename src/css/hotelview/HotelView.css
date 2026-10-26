@@ -1,9 +1,20 @@
 .octane-hotel-view {
     background: #27afcf;
     background-image: var(--hotel-view-background);
-    background-position: bottom left;
+    /* Anchored where the scene ends, as before; the repeat fills the strip behind the toolbar. */
+    background-position: left bottom var(--hotel-view-scene-bottom, 55px);
     background-repeat: repeat;
     z-index: 0;
+}
+
+/* The scene's box: the stage, edges, avatar and drag handles are laid out in it as they were in the old container. */
+.hotelview-frame {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: var(--hotel-view-scene-bottom, 55px);
+    left: 0;
+    overflow: hidden;
 }
 
 .hotelview-stage {

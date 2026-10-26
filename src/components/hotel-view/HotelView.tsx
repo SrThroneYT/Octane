@@ -70,6 +70,8 @@ interface HotelViewSceneDrag {
 
 const HOTEL_VIEW_WIDTH = 1172;
 const HOTEL_VIEW_HEIGHT = 822;
+/** The gap the scene keeps above the bottom of the window (its old height was the window minus this). */
+const HOTEL_VIEW_SCENE_BOTTOM = 55;
 const EMPTY_SCENE: IHotelViewLandingScene = { backgroundUrl: '', leftUrl: '', rightUrl: '', drapeUrl: '', leftX: -1, leftY: -1, rightX: -1, rightY: -1, drapeX: -1, drapeY: -1, hallOfFameX: -1, hallOfFameY: -1, hallOfFameEnabled: false, hallOfFameMode: 'latest_registered', hallOfFameCurrencyType: 0, hallOfFameUsers: [] };
 const HOTEL_VIEW_ACTIONS = [
     { value: 'catalog/open', label: 'Open catalogue' },
@@ -264,6 +266,7 @@ export const HotelView: FC = () => {
     } as CSSProperties;
     const containerStyle = {
         '--hotel-view-background': backgroundImage,
+        '--hotel-view-scene-bottom': `${HOTEL_VIEW_SCENE_BOTTOM}px`,
         overflow: 'hidden'
     } as CSSProperties;
 
@@ -521,164 +524,167 @@ export const HotelView: FC = () => {
     };
 
     return (
-        <div ref={containerRef} className="octane-hotel-view block fixed w-full h-[calc(100%-55px)]" style={containerStyle}>
-            {scene.leftUrl
-                ? <div className="hotelview-edge hotelview-edge-left"><img src={resolveImageUrl(scene.leftUrl, imageLibraryUrl, assetUrl)} alt="" /><LayoutAvatarImageView classNames={['hotelview-avatar']} figure={GetSessionDataManager().figure} gender={GetSessionDataManager().gender} direction={2} /></div>
-                : <LayoutAvatarImageView classNames={['hotelview-avatar hotelview-avatar-fallback']} figure={GetSessionDataManager().figure} gender={GetSessionDataManager().gender} direction={2} />}
-            {scene.rightUrl && <div className="hotelview-edge hotelview-edge-right"><img src={resolveImageUrl(scene.rightUrl, imageLibraryUrl, assetUrl)} alt="" /></div>}
-            {scene.drapeUrl && <div className="hotelview-edge hotelview-edge-drape" style={getScenePositionStyle('drape')}><img src={resolveImageUrl(scene.drapeUrl, imageLibraryUrl, assetUrl)} alt="" />{landingData.canEdit && <Hint content="Drag drape">
-                <BaseButton aria-label="Drag drape" type="button" className="hotelview-scene-drag-handle" onPointerDown={(event) => startSceneDrag(event, 'drape')} onPointerMove={moveSceneDrag} onPointerUp={finishSceneDrag} onPointerCancel={finishSceneDrag}>↕</BaseButton>
-            </Hint>}</div>}
-            <div className="hotelview-stage" style={stageStyle}>
-                <div ref={hotelViewRef} className="hotelview">
-                    <div className="hotelview-background" />
-                    {landingData.canEdit && <BaseButton type="button" className="hotelview-scene-edit hotelview-scene-edit-left" onClick={() => setEditingScene(scene)} aria-label="Edit left image">✎</BaseButton>}
-                    {landingData.canEdit && <BaseButton type="button" className="hotelview-scene-edit hotelview-scene-edit-right" onClick={() => setEditingScene(scene)} aria-label="Edit right image">✎</BaseButton>}
-                    {landingData.canEdit && <BaseButton type="button" className="hotelview-scene-edit hotelview-scene-edit-drape" onClick={() => setEditingScene(scene)} aria-label="Edit drape image">✎</BaseButton>}
-                    {landingData.canEdit && <Hint content="Edit HotelView background"><BaseButton type="button" className="hotelview-scene-edit hotelview-scene-edit-background" onClick={() => setEditingScene(scene)} aria-label="Edit HotelView background">BG</BaseButton></Hint>}
-                    <main className="hotelview-slots">
-                        {landingData.slots.filter((slot) => slot.enabled || landingData.canEdit).map((slot) => (
-                            <section key={slot.id} className={`hotelview-slot hotelview-slot-${slot.id} hotelview-slot-${slot.type}${slot.enabled ? '' : ' hotelview-slot-disabled'}`} style={getSlotPositionStyle(slot)}>
-                                {slot.enabled && <>
-                                    {slot.imageUrl && <img className="hotelview-slot-image" src={resolveImageUrl(slot.imageUrl, imageLibraryUrl, assetUrl)} alt="" />}
-                                    {!slot.imageUrl && slot.type === 'nextlimitedrarecountdown' && <img className="hotelview-slot-image hotelview-ltd-countdown-icon" src={LTD_COUNTDOWN_ICON} alt="" />}
-                                    <div className="hotelview-slot-copy">
-                                        {(() => {
-                                            const config = parseSlotConfig(slot.configJson);
-                                            const isCountdown = slot.type === 'nextlimitedrarecountdown' || slot.type === 'expiringcatalogpage' || slot.type === 'expiringcatalogpagesmall';
-                                            const seconds = isCountdown ? getSecondsRemaining(config.endsAt, now) : null;
-                                            const isLtdPending = slot.type === 'nextlimitedrarecountdown' && seconds !== null && seconds > 0;
-                                            const isExpired = (slot.type === 'expiringcatalogpage' || slot.type === 'expiringcatalogpagesmall') && seconds === 0;
-                                            const voteOptions = config.voteOptions || [];
-                                            const voteTotal = voteOptions.reduce((total, option) => total + (config.voteCounts?.[String(option.id)] || 0), 0);
-                                            const countdown = seconds === null ? null : getCountdownParts(seconds);
+        // AIR fills the landing view behind the see-through toolbar; the scene keeps its old box, 55 px up.
+        <div className="octane-hotel-view block fixed w-full h-full" style={containerStyle}>
+            <div ref={containerRef} className="hotelview-frame">
+                {scene.leftUrl
+                    ? <div className="hotelview-edge hotelview-edge-left"><img src={resolveImageUrl(scene.leftUrl, imageLibraryUrl, assetUrl)} alt="" /><LayoutAvatarImageView classNames={['hotelview-avatar']} figure={GetSessionDataManager().figure} gender={GetSessionDataManager().gender} direction={2} /></div>
+                    : <LayoutAvatarImageView classNames={['hotelview-avatar hotelview-avatar-fallback']} figure={GetSessionDataManager().figure} gender={GetSessionDataManager().gender} direction={2} />}
+                {scene.rightUrl && <div className="hotelview-edge hotelview-edge-right"><img src={resolveImageUrl(scene.rightUrl, imageLibraryUrl, assetUrl)} alt="" /></div>}
+                {scene.drapeUrl && <div className="hotelview-edge hotelview-edge-drape" style={getScenePositionStyle('drape')}><img src={resolveImageUrl(scene.drapeUrl, imageLibraryUrl, assetUrl)} alt="" />{landingData.canEdit && <Hint content="Drag drape">
+                    <BaseButton aria-label="Drag drape" type="button" className="hotelview-scene-drag-handle" onPointerDown={(event) => startSceneDrag(event, 'drape')} onPointerMove={moveSceneDrag} onPointerUp={finishSceneDrag} onPointerCancel={finishSceneDrag}>↕</BaseButton>
+                </Hint>}</div>}
+                <div className="hotelview-stage" style={stageStyle}>
+                    <div ref={hotelViewRef} className="hotelview">
+                        <div className="hotelview-background" />
+                        {landingData.canEdit && <BaseButton type="button" className="hotelview-scene-edit hotelview-scene-edit-left" onClick={() => setEditingScene(scene)} aria-label="Edit left image">✎</BaseButton>}
+                        {landingData.canEdit && <BaseButton type="button" className="hotelview-scene-edit hotelview-scene-edit-right" onClick={() => setEditingScene(scene)} aria-label="Edit right image">✎</BaseButton>}
+                        {landingData.canEdit && <BaseButton type="button" className="hotelview-scene-edit hotelview-scene-edit-drape" onClick={() => setEditingScene(scene)} aria-label="Edit drape image">✎</BaseButton>}
+                        {landingData.canEdit && <Hint content="Edit HotelView background"><BaseButton type="button" className="hotelview-scene-edit hotelview-scene-edit-background" onClick={() => setEditingScene(scene)} aria-label="Edit HotelView background">BG</BaseButton></Hint>}
+                        <main className="hotelview-slots">
+                            {landingData.slots.filter((slot) => slot.enabled || landingData.canEdit).map((slot) => (
+                                <section key={slot.id} className={`hotelview-slot hotelview-slot-${slot.id} hotelview-slot-${slot.type}${slot.enabled ? '' : ' hotelview-slot-disabled'}`} style={getSlotPositionStyle(slot)}>
+                                    {slot.enabled && <>
+                                        {slot.imageUrl && <img className="hotelview-slot-image" src={resolveImageUrl(slot.imageUrl, imageLibraryUrl, assetUrl)} alt="" />}
+                                        {!slot.imageUrl && slot.type === 'nextlimitedrarecountdown' && <img className="hotelview-slot-image hotelview-ltd-countdown-icon" src={LTD_COUNTDOWN_ICON} alt="" />}
+                                        <div className="hotelview-slot-copy">
+                                            {(() => {
+                                                const config = parseSlotConfig(slot.configJson);
+                                                const isCountdown = slot.type === 'nextlimitedrarecountdown' || slot.type === 'expiringcatalogpage' || slot.type === 'expiringcatalogpagesmall';
+                                                const seconds = isCountdown ? getSecondsRemaining(config.endsAt, now) : null;
+                                                const isLtdPending = slot.type === 'nextlimitedrarecountdown' && seconds !== null && seconds > 0;
+                                                const isExpired = (slot.type === 'expiringcatalogpage' || slot.type === 'expiringcatalogpagesmall') && seconds === 0;
+                                                const voteOptions = config.voteOptions || [];
+                                                const voteTotal = voteOptions.reduce((total, option) => total + (config.voteCounts?.[String(option.id)] || 0), 0);
+                                                const countdown = seconds === null ? null : getCountdownParts(seconds);
 
-                                            const staticContent = <>
-                                        {slot.title && <h2>{slot.title}</h2>}
-                                        {slot.body && <p>{slot.body}</p>}
-                                        {slot.type === 'bonus' && <div className="hotelview-progress"><span style={{ width: `${Math.min(100, Math.max(0, slot.progress))}%` }} /></div>}
-                                        {slot.type === 'communitygoal' && <div className="hotelview-progress hotelview-community-progress" aria-label={`${voteTotal} votes`}>{voteOptions.slice(0, 2).map((option, index) => <span key={option.id} className={`hotelview-community-progress-option-${index + 1}`} style={{ width: `${voteTotal ? ((config.voteCounts?.[String(option.id)] || 0) / voteTotal) * 100 : 0}%` }} />)}</div>}
-                                        {seconds !== null && (slot.type === 'nextlimitedrarecountdown'
-                                            ? <strong className="hotelview-countdown hotelview-ltd-countdown">{seconds ? <><span className="hotelview-ltd-countdown-values">{countdown?.days.toString().padStart(2, '0')}:{countdown?.hours.toString().padStart(2, '0')}:{countdown?.minutes.toString().padStart(2, '0')}:{countdown?.seconds.toString().padStart(2, '0')}</span><small>Days Hours Minutes Seconds</small></> : 'Available now'}</strong>
-                                            : <strong className="hotelview-countdown">{isExpired ? 'Expired' : (seconds ? formatCountdown(seconds) : 'Available now')}</strong>)}
-                                        {slot.progressLabel && <strong>{slot.progressLabel}</strong>}
-                                        {slot.type === 'communitygoal'
-                                            ? <div className="hotelview-vote-options">{voteOptions.map((option) => <BaseButton key={option.id} className={config.userVote === option.id ? 'hotelview-vote-selected' : ''} type="button" disabled={config.userVote !== undefined} onClick={() => SendMessageComposer(new HotelViewLandingVoteComposer(slot.id, option.id))}>{option.label} <span>{config.voteCounts?.[String(option.id)] || 0}</span></BaseButton>)}</div>
-                                            : <>{slot.buttonText && <BaseButton type="button" disabled={isLtdPending || isExpired} onClick={() => handleSlotClick(getCatalogLink(slot))}>{isLtdPending ? 'Coming soon' : slot.buttonText}</BaseButton>}{config.secondaryButtonText && <BaseButton type="button" onClick={() => handleSlotClick(config.secondaryLink || '')}>{config.secondaryButtonText}</BaseButton>}</>}
-                                            </>;
+                                                const staticContent = <>
+                                            {slot.title && <h2>{slot.title}</h2>}
+                                            {slot.body && <p>{slot.body}</p>}
+                                            {slot.type === 'bonus' && <div className="hotelview-progress"><span style={{ width: `${Math.min(100, Math.max(0, slot.progress))}%` }} /></div>}
+                                            {slot.type === 'communitygoal' && <div className="hotelview-progress hotelview-community-progress" aria-label={`${voteTotal} votes`}>{voteOptions.slice(0, 2).map((option, index) => <span key={option.id} className={`hotelview-community-progress-option-${index + 1}`} style={{ width: `${voteTotal ? ((config.voteCounts?.[String(option.id)] || 0) / voteTotal) * 100 : 0}%` }} />)}</div>}
+                                            {seconds !== null && (slot.type === 'nextlimitedrarecountdown'
+                                                ? <strong className="hotelview-countdown hotelview-ltd-countdown">{seconds ? <><span className="hotelview-ltd-countdown-values">{countdown?.days.toString().padStart(2, '0')}:{countdown?.hours.toString().padStart(2, '0')}:{countdown?.minutes.toString().padStart(2, '0')}:{countdown?.seconds.toString().padStart(2, '0')}</span><small>Days Hours Minutes Seconds</small></> : 'Available now'}</strong>
+                                                : <strong className="hotelview-countdown">{isExpired ? 'Expired' : (seconds ? formatCountdown(seconds) : 'Available now')}</strong>)}
+                                            {slot.progressLabel && <strong>{slot.progressLabel}</strong>}
+                                            {slot.type === 'communitygoal'
+                                                ? <div className="hotelview-vote-options">{voteOptions.map((option) => <BaseButton key={option.id} className={config.userVote === option.id ? 'hotelview-vote-selected' : ''} type="button" disabled={config.userVote !== undefined} onClick={() => SendMessageComposer(new HotelViewLandingVoteComposer(slot.id, option.id))}>{option.label} <span>{config.voteCounts?.[String(option.id)] || 0}</span></BaseButton>)}</div>
+                                                : <>{slot.buttonText && <BaseButton type="button" disabled={isLtdPending || isExpired} onClick={() => handleSlotClick(getCatalogLink(slot))}>{isLtdPending ? 'Coming soon' : slot.buttonText}</BaseButton>}{config.secondaryButtonText && <BaseButton type="button" onClick={() => handleSlotClick(config.secondaryLink || '')}>{config.secondaryButtonText}</BaseButton>}</>}
+                                                </>;
 
-                                            return <HotelViewLiveSlotView slot={slot} config={config} fallback={staticContent} onLink={handleSlotClick} />;
-                                        })()}
+                                                return <HotelViewLiveSlotView slot={slot} config={config} fallback={staticContent} onLink={handleSlotClick} />;
+                                            })()}
+                                        </div>
+                                    </>}
+                                    {!slot.enabled && <span>Disabled slot</span>}
+                                    {landingData.canEdit && <Hint content="Drag to move">
+                                        <BaseButton type="button" className="hotelview-slot-drag-handle" onPointerDown={(event) => startSlotDrag(event, slot)} onPointerMove={moveSlotDrag} onPointerUp={finishSlotDrag} onPointerCancel={finishSlotDrag} aria-label={`Move slot ${slot.id}`}>↕</BaseButton>
+                                    </Hint>}
+                                    {landingData.canEdit && <BaseButton type="button" className="hotelview-slot-edit" onClick={() => { setEditingSlot(slot); setCountdownInput(toEditableCountdownValue(parseSlotConfig(slot.configJson).endsAt)); }} aria-label={`Edit slot ${slot.id}`}>✎</BaseButton>}
+                                </section>
+                            ))}
+                        </main>
+                        {scene.hallOfFameEnabled && scene.hallOfFameUsers.length > 0 && <div className="hotelview-hall-of-fame" style={getScenePositionStyle('hallOfFame')} aria-label="Hall of Fame">
+                            <header>
+                                <h2>Hall of Fame</h2>
+                                <p>Celebrating the hotel’s standout Habbos</p>
+                            </header>
+                            {scene.hallOfFameUsers.map((user, index) => <div key={user.id} className="hotelview-hall-of-fame-user" title={user.username}>
+                                <LayoutAvatarImageView classNames={['hotelview-hall-of-fame-avatar']} figure={user.figure} gender={user.gender} direction={[2, 4][index % 2]} />
+                                <span>{user.username}</span>
+                            </div>)}
+                            {landingData.canEdit && <Hint content="Drag Hall of Fame">
+                                <BaseButton aria-label="Drag Hall of Fame" type="button" className="hotelview-hall-of-fame-drag-handle" onPointerDown={(event) => startSceneDrag(event, 'hallOfFame')} onPointerMove={moveSceneDrag} onPointerUp={finishSceneDrag} onPointerCancel={finishSceneDrag}>↕</BaseButton>
+                            </Hint>}
+                        </div>}
+                        {editingSlot && (
+                            <form className="hotelview-editor" onSubmit={saveSlot}>
+                                <header>Edit slot {editingSlot.id}</header>
+                                <div className={`hotelview-editor-preview hotelview-editor-slot-preview${editingSlot.enabled ? '' : ' hotelview-slot-disabled'}`}>
+                                    <span className="hotelview-editor-preview-label">Preview</span>
+                                    {editingSlot.imageUrl && <img src={resolveImageUrl(editingSlot.imageUrl, imageLibraryUrl, assetUrl)} alt="" />}
+                                    <div>
+                                        {editingSlot.title && <strong>{editingSlot.title}</strong>}
+                                        {editingSlot.body && <p>{editingSlot.body}</p>}
+                                        {editingSlot.type === 'communitygoal'
+                                            ? <div className="hotelview-editor-preview-votes">{(parseSlotConfig(editingSlot.configJson).voteOptions || []).slice(0, 2).map((option) => <BaseButton key={option.id} type="button">{option.label || `Vote ${option.id}`}</BaseButton>)}</div>
+                                            : editingSlot.buttonText && <BaseButton type="button">{editingSlot.buttonText}</BaseButton>}
                                     </div>
-                                </>}
-                                {!slot.enabled && <span>Disabled slot</span>}
-                                {landingData.canEdit && <Hint content="Drag to move">
-                                    <BaseButton type="button" className="hotelview-slot-drag-handle" onPointerDown={(event) => startSlotDrag(event, slot)} onPointerMove={moveSlotDrag} onPointerUp={finishSlotDrag} onPointerCancel={finishSlotDrag} aria-label={`Move slot ${slot.id}`}>↕</BaseButton>
-                                </Hint>}
-                                {landingData.canEdit && <BaseButton type="button" className="hotelview-slot-edit" onClick={() => { setEditingSlot(slot); setCountdownInput(toEditableCountdownValue(parseSlotConfig(slot.configJson).endsAt)); }} aria-label={`Edit slot ${slot.id}`}>✎</BaseButton>}
-                            </section>
-                        ))}
-                    </main>
-                    {scene.hallOfFameEnabled && scene.hallOfFameUsers.length > 0 && <div className="hotelview-hall-of-fame" style={getScenePositionStyle('hallOfFame')} aria-label="Hall of Fame">
-                        <header>
-                            <h2>Hall of Fame</h2>
-                            <p>Celebrating the hotel’s standout Habbos</p>
-                        </header>
-                        {scene.hallOfFameUsers.map((user, index) => <div key={user.id} className="hotelview-hall-of-fame-user" title={user.username}>
-                            <LayoutAvatarImageView classNames={['hotelview-hall-of-fame-avatar']} figure={user.figure} gender={user.gender} direction={[2, 4][index % 2]} />
-                            <span>{user.username}</span>
-                        </div>)}
-                        {landingData.canEdit && <Hint content="Drag Hall of Fame">
-                            <BaseButton aria-label="Drag Hall of Fame" type="button" className="hotelview-hall-of-fame-drag-handle" onPointerDown={(event) => startSceneDrag(event, 'hallOfFame')} onPointerMove={moveSceneDrag} onPointerUp={finishSceneDrag} onPointerCancel={finishSceneDrag}>↕</BaseButton>
-                        </Hint>}
-                    </div>}
-                    {editingSlot && (
-                        <form className="hotelview-editor" onSubmit={saveSlot}>
-                            <header>Edit slot {editingSlot.id}</header>
-                            <div className={`hotelview-editor-preview hotelview-editor-slot-preview${editingSlot.enabled ? '' : ' hotelview-slot-disabled'}`}>
-                                <span className="hotelview-editor-preview-label">Preview</span>
-                                {editingSlot.imageUrl && <img src={resolveImageUrl(editingSlot.imageUrl, imageLibraryUrl, assetUrl)} alt="" />}
-                                <div>
-                                    {editingSlot.title && <strong>{editingSlot.title}</strong>}
-                                    {editingSlot.body && <p>{editingSlot.body}</p>}
-                                    {editingSlot.type === 'communitygoal'
-                                        ? <div className="hotelview-editor-preview-votes">{(parseSlotConfig(editingSlot.configJson).voteOptions || []).slice(0, 2).map((option) => <BaseButton key={option.id} type="button">{option.label || `Vote ${option.id}`}</BaseButton>)}</div>
-                                        : editingSlot.buttonText && <BaseButton type="button">{editingSlot.buttonText}</BaseButton>}
+                                    {!editingSlot.enabled && <em>Disabled slot</em>}
                                 </div>
-                                {!editingSlot.enabled && <em>Disabled slot</em>}
-                            </div>
-                            <label className="hotelview-editor-toggle"><Checkbox checked={editingSlot.enabled} onCheckedChange={(nextChecked) => setEditingSlot({ ...editingSlot, enabled: nextChecked })} /><span>Enabled: {editingSlot.enabled ? 'Yes' : 'No'}</span></label>
-                            <label>Widget type<Select value={editingSlot.type} onChange={(event) => selectSlotWidgetType(event.target.value as IHotelViewLandingSlot['type'])}>{SLOT_WIDGET_TYPES.map((widget) => <option key={widget.value} value={widget.value}>{widget.label}</option>)}</Select></label>
-                            <label>Title<input value={editingSlot.title} onChange={(event) => setEditingSlot({ ...editingSlot, title: event.target.value })} /></label>
-                            <label>Body<textarea value={editingSlot.body} onChange={(event) => setEditingSlot({ ...editingSlot, body: event.target.value })} /></label>
-                            <label>Image URL<input value={editingSlot.imageUrl} onChange={(event) => setEditingSlot({ ...editingSlot, imageUrl: event.target.value })} /></label>
-                            <label>Button<input value={editingSlot.buttonText} onChange={(event) => setEditingSlot({ ...editingSlot, buttonText: event.target.value })} /></label>
-                            <label>Button action<Select value={getSelectedAction(editingSlot.link)} onChange={(event) => setEditingSlot({ ...editingSlot, link: event.target.value === CUSTOM_ACTION ? '' : event.target.value })}><option value={CUSTOM_ACTION}>Custom link</option>{HOTEL_VIEW_ACTIONS.map((action) => <option key={action.value} value={action.value}>{action.label}</option>)}</Select></label>
-                            <label>Custom link<input value={editingSlot.link} placeholder="navigator/goto/123" onChange={(event) => setEditingSlot({ ...editingSlot, link: event.target.value })} /></label>
-                            {['catalogpromo', 'catalogpromosmall', 'expiringcatalogpage', 'expiringcatalogpagesmall', 'nextlimitedrarecountdown'].includes(editingSlot.type) && <label>Catalog page name / ID<input value={parseSlotConfig(editingSlot.configJson).catalogPage || ''} placeholder="limited_rares" onChange={(event) => updateEditingConfig((config) => ({ ...config, catalogPage: event.target.value }))} /></label>}
-                            {(editingSlot.type === 'expiringcatalogpage' || editingSlot.type === 'expiringcatalogpagesmall') && <label>Featured catalog slot<NumberInput min="1" value={parseSlotConfig(editingSlot.configJson).featuredSlot || ''} placeholder="Optional" onChange={(event) => updateEditingConfig((config) => ({ ...config, featuredSlot: Number(event.target.value) || undefined }))} /></label>}
-                            {editingSlot.type !== 'communitygoal' && <><label>Progress<NumberInput min="0" max="100" value={editingSlot.progress} onChange={(event) => setEditingSlot({ ...editingSlot, progress: Number(event.target.value) })} /></label><label>Progress label<input value={editingSlot.progressLabel} onChange={(event) => setEditingSlot({ ...editingSlot, progressLabel: event.target.value })} /></label></>}
-                            {editingSlot.type === 'nextlimitedrarecountdown' && <label className="hotelview-editor-toggle"><Checkbox checked={parseSlotConfig(editingSlot.configJson).useServerLTD !== false} onCheckedChange={(nextChecked) => updateEditingConfig((config) => ({ ...config, useServerLTD: nextChecked }))} /><span>Use emulator LTD configuration: {parseSlotConfig(editingSlot.configJson).useServerLTD !== false ? 'Yes' : 'No'}</span></label>}
-                            {editingSlot.type === 'bonus' && <label className="hotelview-editor-toggle"><Checkbox checked={parseSlotConfig(editingSlot.configJson).useServerBonusRare !== false} onCheckedChange={(nextChecked) => updateEditingConfig((config) => ({ ...config, useServerBonusRare: nextChecked }))} /><span>Live bonus rare from the emulator: {parseSlotConfig(editingSlot.configJson).useServerBonusRare !== false ? 'Yes' : 'No'}</span></label>}
-                            {editingSlot.type === 'communitygoal' && <label className="hotelview-editor-toggle"><Checkbox checked={parseSlotConfig(editingSlot.configJson).useServerGoal === true} onCheckedChange={(nextChecked) => updateEditingConfig((config) => ({ ...config, useServerGoal: nextChecked }))} /><span>Show the emulator community goal meter instead of these votes: {parseSlotConfig(editingSlot.configJson).useServerGoal === true ? 'Yes' : 'No'}</span></label>}
-                            {editingSlot.type === 'dailyquest' && <label className="hotelview-editor-toggle"><Checkbox checked={parseSlotConfig(editingSlot.configJson).useServerQuest !== false} onCheckedChange={(nextChecked) => updateEditingConfig((config) => ({ ...config, useServerQuest: nextChecked }))} /><span>Live daily quest from the emulator: {parseSlotConfig(editingSlot.configJson).useServerQuest !== false ? 'Yes' : 'No'}</span></label>}
-                            {editingSlot.type === 'achievementcompetition_hall_of_fame' && <label>Competition goal code<input value={parseSlotConfig(editingSlot.configJson).goalCode || ''} placeholder="Empty = the active community goal" onChange={(event) => updateEditingConfig((config) => ({ ...config, goalCode: event.target.value }))} /></label>}
-                            {editingSlot.type === 'concurrentusersgoal' && <label>Reward badge code<input value={parseSlotConfig(editingSlot.configJson).badgeCode || ''} placeholder="ConcurrentUsersReward" onChange={(event) => updateEditingConfig((config) => ({ ...config, badgeCode: event.target.value }))} /></label>}
-                            {(editingSlot.type === 'nextlimitedrarecountdown' || editingSlot.type === 'expiringcatalogpage' || editingSlot.type === 'expiringcatalogpagesmall') && <label>Countdown ends<input className="hotelview-countdown-editor-input" value={countdownInput} placeholder="DD/MM/YYYY HH:mm" onChange={(event) => {
-                                setCountdownInput(event.target.value);
+                                <label className="hotelview-editor-toggle"><Checkbox checked={editingSlot.enabled} onCheckedChange={(nextChecked) => setEditingSlot({ ...editingSlot, enabled: nextChecked })} /><span>Enabled: {editingSlot.enabled ? 'Yes' : 'No'}</span></label>
+                                <label>Widget type<Select value={editingSlot.type} onChange={(event) => selectSlotWidgetType(event.target.value as IHotelViewLandingSlot['type'])}>{SLOT_WIDGET_TYPES.map((widget) => <option key={widget.value} value={widget.value}>{widget.label}</option>)}</Select></label>
+                                <label>Title<input value={editingSlot.title} onChange={(event) => setEditingSlot({ ...editingSlot, title: event.target.value })} /></label>
+                                <label>Body<textarea value={editingSlot.body} onChange={(event) => setEditingSlot({ ...editingSlot, body: event.target.value })} /></label>
+                                <label>Image URL<input value={editingSlot.imageUrl} onChange={(event) => setEditingSlot({ ...editingSlot, imageUrl: event.target.value })} /></label>
+                                <label>Button<input value={editingSlot.buttonText} onChange={(event) => setEditingSlot({ ...editingSlot, buttonText: event.target.value })} /></label>
+                                <label>Button action<Select value={getSelectedAction(editingSlot.link)} onChange={(event) => setEditingSlot({ ...editingSlot, link: event.target.value === CUSTOM_ACTION ? '' : event.target.value })}><option value={CUSTOM_ACTION}>Custom link</option>{HOTEL_VIEW_ACTIONS.map((action) => <option key={action.value} value={action.value}>{action.label}</option>)}</Select></label>
+                                <label>Custom link<input value={editingSlot.link} placeholder="navigator/goto/123" onChange={(event) => setEditingSlot({ ...editingSlot, link: event.target.value })} /></label>
+                                {['catalogpromo', 'catalogpromosmall', 'expiringcatalogpage', 'expiringcatalogpagesmall', 'nextlimitedrarecountdown'].includes(editingSlot.type) && <label>Catalog page name / ID<input value={parseSlotConfig(editingSlot.configJson).catalogPage || ''} placeholder="limited_rares" onChange={(event) => updateEditingConfig((config) => ({ ...config, catalogPage: event.target.value }))} /></label>}
+                                {(editingSlot.type === 'expiringcatalogpage' || editingSlot.type === 'expiringcatalogpagesmall') && <label>Featured catalog slot<NumberInput min="1" value={parseSlotConfig(editingSlot.configJson).featuredSlot || ''} placeholder="Optional" onChange={(event) => updateEditingConfig((config) => ({ ...config, featuredSlot: Number(event.target.value) || undefined }))} /></label>}
+                                {editingSlot.type !== 'communitygoal' && <><label>Progress<NumberInput min="0" max="100" value={editingSlot.progress} onChange={(event) => setEditingSlot({ ...editingSlot, progress: Number(event.target.value) })} /></label><label>Progress label<input value={editingSlot.progressLabel} onChange={(event) => setEditingSlot({ ...editingSlot, progressLabel: event.target.value })} /></label></>}
+                                {editingSlot.type === 'nextlimitedrarecountdown' && <label className="hotelview-editor-toggle"><Checkbox checked={parseSlotConfig(editingSlot.configJson).useServerLTD !== false} onCheckedChange={(nextChecked) => updateEditingConfig((config) => ({ ...config, useServerLTD: nextChecked }))} /><span>Use emulator LTD configuration: {parseSlotConfig(editingSlot.configJson).useServerLTD !== false ? 'Yes' : 'No'}</span></label>}
+                                {editingSlot.type === 'bonus' && <label className="hotelview-editor-toggle"><Checkbox checked={parseSlotConfig(editingSlot.configJson).useServerBonusRare !== false} onCheckedChange={(nextChecked) => updateEditingConfig((config) => ({ ...config, useServerBonusRare: nextChecked }))} /><span>Live bonus rare from the emulator: {parseSlotConfig(editingSlot.configJson).useServerBonusRare !== false ? 'Yes' : 'No'}</span></label>}
+                                {editingSlot.type === 'communitygoal' && <label className="hotelview-editor-toggle"><Checkbox checked={parseSlotConfig(editingSlot.configJson).useServerGoal === true} onCheckedChange={(nextChecked) => updateEditingConfig((config) => ({ ...config, useServerGoal: nextChecked }))} /><span>Show the emulator community goal meter instead of these votes: {parseSlotConfig(editingSlot.configJson).useServerGoal === true ? 'Yes' : 'No'}</span></label>}
+                                {editingSlot.type === 'dailyquest' && <label className="hotelview-editor-toggle"><Checkbox checked={parseSlotConfig(editingSlot.configJson).useServerQuest !== false} onCheckedChange={(nextChecked) => updateEditingConfig((config) => ({ ...config, useServerQuest: nextChecked }))} /><span>Live daily quest from the emulator: {parseSlotConfig(editingSlot.configJson).useServerQuest !== false ? 'Yes' : 'No'}</span></label>}
+                                {editingSlot.type === 'achievementcompetition_hall_of_fame' && <label>Competition goal code<input value={parseSlotConfig(editingSlot.configJson).goalCode || ''} placeholder="Empty = the active community goal" onChange={(event) => updateEditingConfig((config) => ({ ...config, goalCode: event.target.value }))} /></label>}
+                                {editingSlot.type === 'concurrentusersgoal' && <label>Reward badge code<input value={parseSlotConfig(editingSlot.configJson).badgeCode || ''} placeholder="ConcurrentUsersReward" onChange={(event) => updateEditingConfig((config) => ({ ...config, badgeCode: event.target.value }))} /></label>}
+                                {(editingSlot.type === 'nextlimitedrarecountdown' || editingSlot.type === 'expiringcatalogpage' || editingSlot.type === 'expiringcatalogpagesmall') && <label>Countdown ends<input className="hotelview-countdown-editor-input" value={countdownInput} placeholder="DD/MM/YYYY HH:mm" onChange={(event) => {
+                                    setCountdownInput(event.target.value);
 
-                                if (editingSlot.type === 'nextlimitedrarecountdown' && event.target.value.trim()) updateEditingConfig((config) => ({ ...config, useServerLTD: false }));
-                            }} /></label>}
-                            {editingSlot.type === 'communitygoal' && <>
-                                <div className="hotelview-vote-rewards">
-                                <fieldset className="hotelview-vote-reward-panel"><legend>Vote option 1</legend>
-                                    <label>Label<input value={parseSlotConfig(editingSlot.configJson).voteOptions?.[0]?.label || ''} onChange={(event) => updateEditingConfig((config) => ({ ...config, voteOptions: [{ ...(config.voteOptions?.[0] || { id: 1 }), label: event.target.value }, config.voteOptions?.[1] || { id: 2, label: 'Vote option 2' }] }))} /></label>
-                                    <label>Badge code<input value={parseSlotConfig(editingSlot.configJson).voteOptions?.[0]?.badgeCode || ''} placeholder="badge_code" onChange={(event) => updateEditingConfig((config) => ({ ...config, voteOptions: [{ ...(config.voteOptions?.[0] || { id: 1, label: 'Vote option 1' }), badgeCode: event.target.value }, config.voteOptions?.[1] || { id: 2, label: 'Vote option 2' }] }))} /></label>
-                                    <label>Furni item ID<NumberInput min="1" value={parseSlotConfig(editingSlot.configJson).voteOptions?.[0]?.furniId || ''} placeholder="Optional" onChange={(event) => updateEditingConfig((config) => ({ ...config, voteOptions: [{ ...(config.voteOptions?.[0] || { id: 1, label: 'Vote option 1' }), furniId: event.target.value ? Number(event.target.value) : undefined }, config.voteOptions?.[1] || { id: 2, label: 'Vote option 2' }] }))} /></label>
-                                    <label>Currency type<NumberInput min="0" value={parseSlotConfig(editingSlot.configJson).voteOptions?.[0]?.currencyType ?? ''} placeholder="0 = pixels" onChange={(event) => updateEditingConfig((config) => ({ ...config, voteOptions: [{ ...(config.voteOptions?.[0] || { id: 1, label: 'Vote option 1' }), currencyType: event.target.value === '' ? undefined : Number(event.target.value) }, config.voteOptions?.[1] || { id: 2, label: 'Vote option 2' }] }))} /></label>
-                                    <label>Currency quantity<NumberInput min="1" value={parseSlotConfig(editingSlot.configJson).voteOptions?.[0]?.currencyAmount || ''} placeholder="Optional" onChange={(event) => updateEditingConfig((config) => ({ ...config, voteOptions: [{ ...(config.voteOptions?.[0] || { id: 1, label: 'Vote option 1' }), currencyAmount: event.target.value ? Number(event.target.value) : undefined }, config.voteOptions?.[1] || { id: 2, label: 'Vote option 2' }] }))} /></label>
-                                </fieldset>
-                                <fieldset className="hotelview-vote-reward-panel"><legend>Vote option 2</legend>
-                                    <label>Label<input value={parseSlotConfig(editingSlot.configJson).voteOptions?.[1]?.label || ''} onChange={(event) => updateEditingConfig((config) => ({ ...config, voteOptions: [config.voteOptions?.[0] || { id: 1, label: 'Vote option 1' }, { ...(config.voteOptions?.[1] || { id: 2 }), label: event.target.value }] }))} /></label>
-                                    <label>Badge code<input value={parseSlotConfig(editingSlot.configJson).voteOptions?.[1]?.badgeCode || ''} placeholder="badge_code" onChange={(event) => updateEditingConfig((config) => ({ ...config, voteOptions: [config.voteOptions?.[0] || { id: 1, label: 'Vote option 1' }, { ...(config.voteOptions?.[1] || { id: 2, label: 'Vote option 2' }), badgeCode: event.target.value }] }))} /></label>
-                                    <label>Furni item ID<NumberInput min="1" value={parseSlotConfig(editingSlot.configJson).voteOptions?.[1]?.furniId || ''} placeholder="Optional" onChange={(event) => updateEditingConfig((config) => ({ ...config, voteOptions: [config.voteOptions?.[0] || { id: 1, label: 'Vote option 1' }, { ...(config.voteOptions?.[1] || { id: 2, label: 'Vote option 2' }), furniId: event.target.value ? Number(event.target.value) : undefined }] }))} /></label>
-                                    <label>Currency type<NumberInput min="0" value={parseSlotConfig(editingSlot.configJson).voteOptions?.[1]?.currencyType ?? ''} placeholder="0 = pixels" onChange={(event) => updateEditingConfig((config) => ({ ...config, voteOptions: [config.voteOptions?.[0] || { id: 1, label: 'Vote option 1' }, { ...(config.voteOptions?.[1] || { id: 2, label: 'Vote option 2' }), currencyType: event.target.value === '' ? undefined : Number(event.target.value) }] }))} /></label>
-                                    <label>Currency quantity<NumberInput min="1" value={parseSlotConfig(editingSlot.configJson).voteOptions?.[1]?.currencyAmount || ''} placeholder="Optional" onChange={(event) => updateEditingConfig((config) => ({ ...config, voteOptions: [config.voteOptions?.[0] || { id: 1, label: 'Vote option 1' }, { ...(config.voteOptions?.[1] || { id: 2, label: 'Vote option 2' }), currencyAmount: event.target.value ? Number(event.target.value) : undefined }] }))} /></label>
-                                </fieldset>
+                                    if (editingSlot.type === 'nextlimitedrarecountdown' && event.target.value.trim()) updateEditingConfig((config) => ({ ...config, useServerLTD: false }));
+                                }} /></label>}
+                                {editingSlot.type === 'communitygoal' && <>
+                                    <div className="hotelview-vote-rewards">
+                                    <fieldset className="hotelview-vote-reward-panel"><legend>Vote option 1</legend>
+                                        <label>Label<input value={parseSlotConfig(editingSlot.configJson).voteOptions?.[0]?.label || ''} onChange={(event) => updateEditingConfig((config) => ({ ...config, voteOptions: [{ ...(config.voteOptions?.[0] || { id: 1 }), label: event.target.value }, config.voteOptions?.[1] || { id: 2, label: 'Vote option 2' }] }))} /></label>
+                                        <label>Badge code<input value={parseSlotConfig(editingSlot.configJson).voteOptions?.[0]?.badgeCode || ''} placeholder="badge_code" onChange={(event) => updateEditingConfig((config) => ({ ...config, voteOptions: [{ ...(config.voteOptions?.[0] || { id: 1, label: 'Vote option 1' }), badgeCode: event.target.value }, config.voteOptions?.[1] || { id: 2, label: 'Vote option 2' }] }))} /></label>
+                                        <label>Furni item ID<NumberInput min="1" value={parseSlotConfig(editingSlot.configJson).voteOptions?.[0]?.furniId || ''} placeholder="Optional" onChange={(event) => updateEditingConfig((config) => ({ ...config, voteOptions: [{ ...(config.voteOptions?.[0] || { id: 1, label: 'Vote option 1' }), furniId: event.target.value ? Number(event.target.value) : undefined }, config.voteOptions?.[1] || { id: 2, label: 'Vote option 2' }] }))} /></label>
+                                        <label>Currency type<NumberInput min="0" value={parseSlotConfig(editingSlot.configJson).voteOptions?.[0]?.currencyType ?? ''} placeholder="0 = pixels" onChange={(event) => updateEditingConfig((config) => ({ ...config, voteOptions: [{ ...(config.voteOptions?.[0] || { id: 1, label: 'Vote option 1' }), currencyType: event.target.value === '' ? undefined : Number(event.target.value) }, config.voteOptions?.[1] || { id: 2, label: 'Vote option 2' }] }))} /></label>
+                                        <label>Currency quantity<NumberInput min="1" value={parseSlotConfig(editingSlot.configJson).voteOptions?.[0]?.currencyAmount || ''} placeholder="Optional" onChange={(event) => updateEditingConfig((config) => ({ ...config, voteOptions: [{ ...(config.voteOptions?.[0] || { id: 1, label: 'Vote option 1' }), currencyAmount: event.target.value ? Number(event.target.value) : undefined }, config.voteOptions?.[1] || { id: 2, label: 'Vote option 2' }] }))} /></label>
+                                    </fieldset>
+                                    <fieldset className="hotelview-vote-reward-panel"><legend>Vote option 2</legend>
+                                        <label>Label<input value={parseSlotConfig(editingSlot.configJson).voteOptions?.[1]?.label || ''} onChange={(event) => updateEditingConfig((config) => ({ ...config, voteOptions: [config.voteOptions?.[0] || { id: 1, label: 'Vote option 1' }, { ...(config.voteOptions?.[1] || { id: 2 }), label: event.target.value }] }))} /></label>
+                                        <label>Badge code<input value={parseSlotConfig(editingSlot.configJson).voteOptions?.[1]?.badgeCode || ''} placeholder="badge_code" onChange={(event) => updateEditingConfig((config) => ({ ...config, voteOptions: [config.voteOptions?.[0] || { id: 1, label: 'Vote option 1' }, { ...(config.voteOptions?.[1] || { id: 2, label: 'Vote option 2' }), badgeCode: event.target.value }] }))} /></label>
+                                        <label>Furni item ID<NumberInput min="1" value={parseSlotConfig(editingSlot.configJson).voteOptions?.[1]?.furniId || ''} placeholder="Optional" onChange={(event) => updateEditingConfig((config) => ({ ...config, voteOptions: [config.voteOptions?.[0] || { id: 1, label: 'Vote option 1' }, { ...(config.voteOptions?.[1] || { id: 2, label: 'Vote option 2' }), furniId: event.target.value ? Number(event.target.value) : undefined }] }))} /></label>
+                                        <label>Currency type<NumberInput min="0" value={parseSlotConfig(editingSlot.configJson).voteOptions?.[1]?.currencyType ?? ''} placeholder="0 = pixels" onChange={(event) => updateEditingConfig((config) => ({ ...config, voteOptions: [config.voteOptions?.[0] || { id: 1, label: 'Vote option 1' }, { ...(config.voteOptions?.[1] || { id: 2, label: 'Vote option 2' }), currencyType: event.target.value === '' ? undefined : Number(event.target.value) }] }))} /></label>
+                                        <label>Currency quantity<NumberInput min="1" value={parseSlotConfig(editingSlot.configJson).voteOptions?.[1]?.currencyAmount || ''} placeholder="Optional" onChange={(event) => updateEditingConfig((config) => ({ ...config, voteOptions: [config.voteOptions?.[0] || { id: 1, label: 'Vote option 1' }, { ...(config.voteOptions?.[1] || { id: 2, label: 'Vote option 2' }), currencyAmount: event.target.value ? Number(event.target.value) : undefined }] }))} /></label>
+                                    </fieldset>
+                                    </div>
+                                    <BaseButton className="hotelview-reset-votes" type="button" onClick={() => resetCommunityGoalVotes(editingSlot.id)}>Reset all community votes</BaseButton>
+                                </>}
+                                {editingSlot.type !== 'communitygoal' && <>
+                                    <label>Secondary button<input value={parseSlotConfig(editingSlot.configJson).secondaryButtonText || ''} onChange={(event) => updateEditingConfig((config) => ({ ...config, secondaryButtonText: event.target.value }))} /></label>
+                                    <label>Secondary action<Select value={getSelectedAction(parseSlotConfig(editingSlot.configJson).secondaryLink || '')} onChange={(event) => updateEditingConfig((config) => ({ ...config, secondaryLink: event.target.value === CUSTOM_ACTION ? '' : event.target.value }))}><option value={CUSTOM_ACTION}>Custom link</option>{HOTEL_VIEW_ACTIONS.map((action) => <option key={action.value} value={action.value}>{action.label}</option>)}</Select></label>
+                                    <label>Secondary custom link<input value={parseSlotConfig(editingSlot.configJson).secondaryLink || ''} onChange={(event) => updateEditingConfig((config) => ({ ...config, secondaryLink: event.target.value }))} /></label>
+                                </>}
+                                <footer><BaseButton type="button" onClick={() => { setEditingSlot(null); setCountdownInput(''); }}>Cancel</BaseButton><BaseButton type="submit">Save</BaseButton></footer>
+                            </form>
+                        )}
+                        {editingScene && (
+                            <form className="hotelview-editor hotelview-scene-editor" onSubmit={saveScene}>
+                                <header>Edit HotelView images</header>
+                                <div className="hotelview-editor-preview hotelview-editor-scene-preview">
+                                    <span className="hotelview-editor-preview-label">Background preview</span>
+                                    <div className="hotelview-editor-scene-canvas" style={{ backgroundImage: editingScene.backgroundUrl ? `url(${resolveImageUrl(editingScene.backgroundUrl, imageLibraryUrl, assetUrl)})` : undefined }}>
+                                        {editingScene.leftUrl && <img className="hotelview-editor-scene-left" src={resolveImageUrl(editingScene.leftUrl, imageLibraryUrl, assetUrl)} alt="" />}
+                                        {editingScene.drapeUrl && <img className="hotelview-editor-scene-drape" src={resolveImageUrl(editingScene.drapeUrl, imageLibraryUrl, assetUrl)} alt="" />}
+                                        {editingScene.rightUrl && <img className="hotelview-editor-scene-right" src={resolveImageUrl(editingScene.rightUrl, imageLibraryUrl, assetUrl)} alt="" />}
+                                    </div>
                                 </div>
-                                <BaseButton className="hotelview-reset-votes" type="button" onClick={() => resetCommunityGoalVotes(editingSlot.id)}>Reset all community votes</BaseButton>
-                            </>}
-                            {editingSlot.type !== 'communitygoal' && <>
-                                <label>Secondary button<input value={parseSlotConfig(editingSlot.configJson).secondaryButtonText || ''} onChange={(event) => updateEditingConfig((config) => ({ ...config, secondaryButtonText: event.target.value }))} /></label>
-                                <label>Secondary action<Select value={getSelectedAction(parseSlotConfig(editingSlot.configJson).secondaryLink || '')} onChange={(event) => updateEditingConfig((config) => ({ ...config, secondaryLink: event.target.value === CUSTOM_ACTION ? '' : event.target.value }))}><option value={CUSTOM_ACTION}>Custom link</option>{HOTEL_VIEW_ACTIONS.map((action) => <option key={action.value} value={action.value}>{action.label}</option>)}</Select></label>
-                                <label>Secondary custom link<input value={parseSlotConfig(editingSlot.configJson).secondaryLink || ''} onChange={(event) => updateEditingConfig((config) => ({ ...config, secondaryLink: event.target.value }))} /></label>
-                            </>}
-                            <footer><BaseButton type="button" onClick={() => { setEditingSlot(null); setCountdownInput(''); }}>Cancel</BaseButton><BaseButton type="submit">Save</BaseButton></footer>
-                        </form>
-                    )}
-                    {editingScene && (
-                        <form className="hotelview-editor hotelview-scene-editor" onSubmit={saveScene}>
-                            <header>Edit HotelView images</header>
-                            <div className="hotelview-editor-preview hotelview-editor-scene-preview">
-                                <span className="hotelview-editor-preview-label">Background preview</span>
-                                <div className="hotelview-editor-scene-canvas" style={{ backgroundImage: editingScene.backgroundUrl ? `url(${resolveImageUrl(editingScene.backgroundUrl, imageLibraryUrl, assetUrl)})` : undefined }}>
-                                    {editingScene.leftUrl && <img className="hotelview-editor-scene-left" src={resolveImageUrl(editingScene.leftUrl, imageLibraryUrl, assetUrl)} alt="" />}
-                                    {editingScene.drapeUrl && <img className="hotelview-editor-scene-drape" src={resolveImageUrl(editingScene.drapeUrl, imageLibraryUrl, assetUrl)} alt="" />}
-                                    {editingScene.rightUrl && <img className="hotelview-editor-scene-right" src={resolveImageUrl(editingScene.rightUrl, imageLibraryUrl, assetUrl)} alt="" />}
-                                </div>
-                            </div>
-                            <label>Background URL<input value={editingScene.backgroundUrl} onChange={(event) => setEditingScene({ ...editingScene, backgroundUrl: event.target.value })} /></label>
-                            <label>Drape URL<input value={editingScene.drapeUrl} onChange={(event) => setEditingScene({ ...editingScene, drapeUrl: event.target.value })} /></label>
-                            <label>Left image URL<input value={editingScene.leftUrl} onChange={(event) => setEditingScene({ ...editingScene, leftUrl: event.target.value })} /></label>
-                            <label>Right image URL<input value={editingScene.rightUrl} onChange={(event) => setEditingScene({ ...editingScene, rightUrl: event.target.value })} /></label>
-                            <label className="hotelview-editor-toggle"><Checkbox checked={editingScene.hallOfFameEnabled} onCheckedChange={(nextChecked) => setEditingScene({ ...editingScene, hallOfFameEnabled: nextChecked })} /><span>Hall of Fame: {editingScene.hallOfFameEnabled ? 'Enabled' : 'Disabled'}</span></label>
-                            {editingScene.hallOfFameEnabled && <>
-                                <label>Hall of Fame ranking<Select value={editingScene.hallOfFameMode} onChange={(event) => setEditingScene({ ...editingScene, hallOfFameMode: event.target.value })}><option value="latest_registered">Latest registered users</option><option value="online_time">Most online time</option><option value="achievement_score">Highest achievement score</option><option value="currency">Highest currency balance</option></Select></label>
-                                {editingScene.hallOfFameMode === 'currency' && <label>Currency type<NumberInput min="0" value={editingScene.hallOfFameCurrencyType} onChange={(event) => setEditingScene({ ...editingScene, hallOfFameCurrencyType: Math.max(0, Number(event.target.value) || 0) })} /></label>}
-                            </>}
-                            <footer><BaseButton type="button" onClick={() => setEditingScene(null)}>Cancel</BaseButton><BaseButton type="submit">Save</BaseButton></footer>
-                        </form>
-                    )}
+                                <label>Background URL<input value={editingScene.backgroundUrl} onChange={(event) => setEditingScene({ ...editingScene, backgroundUrl: event.target.value })} /></label>
+                                <label>Drape URL<input value={editingScene.drapeUrl} onChange={(event) => setEditingScene({ ...editingScene, drapeUrl: event.target.value })} /></label>
+                                <label>Left image URL<input value={editingScene.leftUrl} onChange={(event) => setEditingScene({ ...editingScene, leftUrl: event.target.value })} /></label>
+                                <label>Right image URL<input value={editingScene.rightUrl} onChange={(event) => setEditingScene({ ...editingScene, rightUrl: event.target.value })} /></label>
+                                <label className="hotelview-editor-toggle"><Checkbox checked={editingScene.hallOfFameEnabled} onCheckedChange={(nextChecked) => setEditingScene({ ...editingScene, hallOfFameEnabled: nextChecked })} /><span>Hall of Fame: {editingScene.hallOfFameEnabled ? 'Enabled' : 'Disabled'}</span></label>
+                                {editingScene.hallOfFameEnabled && <>
+                                    <label>Hall of Fame ranking<Select value={editingScene.hallOfFameMode} onChange={(event) => setEditingScene({ ...editingScene, hallOfFameMode: event.target.value })}><option value="latest_registered">Latest registered users</option><option value="online_time">Most online time</option><option value="achievement_score">Highest achievement score</option><option value="currency">Highest currency balance</option></Select></label>
+                                    {editingScene.hallOfFameMode === 'currency' && <label>Currency type<NumberInput min="0" value={editingScene.hallOfFameCurrencyType} onChange={(event) => setEditingScene({ ...editingScene, hallOfFameCurrencyType: Math.max(0, Number(event.target.value) || 0) })} /></label>}
+                                </>}
+                                <footer><BaseButton type="button" onClick={() => setEditingScene(null)}>Cancel</BaseButton><BaseButton type="submit">Save</BaseButton></footer>
+                            </form>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

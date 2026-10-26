@@ -1,4 +1,4 @@
-import type { HotelDateTimeParts, MonitorErrorLog, MonitorLog, MonitorRoomStats, MonitorSnapshot, VariableTextValue } from './WiredCreatorTools.types';
+import type { HotelDateTimeParts, MonitorErrorLog, MonitorLog, MonitorRoomStats, MonitorSnapshot } from './WiredCreatorTools.types';
 
 const HOTEL_TIME_FORMATTERS: Map<string, Intl.DateTimeFormat> = new Map();
 
@@ -255,15 +255,8 @@ export const resolveMonitorErrorDescription = (officialText: string, fallback: s
     return paragraphs.length ? paragraphs : fallback;
 };
 
-/** The server's text-connector table as the variables tab lists it; undefined when there is none. */
 /** A pointer (AIR requiresExecutionContext) only exists while a stack runs: nobody holds it, so it cannot be highlighted or managed. */
 export const isStackOnlyVariable = (definition?: { requiresExecutionContext?: boolean } | null): boolean => !!definition?.requiresExecutionContext;
-
-export const toVariableTextValues = (textConnector?: Array<{ key: number; value: string }>): VariableTextValue[] | undefined => {
-    if (!textConnector?.length) return undefined;
-
-    return textConnector.map((entry) => ({ value: String(entry.key), text: entry.value }));
-};
 
 /** Official WiredMenuOverviewTab: at most 1000 holders highlighted, 400 when each shows a value. */
 export const WIRED_VARIABLE_HIGHLIGHT_MAX = 1000;

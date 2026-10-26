@@ -1,5 +1,5 @@
 import { GetRoomEngine, RoomChatSettings, RoomObjectCategory } from '@octane/renderer';
-import { CSSProperties, FC, useEffect, useMemo, useRef, useState } from 'react';
+import { CSSProperties, FC, memo, useEffect, useMemo, useRef, useState } from 'react';
 import { ChatBubbleMessage, GetConfigurationValue } from '../../../../api';
 import { UserIdentityView } from '../../../../common';
 import { useOnClickChat } from '../../../../hooks';
@@ -17,7 +17,7 @@ interface ChatWidgetMessageViewProps {
     layout?: 'room' | 'history';
 }
 
-export const ChatWidgetMessageView: FC<ChatWidgetMessageViewProps> = ({
+const ChatWidgetMessageViewBase: FC<ChatWidgetMessageViewProps> = ({
     chat = null,
     makeRoom = null,
     bubbleWidth = RoomChatSettings.CHAT_BUBBLE_WIDTH_NORMAL,
@@ -243,3 +243,6 @@ export const ChatWidgetMessageView: FC<ChatWidgetMessageViewProps> = ({
         </div>
     );
 };
+
+/** Memoized: a new chat line re-renders only its own bubble. A change to a bubble arrives as a new chat object. */
+export const ChatWidgetMessageView = memo(ChatWidgetMessageViewBase);

@@ -98,10 +98,16 @@ const useChatWidgetState = () => {
     const applyAsyncTranslation = useCallback(
         (bubbleId: number, chatEntryId: number, originalText: string, translatedText: string, detectedLanguage: string, targetLanguage: string) => {
             setChatMessages((prevValue) => {
-                const newValue = [...prevValue];
-                const bubble = newValue.find((chat) => chat.id === bubbleId);
+                const index = prevValue.findIndex((chat) => chat.id === bubbleId);
 
-                if (bubble) applyTranslationToBubble(bubble, originalText, translatedText, detectedLanguage, targetLanguage);
+                if (index === -1) return prevValue;
+
+                // A new object, so the memoized bubble view sees the translation.
+                const bubble = Object.assign(Object.create(Object.getPrototypeOf(prevValue[index])), prevValue[index]);
+                const newValue = [...prevValue];
+
+                applyTranslationToBubble(bubble, originalText, translatedText, detectedLanguage, targetLanguage);
+                newValue[index] = bubble;
 
                 return newValue;
             });

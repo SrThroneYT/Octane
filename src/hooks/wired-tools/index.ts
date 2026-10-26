@@ -5,3 +5,5 @@ export * from './useWiredToolsStore';
 export * from './useWiredPageRequests';
 export * from './useWiredObjectInspection';
 export * from './useWiredPlayTest';
+export * from './useWiredVariableCatalog';
+export * from './useWiredVariableHolders';

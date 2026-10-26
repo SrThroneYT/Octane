@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { followFreeFlowAnchor, getChatViewerHeight, resolveFreeFlowLayout, resolveLineByLineLayout } from './freeFlowChatLayout';
+import { describe, expect, it, vi } from 'vitest';
+import { createLayoutBatcher, followFreeFlowAnchor, getChatViewerHeight, resolveFreeFlowLayout, resolveLineByLineLayout, resolveUntilSettled } from './freeFlowChatLayout';
 
 describe('resolveFreeFlowLayout', () => {
     it('separates a shallow horizontal collision before stacking bubbles vertically', () => {
@@ -132,5 +132,112 @@ describe('resolveLineByLineLayout', () => {
         ]);
 
         expect(result.map(({ top }) => top)).toEqual([20, 100]);
+    });
+});
+
+// A crowd: 250 bubbles from 8 avatars near the bottom, from a fixed seed.
+const crowd = () => {
+    let seed = 42;
+    const random = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
+
+    return Array.from({ length: 250 }, (_, index) => {
+        const width = 60 + Math.floor(random() * 200);
+        const anchorX = 200 + 120 * Math.floor(random() * 8);
+
+        return { id: index + 1, left: anchorX - width / 2, top: 500 - Math.floor(random() * 40), width, height: 23, anchorX, overflowTop: 0, overflowBottom: 0 };
+    });
+};
+
+const chained = (bubbles: ReturnType<typeof crowd>, passes: number) => {
+    let current = bubbles.map((bubble) => ({ ...bubble }));
+    let positions = resolveFreeFlowLayout(current);
+
+    for (let pass = 1; pass < passes; pass++) {
+        const byId = new Map(positions.map((position) => [position.id, position]));
+
+        current = current.map((bubble) => ({ ...bubble, left: byId.get(bubble.id).left, top: byId.get(bubble.id).top }));
+        positions = resolveFreeFlowLayout(current);
+    }
+
+    return positions;
+};
+
+describe('resolveUntilSettled', () => {
+    it('gives what that many chained layout passes give, in a crowd', () => {
+        for (const passes of [ 1, 5, 20 ]) {
+            const { positions, passes: run } = resolveUntilSettled(crowd(), resolveFreeFlowLayout, passes);
+
+            expect(positions).toEqual(chained(crowd(), passes));
+            expect(run).toBeLessThanOrEqual(passes);
+        }
+    });
+
+    it('stops after one pass when nothing overlaps', () => {
+        const bubbles = [
+            { id: 1, left: 0, top: 0, width: 50, height: 20, anchorX: 25, overflowTop: 0, overflowBottom: 0 },
+            { id: 2, left: 0, top: 100, width: 50, height: 20, anchorX: 25, overflowTop: 0, overflowBottom: 0 }
+        ];
+        const { positions, passes } = resolveUntilSettled(bubbles, resolveLineByLineLayout, 10);
+
+        expect(passes).toBe(1);
+        expect(positions.map(({ id, left, top }) => ({ id, left, top }))).toEqual([ { id: 1, left: 0, top: 0 }, { id: 2, left: 0, top: 100 } ]);
+    });
+});
+
+describe('createLayoutBatcher', () => {
+    const scheduler = () => {
+        const callbacks = new Map<number, () => void>();
+        let next = 1;
+
+        return {
+            schedule: (callback: () => void) => {
+                callbacks.set(next, callback);
+                return next++;
+            },
+            cancel: (handle: number) => callbacks.delete(handle),
+            runAll: () => {
+                const pending = [ ...callbacks.values() ];
+
+                callbacks.clear();
+                pending.forEach((callback) => callback());
+            },
+            get size() {
+                return callbacks.size;
+            }
+        };
+    };
+
+    it('lays out any number of requests in one frame', () => {
+        const frames = scheduler();
+        const flush = vi.fn();
+        const batcher = createLayoutBatcher(flush, frames.schedule, frames.cancel);
+
+        for (let i = 0; i < 200; i++) batcher.request();
+
+        expect(frames.size).toBe(1);
+
+        frames.runAll();
+
+        expect(flush).toHaveBeenCalledTimes(1);
+        expect(flush).toHaveBeenCalledWith(200);
+    });
+
+    it('flushes now on demand and drops its frame; dispose cancels', () => {
+        const frames = scheduler();
+        const flush = vi.fn();
+        const batcher = createLayoutBatcher(flush, frames.schedule, frames.cancel);
+
+        batcher.request();
+        batcher.flushNow();
+        expect(flush).toHaveBeenCalledWith(1);
+        expect(frames.size).toBe(0);
+
+        batcher.flushNow();
+        expect(flush).toHaveBeenCalledTimes(1);
+
+        batcher.request();
+        batcher.dispose();
+        frames.runAll();
+        expect(flush).toHaveBeenCalledTimes(1);
     });
 });

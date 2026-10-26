@@ -16,6 +16,8 @@ interface ContextMenuViewProps extends BaseProps<HTMLDivElement> {
     freezePositionOnHover?: boolean;
     repositionKey?: string | number;
     showCaretIcon?: boolean;
+    /** AIR AvatarContextInfoButtonView: the bubble sits this far above the anchor (negative is up), for every unit type. */
+    anchorGap?: number;
 }
 
 const LOCATION_STACK_SIZE = 25;
@@ -39,6 +41,7 @@ export const ContextMenuView: FC<ContextMenuViewProps> = ({
     freezePositionOnHover = false,
     repositionKey = null,
     showCaretIcon = true,
+    anchorGap = null,
     onMouseEnter = null,
     onMouseLeave = null,
     ...rest
@@ -66,7 +69,11 @@ export const ContextMenuView: FC<ContextMenuViewProps> = ({
                 return;
 
             let offset = -elementRef.current.offsetHeight;
-            if (userType > -1 && [RoomObjectType.USER, RoomObjectType.BOT, RoomObjectType.RENTABLE_BOT].includes(userType))
+            if (anchorGap !== null)
+            {
+                offset += anchorGap;
+            }
+            else if (userType > -1 && [RoomObjectType.USER, RoomObjectType.BOT, RoomObjectType.RENTABLE_BOT].includes(userType))
             {
                 offset += bounds.height > 50 ? tallAvatarOffset : 0;
             }
@@ -105,7 +112,7 @@ export const ContextMenuView: FC<ContextMenuViewProps> = ({
             setPos((previous) => (previous.x === x && previous.y === y ? previous : { x, y }));
             forcePositionUpdateRef.current = false;
         },
-        [freezePositionOnHover, maximumVerticalLeadRatio, tallAvatarOffset, userType]
+        [anchorGap, freezePositionOnHover, maximumVerticalLeadRatio, tallAvatarOffset, userType]
     );
 
     const getClassNames = useMemo(() =>
