@@ -334,9 +334,9 @@
         },
         {
             "styleId": 18,
-            "minRank": 0,
-            "isSystemStyle": false,
-            "isHcOnly": true,
+            "minRank": 5,
+            "isSystemStyle": true,
+            "isHcOnly": false,
             "isAmbassadorOnly": false
         },
         {
@@ -404,9 +404,9 @@
         },
         {
             "styleId": 28,
-            "minRank": 0,
-            "isSystemStyle": false,
-            "isHcOnly": true,
+            "minRank": 5,
+            "isSystemStyle": true,
+            "isHcOnly": false,
             "isAmbassadorOnly": false
         },
         {
@@ -432,9 +432,9 @@
         },
         {
             "styleId": 32,
-            "minRank": 0,
-            "isSystemStyle": false,
-            "isHcOnly": true,
+            "minRank": 5,
+            "isSystemStyle": true,
+            "isHcOnly": false,
             "isAmbassadorOnly": false
         },
         {
@@ -453,16 +453,16 @@
         },
         {
             "styleId": 35,
-            "minRank": 0,
-            "isSystemStyle": false,
-            "isHcOnly": true,
+            "minRank": 5,
+            "isSystemStyle": true,
+            "isHcOnly": false,
             "isAmbassadorOnly": false
         },
         {
             "styleId": 36,
-            "minRank": 0,
-            "isSystemStyle": false,
-            "isHcOnly": true,
+            "minRank": 5,
+            "isSystemStyle": true,
+            "isHcOnly": false,
             "isAmbassadorOnly": false
         },
         {
@@ -474,9 +474,9 @@
         },
         {
             "styleId": 38,
-            "minRank": 0,
-            "isSystemStyle": false,
-            "isHcOnly": true,
+            "minRank": 5,
+            "isSystemStyle": true,
+            "isHcOnly": false,
             "isAmbassadorOnly": false
         },
         {
