@@ -209,11 +209,8 @@ export const FriendsListView: FC<{}> = (props) => {
     const removeSelectedFriends = () => {
         if (selectedFriendsIds.length === 0) return;
 
-        setSelectedFriendsIds((prevValue) => {
-            SendMessageComposer(new RemoveFriendComposer(...prevValue));
-
-            return [];
-        });
+        SendMessageComposer(new RemoveFriendComposer(...selectedFriendsIds));
+        setSelectedFriendsIds([]);
 
         setShowRemoveFriendsConfirmation(false);
     };

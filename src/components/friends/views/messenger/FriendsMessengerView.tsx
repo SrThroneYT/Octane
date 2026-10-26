@@ -46,6 +46,9 @@ export const FriendsMessengerView: FC<{}> = (props) => {
     const isTypingRef = useRef<boolean>(false);
     const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
     // The scroll position to keep while an older history page goes in above the messages.
+    const stickToBottomRef = useRef(true);
+    const lastScrolledThreadRef = useRef(-1);
+    const sendingRef = useRef(false);
     const olderPageAnchorRef = useRef<{ threadId: number; height: number; top: number; at: number }>(null);
 
     const stopTyping = () => {
@@ -86,9 +89,11 @@ export const FriendsMessengerView: FC<{}> = (props) => {
     const openProfile = () => activeThread && activeThread.participant && GetUserProfile(activeThread.participant.id);
 
     const send = async () => {
-        if (!activeThread || !messageText.length) return;
+        if (!activeThread || !messageText.length || sendingRef.current) return;
 
         stopTyping();
+        // Own messages always bring the conversation to its newest line.
+        stickToBottomRef.current = true;
 
         const trimmedText = messageText.trimStart();
         const shouldTranslateOutgoing = settings.enabled && !!trimmedText.length && trimmedText.charAt(0) !== ':';
@@ -99,7 +104,16 @@ export const FriendsMessengerView: FC<{}> = (props) => {
             return;
         }
 
-        const translation = await translateOutgoing(messageText);
+        // Enter again while the translation is pending must not send the text twice.
+        sendingRef.current = true;
+
+        let translation: Awaited<ReturnType<typeof translateOutgoing>> = null;
+
+        try {
+            translation = await translateOutgoing(messageText);
+        } finally {
+            sendingRef.current = false;
+        }
 
         if (translation && translation.translatedText?.length && translation.translatedText.length <= 255) {
             sendMessage(activeThread, GetSessionDataManager().userId, translation.translatedText, 0, null, undefined, translation);
@@ -185,11 +199,19 @@ export const FriendsMessengerView: FC<{}> = (props) => {
             return;
         }
 
-        box.scrollTop = box.scrollHeight;
+        // Follow new lines only for a reader at the bottom, a newly selected conversation or an own message; someone
+        // reading older history stays where they are when a receipt or a line arrives.
+        const switched = lastScrolledThreadRef.current !== activeThread.threadId;
+
+        lastScrolledThreadRef.current = activeThread.threadId;
+
+        if (switched || stickToBottomRef.current) box.scrollTop = box.scrollHeight;
     }, [isVisible, activeThread]);
 
     const onMessagesScroll = (event: UIEvent<HTMLDivElement>) => {
         const box = event.currentTarget;
+
+        stickToBottomRef.current = box.scrollHeight - box.scrollTop - box.clientHeight < 24;
 
         if (!activeThread || olderPageAnchorRef.current || box.scrollTop >= 48 || box.scrollHeight <= box.clientHeight) return;
 
@@ -198,11 +220,14 @@ export const FriendsMessengerView: FC<{}> = (props) => {
         if (loadOlderHistory?.(activeThread)) olderPageAnchorRef.current = anchor;
     };
 
+    // Stop typing when the conversation changes, not on every update of it (a clone after each line or receipt).
+    const activeThreadId = activeThread?.threadId ?? -1;
+
     useEffect(() => {
         return () => {
             stopTyping();
         };
-    }, [activeThread]);
+    }, [activeThreadId]);
 
     useEffect(() => setWindowOpen?.(isVisible), [isVisible, setWindowOpen]);
 

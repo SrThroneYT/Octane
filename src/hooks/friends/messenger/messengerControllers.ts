@@ -17,7 +17,7 @@ export const createMessengerHistoryController = (
         const history = getState().historyByConversation[conversationId];
         if(history?.loading || history?.loaded) return;
         dispatch({ type: 'historyLoading', conversationId });
-        send(makeRequest(conversationId, 0, 500));
+        send(makeRequest(conversationId, 0, 50));
     },
     loadOlder(conversationId: number)
     {

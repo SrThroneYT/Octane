@@ -30,10 +30,10 @@ export const FriendRequestDialogView: FC<{
                     type="button"
                     onClick={() => hideFriendRequest(request.requesterUserId)}
                 />
-                <BaseButton className="octane-friend-request__decline" type="button" onClick={() => requestResponse(request.requesterUserId, false)}>
+                <BaseButton className="octane-friend-request__decline" type="button" onClick={() => requestResponse(request.id, false)}>
                     {LocalizeText('widget.friendrequest.decline')}
                 </BaseButton>
-                <BaseButton className="octane-friend-request__accept" type="button" onClick={() => requestResponse(request.requesterUserId, true)}>
+                <BaseButton className="octane-friend-request__accept" type="button" onClick={() => requestResponse(request.id, true)}>
                     <span aria-hidden="true" className="octane-friend-request__check" />
                     {LocalizeText('widget.friendrequest.accept')}
                 </BaseButton>

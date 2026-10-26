@@ -25,8 +25,28 @@ export class MessengerThread {
         this._unreadCount = 0;
     }
 
-    public addMessage(senderId: number, message: string, secondsSinceSent: number = 0, extraData: string = null, type: number = 0): MessengerThreadChat {
-        const chat = MessengerThread.appendChat(this._groups, senderId, message, secondsSinceSent, extraData, type);
+    /**
+     * A copy to change in a state update: its own groups, lines and participant. A shallow copy shared the lists with
+     * the previous state, so an update React runs twice (StrictMode, or a replayed render) added every line twice.
+     */
+    public clone(): MessengerThread {
+        const copy: MessengerThread = Object.assign(Object.create(MessengerThread.prototype), this);
+
+        copy._groups = this._groups.map((group) => group.clone());
+        copy._participant = this._participant ? Object.assign(Object.create(Object.getPrototypeOf(this._participant)), this._participant) : this._participant;
+
+        return copy;
+    }
+
+    public addMessage(
+        senderId: number,
+        message: string,
+        secondsSinceSent: number = 0,
+        extraData: string = null,
+        type: number = 0,
+        chatId: number = 0
+    ): MessengerThreadChat {
+        const chat = MessengerThread.appendChat(this._groups, senderId, message, secondsSinceSent, extraData, type, chatId);
 
         this.pruneChats();
 
@@ -66,11 +86,12 @@ export class MessengerThread {
         message: string,
         secondsSinceSent: number,
         extraData: string,
-        type: number
+        type: number,
+        chatId: number = 0
     ): MessengerThreadChat {
         const isGroupChat = senderId < 0 && extraData;
         const userId = isGroupChat ? GetGroupChatData(extraData).userId : senderId;
-        const chat = new MessengerThreadChat(senderId, message, secondsSinceSent, extraData, type);
+        const chat = new MessengerThreadChat(senderId, message, secondsSinceSent, extraData, type, chatId);
         const group = MessengerThread.groupFor(groups, userId, chat);
 
         if (isGroupChat) group.type = MessengerGroupType.GROUP_CHAT;

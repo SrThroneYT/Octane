@@ -81,7 +81,14 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
     // The Me icon also counts the forums with unread messages (shown on the Forums entry of the Me menu).
     const meMenuCount = unseenProgMenuCount + unreadForumsCount;
     const { requests = [] } = useFriends();
-    const { iconState = MessengerIconState.HIDDEN } = useMessenger();
+    const { iconState = MessengerIconState.HIDDEN, acknowledgeIcon = null } = useMessenger();
+
+    // AIR HabboFriendBarView.onOpenMessenger: toggle the messenger and stop the icon blinking.
+    const openMessenger = () =>
+    {
+        acknowledgeIcon?.();
+        OpenMessengerChat();
+    };
     const { unreadCount: mentionsUnread = 0 } = useMentionsSnapshot();
     const mentionsEnabled = useMemo(() => GetConfigurationValue<boolean>('mentions_ui.enabled', true), []);
     const buildersClubEnabled = useMemo(() => GetConfigurationValue<boolean>('buildersclub.enabled', GetConfigurationValue<boolean>('toolbar.buildersclub.enabled', true)), []);
@@ -527,9 +534,10 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
                     <motion.div variants={ itemVariants } className="tb-slot">
                         <ToolbarItemView icon="friendsearch" onClick={ () => SendMessageComposer(new FindNewFriendsMessageComposer()) } className="tb-icon" />
                     </motion.div>
+                    { (iconState !== MessengerIconState.HIDDEN) &&
                     <motion.div variants={ itemVariants } className="tb-slot tb-slot-messenger">
-                        <ToolbarItemView className={ `tb-icon ${ iconState === MessengerIconState.UNREAD ? (messengerNotifyFrame === 1 ? 'is-notify-1' : 'is-notify-0') : '' }` } icon="message" onClick={ () => OpenMessengerChat() } />
-                    </motion.div>
+                        <ToolbarItemView className={ `tb-icon ${ iconState === MessengerIconState.UNREAD ? (messengerNotifyFrame === 1 ? 'is-notify-1' : 'is-notify-0') : '' }` } icon="message" onClick={ openMessenger } />
+                    </motion.div> }
                     { !rightCollapsed && (<>
                     { mentionsEnabled &&
                         <motion.div variants={ itemVariants } className="relative tb-slot">
@@ -690,7 +698,7 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
                     </motion.div> }
                 { (socialInSideStack && ((iconState === MessengerIconState.SHOW) || (iconState === MessengerIconState.UNREAD))) &&
                     <motion.div variants={ itemVariants }>
-                        <ToolbarItemView className={ `tb-icon ${ iconState === MessengerIconState.UNREAD ? (messengerNotifyFrame === 1 ? 'is-notify-1' : 'is-notify-0') : '' }` } icon="message" onClick={ () => OpenMessengerChat() } />
+                        <ToolbarItemView className={ `tb-icon ${ iconState === MessengerIconState.UNREAD ? (messengerNotifyFrame === 1 ? 'is-notify-1' : 'is-notify-0') : '' }` } icon="message" onClick={ openMessenger } />
                     </motion.div> }
             </motion.div>
         </>

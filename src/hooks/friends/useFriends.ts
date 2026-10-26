@@ -200,22 +200,13 @@ const useFriendsStore = () => {
 
             setRequests([]);
         } else {
-            setRequests((prevValue) => {
-                const newRequests = [...prevValue];
-                const index = newRequests.findIndex((request) => request.id === requestId);
+            // Send first, then a pure update: React may run a state updater twice, which sent the packet twice.
+            if (!requests.some((request) => request.id === requestId)) return;
 
-                if (index === -1) return prevValue;
+            if (flag) SendMessageComposer(new AcceptFriendMessageComposer(requestId));
+            else SendMessageComposer(new DeclineFriendMessageComposer(false, requestId));
 
-                if (flag) {
-                    SendMessageComposer(new AcceptFriendMessageComposer(newRequests[index].id));
-                } else {
-                    SendMessageComposer(new DeclineFriendMessageComposer(false, newRequests[index].id));
-                }
-
-                newRequests.splice(index, 1);
-
-                return newRequests;
-            });
+            setRequests((prevValue) => prevValue.filter((request) => request.id !== requestId));
         }
     };
 

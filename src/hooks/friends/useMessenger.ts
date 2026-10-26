@@ -20,7 +20,6 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { registerSharedHook, useSharedHook } from '@/state/useSharedHook';
 import {
-    CloneObject,
     getInstantMessageErrorTextKey,
     LocalizeText,
     localizeWithFallback,
@@ -32,7 +31,7 @@ import {
     SendMessageComposer,
     SoundNames,
     selectMessages,
-    selectMessengerIconState
+    getMessengerIconState
 } from '../../api';
 import { useMessageEvent } from '../events';
 import { useNotification } from '../notification';
@@ -49,6 +48,9 @@ const useMessengerState = () => {
     const [activeThreadId, setActiveThreadId] = useState<number>(-1);
     const [hiddenThreadIds, setHiddenThreadIds] = useState<number[]>([]);
     const [iconState, setIconState] = useState<number>(MessengerIconState.HIDDEN);
+    // Counts the messages that make the icon blink; clicking the icon remembers the count it has seen.
+    const [blinkSignal, setBlinkSignal] = useState(0);
+    const [acknowledgedBlinkSignal, setAcknowledgedBlinkSignal] = useState(0);
     const { getFriend = null } = useFriends();
     const { simpleAlert = null } = useNotification();
     const { settings, translateIncoming } = useTranslation();
@@ -98,17 +100,10 @@ const useMessengerState = () => {
             messageThreadsRef.current = [...messageThreadsRef.current, thread];
             setMessageThreads((prevValue) => (prevValue.some((existing) => existing.threadId === thread.threadId) ? prevValue : [...prevValue, thread]));
         } else {
-            const hiddenIndex = hiddenThreadIdsRef.current.indexOf(thread.threadId);
+            const threadId = thread.threadId;
 
-            if (hiddenIndex >= 0) {
-                setHiddenThreadIds((prevValue) => {
-                    const newValue = [...prevValue];
-
-                    newValue.splice(hiddenIndex, 1);
-
-                    return newValue;
-                });
-            }
+            // By id, not by an index read from a ref that only refreshes on render.
+            if (hiddenThreadIdsRef.current.indexOf(threadId) >= 0) setHiddenThreadIds((prevValue) => prevValue.filter((hiddenId) => hiddenId !== threadId));
         }
 
         return thread;
@@ -170,7 +165,23 @@ const useMessengerState = () => {
         if (ownMessage && messageType === MessengerThreadChat.CHAT && messageText.length <= 255)
             SendMessageComposer(new SendMessageComposerPacket(thread.participant.id, messageText));
 
-        let addedChatId = -1;
+        const addedChatId = MessengerThreadChat.nextId();
+
+        // Sounds are side effects: decided here, not in the state update, which React may run twice.
+        const currentThread = messageThreadsRef.current.find((existing) => existing.threadId === thread.threadId);
+
+        if (currentThread) {
+            // AIR MainView: the sent sound when the conversation holds nothing yet, or only the moderation notice.
+            const lines = currentThread.groups.flatMap((group) => group.chats);
+
+            if (ownMessage && (!lines.length || (lines.length === 1 && lines[0].type === MessengerThreadChat.SECURITY_NOTIFICATION)))
+                PlaySound(SoundNames.MESSENGER_NEW_THREAD);
+
+            if (!ownMessage && MessengerThread.countsAsUnread(messageType)) setBlinkSignal((value) => value + 1);
+
+            // AIR HabboMessenger.onNewConsoleMessage / onRoomInvite: the received sound only while the window is closed.
+            if (!ownMessage && MessengerThread.countsAsUnread(messageType) && !windowOpenRef.current) PlaySound(SoundNames.MESSENGER_MESSAGE_RECEIVED);
+        }
 
         setMessageThreads((prevValue) => {
             const newValue = [...prevValue];
@@ -178,17 +189,13 @@ const useMessengerState = () => {
 
             if (index === -1) return prevValue;
 
-            thread = CloneObject(newValue[index]);
-
-            if (ownMessage && thread.groups.length === 1) PlaySound(SoundNames.MESSENGER_NEW_THREAD);
+            thread = newValue[index].clone();
 
             const isNotification =
                 messageType === MessengerThreadChat.ROOM_INVITE ||
                 messageType === MessengerThreadChat.STATUS_NOTIFICATION ||
                 messageType === MessengerThreadChat.SECURITY_NOTIFICATION;
-            const addedChat = thread.addMessage(isNotification ? null : senderId, messageText, secondsSinceSent, extraData, messageType);
-
-            addedChatId = addedChat?.id || -1;
+            const addedChat = thread.addMessage(isNotification ? null : senderId, messageText, secondsSinceSent, extraData, messageType, addedChatId);
 
             if (translation && messageType === MessengerThreadChat.CHAT)
                 addedChat?.setTranslation(translation.originalText, translation.translatedText, translation.detectedLanguage, translation.targetLanguage);
@@ -196,9 +203,6 @@ const useMessengerState = () => {
             if (ownMessage || activeThreadId === thread.threadId) thread.setRead();
 
             newValue[index] = thread;
-
-            // AIR HabboMessenger.onNewConsoleMessage / onRoomInvite: the received sound only while the window is closed.
-            if (!ownMessage && MessengerThread.countsAsUnread(messageType) && !windowOpenRef.current) PlaySound(SoundNames.MESSENGER_MESSAGE_RECEIVED);
 
             return newValue;
         });
@@ -216,7 +220,7 @@ const useMessengerState = () => {
 
                 if (index === -1) return prevValue;
 
-                const clonedThread = CloneObject(newValue[index]);
+                const clonedThread = newValue[index].clone();
                 const chat = clonedThread.getChat(addedChatId);
 
                 if (!chat) return prevValue;
@@ -330,7 +334,7 @@ const useMessengerState = () => {
             if (index === -1) return prevValue;
 
             const newValue = [...prevValue];
-            const thread = CloneObject(newValue[index]);
+            const thread = newValue[index].clone();
 
             thread.markOwnMessageFailed(ownUserId, parser.message, errorText);
             thread.addMessage(null, noticeText, 0, null, MessengerThreadChat.SECURITY_NOTIFICATION);
@@ -366,7 +370,7 @@ const useMessengerState = () => {
 
                 if (index === -1) continue;
 
-                const thread = CloneObject(newValue[index]);
+                const thread = newValue[index].clone();
                 const wasOnline = thread.participant.online;
 
                 thread.participant.online = updatedFriend.online;
@@ -408,45 +412,66 @@ const useMessengerState = () => {
 
     useEffect(() => {
         const now = Math.floor(Date.now() / 1000);
+        // Which history lines each conversation still lacks, worked out here and recorded once: the state update
+        // below must stay pure, as React may run it twice.
+        const additions = new Map<number, Parameters<MessengerThread['addHistoryMessages']>[0]>();
 
-        setMessageThreads((previousThreads) => {
-            let changed = false;
-            const nextThreads = [...previousThreads];
+        for (const currentThread of messageThreadsRef.current) {
+            const participantId = currentThread.participant?.id ?? 0;
+            if (participantId <= 0) continue;
 
-            for (let index = 0; index < nextThreads.length; index++) {
-                const currentThread = nextThreads[index];
-                const participantId = currentThread.participant?.id ?? 0;
-                if (participantId <= 0) continue;
+            const conversation = persistentState.conversationIds
+                .map((conversationId) => persistentState.conversationsById[conversationId])
+                .find((candidate) => candidate?.type === 0 && candidate.participantId === participantId);
+            if (!conversation || !persistentState.historyByConversation[conversation.id]?.loaded) continue;
 
-                const conversation = persistentState.conversationIds
-                    .map((conversationId) => persistentState.conversationsById[conversationId])
-                    .find((candidate) => candidate?.type === 0 && candidate.participantId === participantId);
-                if (!conversation || !persistentState.historyByConversation[conversation.id]?.loaded) continue;
-
-                const knownMessageIds = historyMessageIdsRef.current.get(conversation.id) ?? new Set<number>();
-                const historyMessages = selectMessages(persistentState, conversation.id).filter(
-                    (message) => message.id > 0 && !knownMessageIds.has(message.id)
+            const knownMessageIds = historyMessageIdsRef.current.get(conversation.id) ?? new Set<number>();
+            // Live console lines carry no server id: a history entry for a line already shown live (same sender and
+            // text, sent within a minute of it) is the same message and is skipped, as AIR skips known message ids.
+            const liveLines = currentThread.groups.flatMap((group) => group.chats).filter((chat) => chat.type === MessengerThreadChat.CHAT);
+            const shownLive = (message: { senderId: number; message: string; createdAt: number }) =>
+                liveLines.some(
+                    (chat) =>
+                        chat.senderId === message.senderId && chat.message === message.message && Math.abs(chat.date.getTime() / 1000 - message.createdAt) < 60
                 );
-                if (!historyMessages.length) continue;
+            const historyMessages = selectMessages(persistentState, conversation.id).filter(
+                (message) => message.id > 0 && !knownMessageIds.has(message.id) && !shownLive(message)
+            );
+            const knownBefore = knownMessageIds.size;
 
-                const thread = CloneObject(currentThread);
-                thread.addHistoryMessages(
-                    historyMessages.map((message) => ({
-                        senderId: message.senderId,
-                        message: message.message,
-                        secondsSinceSent: Math.max(0, now - message.createdAt),
-                        extraData: message.metadata || null,
-                        type: message.type
-                    }))
-                );
-                for (const message of historyMessages) knownMessageIds.add(message.id);
-                historyMessageIdsRef.current.set(conversation.id, knownMessageIds);
-                nextThreads[index] = thread;
-                changed = true;
-            }
+            for (const message of selectMessages(persistentState, conversation.id)) if (message.id > 0 && shownLive(message)) knownMessageIds.add(message.id);
+            if (knownMessageIds.size !== knownBefore) historyMessageIdsRef.current.set(conversation.id, knownMessageIds);
+            if (!historyMessages.length) continue;
 
-            return changed ? nextThreads : previousThreads;
-        });
+            for (const message of historyMessages) knownMessageIds.add(message.id);
+            historyMessageIdsRef.current.set(conversation.id, knownMessageIds);
+            additions.set(
+                currentThread.threadId,
+                historyMessages.map((message) => ({
+                    senderId: message.senderId,
+                    message: message.message,
+                    secondsSinceSent: Math.max(0, now - message.createdAt),
+                    extraData: message.metadata || null,
+                    type: message.type
+                }))
+            );
+        }
+
+        if (!additions.size) return;
+
+        setMessageThreads((previousThreads) =>
+            previousThreads.map((currentThread) => {
+                const messages = additions.get(currentThread.threadId);
+
+                if (!messages) return currentThread;
+
+                const thread = currentThread.clone();
+
+                thread.addHistoryMessages(messages);
+
+                return thread;
+            })
+        );
     }, [persistentState]);
 
     useMessageEvent<RoomInviteEvent>(RoomInviteEvent, (event) => {
@@ -510,7 +535,7 @@ const useMessengerState = () => {
 
             const newValue = [...prevValue];
 
-            newValue[index] = CloneObject(newValue[index]);
+            newValue[index] = newValue[index].clone();
             newValue[index].setMessagesReadFromUser(ownUserId);
 
             return newValue;
@@ -528,7 +553,7 @@ const useMessengerState = () => {
             const index = newValue.findIndex((newThread) => newThread.threadId === activeThreadId);
 
             if (index >= 0) {
-                newValue[index] = CloneObject(newValue[index]);
+                newValue[index] = newValue[index].clone();
                 newValue[index].setRead();
             }
 
@@ -538,20 +563,24 @@ const useMessengerState = () => {
         if (participantId > 0) SendMessageComposer(new MarkConsoleReadComposer(participantId));
     }, [activeThreadId]);
 
+    /** AIR HabboFriendBarView.onOpenMessenger: clicking the icon stops its blinking. */
+    const acknowledgeIcon = () => setAcknowledgedBlinkSignal(blinkSignal);
+
     useEffect(() => {
         setIconState(
-            selectMessengerIconState(
-                persistentState,
-                visibleThreads.length > 0,
-                visibleThreads.some((thread) => thread.unreadCount > 0)
+            getMessengerIconState(
+                visibleThreads.length,
+                visibleThreads.some((thread) => thread.unreadCount > 0),
+                acknowledgedBlinkSignal >= blinkSignal
             )
         );
-    }, [persistentState, visibleThreads]);
+    }, [visibleThreads, blinkSignal, acknowledgedBlinkSignal]);
 
     return {
         messageThreads,
         activeThread,
         iconState,
+        acknowledgeIcon,
         visibleThreads,
         getMessageThread,
         setActiveThreadId,

@@ -141,6 +141,19 @@ export const FriendBarItemView: FC<{ friend: MessengerFriend }> = (props) => {
                     <LayoutBadgeImageView badgeCode="ADM" isGroup={false} className="block pointer-events-none drop-shadow-[1px_1px_0_rgba(0,0,0,0.6)]" />
                 </div>
             )}
+            {!isStaffChat && friend.id > 0 && (
+                // AIR new_friend_entity region_profile (33 x 35 over the head): opens the friend's profile.
+                <BaseButton
+                    type="button"
+                    aria-label={LocalizeText('infostand.profile.link.tooltip')}
+                    className="friend-bar-profile-region"
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        GetUserProfile(friend.id);
+                        setVisible(false);
+                    }}
+                />
+            )}
             <motion.button
                 type="button"
                 className={`friend-bar-item friend-bar-tab find-friends-active ${friend.id <= 0 ? 'group' : ''}`}
@@ -174,7 +187,8 @@ export const FriendBarItemView: FC<{ friend: MessengerFriend }> = (props) => {
                                     setVisible(false);
                                 }}
                             ><img src={chatIcon} alt="" /></div>
-                            {!isStaffChat && friend.online && (
+                            {/* AIR NewFriendEntityTab.select: btn_visit only when the friend allows following. */}
+                            {!isStaffChat && friend.online && friend.followingAllowed && (
                                 <div
                                     className="cursor-pointer friend-bar-action-icon"
                                     onClick={(event) => {

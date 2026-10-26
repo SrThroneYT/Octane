@@ -59,3 +59,47 @@ describe('MessengerThread, AIR MainView rules', () => {
         expect(thread.unreadCount).toBe(0);
     });
 });
+
+describe('MessengerThread.clone', () => {
+    it('gives a state update its own lists, so running the update twice adds the line once', () => {
+        const previous = makeThread(7);
+
+        previous.addMessage(7, 'hallo', 0, null, MessengerThreadChat.CHAT);
+
+        // React StrictMode calls a state updater twice with the same previous state.
+        const update = () => {
+            const next = previous.clone();
+
+            next.addMessage(100, 'hoi', 0, null, MessengerThreadChat.CHAT);
+
+            return next;
+        };
+
+        update();
+        const next = update();
+
+        expect(previous.groups.flatMap((group) => group.chats.map((chat) => chat.message))).toEqual(['hallo']);
+        expect(next.groups.flatMap((group) => group.chats.map((chat) => chat.message))).toEqual(['hallo', 'hoi']);
+    });
+
+    it('marks a refused line on the copy only', () => {
+        const previous = makeThread(7);
+
+        previous.addMessage(100, '2', 0, null, MessengerThreadChat.CHAT);
+        previous.addMessage(100, '2', 0, null, MessengerThreadChat.CHAT);
+
+        const mark = () => {
+            const next = previous.clone();
+
+            next.markOwnMessageFailed(100, '2', 'failed');
+
+            return next;
+        };
+
+        mark();
+        const next = mark();
+
+        expect(next.groups[0].chats.map((chat) => chat.failed)).toEqual([false, true]);
+        expect(previous.groups[0].chats.some((chat) => chat.failed)).toBe(false);
+    });
+});
