@@ -88,6 +88,19 @@ const useFriendsStore = () => {
         return offlineFriends;
     }, [friends]);
 
+    /** AIR HabboFriendList: accepting stops once the list holds `userFriendLimit` friends. */
+    const isFriendListFull = (adding: number = 1) => !!settings?.userFriendLimit && friends.length + adding > settings.userFriendLimit;
+
+    /** AIR showLimitReachedAlert. */
+    const showFriendListFullAlert = () =>
+        simpleAlert(
+            LocalizeText('friendlist.listfull.text', ['mylimit', 'clublimit'], [`${settings?.userFriendLimit ?? 0}`, `${settings?.extendedFriendLimit ?? 0}`]),
+            NotificationAlertType.DEFAULT,
+            null,
+            null,
+            LocalizeText('friendlist.listfull.title')
+        );
+
     const followFriend = (friend: MessengerFriend) => SendMessageComposer(new FollowFriendMessageComposer(friend.id));
 
     const updateRelationship = (friend: MessengerFriend, type: number) =>
@@ -155,6 +168,8 @@ const useFriendsStore = () => {
         });
 
         SendMessageComposer(new RequestFriendComposer(userName));
+
+        return true;
     };
 
     /** Answers every pending request in one packet. */
@@ -399,6 +414,8 @@ const useFriendsStore = () => {
         offlineFriends,
         getFriend,
         canRequestFriend,
+        isFriendListFull,
+        showFriendListFullAlert,
         requestFriend,
         requestResponse,
         requestResponseAll,
@@ -432,7 +449,8 @@ export const useFriendsState = () => {
         onlineFriends,
         offlineFriends,
         getFriend,
-        canRequestFriend
+        canRequestFriend,
+        isFriendListFull
     } = useSharedHook(useFriendsStore);
 
     return {
@@ -445,7 +463,8 @@ export const useFriendsState = () => {
         onlineFriends,
         offlineFriends,
         getFriend,
-        canRequestFriend
+        canRequestFriend,
+        isFriendListFull
     };
 };
 
@@ -456,6 +475,7 @@ export const useFriendsState = () => {
  */
 export const useFriendsActions = () => {
     const {
+        showFriendListFullAlert,
         requestFriend,
         requestResponse,
         requestResponseAll,
@@ -468,6 +488,7 @@ export const useFriendsActions = () => {
     } = useSharedHook(useFriendsStore);
 
     return {
+        showFriendListFullAlert,
         requestFriend,
         requestResponse,
         requestResponseAll,

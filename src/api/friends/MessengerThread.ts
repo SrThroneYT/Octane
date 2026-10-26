@@ -8,6 +8,8 @@ export class MessengerThread {
     public static MESSAGE_RECEIVED: string = 'MT_MESSAGE_RECEIVED';
     public static THREAD_ID: number = 0;
     private static MAX_CHATS: number = 500;
+    /** AIR MainView.shouldCombineWithPreviousEntry: messages combine into one block within 10 minutes. */
+    public static COMBINE_WINDOW_MS: number = 600000;
 
     private _threadId: number;
     private _participant: MessengerFriend;
@@ -24,25 +26,72 @@ export class MessengerThread {
     }
 
     public addMessage(senderId: number, message: string, secondsSinceSent: number = 0, extraData: string = null, type: number = 0): MessengerThreadChat {
-        const isGroupChat = senderId < 0 && extraData;
-        const userId = isGroupChat ? GetGroupChatData(extraData).userId : senderId;
+        const chat = MessengerThread.appendChat(this._groups, senderId, message, secondsSinceSent, extraData, type);
 
-        const group = this.getLastGroup(userId);
-
-        if (!group) return;
-
-        if (isGroupChat) group.type = MessengerGroupType.GROUP_CHAT;
-
-        const chat = new MessengerThreadChat(senderId, message, secondsSinceSent, extraData, type);
-
-        group.addChat(chat);
         this.pruneChats();
 
         this._lastUpdated = new Date();
 
-        this._unreadCount++;
+        // AIR MainView.recordChatEntry: only a chat line or a room invite lights the conversation; online / offline
+        // lines and warnings do not.
+        if (MessengerThread.countsAsUnread(type)) this._unreadCount++;
 
         return chat;
+    }
+
+    /**
+     * AIR MainView loadMessageHistory: older messages go above the ones already shown. `messages` run oldest first,
+     * and none of them lights the conversation.
+     */
+    public addHistoryMessages(messages: { senderId: number; message: string; secondsSinceSent: number; extraData: string; type: number }[]): void {
+        if (!messages.length) return;
+
+        const historyGroups: MessengerThreadChatGroup[] = [];
+
+        for (const message of messages) {
+            MessengerThread.appendChat(historyGroups, message.senderId, message.message, message.secondsSinceSent, message.extraData, message.type);
+        }
+
+        this._groups = [...historyGroups, ...this._groups];
+        this.pruneChats();
+    }
+
+    public static countsAsUnread(type: number): boolean {
+        return type !== MessengerThreadChat.STATUS_NOTIFICATION && type !== MessengerThreadChat.SECURITY_NOTIFICATION;
+    }
+
+    private static appendChat(
+        groups: MessengerThreadChatGroup[],
+        senderId: number,
+        message: string,
+        secondsSinceSent: number,
+        extraData: string,
+        type: number
+    ): MessengerThreadChat {
+        const isGroupChat = senderId < 0 && extraData;
+        const userId = isGroupChat ? GetGroupChatData(extraData).userId : senderId;
+        const chat = new MessengerThreadChat(senderId, message, secondsSinceSent, extraData, type);
+        const group = MessengerThread.groupFor(groups, userId, chat);
+
+        if (isGroupChat) group.type = MessengerGroupType.GROUP_CHAT;
+
+        group.addChat(chat);
+
+        return chat;
+    }
+
+    /** The last block when the line is from the same sender within the combine window, otherwise a new block. */
+    private static groupFor(groups: MessengerThreadChatGroup[], userId: number, chat: MessengerThreadChat): MessengerThreadChatGroup {
+        const last = groups[groups.length - 1];
+        const lastChat = last?.chats[last.chats.length - 1];
+
+        if (last && last.userId === userId && (!lastChat || chat.date.getTime() < lastChat.date.getTime() + MessengerThread.COMBINE_WINDOW_MS)) return last;
+
+        const group = new MessengerThreadChatGroup(userId);
+
+        groups.push(group);
+
+        return group;
     }
 
     public getChat(chatId: number): MessengerThreadChat {
@@ -71,18 +120,6 @@ export class MessengerThread {
 
             totalChats--;
         }
-    }
-
-    private getLastGroup(userId: number): MessengerThreadChatGroup {
-        let group = this._groups[this._groups.length - 1];
-
-        if (group && group.userId === userId) return group;
-
-        group = new MessengerThreadChatGroup(userId);
-
-        this._groups.push(group);
-
-        return group;
     }
 
     /**

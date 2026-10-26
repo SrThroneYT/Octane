@@ -338,8 +338,8 @@
 }
 
 .octane-friends-remove-confirmation {
-    width: min(270px, calc(100vw - 16px));
-    height: min(225px, calc(100vh - 16px));
+    width: min(160px, calc(100vw - 16px));
+    height: min(200px, calc(100vh - 16px));
     min-width: 0;
     min-height: 0;
     max-width: calc(100vw - 16px);
@@ -347,26 +347,38 @@
     resize: none !important;
 }
 
+/* friend_remove_confirm remove_info: Volter 9, word-wrapped, inside a 150 x 143 border. */
 .octane-friends-remove-confirmation-text {
-    color: #111;
-    font-size: 13px;
-    line-height: 1.35;
-    white-space: pre-wrap;
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 10px;
+    overflow: auto;
+    border: 1px solid #b6b6b6;
+    border-radius: 4px;
+    background: #fff;
+    color: #000;
+    font-family: Volter, monospace;
+    font-size: 9px;
+    line-height: 12px;
     overflow-wrap: anywhere;
 }
 
 .octane-friends-remove-confirmation-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
     height: 100%;
-}
-
-.octane-friends-remove-confirmation-names {
-    margin-top: 4px;
 }
 
 .octane-friends-remove-confirmation-actions {
     display: flex;
-    gap: 8px;
-    margin-top: auto;
+    justify-content: space-between;
+}
+
+.octane-friends-remove-confirmation-actions button {
+    width: 60px;
+    min-width: 60px;
+    height: 21px;
 }
 
 .friend-bar {
@@ -1091,26 +1103,19 @@
 .friend-bar .friend-bar-item.friend-bar-search .friend-bar-item-head{top:-2px;left:6px;width:31px;height:34px;background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB8AAAAiCAYAAACnSgJKAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFzmlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNS42LWMxNDggNzkuMTY0MDM2LCAyMDE5LzA4LzEzLTAxOjA2OjU3ICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdEV2dD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlRXZlbnQjIiB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iIHhtbG5zOnBob3Rvc2hvcD0iaHR0cDovL25zLmFkb2JlLmNvbS9waG90b3Nob3AvMS4wLyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgMjEuMCAoTWFjaW50b3NoKSIgeG1wOkNyZWF0ZURhdGU9IjIwMjEtMDctMDNUMTk6MjQ6MTktMDQ6MDAiIHhtcDpNZXRhZGF0YURhdGU9IjIwMjEtMDctMDNUMTk6MjQ6MTktMDQ6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDIxLTA3LTAzVDE5OjI0OjE5LTA0OjAwIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjhlOThlNTNiLTU3OGMtNDlkMS05ZWM0LWI4ZmE0YTA1OWVhZiIgeG1wTU06RG9jdW1lbnRJRD0iYWRvYmU6ZG9jaWQ6cGhvdG9zaG9wOjU1YWEzMTg3LTM4ZDktM2U0Zi04MGMwLWVkZDhmYWU0Y2FlNyIgeG1wTU06T3JpZ2luYWxEb2N1bWVudElEPSJ4bXAuZGlkOjY0MWY0Y2ZkLTcxM2QtNGNlOC04ZWZlLWE1YmIyYzU5ZTA2MyIgZGM6Zm9ybWF0PSJpbWFnZS9wbmciIHBob3Rvc2hvcDpDb2xvck1vZGU9IjMiPiA8eG1wTU06SGlzdG9yeT4gPHJkZjpTZXE+IDxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJjcmVhdGVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjY0MWY0Y2ZkLTcxM2QtNGNlOC04ZWZlLWE1YmIyYzU5ZTA2MyIgc3RFdnQ6d2hlbj0iMjAyMS0wNy0wM1QxOToyNDoxOS0wNDowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIDIxLjAgKE1hY2ludG9zaCkiLz4gPHJkZjpsaSBzdEV2dDphY3Rpb249InNhdmVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjhlOThlNTNiLTU3OGMtNDlkMS05ZWM0LWI4ZmE0YTA1OWVhZiIgc3RFdnQ6d2hlbj0iMjAyMS0wNy0wM1QxOToyNDoxOS0wNDowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIDIxLjAgKE1hY2ludG9zaCkiIHN0RXZ0OmNoYW5nZWQ9Ii8iLz4gPC9yZGY6U2VxPiA8L3htcE1NOkhpc3Rvcnk+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+oOH7fQAAAn1JREFUWIWVWEuWgkAM5BLjCWYhJ9CtD5d6F+dszBVwiXgiZhpIdyWpAC7y5KNdqVQlDVbjOFZr8fV9HH3U6nxrjSg2Qc/X+xSn620KOT8vx+lanFy9mlgIjIAUtCnX9f27upbWqiaYFXApHwLbhfGavn9TiZbflARC8FSexGT6NAtbVul7jCE7xhApCPiRMlKlbZCNT8pXy8tjq1Ah2zXGruyN98FanIgEE2ubncocgObPSF9vvMg3kkBmHi3AmEZeYCTWDFixXqYJyOKkxXDxLUN65g2UseHaRyX11YmlyDjNnEB1EMM1Vkfr8rvT2/oDo30O4+/zPbbd/KnvL+CT4SKzQaaY3FpJ03ECE+Ac/8nolqtn5siQM7s7w6WRaUOAM+vlWAIrkJkz8/D2K6VLYD+vyxz9ZTpHkMzeXFMz34JbfSO9M3hfwD3oW+kuzGW3U30elpw4VoG/FuadZs0qgNtsNhy63A6Fc6BxAn30c7D7wh7L7sYr603rctT4sbBV532pAlaimE+YA7jsaqrcCyD+UBnMAoPxlAzgelmHg5OxycClzCwRDDFgK9EFzJE9lj33aDdQTTERqnnnW28V3A4b1qPp2MqgmRqtOzRc7cHVEw1MM2wVNI5ibvpcGNskQuY2AWkx0QuNk5n3njkmiN+nfR49OqP+xa1ls2Aa2wrZ6RYaDsNuNmxY4G7F2NokNjV37Btkr5mEm0g3hMnSR+c4gfLaMy/6XnygF7WDpDXlLiWv94NjFZBRkWLwUkD5rSwfMUcPWB2xDZ3LO+909tK4+3V2Ym+0tPOfb6HH8RC8re4GxwQQBKeeLfHWu/tH4GLCA0T0p8Getf4AtWGS7WEg8JMAAAAASUVORK5CYII=)}
 /* END HOBBA_FRIENDBAR_EXACT */
 
-
-
-
-
 /* BEGIN SWF_FRIENDS_EXACT_DOM */
-.swf-friends-window,
-.swf-messenger-window {
+.swf-friends-window {
     font-family: Ubuntu, Arial, sans-serif;
     color: #000;
     image-rendering: var(--octane-pixel-art, pixelated);
     text-shadow: none;
 }
 
-.swf-friends-window *:not(.avatar-image),
-.swf-messenger-window *:not(.avatar-image) {
+.swf-friends-window *:not(.avatar-image) {
     box-sizing: border-box;
 }
 
-.swf-friends-window button,
-.swf-messenger-window button {
+.swf-friends-window button {
     font-family: Ubuntu, Arial, sans-serif;
     cursor: pointer;
 }
@@ -1497,302 +1502,6 @@ button.swf-friends-section-header {
     border-right: 4px solid transparent;
     border-top: 5px solid #fff;
 }
-
-.swf-messenger-window {
-    position: relative;
-    width: 282px;
-    height: 385px;
-    min-width: 282px;
-    min-height: 385px;
-    max-width: calc(100vw - 10px);
-    max-height: calc(100vh - 10px);
-    resize: both;
-    overflow: hidden;
-    border: 1px solid #777771;
-    border-radius: 5px;
-    background: #e4e4e4;
-    box-shadow: inset 0 0 0 1px #fff, 0 2px 5px rgba(0,0,0,.42);
-}
-
-.swf-messenger-drag {
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 30px;
-    cursor: move;
-}
-
-.swf-messenger-open-title {
-    position: absolute;
-    left: 8px;
-    top: 8px;
-    height: 15px;
-    color: #000;
-    font-size: 10px;
-    font-weight: 700;
-    line-height: 13px;
-}
-
-.swf-messenger-minimize {
-    position: absolute;
-    right: 6px;
-    top: 6px;
-    width: 20px;
-    height: 20px;
-    z-index: 2;
-    padding: 0;
-    border: 3px solid transparent;
-    border-image-source: var(--habbo-skin-button);
-    border-image-slice: 3 fill;
-    border-image-width: 3px;
-    background: transparent;
-}
-
-.swf-messenger-minimize::before {
-    content: "";
-    display: block;
-    width: 10px;
-    height: 2px;
-    margin: 6px auto 0;
-    background: #777;
-}
-
-.swf-messenger-window .messenger-avatar-bar {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 31px;
-    height: 49px;
-    padding: 11px 38px 0 27px !important;
-    background: #e4e4e4 !important;
-    display: flex;
-    gap: 7px;
-    overflow: hidden;
-}
-
-.swf-messenger-window .messenger-avatar-tab {
-    position: relative;
-    width: 35px !important;
-    height: 35px !important;
-    min-width: 35px !important;
-    padding: 0 !important;
-    border: 1px solid transparent !important;
-    border-radius: 5px !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    overflow: hidden;
-}
-
-.swf-messenger-window .messenger-avatar-tab.active {
-    border-color: #c4c4c4 !important;
-    background: #e8e8e8 !important;
-    box-shadow: inset 1px 1px 0 #fff !important;
-}
-
-.swf-messenger-window .messenger-avatar-tab .avatar-image {
-    position: absolute !important;
-    top: 2px !important;
-    left: 2px !important;
-    width: 30px !important;
-    height: 30px !important;
-    margin: 0 !important;
-    background-size: 60px auto !important;
-    background-position: -15px -18px !important;
-    transform: none !important;
-}
-
-.swf-messenger-window .messenger-thread-header {
-    position: absolute;
-    left: 6px;
-    right: 6px;
-    top: 80px;
-    height: 40px;
-    padding: 0 !important;
-    border-top: 1px solid #c7c7c7 !important;
-    border-bottom: 1px solid #c7c7c7 !important;
-    background: #e4e4e4 !important;
-}
-
-.swf-messenger-window .messenger-thread-name {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 190px;
-    height: 15px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: #666 !important;
-    font-size: 10px !important;
-    font-weight: 700;
-    line-height: 15px;
-}
-
-.swf-messenger-window .messenger-actions {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 18px;
-    display: grid;
-    grid-template-columns: 21px 30px 74px 20px;
-    align-items: center;
-    justify-content: space-between;
-    column-gap: 0;
-}
-
-.swf-messenger-window .messenger-btn {
-    height: 22px;
-    min-height: 22px;
-    padding: 0 8px;
-    border: 3px solid transparent;
-    border-image-source: var(--habbo-skin-button);
-    border-image-slice: 3 fill;
-    border-image-width: 3px;
-    background: transparent;
-    color: #000;
-    font-size: 10px;
-    font-weight: 700;
-    line-height: 13px;
-}
-
-.swf-messenger-window .messenger-btn.icon-btn { width: 28px !important; min-width: 28px !important; padding: 0; }
-.swf-messenger-window .messenger-btn.icon-btn.follow { width: 21px !important; min-width: 21px !important; }
-.swf-messenger-window .messenger-btn.icon-btn.profile { width: 30px !important; min-width: 30px !important; }
-.swf-messenger-window .messenger-btn.icon-btn { border-width: 2px; border-image-slice: 2 fill; border-image-width: 2px; overflow: visible; }
-.swf-messenger-window .messenger-btn.icon-btn.follow::before,
-.swf-messenger-window .messenger-btn.icon-btn.profile::before { content: ""; display: block; margin: auto; background-repeat: no-repeat; }
-.swf-messenger-window .messenger-btn.icon-btn.follow::before { width: 16px; height: 15px; background-image: url("@/assets/images/friends/swf/follow_friend.png"); background-size: 16px 15px; }
-.swf-messenger-window .messenger-btn.icon-btn.profile::before { width: 16px; height: 16px; background-image: url("@/assets/images/friends/swf/friendlist_eye.png"); background-size: 16px 16px; }
-.swf-messenger-window .messenger-btn.danger { width: 74px; min-width: 74px; padding: 0 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-.swf-messenger-window .messenger-btn.close-btn {
-    width: 20px !important;
-    min-width: 20px !important;
-    padding: 0;
-    border-radius: 50%;
-}
-
-.swf-messenger-window .chat-messages {
-    position: absolute;
-    left: 6px;
-    right: 6px;
-    top: 122px;
-    bottom: 34px;
-    padding: 4px 1px 4px 0 !important;
-    overflow-y: auto !important;
-    background: #e4e4e4 !important;
-    border: 0 !important;
-}
-
-.swf-messenger-window .messenger-message-row {
-    min-height: 62px;
-    margin: 0 0 3px !important;
-    gap: 4px !important;
-    display: flex;
-}
-
-.swf-messenger-window .message-avatar {
-    width: 48px;
-    min-width: 48px;
-    height: 62px;
-    overflow: hidden;
-}
-
-.swf-messenger-window .message-avatar .avatar-image {
-    position: absolute !important;
-    inset: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    margin: 0 !important;
-    background-size: 40px auto !important;
-    background-position: -20px -24px !important;
-    transform: none !important;
-}
-
-.swf-messenger-window .chat-messages {
-    padding-right: 1px !important;
-}
-.swf-messenger-window .messenger-message-body { max-width: 220px; min-width: 0; }
-
-.swf-messenger-window .messenger-message-name {
-    height: 16px;
-    color: #666;
-    font-size: 10px;
-    font-weight: 700;
-}
-
-.swf-messenger-window .messenger-message-bubble {
-    position: relative;
-    padding: 8px 10px !important;
-    border: 0 !important;
-    border-radius: 5px !important;
-    background: #fff !important;
-    color: #000 !important;
-    font-size: 11px !important;
-    line-height: 13px;
-}
-
-.swf-messenger-window .messenger-message-row:not(.own) .messenger-message-bubble::after {
-    content: "";
-    position: absolute;
-    left: -6px;
-    top: 10px;
-    border-top: 5px solid transparent;
-    border-bottom: 5px solid transparent;
-    border-right: 7px solid #fff;
-}
-
-.swf-messenger-window .messenger-message-row.own .messenger-message-bubble::after {
-    content: "";
-    position: absolute;
-    right: -6px;
-    top: 10px;
-    border-top: 5px solid transparent;
-    border-bottom: 5px solid transparent;
-    border-left: 7px solid #fff;
-}
-
-.swf-messenger-window .messenger-message-time {
-    margin-top: 2px;
-    color: #666;
-    font-size: 10px;
-}
-
-.swf-messenger-window .messenger-input-row {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 34px;
-    padding: 4px 5px !important;
-    border-top: 1px solid #b9b9b9;
-    background: #e4e4e4 !important;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.swf-messenger-window .messenger-input-row input {
-    width: 184px;
-    height: 24px;
-    padding: 4px 6px !important;
-    border: 1px solid #b8b8b8 !important;
-    border-radius: 5px !important;
-    background: #fff !important;
-    color: #8a8a8a !important;
-    font-size: 11px !important;
-}
-
-.swf-messenger-window .messenger-btn.send { width: 55px; min-width: 55px; height: 24px; padding: 0; }
-.swf-messenger-window .messenger-btn.habbicon { width: 22px; min-width: 22px; height: 22px; padding: 0; }
-
-.swf-messenger-window .messenger-btn.habbicon::before {
-    content: "";
-    display: block;
-    width: 13px;
-    height: 13px;
-    margin: 2px auto 0;
-    background: url("@/assets/images/friends/swf/friendlist_messenger.png") center center / auto no-repeat;
-}
 /* END SWF_FRIENDS_EXACT_DOM */
 
 /* The friend list and messenger deliberately avoid generic Octane cards. The
@@ -1804,31 +1513,6 @@ button.swf-friends-section-header {
     height: 11px;
     overflow: hidden;
 }
-
-.swf-messenger-habbicon-picker {
-    position: absolute;
-    right: -2px;
-    bottom: 34px;
-    z-index: 50;
-    width: 258px;
-    max-height: 304px;
-    padding: 5px;
-    border: 1px solid #666;
-    border-radius: 6px;
-    background: #e4e4e4;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, .5);
-}
-.swf-messenger-habbicon-controls { display: flex; height: 24px; gap: 8px; }
-.swf-messenger-habbicon-controls input { flex: 1; min-width: 0; padding: 2px 5px; border: 1px solid #777; border-radius: 5px; background: #fff; color: #555; font-size: 11px; }
-.swf-messenger-habbicon-controls button { width: 91px; padding: 0; border: 1px solid #777; border-radius: 4px; background: linear-gradient(#f7f7f7, #d8d8d8); color: #333; font-size: 11px; font-weight: 700; line-height: 18px; }
-.swf-messenger-habbicon-scroll { max-height: 252px; margin-top: 4px; padding-right: 2px; overflow-y: auto; }
-.swf-messenger-habbicon-scroll section { margin: 0 0 5px; }
-.swf-messenger-habbicon-scroll strong { display: block; height: 16px; color: #111; font-size: 10px; font-weight: 400; line-height: 16px; }
-.swf-messenger-habbicon-grid { display: grid; grid-template-columns: repeat(5, 46px); gap: 2px; }
-.swf-messenger-habbicon-grid button { display: flex; width: 46px; height: 46px; min-height: 46px; align-items: center; justify-content: center; padding: 0; border: 1px solid #aaa; border-radius: 4px; background: #f5f5f5; box-shadow: inset 0 1px 0 #fff; }
-.swf-messenger-habbicon-grid button:hover { border-color: #62b8d5; background: #e0f2f8; }
-.swf-messenger-habbicon-grid button span { display: block; max-width: 42px; max-height: 42px; background-repeat: no-repeat; }
-.swf-messenger-habbicon-message { display: block; width: 42px; height: 42px; background-repeat: no-repeat; background-position: 0 0; }
 
 .swf-friends-window .friends-list-profile > * {
     width: 15px !important;
@@ -1973,361 +1657,9 @@ button.swf-friends-section-header {
     font-weight: 700;
 }
 
-.swf-messenger-window .messenger-message-row {
-    align-items: flex-start;
-    width: 100%;
-}
-.swf-messenger-window .messenger-message-row.own { justify-content: flex-end; }
-.swf-messenger-window .messenger-message-row.own .messenger-message-body { align-items: flex-end; }
-.swf-messenger-window .message-avatar {
-    position: relative;
-    flex: 0 0 48px;
-}
-.swf-messenger-window .messenger-message-body {
-    display: flex;
-    flex: 0 1 205px;
-    flex-direction: column;
-    min-width: 0;
-}
-.swf-messenger-window .messenger-message-bubble {
-    max-width: 100%;
-    overflow-wrap: anywhere;
-    white-space: pre-wrap;
-}
-.swf-messenger-window .messenger-message-time { line-height: 12px; }
-.swf-messenger-window .swf-messenger-notification {
-    margin: 3px 0;
-    min-height: 46px;
-    display: flex;
-    align-items: flex-start;
-    gap: 9px;
-    padding: 7px 8px;
-    border: 1px solid #65aebe;
-    border-radius: 4px;
-    background: #d4f1f5;
-    color: #333;
-    font-size: 10px;
-    line-height: 13px;
-    position: relative;
-}
-.swf-messenger-window .swf-messenger-notification img { display: block; width: auto; height: auto; min-width: 25px; margin-top: 1px; image-rendering: var(--octane-pixel-art, pixelated); }
-.swf-messenger-window .swf-messenger-status-notification {
-    margin: 4px 8px;
-    color: #686868;
-    font-size: 10px;
-    line-height: 13px;
-    text-align: center;
-}
-
 /* Illumina messenger header: fixed SWF pixel coordinates. */
-.swf-messenger-window .swf-messenger-open-title { top: 12px; }
-.swf-messenger-window .messenger-avatar-bar { top: 40px; left: 16px; right: 17px; height: 35px; padding: 0 !important; }
-.swf-messenger-window .messenger-actions { top: 17px; }
 
 /* Assets and nine-slice regions match the Illumina-light SWF frame. */
-.swf-messenger-window {
-    border: 4px 1px 7px solid transparent;
-    border-image-source: url("@/assets/images/friends/swf/illumina_light_border_frame.png");
-    border-image-slice: 4 1 7 fill;
-    border-image-width: 4px 1px 7px;
-    border-image-repeat: stretch;
-    border-radius: 0;
-}
-.swf-messenger-window .swf-messenger-minimize {
-    border: 0;
-    border-image-source: none;
-    background: url("@/assets/images/friends/swf/illumina_light_button_frame_minimize.png") 0 0 / auto 20px no-repeat;
-}
-.swf-messenger-window .swf-messenger-minimize:hover { background-position: -52px 0; }
-.swf-messenger-window .swf-messenger-minimize:active { background-position: -26px 0; }
-.swf-messenger-window .swf-messenger-minimize::before { display: none; }
-.swf-messenger-window .messenger-btn.close-btn {
-    border: 0;
-    border-image-source: none;
-    border-radius: 0;
-    background: url("@/assets/images/friends/swf/illumina_light_button_frame_close.png") 0 0 / auto 20px no-repeat;
-    color: transparent;
-}
-.swf-messenger-window .messenger-btn.close-btn:hover { background-position: -52px 0; }
-.swf-messenger-window .messenger-btn.close-btn:active { background-position: -26px 0; }
-.swf-messenger-window .chat-messages { top: 124px; }
-
-.swf-messenger-window {
-    background: #e4e4e4;
-    box-shadow: none;
-}
-
-.swf-messenger-window .swf-messenger-drag {
-    height: 39px;
-}
-
-.swf-messenger-window .swf-messenger-open-title {
-    left: 9px;
-    top: 11px;
-    color: #000;
-    font-size: 10px;
-    line-height: 14px;
-}
-
-.swf-messenger-window .swf-messenger-minimize {
-    right: 7px;
-    top: 8px;
-    width: 26px;
-    height: 20px;
-}
-
-.swf-messenger-window .messenger-avatar-bar {
-    top: 36px;
-    left: 16px;
-    right: 17px;
-    height: 35px;
-    gap: 4px;
-    background: transparent !important;
-}
-
-.swf-messenger-window .messenger-avatar-tab,
-.swf-messenger-window .messenger-avatar-tab.active {
-    width: 35px !important;
-    height: 35px !important;
-    min-width: 35px !important;
-    border: 1px solid #c5c5c5 !important;
-    border-radius: 4px !important;
-    background: #ebebeb !important;
-    box-shadow: inset 1px 1px 0 #fff !important;
-}
-
-.swf-messenger-window .messenger-avatar-tab .avatar-image {
-    top: -14px !important;
-    left: -3px !important;
-    width: 45px !important;
-    height: 72px !important;
-    margin: 0 !important;
-    background-size: auto !important;
-    background-position: center -8px !important;
-}
-
-.swf-messenger-window .messenger-thread-header {
-    left: 7px;
-    right: 9px;
-    top: 79px;
-    height: 40px;
-    border-top-color: #b8b8b8 !important;
-    border-bottom-color: #b8b8b8 !important;
-    background: transparent !important;
-}
-
-.swf-messenger-window .messenger-thread-name {
-    color: #4a4a4a !important;
-}
-
-.swf-messenger-window .messenger-actions {
-    top: 18px;
-    display: flex;
-    justify-content: flex-start;
-    gap: 4px;
-}
-
-.swf-messenger-window .messenger-btn:not(.close-btn) {
-    border: 1px solid #8d8d8d;
-    border-radius: 4px;
-    background: linear-gradient(#fff, #d7d7d7);
-    box-shadow: inset 0 1px 0 #fff;
-}
-
-.swf-messenger-window .messenger-btn:not(.close-btn):hover {
-    background: linear-gradient(#fff, #e7e7e7);
-}
-
-.swf-messenger-window .messenger-btn:not(.close-btn):active {
-    background: linear-gradient(#d1d1d1, #f2f2f2);
-}
-
-.swf-messenger-window .messenger-btn.icon-btn.follow::before {
-    width: 9px;
-    height: 10px;
-    background-image: url("@/assets/images/friends/swf/messenger_visit_icon.png");
-    background-size: 9px 10px;
-}
-
-.swf-messenger-window .messenger-btn.icon-btn.profile::before {
-    width: 16px;
-    height: 12px;
-    background-image: url("@/assets/images/friends/swf/messenger_profile_icon.png");
-    background-size: 16px 12px;
-}
-
-.swf-messenger-window .messenger-btn.close-btn {
-    margin-left: auto;
-}
-
-.swf-messenger-window .message-avatar {
-    position: relative;
-    flex: 0 0 45px;
-    width: 45px;
-    min-width: 45px;
-    height: 72px;
-}
-
-.swf-messenger-window .message-avatar .avatar-image {
-    position: absolute !important;
-    top: -14px !important;
-    left: 0 !important;
-    width: 45px !important;
-    height: 72px !important;
-    margin: 0 !important;
-    background-size: auto !important;
-    background-position: center -8px !important;
-    transform: none !important;
-}
-
-.swf-messenger-window .chat-messages {
-    left: 7px;
-    right: 9px;
-    top: 124px;
-    bottom: 39px;
-    padding-right: 4px !important;
-    background: transparent !important;
-}
-
-.swf-messenger-window .messenger-input-row {
-    left: 7px;
-    right: 9px;
-    bottom: 7px;
-    height: 30px;
-    padding: 0 !important;
-    border: 0;
-    background: transparent !important;
-    gap: 3px;
-}
-
-.swf-messenger-window .messenger-input-row input {
-    height: 29px;
-    min-height: 29px;
-    padding: 4px 7px !important;
-    border: 1px solid #b8b8b8 !important;
-    border-radius: 5px !important;
-    background: #fff !important;
-}
-
-.swf-messenger-window .messenger-btn.send {
-    height: 22px;
-    min-height: 22px;
-}
-
-.swf-messenger-window .messenger-btn.habbicon {
-    width: 30px;
-    min-width: 30px;
-    height: 28px;
-    min-height: 28px;
-}
-
-.swf-messenger-window {
-    border: 1px solid #777771;
-    border-image-source: none;
-    border-radius: 5px;
-    background: #e4e4e4;
-    box-shadow: inset 0 0 0 1px #fff, 0 2px 5px rgba(0, 0, 0, .42);
-}
-
-.swf-messenger-window .messenger-avatar-tab,
-.swf-messenger-window .messenger-avatar-tab.active {
-    border: 1px solid #c5c5c5 !important;
-    border-image-source: none !important;
-    border-radius: 4px !important;
-    background: #ebebeb !important;
-    box-shadow: inset 1px 1px 0 #fff !important;
-}
-
-.swf-messenger-window .messenger-avatar-tab .avatar-image.compact-head {
-    top: 0 !important;
-    left: 0 !important;
-    width: 35px !important;
-    height: 35px !important;
-    background-size: 35px 35px !important;
-    background-position: center !important;
-    transform: none !important;
-    image-rendering: auto !important;
-}
-
-.swf-messenger-window .messenger-thread-header {
-    top: 80px;
-    left: 8px;
-    right: 9px;
-    height: 31px;
-    border-top: 0 !important;
-    border-bottom: 0 !important;
-}
-
-.swf-messenger-window .messenger-thread-name {
-    top: 0;
-    display: flex;
-    align-items: flex-start;
-    width: 100%;
-    height: 14px;
-    line-height: 14px;
-}
-
-.swf-messenger-window .messenger-thread-name::after {
-    content: "";
-    flex: 1;
-    height: 1px;
-    margin: 7px 0 0 5px;
-    background: #b8b8b8;
-}
-
-.swf-messenger-window .messenger-actions {
-    top: 13px;
-    gap: 7px;
-}
-
-.swf-messenger-window .chat-messages {
-    top: 119px;
-}
-
-.swf-messenger-window .message-avatar {
-    flex-basis: 40px;
-    width: 40px;
-    min-width: 40px;
-    height: 40px;
-}
-
-.swf-messenger-window .message-avatar .avatar-image {
-    inset: 0 !important;
-    width: 40px !important;
-    height: 40px !important;
-    background-size: 82px auto !important;
-    background-position: 51% 40% !important;
-}
-
-.swf-messenger-window .messenger-thread-header,
-.swf-messenger-window .chat-messages,
-.swf-messenger-window .messenger-input-row {
-    background: #e4e4e4 !important;
-}
-
-.swf-messenger-window .message-avatar {
-    flex: 0 0 45px;
-    width: 45px;
-    min-width: 45px;
-    height: 62px;
-    overflow: hidden;
-}
-
-.swf-messenger-window .message-avatar .avatar-image {
-    inset: 0 !important;
-    width: auto !important;
-    height: auto !important;
-    background-size: 130px auto !important;
-    background-position: 51% 40% !important;
-    transform: none !important;
-}
-
-.swf-messenger-window .messenger-btn:not(.close-btn),
-.swf-messenger-window .messenger-input-row input {
-    border-image-source: none !important;
-}
-
-
 
 /* Friend bar: original SWF tab measurements and attached “find friends” state. */
 .friend-bar .friend-bar-find-friends {
@@ -2924,46 +2256,6 @@ button.swf-friends-section-header {
     background-position: 0 -48px;
 }
 
-.swf-messenger-window .message-avatar {
-    flex: 0 0 40px;
-    width: 40px;
-    min-width: 40px;
-    height: 40px;
-    overflow: hidden;
-}
-
-.swf-messenger-window .message-avatar .avatar-image.compact-head {
-    inset: 0 !important;
-    width: 40px !important;
-    height: 40px !important;
-    background-size: 40px 40px !important;
-    background-position: center !important;
-    transform: none !important;
-    image-rendering: auto !important;
-}
-
-.swf-messenger-window .chat-messages {
-    padding-right: 1px !important;
-}
-
-.swf-messenger-window .messenger-btn.habbicon::before {
-    display: none;
-}
-
-.swf-messenger-window .messenger-btn.habbicon img {
-    display: block;
-    width: auto;
-    height: auto;
-    max-width: 24px;
-    max-height: 24px;
-    margin: auto;
-}
-
-.swf-messenger-window .messenger-btn.send {
-    height: 28px !important;
-    min-height: 28px !important;
-}
-
 .swf-friends-window .swf-friends-titlebar {
     background-color: #418db0;
     background-image: url("@/assets/images/habbo-skin/2249_habbo_skin_blue_png$87fbbf84559e7bad0222a9c697b1104d-1406111769.png");
@@ -3180,14 +2472,6 @@ button.swf-friends-section-header {
     z-index: 30;
 }
 
-.swf-messenger-window .swf-messenger-notification span {
-    min-width: 0;
-    overflow-wrap: anywhere;
-    white-space: normal;
-}
-
-.swf-messenger-habbicon-picker,
-.swf-messenger-habbicon-scroll,
 .habbicon-selector-sections {
     overflow-x: hidden !important;
 }
@@ -3247,4 +2531,76 @@ button.swf-friends-section-header {
 .swf-friends-window .swf-friends-close::before,
 .swf-friends-window .swf-friends-close::after {
     display: none;
+}
+
+/*
+ * AIR friend bar tiles: skin border style 6 (habbo_skin_ubuntu, 80,10 20x20) tinted by the tab colour. The skin is a
+ * 1px black outline (2px at the bottom), a 2px white ring and a #bab8b4 fill, so the ring takes the tab colour and the
+ * fill takes the colour multiplied by #bab8b4. Colours from the tabs: friend (FriendEntityTab) 0x9dbf5a / 0xd3f794
+ * when exposed, find friends (add_friends_tab) 0x7fc8de / 0x91e1f9, friend requests (FriendRequestsTab) 0xfac919 /
+ * 0xffd966.
+ */
+.friend-bar {
+    --air-tab-friend-ring: #9dbf5a;
+    --air-tab-friend-fill: #72893f;
+    --air-tab-friend-ring-exposed: #d3f794;
+    --air-tab-friend-fill-exposed: #99b268;
+    --air-tab-find-ring: #7fc8de;
+    --air-tab-find-fill: #5c909c;
+    --air-tab-find-ring-exposed: #91e1f9;
+    --air-tab-find-fill-exposed: #6aa2b0;
+    --air-tab-request-ring: #fac919;
+    --air-tab-request-fill: #b69112;
+    --air-tab-request-ring-exposed: #ffd966;
+    --air-tab-request-fill-exposed: #ba9d48;
+}
+
+.friend-bar .friend-bar-find-friends .friend-bar-item.friend-bar-search.find-friends,
+.friend-bar .friend-bar-friend:not(.is-selected) .friend-bar-item.friend-bar-tab.find-friends-active,
+.friend-bar .friend-bar-item.friend-bar-request.find-friends-active.find-friends-active {
+    --air-tab-ring: var(--air-tab-friend-ring);
+    --air-tab-fill: var(--air-tab-friend-fill);
+    --air-tab-ring-exposed: var(--air-tab-friend-ring-exposed);
+    --air-tab-fill-exposed: var(--air-tab-friend-fill-exposed);
+    border: 1px solid #000;
+    border-bottom-width: 2px;
+    border-image-source: none;
+    border-radius: 4px;
+    background: var(--air-tab-fill);
+    box-shadow: inset 0 0 0 2px var(--air-tab-ring);
+    text-shadow: none;
+}
+
+.friend-bar .friend-bar-find-friends .friend-bar-item.friend-bar-search.find-friends {
+    --air-tab-ring: var(--air-tab-find-ring);
+    --air-tab-fill: var(--air-tab-find-fill);
+    --air-tab-ring-exposed: var(--air-tab-find-ring-exposed);
+    --air-tab-fill-exposed: var(--air-tab-find-fill-exposed);
+}
+
+.friend-bar .friend-bar-item.friend-bar-request.find-friends-active.find-friends-active {
+    --air-tab-ring: var(--air-tab-request-ring);
+    --air-tab-fill: var(--air-tab-request-fill);
+    --air-tab-ring-exposed: var(--air-tab-request-ring-exposed);
+    --air-tab-fill-exposed: var(--air-tab-request-fill-exposed);
+}
+
+.friend-bar .friend-bar-find-friends .friend-bar-item.friend-bar-search.find-friends:hover,
+.friend-bar .friend-bar-find-friends.is-selected .friend-bar-item.friend-bar-search.find-friends,
+.friend-bar .friend-bar-friend:not(.is-selected) .friend-bar-item.friend-bar-tab.find-friends-active:hover,
+.friend-bar .friend-bar-item.friend-bar-request.find-friends-active.find-friends-active:hover {
+    border-image-source: none;
+    background: var(--air-tab-fill-exposed);
+    box-shadow: inset 0 0 0 2px var(--air-tab-ring-exposed);
+}
+
+/* add_friends_tab title: 77 x 30, so a long caption wraps onto a second line instead of being cut off. */
+.friend-bar .friend-bar-find-friends .friend-bar-item.friend-bar-search.find-friends .friend-bar-text {
+    display: -webkit-box;
+    overflow: hidden;
+    line-height: 13px;
+    white-space: normal;
+    text-align: left;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
 }

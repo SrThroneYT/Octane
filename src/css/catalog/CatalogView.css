@@ -5137,44 +5137,59 @@
     max-height: 46px;
 }
 
-/* info_recycler: border 10, 10 (340 x 440); its elements are placed inside the border. */
+/* info_recycler (layout_info_recycler_xml), stretched over the catalog page: one box filled with AIR's 0xfbc362 (border
+   style 2), 10 px in from the page, with the Ecotron box image and the title (u_headline_medium) side by side and the
+   explanation under them, all in white as in AIR. */
+.octane-catalog-air-info.is-recycler {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+}
+
 .octane-catalog-air-info.is-recycler .octane-catalog-air-info__border {
-    top: 10px;
-    left: 10px;
-    width: 340px;
-    height: 440px;
+    inset: 10px;
+    display: grid;
+    grid-template-columns: 57px minmax(0, 1fr);
+    grid-template-rows: 57px minmax(0, 1fr);
+    gap: 5px 6px;
+    padding: 10px 15px 10px 14px;
+    border: 1px solid #d9a443;
+    border-image-source: none;
+    border-radius: 6px;
+    background: #fbc362;
+    color: #fff;
 }
 
 .octane-catalog-air-info__recycler-teaser {
-    position: absolute;
-    top: 4px;
-    left: 14px;
+    align-self: center;
+    justify-self: center;
     max-width: 57px;
     max-height: 57px;
 }
 
 .octane-catalog-air-info__recycler-title {
-    position: absolute;
-    top: 20px;
-    left: 77px;
-    width: 242px;
-    height: 21px;
+    grid-column: 2;
+    align-self: center;
     overflow: hidden;
-    font-size: 14px;
+    font-family: 'Ubuntu Condensed', Ubuntu, Arial, sans-serif;
+    font-size: 16px;
     font-weight: 700;
-    line-height: 18px;
+    line-height: 19px;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
 }
 
 .octane-catalog-air-info__recycler-text {
-    position: absolute;
-    top: 66px;
-    left: 9px;
-    width: 307px;
-    max-height: 360px;
+    grid-column: 1 / -1;
+    min-height: 0;
     overflow-x: hidden;
     overflow-y: auto;
     white-space: pre-line;
     overflow-wrap: anywhere;
+}
+
+.octane-catalog-air-info.is-recycler a {
+    color: inherit;
 }
 
 /* monkey: the teaser region 10, 20 (339 x 344) and the store region 10, 375 (339 x 80) are links. */

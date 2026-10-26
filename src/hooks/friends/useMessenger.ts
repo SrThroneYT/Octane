@@ -59,6 +59,8 @@ const useMessengerState = () => {
     const pendingHabbicons = useRef(new Map<number, { thread: MessengerThread; id: number; timer: ReturnType<typeof setTimeout> }>());
     const historyMessageIdsRef = useRef<Map<number, Set<number>>>(new Map());
     const hiddenThreadIdsRef = useRef(hiddenThreadIds);
+    const moderationInfoShownRef = useRef(false);
+    const windowOpenRef = useRef(false);
 
     const messageThreadsRef = useRef(messageThreads);
     messageThreadsRef.current = messageThreads;
@@ -80,7 +82,16 @@ const useMessengerState = () => {
 
             thread = new MessengerThread(friend);
 
-            thread.addMessage(null, LocalizeText('messenger.moderationinfo'), 0, null, MessengerThreadChat.SECURITY_NOTIFICATION);
+            // AIR MainView.startConversation: the moderation notice once a session, in the first conversation, and
+            // the stored-messages notice when the friend is offline.
+            if (!moderationInfoShownRef.current) {
+                moderationInfoShownRef.current = true;
+                thread.addMessage(null, LocalizeText('messenger.moderationinfo'), 0, null, MessengerThreadChat.SECURITY_NOTIFICATION);
+            }
+
+            if (!friend.online && friend.id > 0) {
+                thread.addMessage(null, LocalizeText('messenger.notification.persisted_messages'), 0, null, MessengerThreadChat.SECURITY_NOTIFICATION);
+            }
 
             thread.setRead();
 
@@ -101,6 +112,32 @@ const useMessengerState = () => {
         }
 
         return thread;
+    };
+
+    /** The window tells the store whether it is open: AIR plays the received sound only while it is closed. */
+    /**
+     * AIR MainView: scrolling to the top of a conversation asks the server for the next older page. Returns whether a
+     * page was asked for (not while one is loading, nor once the server said there is no more).
+     */
+    const loadOlderHistory = (thread: MessengerThread): boolean => {
+        const participantId = thread?.participant?.id ?? 0;
+
+        if (participantId <= 0) return false;
+
+        const conversation = persistentState.conversationIds
+            .map((conversationId) => persistentState.conversationsById[conversationId])
+            .find((candidate) => candidate?.type === 0 && candidate.participantId === participantId);
+        const history = conversation?.id > 0 ? persistentState.historyByConversation[conversation.id] : null;
+
+        if (!history?.loaded || history.loading || history.hasMore === false) return false;
+
+        persistentHistory.loadOlder(conversation.id);
+
+        return true;
+    };
+
+    const setWindowOpen = (open: boolean) => {
+        windowOpenRef.current = open;
     };
 
     const closeThread = (threadId: number) => {
@@ -145,7 +182,10 @@ const useMessengerState = () => {
 
             if (ownMessage && thread.groups.length === 1) PlaySound(SoundNames.MESSENGER_NEW_THREAD);
 
-            const isNotification = messageType === MessengerThreadChat.ROOM_INVITE || messageType === MessengerThreadChat.STATUS_NOTIFICATION;
+            const isNotification =
+                messageType === MessengerThreadChat.ROOM_INVITE ||
+                messageType === MessengerThreadChat.STATUS_NOTIFICATION ||
+                messageType === MessengerThreadChat.SECURITY_NOTIFICATION;
             const addedChat = thread.addMessage(isNotification ? null : senderId, messageText, secondsSinceSent, extraData, messageType);
 
             addedChatId = addedChat?.id || -1;
@@ -153,11 +193,12 @@ const useMessengerState = () => {
             if (translation && messageType === MessengerThreadChat.CHAT)
                 addedChat?.setTranslation(translation.originalText, translation.translatedText, translation.detectedLanguage, translation.targetLanguage);
 
-            if (activeThreadId === thread.threadId) thread.setRead();
+            if (ownMessage || activeThreadId === thread.threadId) thread.setRead();
 
             newValue[index] = thread;
 
-            if (!ownMessage && messageType !== MessengerThreadChat.STATUS_NOTIFICATION && thread.unread) PlaySound(SoundNames.MESSENGER_MESSAGE_RECEIVED);
+            // AIR HabboMessenger.onNewConsoleMessage / onRoomInvite: the received sound only while the window is closed.
+            if (!ownMessage && MessengerThread.countsAsUnread(messageType) && !windowOpenRef.current) PlaySound(SoundNames.MESSENGER_MESSAGE_RECEIVED);
 
             return newValue;
         });
@@ -280,6 +321,8 @@ const useMessengerState = () => {
         // Newer codes (11-14) may be missing from older hotel texts: fall back to the generic failure.
         const errorText = localizeWithFallback(getInstantMessageErrorTextKey(parser.errorCode), LocalizeText('messenger.error.offline_failed'));
         const ownUserId = GetSessionDataManager().userId;
+        // AIR MainView.onInstantMessageError: "error text: the refused message" as a warning.
+        const noticeText = parser.message?.length ? `${errorText}: ${parser.message}` : errorText;
 
         setMessageThreads((prevValue) => {
             const index = prevValue.findIndex((thread) => thread.participant && thread.participant.id === parser.userId);
@@ -290,7 +333,7 @@ const useMessengerState = () => {
             const thread = CloneObject(newValue[index]);
 
             thread.markOwnMessageFailed(ownUserId, parser.message, errorText);
-            thread.addMessage(null, errorText, 0, null, MessengerThreadChat.STATUS_NOTIFICATION);
+            thread.addMessage(null, noticeText, 0, null, MessengerThreadChat.SECURITY_NOTIFICATION);
 
             if (activeThreadId === thread.threadId) thread.setRead();
 
@@ -304,6 +347,15 @@ const useMessengerState = () => {
         const parser = event.getParser();
 
         if (!parser.updatedFriends.length) return;
+
+        // AIR MainView.setOnlineStatus: a closed conversation whose friend comes online or goes offline comes back.
+        const reopenedThreadIds = messageThreadsRef.current
+            .filter((thread) => {
+                const updated = parser.updatedFriends.find((friend) => friend.id === thread.participant?.id);
+
+                return !!updated && updated.online !== thread.participant.online && hiddenThreadIdsRef.current.indexOf(thread.threadId) >= 0;
+            })
+            .map((thread) => thread.threadId);
 
         setMessageThreads((prevValue) => {
             const newValue = [...prevValue];
@@ -319,7 +371,7 @@ const useMessengerState = () => {
 
                 thread.participant.online = updatedFriend.online;
 
-                if (wasOnline !== updatedFriend.online && hiddenThreadIdsRef.current.indexOf(thread.threadId) === -1) {
+                if (wasOnline !== updatedFriend.online) {
                     thread.addMessage(
                         null,
                         LocalizeText(updatedFriend.online ? 'messenger.notification.online' : 'messenger.notification.offline'),
@@ -337,6 +389,8 @@ const useMessengerState = () => {
 
             return changed ? newValue : prevValue;
         });
+
+        if (reopenedThreadIds.length) setHiddenThreadIds((prevValue) => prevValue.filter((threadId) => reopenedThreadIds.indexOf(threadId) === -1));
     });
 
     useEffect(() => {
@@ -376,11 +430,16 @@ const useMessengerState = () => {
                 if (!historyMessages.length) continue;
 
                 const thread = CloneObject(currentThread);
-                for (const message of historyMessages) {
-                    thread.addMessage(message.senderId, message.message, Math.max(0, now - message.createdAt), message.metadata || null, message.type);
-                    knownMessageIds.add(message.id);
-                }
-                thread.setRead();
+                thread.addHistoryMessages(
+                    historyMessages.map((message) => ({
+                        senderId: message.senderId,
+                        message: message.message,
+                        secondsSinceSent: Math.max(0, now - message.createdAt),
+                        extraData: message.metadata || null,
+                        type: message.type
+                    }))
+                );
+                for (const message of historyMessages) knownMessageIds.add(message.id);
                 historyMessageIdsRef.current.set(conversation.id, knownMessageIds);
                 nextThreads[index] = thread;
                 changed = true;
@@ -496,6 +555,8 @@ const useMessengerState = () => {
         visibleThreads,
         getMessageThread,
         setActiveThreadId,
+        setWindowOpen,
+        loadOlderHistory,
         closeThread,
         sendMessage,
         sendHabbiconMessage,

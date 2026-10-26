@@ -29,7 +29,8 @@ export class MessengerThreadChat {
         this._message = message;
         this._secondsSinceSent = secondsSinceSent;
         this._extraData = extraData;
-        this._date = new Date();
+        // When it was sent: a message from the history or the offline store comes with its age.
+        this._date = new Date(Date.now() - Math.max(0, secondsSinceSent || 0) * 1000);
         this._showTranslation = false;
         this._originalMessage = message;
         this._translatedMessage = '';

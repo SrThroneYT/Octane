@@ -9,11 +9,12 @@ interface FriendsRemoveConfirmationViewProps {
     onCloseClick: () => void;
 }
 
+/**
+ * AIR friend_remove_confirm: a 160 x 200 frame with the word-wrapped `friendlist.removefriendconfirm.userlist` text in a
+ * bordered box, the thick OK button on the left and Cancel on the right, both 60 x 21.
+ */
 export const FriendsRemoveConfirmationView: FC<FriendsRemoveConfirmationViewProps> = (props) => {
     const { selectedFriendsIds = null, removeFriendsText = null, removeSelectedFriends = null, onCloseClick = null } = props;
-    const separatorIndex = removeFriendsText.indexOf(':');
-    const removeFriendsLeadText = separatorIndex >= 0 ? removeFriendsText.substring(0, separatorIndex + 1) : removeFriendsText;
-    const removeFriendsNamesText = separatorIndex >= 0 ? removeFriendsText.substring(separatorIndex + 1).trimStart() : '';
 
     return (
         <OctaneCardView
@@ -23,15 +24,12 @@ export const FriendsRemoveConfirmationView: FC<FriendsRemoveConfirmationViewProp
         >
             <OctaneCardHeaderView headerText={LocalizeText('friendlist.removefriendconfirm.title')} onCloseClick={onCloseClick} />
             <OctaneCardContentView className="octane-friends-remove-confirmation-content text-black">
-                <div className="octane-friends-remove-confirmation-text">
-                    <div>{removeFriendsLeadText}</div>
-                    {removeFriendsNamesText.length > 0 && <div className="octane-friends-remove-confirmation-names">{removeFriendsNamesText}</div>}
-                </div>
+                <div className="octane-friends-remove-confirmation-text">{removeFriendsText}</div>
                 <div className="octane-friends-remove-confirmation-actions">
-                    <Button fullWidth disabled={selectedFriendsIds.length === 0} variant="danger" onClick={removeSelectedFriends}>
+                    <Button className="octane-friends-remove-confirmation-ok" disabled={selectedFriendsIds.length === 0} onClick={removeSelectedFriends}>
                         {LocalizeText('generic.ok')}
                     </Button>
-                    <Button fullWidth onClick={onCloseClick}>
+                    <Button variant="secondary" onClick={onCloseClick}>
                         {LocalizeText('generic.cancel')}
                     </Button>
                 </div>

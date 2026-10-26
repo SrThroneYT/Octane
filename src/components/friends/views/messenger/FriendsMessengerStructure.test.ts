@@ -8,9 +8,9 @@ describe('Messenger component structure', () => {
     it('owns the complete fixed-window layout without origin prefixes', () => {
         expect(css).not.toMatch(/\b(?:swf|air)-/);
         expect(css).toMatch(/\.messenger-window\s*\{[^}]*width:\s*282px;[^}]*height:\s*385px;[^}]*min-height:\s*275px;/s);
-        expect(css).toMatch(/\.messenger-window \.messenger-avatar-navigation\s*\{[^}]*height:\s*35px;/s);
-        expect(css).toMatch(/\.messenger-window \.messenger-thread-header\s*\{[^}]*top:\s*80px;/s);
-        expect(css).toMatch(/\.messenger-window \.chat-messages\s*\{[^}]*top:\s*122px;[^}]*bottom:\s*49px;[^}]*overflow-y:\s*auto;/s);
+        expect(css).toMatch(/\.messenger-window \.messenger-avatar-navigation\s*\{[^}]*top:\s*40px;[^}]*height:\s*35px;/s);
+        expect(css).toMatch(/\.messenger-window \.messenger-thread-header\s*\{[^}]*top:\s*79px;/s);
+        expect(css).toMatch(/\.messenger-window \.chat-messages\s*\{[^}]*top:\s*124px;[^}]*bottom:\s*49px;[^}]*overflow-y:\s*auto;/s);
         expect(css).toMatch(/\.messenger-window \.messenger-input-row\s*\{[^}]*height:\s*30px;/s);
         expect(css).toMatch(/\.messenger-window \.messenger-minimize,[\s\S]*?width:\s*20px;[\s\S]*?height:\s*20px;/);
         expect(css).toMatch(/\.messenger-window \.messenger-minimize:hover,[^}]*background-position:\s*-52px 0;/s);

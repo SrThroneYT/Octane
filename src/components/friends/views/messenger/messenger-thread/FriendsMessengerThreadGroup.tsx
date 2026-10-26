@@ -10,6 +10,7 @@ import {
     MessengerThreadChatGroup,
     useHabbiconCatalog
 } from '../../../../../api';
+import MessengerCautionIcon from '../../../../../assets/images/friends/messenger_caution.png';
 import MessengerNotificationIcon from '../../../../../assets/images/friends/messenger_notification_icon.png';
 import { LayoutAvatarImageView, LayoutHabbiconImageView } from '../../../../../common';
 import { useFriends } from '../../../../../hooks';
@@ -49,6 +50,12 @@ export const FriendsMessengerThreadGroup: FC<{ thread: MessengerThread; group: M
                             <span>
                                 {LocalizeText('messenger.invitation')} {chat.message}
                             </span>
+                        </div>
+                    ) : chat.type === MessengerThreadChat.SECURITY_NOTIFICATION ? (
+                        // AIR msg_notification: warnings (moderation, refused messages, stored messages) with the caution icon.
+                        <div key={index} className="messenger-notification is-warning">
+                            <img src={MessengerCautionIcon} alt="" />
+                            <span>{chat.message}</span>
                         </div>
                     ) : chat.type === MessengerThreadChat.STATUS_NOTIFICATION ? (
                         <div key={index} className="messenger-status-notification">
@@ -106,7 +113,8 @@ export const FriendsMessengerThreadGroup: FC<{ thread: MessengerThread; group: M
                         )
                     )}
                 </div>
-                <MessengerMessageTime date={group.chats[0].date} />
+                {/* AIR MainView: a combined block shows the time of its newest message. */}
+                <MessengerMessageTime date={group.chats[group.chats.length - 1].date} />
             </div>
             {!own && (
                 <div className="message-avatar">

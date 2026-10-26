@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useFriends } from '../../../../hooks';
 import { FriendsListView } from './FriendsListView';
 
-vi.mock('../../../../hooks', () => ({ useFriends: vi.fn() }));
+vi.mock('../../../../hooks', () => ({ useFriends: vi.fn(), useMessageEvent: vi.fn(), useNotification: () => ({ simpleAlert: vi.fn() }) }));
 
 vi.mock('./FriendsListSearchView', () => ({
     FriendsSearchView: () => <div data-testid="friend-search">search</div>
@@ -126,6 +126,56 @@ describe('Habbo friend-list information architecture', () => {
         expect(friendsTab).toHaveAttribute('aria-expanded', 'true');
         expect(container.querySelector('.hfl-content')).not.toBeNull();
         expect(container.querySelector('[data-testid="friends-footer"]')).not.toBeNull();
+    });
+
+    it('shows AIR counts on the tab headers', () => {
+        vi.mocked(useFriends).mockReturnValue({
+            onlineFriends: [{ id: 1, name: 'a', online: true }],
+            offlineFriends: [],
+            requests: [{ id: 11 }, { id: 12 }],
+            requestFriend: vi.fn(),
+            requestResponse,
+            requestResponseAll,
+            settings: { categories: [] }
+        } as unknown as ReturnType<typeof useFriends>);
+
+        const { container } = renderOpen();
+
+        expect(container.querySelector('.hfl-category-current')).toHaveTextContent(/\(1\)$/);
+        expect(container.querySelector('.hfl-request-strip')).toHaveTextContent(/\(2\)$/);
+        expect(container.querySelector('.hfl-search-strip')).toHaveTextContent(/\(0\)$/);
+    });
+
+    it('keeps invite and home off until a friend is selected, as AIR does', () => {
+        const { container } = renderOpen();
+
+        expect(container.querySelector('.hfl-footer-button.invite')).toBeDisabled();
+        expect(container.querySelector('.hfl-footer-button.home')).toBeDisabled();
+        expect(container.querySelector('.hfl-footer-button.delete')).toBeDisabled();
+    });
+
+    it('refuses to accept every request when the friend list would be over its limit', () => {
+        const showFriendListFullAlert = vi.fn();
+
+        vi.mocked(useFriends).mockReturnValue({
+            onlineFriends: [],
+            offlineFriends: [],
+            requests: [{ id: 11 }, { id: 12 }],
+            requestFriend: vi.fn(),
+            requestResponse,
+            requestResponseAll,
+            isFriendListFull: (adding: number) => adding > 1,
+            showFriendListFullAlert,
+            settings: { categories: [] }
+        } as unknown as ReturnType<typeof useFriends>);
+
+        const { container } = renderOpen();
+
+        fireEvent.click(container.querySelector<HTMLButtonElement>('.hfl-request-strip'));
+        fireEvent.click(container.querySelector<HTMLButtonElement>('[data-action="accept-all"]'));
+
+        expect(showFriendListFullAlert).toHaveBeenCalledOnce();
+        expect(requestResponseAll).not.toHaveBeenCalled();
     });
 
     it('uses the original fixed geometry instead of stretching the window', () => {

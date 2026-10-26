@@ -1,15 +1,27 @@
 import { FC } from 'react';
-import { useFriends } from '../../../../../hooks';
+import { MessengerRequest } from '../../../../../api';
+import { FriendRequestRow } from './friendRequestRows';
 import { FriendsListRequestItemView } from './FriendsListRequestItemView';
 
-export const FriendsListRequestView: FC = () => {
-    const { requests = [] } = useFriends();
+interface FriendsListRequestViewProps {
+    rows: FriendRequestRow[];
+    onAccept: (request: MessengerRequest) => void;
+    onDecline: (request: MessengerRequest) => void;
+}
 
-    return (
-        <div className="hfl-requests">
-            <div className="hfl-request-list">
-                {requests.map((request) => <FriendsListRequestItemView key={request.id} request={request} />)}
-            </div>
+export const FriendsListRequestView: FC<FriendsListRequestViewProps> = ({ rows, onAccept, onDecline }) => (
+    <div className="hfl-requests">
+        <div className="hfl-request-list">
+            {rows.map((row, index) => (
+                <FriendsListRequestItemView
+                    key={row.request.id}
+                    request={row.request}
+                    state={row.state}
+                    odd={index % 2 === 1}
+                    onAccept={onAccept}
+                    onDecline={onDecline}
+                />
+            ))}
         </div>
-    );
-};
+    </div>
+);

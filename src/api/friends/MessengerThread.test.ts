@@ -21,3 +21,41 @@ describe('MessengerThread.setMessagesReadFromUser', () => {
         expect(theirs.status).toBe(MessengerThreadChat.SENT);
     });
 });
+
+describe('MessengerThread, AIR MainView rules', () => {
+    it('lights the conversation only for chat lines and invites, not for online / offline lines or warnings', () => {
+        const thread = makeThread(7);
+
+        thread.addMessage(null, 'offline', 0, null, MessengerThreadChat.STATUS_NOTIFICATION);
+        thread.addMessage(null, 'moderation', 0, null, MessengerThreadChat.SECURITY_NOTIFICATION);
+        expect(thread.unreadCount).toBe(0);
+
+        thread.addMessage(7, 'hi', 0, null, MessengerThreadChat.CHAT);
+        thread.addMessage(null, 'come over', 0, null, MessengerThreadChat.ROOM_INVITE);
+        expect(thread.unreadCount).toBe(2);
+    });
+
+    it('combines lines from the same sender only within 10 minutes', () => {
+        const thread = makeThread(7);
+
+        thread.addMessage(7, 'old', 1200, null, MessengerThreadChat.CHAT);
+        thread.addMessage(7, 'new', 0, null, MessengerThreadChat.CHAT);
+        thread.addMessage(7, 'newer', 0, null, MessengerThreadChat.CHAT);
+
+        expect(thread.groups.map((group) => group.chats.map((chat) => chat.message))).toEqual([['old'], ['new', 'newer']]);
+    });
+
+    it('puts history above the messages already shown, without lighting the conversation', () => {
+        const thread = makeThread(7);
+
+        thread.addMessage(7, 'live', 0, null, MessengerThreadChat.CHAT);
+        thread.setRead();
+        thread.addHistoryMessages([
+            { senderId: 100, message: 'first', secondsSinceSent: 3600, extraData: null, type: MessengerThreadChat.CHAT },
+            { senderId: 7, message: 'second', secondsSinceSent: 3000, extraData: null, type: MessengerThreadChat.CHAT }
+        ]);
+
+        expect(thread.groups.flatMap((group) => group.chats.map((chat) => chat.message))).toEqual(['first', 'second', 'live']);
+        expect(thread.unreadCount).toBe(0);
+    });
+});
