@@ -10,7 +10,7 @@ const GROUP_CURRENT_ROOM = 0;
 const GROUP_SELECTED = 1;
 
 export const WiredSelectorUsersGroupView: FC<{}> = () => {
-    const { data: groups = [] } = useUserGroups();
+    const { data: groups = [], refresh = null } = useUserGroups();
     const [groupType, setGroupType] = useState(GROUP_CURRENT_ROOM);
     const [selectedGroupId, setSelectedGroupId] = useState(0);
     // Official layout: the group id in the string (empty: the room's group), no int params.
@@ -19,11 +19,14 @@ export const WiredSelectorUsersGroupView: FC<{}> = () => {
     useEffect(() => {
         if (!trigger) return;
 
+        // AIR asks for the user's groups each time the editor opens (throttled in the hook).
+        refresh?.();
+
         const groupId = parseInt((trigger.stringData ?? '').trim(), 10);
 
         setGroupType(groupId > 0 ? GROUP_SELECTED : GROUP_CURRENT_ROOM);
         setSelectedGroupId(groupId > 0 ? groupId : 0);
-    }, [trigger]);
+    }, [trigger, refresh]);
 
     useEffect(() => {
         if (groupType !== GROUP_SELECTED || selectedGroupId || !groups.length) return;
@@ -53,6 +56,7 @@ export const WiredSelectorUsersGroupView: FC<{}> = () => {
 
                 {groupType === GROUP_SELECTED && (
                     <Select
+                        aria-label={LocalizeText('wiredfurni.tooltip.group')}
                         className="form-select form-select-sm"
                         value={selectedGroupId}
                         onChange={(event) => setSelectedGroupId(parseInt(event.target.value))}

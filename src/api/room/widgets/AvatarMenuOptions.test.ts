@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AvatarInfoUser } from './AvatarInfoUser';
-import { AMBASSADOR_MUTE_MINUTES, canReplenishRespect, getMuteLabelKey, getTradeBlockedKey } from './AvatarMenuOptions';
+import { AMBASSADOR_MUTE_MINUTES, canReplenishRespect, getMuteLabelKey, getTradeBlockedKey, shouldShowTrade } from './AvatarMenuOptions';
 
 describe('AvatarMenuOptions', () => {
     it('labels every ambassador mute with an existing text key', () => {
@@ -17,6 +17,14 @@ describe('AvatarMenuOptions', () => {
         expect(getTradeBlockedKey(true, AvatarInfoUser.TRADE_REASON_NO_TRADING)).toBeNull();
         expect(getTradeBlockedKey(false, AvatarInfoUser.TRADE_REASON_SHUTDOWN)).toBe('infostand.button.trade.tooltip.shutdown');
         expect(getTradeBlockedKey(false, AvatarInfoUser.TRADE_REASON_NO_TRADING)).toBe('infostand.button.trade.tooltip.tradingroom');
+    });
+
+    it('shows trade with the citizenship track on, else only when it is possible with an unblocked user', () => {
+        expect(shouldShowTrade(false, false, true)).toBe(true);
+        expect(shouldShowTrade(true, true, true)).toBe(true);
+        expect(shouldShowTrade(true, false, false)).toBe(true);
+        expect(shouldShowTrade(false, false, false)).toBe(false);
+        expect(shouldShowTrade(true, true, false)).toBe(false);
     });
 
     it('offers a replenish only when respects are gone and one is left', () => {

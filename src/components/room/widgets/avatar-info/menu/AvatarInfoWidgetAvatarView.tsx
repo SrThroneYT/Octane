@@ -2,6 +2,7 @@ import {
     CreateLinkEvent,
     FlatControllerAddedEvent,
     FlatControllerRemovedEvent,
+    GetRoomEngine,
     GetSessionDataManager,
     RoomControllerLevel,
     RoomObjectCategory,
@@ -16,6 +17,7 @@ import {
     AMBASSADOR_MUTE_MINUTES,
     AvatarInfoUser,
     canReplenishRespect,
+    shouldShowTrade,
     DispatchUiEvent,
     GetConfigurationValue,
     GetOwnRoomObject,
@@ -70,7 +72,7 @@ export const AvatarInfoWidgetAvatarView: FC<AvatarInfoWidgetAvatarViewProps> = (
     const [mode, setMode] = useState(MODE_NORMAL);
     const { canRequestFriend = null } = useFriends();
     const { report = null } = useHelp();
-    const { roomSession = null, isHandItemBlocked = false } = useRoom();
+    const { roomSession = null } = useRoom();
     const { userRespectRemaining = 0, respectReplenishesLeft = 0, respectUser = null, replenishRespect = null } = useSessionInfo();
     const { showConfirm = null, simpleAlert = null } = useNotification();
     const { getCurrencyAmount = null } = usePurse();
@@ -116,8 +118,9 @@ export const AvatarInfoWidgetAvatarView: FC<AvatarInfoWidgetAvatarViewProps> = (
         return avatarInfo.canBeKicked || avatarInfo.canBeBanned || avatarInfo.canBeMuted || isShowGiveRights || isShowRemoveRights;
     }, [isShowGiveRights, isShowRemoveRights, avatarInfo]);
 
+    // AIR AvatarMenuView: give needs handitem.give.enabled and the room's hand-item flag (ConfigurationItemStates) off.
     const canGiveHandItem = useMemo(() => {
-        if (isHandItemBlocked) return false;
+        if (!GetConfigurationValue('handitem.give.enabled', true) || GetRoomEngine().activeRoomHasHanditemControlBlocked) return false;
 
         let flag = false;
 
@@ -130,7 +133,7 @@ export const AvatarInfoWidgetAvatarView: FC<AvatarInfoWidgetAvatarViewProps> = (
         }
 
         return flag;
-    }, [isHandItemBlocked]);
+    }, []);
 
     const tradeBlockedKey = getTradeBlockedKey(avatarInfo.canTrade, avatarInfo.canTradeReason);
 
@@ -338,13 +341,15 @@ export const AvatarInfoWidgetAvatarView: FC<AvatarInfoWidgetAvatarViewProps> = (
                                 {LocalizeText('infostand.button.friend')}
                             </ContextMenuListItemView>
                         )}
-                        <ContextMenuListItemView
-                            disabled={!!tradeBlockedKey}
-                            title={tradeBlockedKey ? LocalizeText(tradeBlockedKey) : undefined}
-                            onClick={(event) => processAction('trade')}
-                        >
-                            {LocalizeText('infostand.button.trade')}
-                        </ContextMenuListItemView>
+                        {shouldShowTrade(avatarInfo.canTrade, isBlocked, GetConfigurationValue('talent.track.citizenship.enabled', false)) && (
+                            <ContextMenuListItemView
+                                disabled={!!tradeBlockedKey}
+                                title={tradeBlockedKey ? LocalizeText(tradeBlockedKey) : undefined}
+                                onClick={(event) => processAction('trade')}
+                            >
+                                {LocalizeText('infostand.button.trade')}
+                            </ContextMenuListItemView>
+                        )}
                         <ContextMenuListItemView onClick={(event) => processAction('whisper')}>{LocalizeText('infostand.button.whisper')}</ContextMenuListItemView>
                         {userRespectRemaining > 0 && (
                             <ContextMenuListItemView onClick={(event) => processAction('respect')}>

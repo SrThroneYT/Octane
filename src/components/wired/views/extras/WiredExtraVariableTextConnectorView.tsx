@@ -9,12 +9,11 @@ const DEFAULT_CONNECTOR_PLACEHOLDER = '0=text 1\n1=text 2\n2 = text 3\n_=any oth
 const MAX_CONNECTOR_LINES = 30;
 const MAX_CONNECTOR_CHARACTERS = 1000;
 
+// AIR's text area shows 30 lines but takes any number of them; the server refuses more than 1000 bytes.
 const truncateMappingsText = (value: string) => {
     const normalizedValue = (value ?? '').replace(/\r/g, '');
-    const lines = normalizedValue.split('\n');
-    const limitedByLines = lines.slice(0, MAX_CONNECTOR_LINES).join('\n');
 
-    return limitedByLines.length > MAX_CONNECTOR_CHARACTERS ? limitedByLines.slice(0, MAX_CONNECTOR_CHARACTERS) : limitedByLines;
+    return normalizedValue.length > MAX_CONNECTOR_CHARACTERS ? normalizedValue.slice(0, MAX_CONNECTOR_CHARACTERS) : normalizedValue;
 };
 
 const getLineCount = (value: string) => {

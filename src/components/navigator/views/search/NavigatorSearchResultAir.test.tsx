@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useNavigatorUiStore } from '../../../../hooks';
 import { NavigatorSearchResultView } from './NavigatorSearchResultView';
 
+const perks = vi.hoisted(() => ({ thumbnail: true, topLevel: 'hotel_view' }));
+
 vi.mock('@octane/renderer', async () => {
     const actual = await vi.importActual<typeof import('@octane/renderer')>('@octane/renderer');
 
@@ -34,7 +36,8 @@ vi.mock('../../../../hooks', async () => {
 
     return {
         ...actual,
-        useNavigatorData: () => ({ topLevelContext: { code: 'hotel_view' } })
+        useNavigatorData: () => ({ topLevelContext: { code: perks.topLevel } }),
+        usePerkAllowed: () => perks.thumbnail
     };
 });
 
@@ -47,7 +50,11 @@ const result = {
     rooms: []
 } as any;
 
-afterEach(() => cleanup());
+afterEach(() => {
+    cleanup();
+    perks.thumbnail = true;
+    perks.topLevel = 'hotel_view';
+});
 
 describe('AIR navigator result blocks', () => {
     it('uses the persisted collapse state and exposes it through the category button', () => {
@@ -87,5 +94,32 @@ describe('AIR navigator result blocks', () => {
 
         expect(categoryButton).toHaveAttribute('aria-expanded', 'true');
         expect((useNavigatorUiStore.getState() as any).expandedResultCodes).toEqual(['popular']);
+    });
+
+    it('puts the server block text before the search code title', () => {
+        useNavigatorUiStore.setState({ collapsedResultCodes: [], resultViewModes: {} });
+
+        render(<NavigatorSearchResultView searchResult={{ ...result, data: '' }} />);
+        expect(screen.getByRole('button', { name: 'popular' })).toBeInTheDocument();
+
+        cleanup();
+        render(<NavigatorSearchResultView searchResult={result} />);
+        expect(screen.getByRole('button', { name: 'Popular rooms' })).toBeInTheDocument();
+    });
+
+    it('without the thumbnail perk shows rows and no view toggle, except under the official view', () => {
+        perks.thumbnail = false;
+        useNavigatorUiStore.setState({ collapsedResultCodes: [], resultViewModes: { popular: 1 } });
+
+        render(<NavigatorSearchResultView searchResult={{ ...result, mode: 1 }} />);
+        expect(screen.queryByRole('button', { name: 'Show rooms as a list' })).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Show rooms as tiles' })).toBeNull();
+        expect(document.querySelector('.octane-navigator-air__rows')).not.toBeNull();
+
+        cleanup();
+        perks.topLevel = 'official_view';
+        render(<NavigatorSearchResultView searchResult={{ ...result, mode: 1 }} />);
+        expect(screen.queryByRole('button', { name: 'Show rooms as a list' })).toBeNull();
+        expect(document.querySelector('.octane-navigator-air__tiles')).not.toBeNull();
     });
 });

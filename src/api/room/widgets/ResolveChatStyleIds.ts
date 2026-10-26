@@ -37,15 +37,15 @@ export const ResolveChatStyleIds = (styles: readonly ChatStyleConfigEntry[], acc
             continue;
         }
 
-        if (style.minRank > 0) {
-            if (access.hasSecurity(style.minRank)) styleIds.push(style.styleId);
+        // AIR never offers a system style, whatever its rank; staff keep them for :chatcolor parity with the server.
+        if (style.isSystemStyle) {
+            if (access.canUseSystemStyles && (style.minRank <= 0 || access.hasSecurity(style.minRank))) styleIds.push(style.styleId);
 
             continue;
         }
 
-        // AIR never offers a system style; staff keep them for :chatcolor parity with the server.
-        if (style.isSystemStyle) {
-            if (access.canUseSystemStyles) styleIds.push(style.styleId);
+        if (style.minRank > 0) {
+            if (access.hasSecurity(style.minRank)) styleIds.push(style.styleId);
 
             continue;
         }

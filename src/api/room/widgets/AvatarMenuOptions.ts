@@ -16,5 +16,12 @@ export const getTradeBlockedKey = (canTrade: boolean, canTradeReason: number): s
     return 'infostand.button.trade.tooltip.tradingroom';
 };
 
+/**
+ * AIR AvatarMenuView: the trade row shows while the citizenship talent track is on (then off with its reason when
+ * trading is not possible), otherwise only when trading is possible with a user who is not blocked.
+ */
+export const shouldShowTrade = (canTrade: boolean, isBlocked: boolean, citizenshipEnabled: boolean): boolean =>
+    citizenshipEnabled || (canTrade && !isBlocked);
+
 /** The "more respect" row shows once the day's respects are gone and a replenish is left. */
 export const canReplenishRespect = (respectsLeft: number, replenishesLeft: number): boolean => respectsLeft <= 0 && replenishesLeft > 0;

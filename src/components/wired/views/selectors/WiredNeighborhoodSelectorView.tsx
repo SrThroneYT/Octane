@@ -1,5 +1,5 @@
 import { GetRoomEngine } from '@octane/renderer';
-import { CSSProperties, FC, JSX, MouseEvent as ReactMouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { CSSProperties, FC, JSX, MouseEvent as ReactMouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FaCompress, FaCrosshairs, FaExpand, FaMinus, FaPlus } from 'react-icons/fa';
 import {
     decodeNeighborhood,
@@ -61,6 +61,31 @@ const TILE_H = 8;
 
 const tileKey = (x: number, y: number) => `${ x },${ y }`;
 
+/** The grid tile (0..dimension-1) under a point of the drawing, or null outside it (FloorDrawingPreset's inverse). */
+export const neighborhoodTileAt = (x: number, y: number, dimension: number): { gx: number; gy: number } =>
+{
+    const u = (x - TILE_W / 2 * dimension) / TILE_W;
+    const v = y / TILE_H;
+    const gx = Math.floor(v + u);
+    const gy = Math.floor(v - u);
+
+    return (gx >= 0 && gy >= 0 && gx < dimension && gy < dimension) ? { gx, gy } : null;
+};
+
+/** The tiles on a straight line between two tiles, both ends left out, so a fast drag leaves no gaps (as AIR). */
+export const neighborhoodLineBetween = (ax: number, ay: number, bx: number, by: number): { x: number; y: number }[] =>
+{
+    const steps = Math.max(Math.abs(bx - ax), Math.abs(by - ay));
+    const line: { x: number; y: number }[] = [];
+
+    for(let step = 1; step < steps; step++)
+    {
+        line.push({ x: Math.round(ax + (bx - ax) * step / steps), y: Math.round(ay + (by - ay) * step / steps) });
+    }
+
+    return line;
+};
+
 interface NeighborhoodFloorProps
 {
     radius: number;
@@ -69,21 +94,61 @@ interface NeighborhoodFloorProps
     onDraw: (x: number, y: number) => void;
 }
 
-const NeighborhoodFloor: FC<NeighborhoodFloorProps> = ({ radius, tiles, root, onDraw }) =>
+export const NeighborhoodFloor: FC<NeighborhoodFloorProps> = ({ radius, tiles, root, onDraw }) =>
 {
-    const [ drawing, setDrawing ] = useState(false);
+    // The stroke: the last tile drawn, or null when no button is down.
+    const lastTileRef = useRef<{ gx: number; gy: number }>(null);
     const dimension = radius * 2 + 1;
     const width = dimension * TILE_W + TILE_W;
     const height = dimension * TILE_H + TILE_H;
 
     useEffect(() =>
     {
-        const stop = () => setDrawing(false);
+        const stop = () => (lastTileRef.current = null);
 
         window.addEventListener('mouseup', stop);
 
         return () => window.removeEventListener('mouseup', stop);
     }, []);
+
+    // One handler for the whole drawing, as AIR: the pointer is mapped to a tile, and the tiles between the last
+    // one and this one are drawn too.
+    const tileAt = (event: ReactMouseEvent<HTMLDivElement>) =>
+    {
+        const rect = event.currentTarget.getBoundingClientRect();
+        const scaleX = rect.width ? (width / rect.width) : 1;
+        const scaleY = rect.height ? (height / rect.height) : 1;
+
+        return neighborhoodTileAt((event.clientX - rect.left) * scaleX, (event.clientY - rect.top) * scaleY, dimension);
+    };
+
+    const onMouseDown = (event: ReactMouseEvent<HTMLDivElement>) =>
+    {
+        const tile = tileAt(event);
+
+        if(!tile) return;
+
+        event.preventDefault();
+        lastTileRef.current = tile;
+        onDraw(tile.gx - radius, tile.gy - radius);
+    };
+
+    const onMouseMove = (event: ReactMouseEvent<HTMLDivElement>) =>
+    {
+        const last = lastTileRef.current;
+
+        if(!last || !(event.buttons & 1)) return;
+
+        const tile = tileAt(event);
+
+        if(!tile || (tile.gx === last.gx && tile.gy === last.gy)) return;
+
+        onDraw(tile.gx - radius, tile.gy - radius);
+
+        for(const between of neighborhoodLineBetween(last.gx, last.gy, tile.gx, tile.gy)) onDraw(between.x - radius, between.y - radius);
+
+        lastTileRef.current = tile;
+    };
 
     const cells: JSX.Element[] = [];
 
@@ -103,7 +168,7 @@ const NeighborhoodFloor: FC<NeighborhoodFloorProps> = ({ radius, tiles, root, on
                 height: TILE_H,
                 clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
                 backgroundColor: taken ? '#3fae49' : '#3a4152',
-                cursor: 'pointer',
+                pointerEvents: 'none',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
@@ -119,20 +184,7 @@ const NeighborhoodFloor: FC<NeighborhoodFloorProps> = ({ radius, tiles, root, on
             };
 
             cells.push(
-                <div
-                    key={ tileKey(x, y) }
-                    style={ style }
-                    title={ `${ x }, ${ y }` }
-                    onMouseDown={ (event: ReactMouseEvent) =>
-                    {
-                        event.preventDefault();
-                        setDrawing(true);
-                        onDraw(x, y);
-                    } }
-                    onMouseEnter={ (event: ReactMouseEvent) =>
-                    {
-                        if(drawing && (event.buttons & 1)) onDraw(x, y);
-                    } }>
+                <div key={ tileKey(x, y) } data-tile={ tileKey(x, y) } style={ style }>
                     { isRoot && <div style={ rootMarker } /> }
                 </div>
             );
@@ -140,7 +192,12 @@ const NeighborhoodFloor: FC<NeighborhoodFloorProps> = ({ radius, tiles, root, on
     }
 
     return (
-        <div style={ { position: 'relative', width, height, flexShrink: 0 } } onContextMenu={ event => event.preventDefault() }>
+        <div
+            data-testid="neighborhood-floor"
+            style={ { position: 'relative', width, height, flexShrink: 0, cursor: 'pointer' } }
+            onContextMenu={ event => event.preventDefault() }
+            onMouseDown={ onMouseDown }
+            onMouseMove={ onMouseMove }>
             { cells }
         </div>
     );
@@ -232,7 +289,7 @@ export const WiredNeighborhoodSelectorView: FC<{}> = () =>
         <Button
             className="px-2 py-1"
             variant={ drawMode === mode ? 'success' : 'secondary' }
-            title={ localizeWithFallback(titleKey, fallback) }
+            aria-label={ localizeWithFallback(titleKey, fallback) }
             onClick={ () => setDrawMode(mode) }>
             { icon }
         </Button>
@@ -258,7 +315,7 @@ export const WiredNeighborhoodSelectorView: FC<{}> = () =>
                         className="ms-auto px-2 py-1"
                         variant="secondary"
                         disabled={ !fitsSmall }
-                        title={ localizeWithFallback(bigMode ? 'wiredfurni.params.neighborhood.reduce' : 'wiredfurni.params.neighborhood.enlarge', bigMode ? 'Smaller view' : 'Bigger view') }
+                        aria-label={ localizeWithFallback(bigMode ? 'wiredfurni.params.neighborhood.reduce' : 'wiredfurni.params.neighborhood.enlarge', bigMode ? 'Smaller view' : 'Bigger view') }
                         onClick={ () => setBigMode(value => !value) }>
                         { bigMode ? <FaCompress /> : <FaExpand /> }
                     </Button>
