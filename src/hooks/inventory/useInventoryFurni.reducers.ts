@@ -146,8 +146,17 @@ export const applyMergedFurnitureList = (state: GroupItem[], fragment: Map<numbe
     return newValue;
 };
 
-export const applyFurnitureListRemoved = (state: GroupItem[], event: FurnitureListRemovedEvent): GroupItem[] => {
-    const parser = event.getParser();
+export const applyFurnitureListRemoved = (state: GroupItem[], event: FurnitureListRemovedEvent): GroupItem[] =>
+    removeFurnitureItem(state, event.getParser().itemId);
+
+/**
+ * Drops several items at once (`FurnitureListRemoveMultipleEvent`, sent after a recycle). Nothing listened for it,
+ * so the recycler kept offering the furni it had just destroyed, and recycling them again failed.
+ */
+export const applyFurnitureListRemovedMany = (state: GroupItem[], itemIds: readonly number[]): GroupItem[] =>
+    (itemIds ?? []).reduce((current, itemId) => removeFurnitureItem(current, itemId), state);
+
+const removeFurnitureItem = (state: GroupItem[], itemId: number): GroupItem[] => {
     const newValue = [...state];
 
     let index = 0;
@@ -159,7 +168,7 @@ export const applyFurnitureListRemoved = (state: GroupItem[], event: FurnitureLi
         // this state updater twice (StrictMode / React Compiler purity checks). GroupItem.remove
         // reassigns the group's internal items, so mutating the input directly makes the second
         // pass a no-op (item already gone), React keeps that result, and the furni lingers.
-        if (!originalGroup.getItemById(parser.itemId)) {
+        if (!originalGroup.getItemById(itemId)) {
             index++;
 
             continue;
@@ -169,7 +178,7 @@ export const applyFurnitureListRemoved = (state: GroupItem[], event: FurnitureLi
         // reassigns the clone's own _items array (CloneObject shares the reference, but remove
         // copies-then-reassigns), so the original group keeps its items across a re-invocation.
         const group = CloneObject(originalGroup);
-        const item = group.remove(parser.itemId);
+        const item = group.remove(itemId);
 
         if (item && getPlacingItemId() === item.ref) {
             queueMicrotask(() => {

@@ -48,6 +48,12 @@ export const mergeAddedEffect = (effects: OwnedAvatarEffect[], added: OwnedAvata
 };
 
 /**
+ * Whether choosing an owned effect has to start its timer. A timed effect already running keeps it: the server
+ * restarts the timer on every activation, so choosing it again handed back its full duration, for ever.
+ */
+export const needsActivation = (effect: OwnedAvatarEffect | undefined): boolean => !effect || effect.isPermanent || effect.secondsLeft <= 0;
+
+/**
  * Tracks the avatar effects the user owns.
  *
  * The server pushes the full list once, right after login
@@ -122,9 +128,11 @@ const useAvatarEffectsState = () => {
             return;
         }
 
-        SendMessageComposer(new AvatarEffectActivatedComposer(type));
+        const owned = effects.find(effect => effect.type === type);
 
-        if (effects.some(effect => effect.type === type)) SendMessageComposer(new AvatarEffectSelectedComposer(type));
+        if (needsActivation(owned)) SendMessageComposer(new AvatarEffectActivatedComposer(type));
+
+        if (owned) SendMessageComposer(new AvatarEffectSelectedComposer(type));
     }, [ effects ]);
 
     const isOwned = useCallback((type: number) => effects.some(effect => effect.type === type), [ effects ]);

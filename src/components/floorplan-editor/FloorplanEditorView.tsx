@@ -70,7 +70,6 @@ export const FloorplanEditorView: FC<Props> = ({ externalSession }) => {
     const [importExportVisible, setImportExportVisible] = useState(false);
     const [liveSync, setLiveSync] = useState(true);
     const [panMode, setPanMode] = useState(false);
-    const [autoPickup, setAutoPickup] = useState(false);
     const [preview3d, setPreview3d] = useState(readPreview3dPreference);
     const { state, dispatch, loadFromServer, undo, redo, canUndo, canRedo } = useFloorplanReducer();
     const isExternal = !!externalSession;
@@ -258,7 +257,7 @@ export const FloorplanEditorView: FC<Props> = ({ externalSession }) => {
                 convertNumbersForSaving(state.thickness.wall),
                 convertNumbersForSaving(state.thickness.floor),
                 state.wallHeight - 1,
-                autoPickup
+                state.pickUpBlocking
             )
         );
     };
@@ -384,13 +383,13 @@ export const FloorplanEditorView: FC<Props> = ({ externalSession }) => {
                                         <Base component={BaseButton} type="button"
                                             pointer
                                             data-testid="floorplan-auto-pickup"
-                                            data-active={autoPickup ? 'true' : 'false'}
-                                            className={`fp-toggle is-warm ${autoPickup ? 'is-on' : ''}`}
-                                            onClick={() => setAutoPickup((v) => !v)}
+                                            data-active={state.pickUpBlocking ? 'true' : 'false'}
+                                            className={`fp-toggle is-warm ${state.pickUpBlocking ? 'is-on' : ''}`}
+                                            onClick={() => dispatch({ type: 'SET_PICK_UP_BLOCKING', value: !state.pickUpBlocking })}
                                             title="On save: pick up furniture blocking the new floor plan and return it to its owner's inventory"
                                         >
                                             <span className="fp-toggle-dot" />
-                                            {autoPickup ? 'Pick up blocking furni ON' : 'Pick up blocking furni OFF'}
+                                            {state.pickUpBlocking ? 'Pick up blocking furni ON' : 'Pick up blocking furni OFF'}
                                         </Base>
                                     </div>
                                 )}
@@ -428,7 +427,7 @@ export const FloorplanEditorView: FC<Props> = ({ externalSession }) => {
                                 convertNumbersForSaving(state.thickness.wall),
                                 convertNumbersForSaving(state.thickness.floor),
                                 state.wallHeight - 1,
-                                autoPickup
+                                state.pickUpBlocking
                             )
                         );
                     }}

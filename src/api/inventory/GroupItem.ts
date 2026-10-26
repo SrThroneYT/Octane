@@ -87,7 +87,8 @@ export class GroupItem {
 
         const furnitureItem = this.getLastItem();
 
-        if (!furnitureItem) return items;
+        // `found >= count` is never true for NaN, which used to hand back the whole stack.
+        if (!furnitureItem || !Number.isFinite(count) || count <= 0) return items;
 
         let found = 0;
         let i = 0;

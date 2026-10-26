@@ -515,3 +515,49 @@ describe('reducer — occupied flags survive tilemap swaps', () => {
         expect(next.tiles[0][1]).toEqual({ h: 3, blocked: false, occupied: true });
     });
 });
+
+describe('reducer — picking up blocking furni', () => {
+    const occupiedRow = (): FloorplanState =>
+        reducer(
+            stateWith([
+                [
+                    { h: 2, blocked: false },
+                    { h: 2, blocked: false }
+                ]
+            ]),
+            { type: 'SET_OCCUPIED_TILES', map: [[false, true]] }
+        );
+    const pickingUp = (): FloorplanState => reducer(occupiedRow(), { type: 'SET_PICK_UP_BLOCKING', value: true });
+
+    it('is off by default, so occupied tiles stay locked', () => {
+        expect(occupiedRow().pickUpBlocking).toBe(false);
+        const start = occupiedRow();
+        expect(reducer(start, { type: 'ERASE_TILE', row: 0, col: 1, source: 'local' })).toBe(start);
+    });
+
+    it('lets an occupied tile be voided, raised and painted, and keeps it marked occupied', () => {
+        const erased = reducer(pickingUp(), { type: 'ERASE_TILE', row: 0, col: 1, source: 'local' });
+        expect(erased.tiles[0][1]).toEqual({ h: 2, blocked: true, occupied: true });
+
+        const raised = reducer(pickingUp(), { type: 'ADJUST_HEIGHT', row: 0, col: 1, delta: 1, source: 'local' });
+        expect(raised.tiles[0][1]).toEqual({ h: 3, blocked: false, occupied: true });
+
+        const painted = reducer(pickingUp(), { type: 'PAINT_TILE', row: 0, col: 1, h: 7, source: 'local' });
+        expect(painted.tiles[0][1]).toEqual({ h: 7, blocked: false, occupied: true });
+    });
+
+    it('lets a brush over a selection reach occupied tiles', () => {
+        let state = reducer(pickingUp(), { type: 'BRUSH_SET', action: 'UNSET' });
+        state = reducer(state, { type: 'SELECT_RECT', from: [0, 0], to: [0, 1] });
+        state = reducer(state, { type: 'APPLY_BRUSH_TO_SELECTION', source: 'local' });
+        expect(state.tiles[0]).toEqual([
+            { h: 2, blocked: true },
+            { h: 2, blocked: true, occupied: true }
+        ]);
+    });
+
+    it('locks occupied tiles again when it is switched off', () => {
+        const off = reducer(pickingUp(), { type: 'SET_PICK_UP_BLOCKING', value: false });
+        expect(reducer(off, { type: 'ERASE_TILE', row: 0, col: 1, source: 'local' })).toBe(off);
+    });
+});

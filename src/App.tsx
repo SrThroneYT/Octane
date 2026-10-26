@@ -21,7 +21,7 @@ import {
     PrepareRenderer
 } from '@octane/renderer';
 import { FC, useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
-import { clearAccessToken, ClearRememberLogin, createBootSteps, exchangeSsoTicketForAccessToken, GetRememberLogin, GetUIVersion, persistAccessTokenFromPayload, SetRememberLogin, StoreRememberLoginFromPayload, takeLoginTokenFromUrl } from './api';
+import { clearAccessToken, ClearRememberLogin, ClearRememberLoginIfStill, createBootSteps, exchangeSsoTicketForAccessToken, GetRememberLogin, GetUIVersion, persistAccessTokenFromPayload, StoreRememberLoginFromPayload, withRememberLock } from './api';
 import { Base } from './common';
 import { LoadingView } from './components/loading/LoadingView';
 import { LoginView } from './components/login/LoginView';
@@ -187,13 +187,12 @@ export const App: FC<{}> = (props) => {
         [applySsoTicket]
     );
 
-    const tryRememberLogin = useCallback(async (): Promise<string> => {
+    const tryRememberLoginUnlocked = useCallback(async (): Promise<string> => {
         const remembered = GetRememberLogin();
 
         OctaneLogger.log('[App] tryRememberLogin start', {
             hasRemembered: !!remembered,
-            hasToken: !!remembered?.token?.length,
-            hasStoredSso: !!remembered?.ssoTicket?.length
+            hasToken: !!remembered?.token?.length
         });
 
         if (!remembered?.token?.length) {
@@ -230,21 +229,24 @@ export const App: FC<{}> = (props) => {
             });
 
             if (response.ok && ssoTicket) {
-                persistAccessTokenFromPayload(payload);
-                StoreRememberLoginFromPayload(payload, typeof payload.username === 'string' ? payload.username : remembered.username, ssoTicket);
+                persistAccessTokenFromPayload(payload, ssoTicket);
+                StoreRememberLoginFromPayload(payload, typeof payload.username === 'string' ? payload.username : remembered.username);
                 return ssoTicket;
             }
         } catch (error) {
             console.warn('[App] tryRememberLogin → fetch threw', error);
         }
 
-        ClearRememberLogin();
+        ClearRememberLoginIfStill(remembered.token);
         OctaneLogger.log('[App] tryRememberLogin → cleared remember, returning empty');
 
         return '';
     }, []);
 
-    const rotateRememberLogin = useCallback(async (): Promise<void> => {
+    // Remember and refresh rotate one shared token: every tab takes the same lock and reads the token inside it.
+    const tryRememberLogin = useCallback(() => withRememberLock(tryRememberLoginUnlocked), [tryRememberLoginUnlocked]);
+
+    const rotateRememberLoginUnlocked = useCallback(async (): Promise<void> => {
         const remembered = GetRememberLogin();
 
         if (!remembered?.token?.length) return;
@@ -270,15 +272,17 @@ export const App: FC<{}> = (props) => {
 
             if (response.ok) {
                 persistAccessTokenFromPayload(payload);
-                StoreRememberLoginFromPayload(payload, remembered.username, remembered.ssoTicket);
+                StoreRememberLoginFromPayload(payload, remembered.username);
                 return;
             }
 
-            if (response.status === 400 || response.status === 401 || response.status === 403) ClearRememberLogin();
+            if (response.status === 400 || response.status === 401 || response.status === 403) ClearRememberLoginIfStill(remembered.token);
         } catch (error) {
             OctaneLogger.error('[LoginScreen] Remember rotation failed', error);
         }
     }, []);
+
+    const rotateRememberLogin = useCallback(() => withRememberLock(rotateRememberLoginUnlocked), [rotateRememberLoginUnlocked]);
 
     useEffect(() => {
         const previousPhase = previousConnectionPhaseRef.current;
@@ -439,13 +443,6 @@ export const App: FC<{}> = (props) => {
 
                 let ssoTicket = window.OctaneConfig['sso.ticket'];
                 if (ssoTicket) GetConfiguration().setValue('sso.ticket', ssoTicket);
-
-                try {
-                    const urlToken = takeLoginTokenFromUrl();
-                    if (urlToken && !GetRememberLogin()) SetRememberLogin(urlToken);
-                } catch (e) {
-                    console.warn('[App] failed to persist remember token from URL', e);
-                }
 
                 bumpProgress(10, taskLabel('loading.task.session', 'Verifying session...'));
 

@@ -1,19 +1,19 @@
 import { CreateLinkEvent } from '@octane/renderer';
 import { FC } from 'react';
-import { GetConfigurationValue } from '../../api';
+import { GetConfigurationRecord } from '../../api';
 import { Base } from '../../common';
 import { BaseButton } from '../../common/BaseButton';
 
 export interface RoomWidgetViewProps {}
 
 export const RoomWidgetView: FC<RoomWidgetViewProps> = (props) => {
-    const poolId = GetConfigurationValue<string>('hotelview')['room.pool'];
-    const picnicId = GetConfigurationValue<string>('hotelview')['room.picnic'];
-    const rooftopId = GetConfigurationValue<string>('hotelview')['room.rooftop'];
-    const rooftopPoolId = GetConfigurationValue<string>('hotelview')['room.rooftop.pool'];
-    const peacefulId = GetConfigurationValue<string>('hotelview')['room.peaceful'];
-    const infobusId = GetConfigurationValue<string>('hotelview')['room.infobus'];
-    const lobbyId = GetConfigurationValue<string>('hotelview')['room.lobby'];
+    const poolId = GetConfigurationRecord('hotelview')['room.pool'];
+    const picnicId = GetConfigurationRecord('hotelview')['room.picnic'];
+    const rooftopId = GetConfigurationRecord('hotelview')['room.rooftop'];
+    const rooftopPoolId = GetConfigurationRecord('hotelview')['room.rooftop.pool'];
+    const peacefulId = GetConfigurationRecord('hotelview')['room.peaceful'];
+    const infobusId = GetConfigurationRecord('hotelview')['room.infobus'];
+    const lobbyId = GetConfigurationRecord('hotelview')['room.lobby'];
 
     return (
         <>

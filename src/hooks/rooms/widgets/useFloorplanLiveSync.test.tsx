@@ -49,6 +49,7 @@ const baseState: FloorplanState = {
     brush: { h: 0, action: 'SET' },
     selection: new Set(),
     squareSelect: false,
+    pickUpBlocking: false,
     lease: { holder: null, me: false, expiresAt: null },
     seq: 0
 };

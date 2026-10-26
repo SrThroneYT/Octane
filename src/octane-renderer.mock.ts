@@ -688,7 +688,17 @@ export class UpdateFloorPropertiesMessageComposer extends StubClass {
     public thicknessWall: number;
     public thicknessFloor: number;
     public wallHeight: number;
-    constructor(tilemap: string, doorX: number, doorY: number, dir: number, thicknessWall: number, thicknessFloor: number, wallHeight: number) {
+    public autoPickup: boolean;
+    constructor(
+        tilemap: string,
+        doorX: number,
+        doorY: number,
+        dir: number,
+        thicknessWall: number,
+        thicknessFloor: number,
+        wallHeight: number,
+        autoPickup: boolean = false
+    ) {
         super();
         this.tilemap = tilemap;
         this.doorX = doorX;
@@ -697,6 +707,7 @@ export class UpdateFloorPropertiesMessageComposer extends StubClass {
         this.thicknessWall = thicknessWall;
         this.thicknessFloor = thicknessFloor;
         this.wallHeight = wallHeight;
+        this.autoPickup = autoPickup;
     }
 }
 
@@ -1315,7 +1326,7 @@ export class RecolorFurniComposer extends StubClass {}
 export class LimitedEditionSoldOutEvent extends MessageEvent {}
 export class MarketplaceMakeOfferResult extends MessageEvent {}
 export class ProductOfferEvent extends MessageEvent {}
-export class PurchaseFromCatalogComposer extends StubClass {}
+export class PurchaseFromCatalogComposer extends RecordingComposer {}
 export class RoomEngineObjectPlacedEvent extends StubClass {
     static PLACED = 'REOPE_PLACED';
 }

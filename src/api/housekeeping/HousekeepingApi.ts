@@ -48,6 +48,7 @@ import {
 } from '@octane/renderer';
 import { awaitMessageEvent } from '../octane/awaitMessageEvent';
 import { SendMessageComposer } from '../octane/SendMessageComposer';
+import { SerialRequestChannel } from '../octane/SerialRequestChannel';
 import { HousekeepingReloadTarget } from './HousekeepingActionType';
 import { HousekeepingMaintenanceAction } from './HousekeepingHotelTools';
 import {
@@ -66,6 +67,14 @@ import {
 
 const USER_SEARCH_LIMIT = 8;
 
+// The room and user searches answer with packets that carry no request id, and the server rate-limits the requests
+// (500 ms) and drops the extra ones: the suggestions and the exact room search waited for the same reply, a dropped
+// request left the screen waiting 8 s for nothing, and an exact search could get the suggestion list. Each kind of
+// search now goes through one channel: one request in flight, sent at least this far apart.
+const SEARCH_REQUEST_INTERVAL_MS = 550;
+const roomListChannel = new SerialRequestChannel(SEARCH_REQUEST_INTERVAL_MS);
+const userSearchChannel = new SerialRequestChannel(SEARCH_REQUEST_INTERVAL_MS);
+
 /**
  * Shown when the server never answers. The usual cause is an emulator older
  * than the panel: it drops a packet it has no handler for, silently.
@@ -79,14 +88,18 @@ export const housekeepingFailureKey = (error: unknown, fallback: string): string
 /** Action key of the immediate answer a server sends when it refuses the housekeeping permission. */
 export const HOUSEKEEPING_DENIED_ACTION_KEY = 'housekeeping.denied';
 
-const searchUsersViaPacket = async (prefix: string, signal?: AbortSignal): Promise<IHousekeepingUserSummary[]> => {
-    SendMessageComposer(new HabboSearchComposer(prefix));
+const searchUsersViaPacket = (prefix: string, signal?: AbortSignal): Promise<IHousekeepingUserSummary[]> =>
+    userSearchChannel.run(
+        () => SendMessageComposer(new HabboSearchComposer(prefix)),
+        () => awaitUserSearchReply(prefix),
+        signal
+    );
 
+const awaitUserSearchReply = (prefix: string): Promise<IHousekeepingUserSummary[]> =>
     // Snapshot the parser inside the subscribe callback — the renderer
     // recycles parser instances after the callback returns, so any
     // post-await read of `event.getParser()` comes back null.
-    return await awaitMessageEvent<HabboSearchResultEvent, IHousekeepingUserSummary[]>(HabboSearchResultEvent, {
-        signal,
+    awaitMessageEvent<HabboSearchResultEvent, IHousekeepingUserSummary[]>(HabboSearchResultEvent, {
         timeoutMs: 8_000,
         select: (event) => {
             const parser = event.getParser();
@@ -115,7 +128,6 @@ const searchUsersViaPacket = async (prefix: string, signal?: AbortSignal): Promi
             return summaries;
         }
     });
-};
 
 const mapUserDetail = (user: HousekeepingUserDetailData): IHousekeepingUser => ({
     id: user.id,
@@ -274,12 +286,14 @@ const findRoomByNameViaPacket = (name: string): Promise<IHousekeepingRoom[]> => 
 
     if (!trimmed) return Promise.resolve([]);
 
-    SendMessageComposer(new HousekeepingSearchRoomsComposer(trimmed, true, 50));
-
-    return awaitMessageEvent<HousekeepingRoomListEvent, IHousekeepingRoom[]>(HousekeepingRoomListEvent, {
-        timeoutMs: 8_000,
-        select: (event) => event.getParser()?.rooms.map(mapRoom) ?? []
-    });
+    return roomListChannel.run(
+        () => SendMessageComposer(new HousekeepingSearchRoomsComposer(trimmed, true, 50)),
+        () =>
+            awaitMessageEvent<HousekeepingRoomListEvent, IHousekeepingRoom[]>(HousekeepingRoomListEvent, {
+                timeoutMs: 8_000,
+                select: (event) => event.getParser()?.rooms.map(mapRoom) ?? []
+            })
+    );
 };
 
 const searchRoomsViaPacket = (prefix: string, signal?: AbortSignal): Promise<IHousekeepingRoomSummary[]> => {
@@ -287,19 +301,21 @@ const searchRoomsViaPacket = (prefix: string, signal?: AbortSignal): Promise<IHo
 
     if (!trimmed) return Promise.resolve([]);
 
-    SendMessageComposer(new HousekeepingSearchRoomsComposer(trimmed, false, 8));
-
-    return awaitMessageEvent<HousekeepingRoomListEvent, IHousekeepingRoomSummary[]>(HousekeepingRoomListEvent, {
-        signal,
-        timeoutMs: 8_000,
-        select: (event) =>
-            event.getParser()?.rooms.map((room) => ({
-                id: room.id,
-                name: room.name,
-                userCount: room.userCount,
-                ownerName: room.ownerName
-            })) ?? []
-    });
+    return roomListChannel.run(
+        () => SendMessageComposer(new HousekeepingSearchRoomsComposer(trimmed, false, 8)),
+        () =>
+            awaitMessageEvent<HousekeepingRoomListEvent, IHousekeepingRoomSummary[]>(HousekeepingRoomListEvent, {
+                timeoutMs: 8_000,
+                select: (event) =>
+                    event.getParser()?.rooms.map((room) => ({
+                        id: room.id,
+                        name: room.name,
+                        userCount: room.userCount,
+                        ownerName: room.ownerName
+                    })) ?? []
+            }),
+        signal
+    );
 };
 
 const setRoomStateViaPacket = (roomId: number, open: boolean): Promise<IHousekeepingActionResult> =>

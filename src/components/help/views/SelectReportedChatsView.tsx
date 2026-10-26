@@ -1,6 +1,6 @@
 import { RoomObjectType } from '@octane/renderer';
 import { FC, useMemo, useState } from 'react';
-import { ChatEntryType, IChatEntry, localizeWithFallback, LocalizeText, ReportState, ReportType } from '../../../api';
+import { ChatEntryPlainText, ChatEntryType, IChatEntry, localizeWithFallback, LocalizeText, ReportState, ReportType } from '../../../api';
 import { AutoGrid, Button, Column, Flex, LayoutAvatarImageView, LayoutGridItem, Text } from '../../../common';
 import { useChatHistory, useFriendsState, useHelp, useMessenger } from '../../../hooks';
 import { BaseButton } from '../../../common/BaseButton';
@@ -100,7 +100,7 @@ export const SelectReportedChatsView: FC<{}> = (props) => {
                         {userChats.map((chat, index) => {
                             return (
                                 <LayoutGridItem key={chat.id} itemActive={selectedChats.indexOf(chat) >= 0} onClick={(event) => selectChat(chat)}>
-                                    <Text>{chat.message}</Text>
+                                    <Text>{ChatEntryPlainText(chat)}</Text>
                                 </LayoutGridItem>
                             );
                         })}

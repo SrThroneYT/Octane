@@ -24,16 +24,19 @@ vi.mock('./friends-list-request/FriendsListRequestView', () => ({
 
 describe('Habbo friend-list information architecture', () => {
     const requestResponse = vi.fn();
+    const requestResponseAll = vi.fn();
 
     beforeEach(() => {
         vi.mocked(AddLinkEventTracker).mockClear();
         requestResponse.mockClear();
+        requestResponseAll.mockClear();
         vi.mocked(useFriends).mockReturnValue({
             onlineFriends: [],
             offlineFriends: [],
             requests: [{ id: 11 }, { id: 12 }],
             requestFriend: vi.fn(),
             requestResponse,
+            requestResponseAll,
             settings: { categories: [] }
         } as unknown as ReturnType<typeof useFriends>);
     });
@@ -73,10 +76,11 @@ describe('Habbo friend-list information architecture', () => {
         fireEvent.click(container.querySelector<HTMLButtonElement>('[data-action="accept-all"]'));
         fireEvent.click(container.querySelector<HTMLButtonElement>('[data-action="dismiss-all"]'));
 
-        expect(requestResponse).toHaveBeenCalledWith(11, true);
-        expect(requestResponse).toHaveBeenCalledWith(12, true);
-        expect(requestResponse).toHaveBeenCalledWith(11, false);
-        expect(requestResponse).toHaveBeenCalledWith(12, false);
+        // One packet for all of them, not one per request: AcceptFriendRequestEvent is
+        // rate limited to one every 500 ms and drops the rest in silence.
+        expect(requestResponseAll).toHaveBeenNthCalledWith(1, true);
+        expect(requestResponseAll).toHaveBeenNthCalledWith(2, false);
+        expect(requestResponse).not.toHaveBeenCalled();
 
         fireEvent.click(container.querySelector<HTMLButtonElement>('.hfl-search-strip'));
 
@@ -92,6 +96,7 @@ describe('Habbo friend-list information architecture', () => {
             requests: [],
             requestFriend: vi.fn(),
             requestResponse,
+            requestResponseAll,
             settings: { categories: [] }
         } as unknown as ReturnType<typeof useFriends>);
 

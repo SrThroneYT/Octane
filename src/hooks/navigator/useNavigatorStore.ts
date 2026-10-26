@@ -57,6 +57,18 @@ import { useNotification } from '../notification';
 import { useNavigatorFavouritesStore } from './navigatorFavouritesStore';
 import { useNavigatorUiStore } from './navigatorUiStore';
 
+/**
+ * Whether a {@link GetGuestRoomResultEvent} carrying roomEnter may become the current
+ * room's data.
+ *
+ * The server answers roomEnter for any request that is not exactly
+ * `(roomId, false, true)`, so an answer about a different room - the furni room link
+ * asking about the room it points at, say - used to point room info, settings, the word
+ * filter and favourites at a room the user is not in.
+ */
+export const adoptsEnteredRoom = (currentRoomId: number, answeredRoomId: number): boolean =>
+    !currentRoomId || currentRoomId === answeredRoomId;
+
 export const useNavigatorStore = () => {
     const [categories, setCategories] = useState<NavigatorCategoryDataParser[]>(null);
     const [eventCategories, setEventCategories] = useState<NavigatorEventCategoryDataParser[]>(null);
@@ -166,6 +178,8 @@ export const useNavigatorStore = () => {
             const parser = event.getParser();
             if (parser.roomEnter) {
                 setNavigatorData((prev) => {
+                    if (!adoptsEnteredRoom(prev.currentRoomId, parser.data.roomId)) return prev;
+
                     const next = { ...prev };
                     next.enteredGuestRoom = parser.data;
                     next.currentRoomIsStaffPick = parser.staffPick;

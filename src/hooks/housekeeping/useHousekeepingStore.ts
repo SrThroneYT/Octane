@@ -26,7 +26,8 @@ const AUDIT_POLL_DEFAULT_MS = 30000;
 const AUDIT_POLL_MIN_MS = 5000;
 
 const ACTION_LOG_LIMIT = 100;
-const AUTOCOMPLETE_DEBOUNCE_MS = 250;
+// At least the server's 500 ms rate limit on the searches, so typing does not queue a request per key.
+const AUTOCOMPLETE_DEBOUNCE_MS = 500;
 const AUTOCOMPLETE_MIN_PREFIX = 2;
 
 const useHousekeepingStoreInner = () => {

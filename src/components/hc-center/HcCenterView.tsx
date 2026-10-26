@@ -10,7 +10,7 @@ import {
     ScrSendKickbackInfoMessageEvent
 } from '@octane/renderer';
 import { FC, useEffect, useState } from 'react';
-import { ClubStatus, FriendlyTime, GetClubBadge, GetConfigurationValue, LocalizeText, SendMessageComposer } from '../../api';
+import { ClubStatus, FriendlyTime, GetClubBadge, GetConfigurationRecord, LocalizeText, SendMessageComposer } from '../../api';
 import benefitsBg from '../../assets/images/hc-center/benefits.png';
 import clockIcon from '../../assets/images/hc-center/clock.png';
 import hcLogo from '../../assets/images/hc-center/hc_logo.gif';
@@ -150,7 +150,7 @@ export const HcCenterView: FC<{}> = (props) => {
             </div>
             <BaseButton type="button"
                 className="btn btn-link text-primary p-0"
-                onClick={() => CreateLinkEvent('habbopages/' + GetConfigurationValue('hc.center')['payday.habbopage'])}
+                onClick={() => CreateLinkEvent('habbopages/' + GetConfigurationRecord('hc.center')['payday.habbopage'])}
             >
                 {LocalizeText('hccenter.special.infolink')}
             </BaseButton>
@@ -163,7 +163,7 @@ export const HcCenterView: FC<{}> = (props) => {
             <Flex className="bg-muted/50 p-3" position="relative">
                 <Column gap={2}>
                     <div className="w-[213px] h-[37px] bg-contain bg-no-repeat" style={{ backgroundImage: `url(${hcLogo})` }} />
-                    <Button variant="success" onClick={(event) => CreateLinkEvent('catalog/open/' + GetConfigurationValue('catalog.links')['hc.buy_hc'])}>
+                    <Button variant="success" onClick={(event) => CreateLinkEvent('catalog/open/' + GetConfigurationRecord('catalog.links')['hc.buy_hc'])}>
                         {LocalizeText(clubStatus === ClubStatus.ACTIVE ? 'hccenter.btn.extend' : 'hccenter.btn.buy')}
                     </Button>
                 </Column>
@@ -179,7 +179,7 @@ export const HcCenterView: FC<{}> = (props) => {
                         <Text small className="text-gray-700" dangerouslySetInnerHTML={{ __html: getInfoText() }} />
                     </Column>
                 </Flex>
-                {GetConfigurationValue('hc.center')['payday.info'] && (
+                {GetConfigurationRecord('hc.center')['payday.info'] && (
                     <Flex className="rounded overflow-hidden border border-card-grid-item-border">
                         <Column className="bg-primary p-3 flex-1 text-white" gap={1}>
                             <Text bold className="text-white">
@@ -191,7 +191,7 @@ export const HcCenterView: FC<{}> = (props) => {
                             <div className="mt-auto">
                                 <BaseButton type="button"
                                     className="text-white/90 text-sm cursor-pointer hover:underline"
-                                    onClick={() => CreateLinkEvent('habbopages/' + GetConfigurationValue('hc.center')['payday.habbopage'])}
+                                    onClick={() => CreateLinkEvent('habbopages/' + GetConfigurationRecord('hc.center')['payday.habbopage'])}
                                 >
                                     {LocalizeText('hccenter.special.infolink')}
                                 </BaseButton>
@@ -219,7 +219,7 @@ export const HcCenterView: FC<{}> = (props) => {
                                     </Text>
                                     <BaseButton type="button"
                                         className="text-primary text-sm cursor-pointer hover:underline self-end"
-                                        onClick={() => CreateLinkEvent('habbopages/' + GetConfigurationValue('hc.center')['payday.habbopage'])}
+                                        onClick={() => CreateLinkEvent('habbopages/' + GetConfigurationRecord('hc.center')['payday.habbopage'])}
                                     >
                                         {LocalizeText('hccenter.breakdown.infolink')}
                                     </BaseButton>
@@ -228,7 +228,7 @@ export const HcCenterView: FC<{}> = (props) => {
                         </Column>
                     </Flex>
                 )}
-                {GetConfigurationValue('hc.center')['gift.info'] && (
+                {GetConfigurationRecord('hc.center')['gift.info'] && (
                     <Flex className="rounded bg-success/90 p-3" alignItems="center" gap={2}>
                         <Column gap={0} className="flex-1">
                             <Text bold className="text-white">
@@ -248,13 +248,13 @@ export const HcCenterView: FC<{}> = (props) => {
                         <Button
                             variant="primary"
                             className="shrink-0"
-                            onClick={() => CreateLinkEvent('catalog/open/' + GetConfigurationValue('catalog.links')['hc.hc_gifts'])}
+                            onClick={() => CreateLinkEvent('catalog/open/' + GetConfigurationRecord('catalog.links')['hc.hc_gifts'])}
                         >
                             {LocalizeText(clubStatus === ClubStatus.ACTIVE ? 'hccenter.btn.gifts.redeem' : 'hccenter.btn.gifts.view')}
                         </Button>
                     </Flex>
                 )}
-                {GetConfigurationValue('hc.center')['benefits.info'] && (
+                {GetConfigurationRecord('hc.center')['benefits.info'] && (
                     <Column
                         className="rounded p-3 bg-no-repeat bg-right-top border border-card-grid-item-border"
                         gap={1}
@@ -266,7 +266,7 @@ export const HcCenterView: FC<{}> = (props) => {
                         <Text small className="text-gray-700" dangerouslySetInnerHTML={{ __html: LocalizeText('hccenter.general.info') }} />
                         <BaseButton type="button"
                             className="text-primary text-sm cursor-pointer hover:underline mt-1"
-                            onClick={() => CreateLinkEvent('habbopages/' + GetConfigurationValue('hc.center')['benefits.habbopage'])}
+                            onClick={() => CreateLinkEvent('habbopages/' + GetConfigurationRecord('hc.center')['benefits.habbopage'])}
                         >
                             {LocalizeText('hccenter.general.infolink')}
                         </BaseButton>

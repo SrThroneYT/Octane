@@ -27,6 +27,8 @@ describe('Toolbar feature config', () => {
         const mainView = readFileSync(join(root, 'src/components/MainView.tsx'), 'utf8');
 
         // Not only the button: without the view, no link or plugin can open the wheel either.
-        expect(mainView).toContain("{GetConfigurationValue<boolean>('toolbar.fortunewheel.enabled', true) && <FortuneWheelView />}");
+        // The view sits inside its error boundary, so the flag is asserted on its own.
+        expect(mainView).toContain("{GetConfigurationValue<boolean>('toolbar.fortunewheel.enabled', true) && (");
+        expect(mainView).toContain('<FortuneWheelView />');
     });
 });

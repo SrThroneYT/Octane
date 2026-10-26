@@ -8,7 +8,7 @@ import {
     RoomUnitGiveHandItemPetComposer
 } from '@octane/renderer';
 import { FC, useEffect, useMemo, useState } from 'react';
-import { AvatarInfoPet, GetConfigurationValue, GetOwnRoomObject, LocalizeText, SendMessageComposer } from '../../../../../api';
+import { AvatarInfoPet, GetConfigurationRecord, GetOwnRoomObject, LocalizeText, SendMessageComposer } from '../../../../../api';
 import { useRoom, useSessionInfo } from '../../../../../hooks';
 import { ContextMenuHeaderView } from '../../context-menu/ContextMenuHeaderView';
 import { ContextMenuListItemView } from '../../context-menu/ContextMenuListItemView';
@@ -103,7 +103,7 @@ export const AvatarInfoWidgetOwnPetView: FC<AvatarInfoWidgetOwnPetViewProps> = (
                     roomSession.compostPlant(avatarInfo.id);
                     break;
                 case 'buy_saddle':
-                    CreateLinkEvent('catalog/open/' + GetConfigurationValue('catalog.links')['pets.buy_saddle']);
+                    CreateLinkEvent('catalog/open/' + GetConfigurationRecord('catalog.links')['pets.buy_saddle']);
                     break;
             }
         }

@@ -4,7 +4,10 @@ export interface IChatEntry {
     entityId: number;
     name: string;
     look?: string;
+    /** What is displayed: for room chat, the formatted HTML of the bubble. */
     message?: string;
+    /** What was said, as plain text: what a report sends. Entries saved by older clients have none. */
+    text?: string;
     entityType?: number;
     style?: number;
     chatType?: number;

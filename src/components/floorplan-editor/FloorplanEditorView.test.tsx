@@ -169,6 +169,26 @@ describe('FloorplanEditorView container', () => {
         expect(composer.tilemap.split(/\r/)[0]).toBe('00');
     });
 
+    it('the pick-up switch reaches the save', () => {
+        openEditor();
+        const fhmHandler = messageHandlers.get(FloorHeightMapEvent);
+        act(() => fhmHandler!({ getParser: () => ({ model: '00', wallHeight: 0 }) }));
+        const saveBtn = findByExactText('floor.plan.editor.save');
+
+        sendMessageComposer.mockClear();
+        fireEvent.click(saveBtn!);
+        expect(sendMessageComposer.mock.calls[0][0].autoPickup).toBe(false);
+
+        const toggle = document.querySelector('[data-testid="floorplan-auto-pickup"]');
+        expect(toggle?.getAttribute('data-active')).toBe('false');
+        fireEvent.click(toggle!);
+        expect(toggle?.getAttribute('data-active')).toBe('true');
+
+        sendMessageComposer.mockClear();
+        fireEvent.click(saveBtn!);
+        expect(sendMessageComposer.mock.calls[0][0].autoPickup).toBe(true);
+    });
+
     it('RoomEngineEvent.DISPOSED hides the editor', () => {
         render(<FloorplanEditorView />);
         const tracker = (AddLinkEventTracker as ReturnType<typeof vi.fn>).mock.calls[0][0];

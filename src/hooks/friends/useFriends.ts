@@ -16,6 +16,7 @@ import {
     MessengerInitEvent,
     MoveFriendToCategoryComposer,
     NewFriendRequestEvent,
+    OctaneEventType,
     RemoveFriendCategoryComposer,
     RenameFriendCategoryComposer,
     RequestFriendComposer,
@@ -37,8 +38,21 @@ import {
     SendMessageComposer,
     withUpdatedFriendCategories
 } from '../../api';
-import { useMessageEvent } from '../events';
+import { useMessageEvent, useOctaneEvent } from '../events';
 import { useNotification } from '../notification';
+
+/** AcceptFriendRequestEvent refuses a count above this. */
+const MAXIMUM_BULK_REQUEST_RESPONSES = 100;
+
+/**
+ * The request ids to accept in one packet.
+ *
+ * AcceptFriendRequestEvent reads a count and then the ids, and it is rate limited to one
+ * packet every 500 ms: sending one per request in a loop had the server accept the first
+ * and silently drop the rest, while the client removed them all from the list.
+ */
+export const bulkAcceptRequestIds = (requests: MessengerRequest[]): number[] =>
+    requests.slice(0, MAXIMUM_BULK_REQUEST_RESPONSES).map((request) => request.id);
 
 /**
  * Internal singleton store for friend-list state + actions. Public
@@ -141,6 +155,28 @@ const useFriendsStore = () => {
         });
 
         SendMessageComposer(new RequestFriendComposer(userName));
+    };
+
+    /** Answers every pending request in one packet. */
+    const requestResponseAll = (flag: boolean) => {
+        if (!flag) {
+            // The server's own "decline all".
+            SendMessageComposer(new DeclineFriendMessageComposer(true));
+
+            setRequests([]);
+
+            return;
+        }
+
+        const pending = bulkAcceptRequestIds(requests);
+
+        if (!pending.length) return;
+
+        SendMessageComposer(new AcceptFriendMessageComposer(...pending));
+
+        const answered = new Set(pending);
+
+        setRequests((prevValue) => prevValue.filter((request) => !answered.has(request.id)));
     };
 
     const requestResponse = (requestId: number, flag: boolean) => {
@@ -322,6 +358,18 @@ const useFriendsStore = () => {
         });
     });
 
+    // After an automatic reconnection nothing asked the server again: private messages that arrived meanwhile were
+    // stored as offline messages and shown only at the next full login, and friends removed meanwhile stayed listed.
+    // Start the messenger over, as at login: the init brings the requests, the friend list and then the offline
+    // messages.
+    useOctaneEvent(OctaneEventType.SOCKET_REAUTHENTICATED, () => {
+        friendsRef.current = [];
+        setFriends([]);
+        setRequests([]);
+        setOfflineMessagesReady(false);
+        SendMessageComposer(new MessengerInitComposer());
+    });
+
     useEffect(() => {
         if (!offlineMessagesReady) return;
 
@@ -353,6 +401,7 @@ const useFriendsStore = () => {
         canRequestFriend,
         requestFriend,
         requestResponse,
+        requestResponseAll,
         followFriend,
         updateRelationship,
         addCategory,
@@ -406,12 +455,22 @@ export const useFriendsState = () => {
  * relationship.
  */
 export const useFriendsActions = () => {
-    const { requestFriend, requestResponse, followFriend, updateRelationship, addCategory, renameCategory, removeCategory, moveFriendToCategory } =
-        useSharedHook(useFriendsStore);
+    const {
+        requestFriend,
+        requestResponse,
+        requestResponseAll,
+        followFriend,
+        updateRelationship,
+        addCategory,
+        renameCategory,
+        removeCategory,
+        moveFriendToCategory
+    } = useSharedHook(useFriendsStore);
 
     return {
         requestFriend,
         requestResponse,
+        requestResponseAll,
         followFriend,
         updateRelationship,
         addCategory,
