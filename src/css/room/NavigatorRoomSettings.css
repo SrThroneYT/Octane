@@ -83,11 +83,6 @@
         font-size: 11px !important;
     }
 
-    :where(input:focus, select:focus, .octane-select-trigger:focus, textarea:focus) {
-        border-color: #418db0 !important;
-        outline: none !important;
-    }
-
     :where(input[type="checkbox"], input[type="radio"]) {
         width: 13px;
         height: 13px;

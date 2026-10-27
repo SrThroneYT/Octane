@@ -39,10 +39,13 @@ export const InventoryFurnitureView: FC<{
     roomSession: IRoomSession;
     roomPreviewer: RoomPreviewer;
     filteredGroupItems: GroupItem[];
+    /** Every item of the open tab, before the search and filters; empty shows AIR's empty_container. */
+    sectionGroupItems?: GroupItem[];
 }> = (props) => {
-    const { roomSession = null, roomPreviewer = null, filteredGroupItems = [] } = props;
+    const { roomSession = null, roomPreviewer = null, filteredGroupItems = [], sectionGroupItems = null } = props;
     const [isVisible, setIsVisible] = useState(false);
     const { groupItems = [], selectedItem = null, setSelectedItem = null, activate = null, deactivate = null } = useInventoryFurni();
+    const tabItems = sectionGroupItems ?? groupItems;
     const { resetItems = null } = useInventoryUnseenTracker();
     const playTestRestricted = usePlayTestRestricted();
 
@@ -53,6 +56,14 @@ export const InventoryFurnitureView: FC<{
     useEffect(() => {
         setPage(0);
     }, [filteredGroupItems]);
+
+    // The selection follows the tab: an item of another tab (or one filtered away) gives way to the first shown.
+    useEffect(() => {
+        if (!setSelectedItem) return;
+        if (selectedItem && filteredGroupItems.some((item) => item === selectedItem || getGroupItemKey(item) === getGroupItemKey(selectedItem))) return;
+
+        setSelectedItem(filteredGroupItems[0] ?? null);
+    }, [filteredGroupItems, selectedItem, setSelectedItem]);
 
     const tradeableCount = useMemo(() => {
         if (!selectedItem) return 0;
@@ -123,7 +134,7 @@ export const InventoryFurnitureView: FC<{
         return () => setIsVisible(false);
     }, []);
 
-    if (!groupItems || !groupItems.length) {
+    if (!tabItems || !tabItems.length) {
         return <InventoryCategoryEmptyView desc={LocalizeText('inventory.empty.desc')} title={LocalizeText('inventory.empty.title')} />;
     }
 

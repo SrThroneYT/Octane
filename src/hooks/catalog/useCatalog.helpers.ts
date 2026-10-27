@@ -40,8 +40,25 @@ export const findNodeById = (id: number, node: ICatalogNode | null, rootNode: IC
     return null;
 };
 
+/**
+ * The first page named `name` under `node`, depth first. A path (`clothing/effects`) finds each name under the
+ * page found for the one before it, for a page name the catalogue uses more than once.
+ */
 export const findNodeByName = (name: string, node: ICatalogNode | null, rootNode: ICatalogNode | null): ICatalogNode | null => {
     if (!node) return null;
+
+    if (name?.includes('/')) {
+        let found: ICatalogNode | null = node;
+
+        for (const part of name.split('/').filter((segment) => segment.length)) {
+            found = findNodeByName(part, found, found === node ? rootNode : found);
+
+            if (!found) return null;
+        }
+
+        return found === node ? null : found;
+    }
+
     if (node.pageName === name && node !== rootNode) return node;
 
     for (const child of node.children) {

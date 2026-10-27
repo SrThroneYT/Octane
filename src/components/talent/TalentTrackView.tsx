@@ -13,6 +13,7 @@ import {
     LocalizeBadgeDescription,
     LocalizeBadgeName,
     localizeWithFallback,
+    SanitizeHtml,
     splitTalentTasks,
     TALENT_STATE_ACHIEVED,
     TALENT_STATE_IN_PROGRESS,
@@ -24,6 +25,8 @@ import checkMark from '../../assets/images/talent/talent_check_mark_circle.png';
 import citizenshipAccomplished from '../../assets/images/talent/talent_citizenship_accomplished.png';
 import lockedAchievement from '../../assets/images/talent/talent_locked_achievement.png';
 import lockedStripe from '../../assets/images/talent/talent_locked_stripe.png';
+import maskLeft from '../../assets/images/talent/talent_mask_left.png';
+import maskRight from '../../assets/images/talent/talent_mask_right.png';
 import vipReward from '../../assets/images/talent/talent_vip_reward.png';
 import { AirModalDialog, LayoutAvatarImageView, LayoutBadgeImageView } from '../../common';
 import { BaseButton } from '../../common/BaseButton';
@@ -31,8 +34,23 @@ import { LibraryImageView } from '../help/habbo-way/HabboWayPagerView';
 
 export const getTalentTaskTitle = (badgeCode: string): string => LocalizeBadgeName(badgeCode).toUpperCase();
 
-export const getTalentTaskInstruction = (badgeCode: string): string =>
-    localizeWithFallback(`badge_instruction_${getAchievementBaseCode(badgeCode)}`, LocalizeBadgeDescription(badgeCode));
+/** The task's text; a %limit% the badge texts leave open is the task's goal (its total score). */
+export const getTalentTaskInstruction = (badgeCode: string, limit?: number): string => {
+    const text = localizeWithFallback(`badge_instruction_${getAchievementBaseCode(badgeCode)}`, LocalizeBadgeDescription(badgeCode));
+
+    return limit > 0 ? text.replaceAll('%limit%', String(limit)) : text;
+};
+
+// AIR formatted_text: the begin texts carry small HTML such as <br>.
+const FormattedText: FC<{ className: string; text: string }> = ({ className, text }) => (
+    <div className={className} dangerouslySetInnerHTML={{ __html: SanitizeHtml(text) }} />
+);
+
+// progress_container: the needle starts at x36 (its middle at 52) and the bar keeps the same inset on the right.
+const PROGRESS_INSET = 52;
+
+export const talentProgressPosition = (progress: number): string =>
+    `calc(${PROGRESS_INSET}px + (100% - ${PROGRESS_INSET * 2}px) * ${Math.min(1, Math.max(0, progress))})`;
 
 interface TalentTrackViewProps {
     track: ITalentTrack;
@@ -51,7 +69,7 @@ const TalentTaskView: FC<{ task: ITalentTask; onSelect: (task: ITalentTask) => v
             </div>
             <div className="octane-talent-task__copy">
                 <div className="octane-talent-task__title">{getTalentTaskTitle(task.badgeCode)}</div>
-                <div className="octane-talent-task__description">{getTalentTaskInstruction(task.badgeCode)}</div>
+                <div className="octane-talent-task__description">{getTalentTaskInstruction(task.badgeCode, task.totalScore)}</div>
             </div>
             {ongoing && (
                 <div className="octane-talent-task__progress">
@@ -81,13 +99,9 @@ const TalentLevelView: FC<{ trackName: string; level: ITalentLevel; onSelectTask
 
     return (
         <div className="octane-talent-level" data-state={level.state}>
-            <div className="octane-talent-level__head">
-                <div>
-                    <div className="octane-talent-level__title">{localizeWithFallback(`talent.track.${trackName}.level.${level.level}.title`, '')}</div>
-                    <div className="octane-talent-level__description">{localizeWithFallback(`talent.track.${trackName}.level.${level.level}.description`, '')}</div>
-                </div>
-                <LibraryImageView className="octane-talent-level__illustration" src={getTalentLevelImageUrl(library, trackName, level.level)} />
-            </div>
+            <div className="octane-talent-level__title">{localizeWithFallback(`talent.track.${trackName}.level.${level.level}.title`, '')}</div>
+            <div className="octane-talent-level__description">{localizeWithFallback(`talent.track.${trackName}.level.${level.level}.description`, '')}</div>
+            <LibraryImageView className="octane-talent-level__illustration" src={getTalentLevelImageUrl(library, trackName, level.level)} />
             <div className="octane-talent-level__status">
                 <div className={`octane-talent-reward ${achieved ? 'is-achieved' : 'is-locked'}`}>
                     <div className="octane-talent-reward__border">
@@ -103,14 +117,22 @@ const TalentLevelView: FC<{ trackName: string; level: ITalentLevel; onSelectTask
                                         </div>
                                     ) : (
                                         <div key={`product-${index}`} className="octane-talent-reward__item">
-                                            <LibraryImageView src={getTalentProductImageUrl(library, product.productCode)} />
+                                            <div className="octane-talent-reward__product">
+                                                <LibraryImageView src={getTalentProductImageUrl(library, product.productCode)} />
+                                            </div>
                                         </div>
                                     )
                                 )}
                                 {level.perks.map((perk) => (
+                                    // reward_achieved / reward_locked: a 60x60 icon, then the perk's name and description.
                                     <div key={perk} className="octane-talent-reward__item is-perk">
-                                        <span className="octane-talent-reward__perk-title">{localizeWithFallback(`perk.${perk}.name`, perk)}</span>
-                                        <span>{localizeWithFallback(`perk.${perk}.description`, '')}</span>
+                                        <div className="octane-talent-reward__perk-icon">
+                                            <img alt="" src={achieved ? checkMark : lockedAchievement} />
+                                        </div>
+                                        <div className="octane-talent-reward__perk-copy">
+                                            <span className="octane-talent-reward__perk-title">{localizeWithFallback(`perk.${perk}.name`, perk)}</span>
+                                            <span>{localizeWithFallback(`perk.${perk}.description`, '')}</span>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -161,12 +183,10 @@ export const TalentTrackView: FC<TalentTrackViewProps> = ({ track, onClose, onSe
             return (
                 <div className="octane-talent-begin">
                     <div className="octane-talent-begin__title">{localizeWithFallback(`talent.track.${name}.guide.begin.title`, 'Your journey')}</div>
-                    <div className="octane-talent-begin__text">{localizeWithFallback(`talent.track.${name}.guide.begin.description`, '')}</div>
-                    <div className="octane-talent-begin__badge">
-                        <span>{localizeWithFallback(`talent.track.${name}.begin.citizenship`, 'BECOME A CITIZEN')}</span>
-                        <img alt="" src={citizenshipAccomplished} />
-                    </div>
-                    <BaseButton className="octane-habboway__action" type="button" onClick={() => onOpenTrack(TALENT_TRACK_CITIZENSHIP)}>
+                    <FormattedText className="octane-talent-begin__text" text={localizeWithFallback(`talent.track.${name}.guide.begin.description`, '')} />
+                    <span className="octane-talent-begin__label is-citizenship">{localizeWithFallback(`talent.track.${name}.begin.citizenship`, 'BECOME A CITIZEN')}</span>
+                    <img alt="" className="octane-talent-begin__emblem" src={citizenshipAccomplished} />
+                    <BaseButton className="octane-habboway__action octane-talent-begin__button" type="button" onClick={() => onOpenTrack(TALENT_TRACK_CITIZENSHIP)}>
                         {localizeWithFallback('talent.track.citizenship.button', 'View the citizenship track')}
                     </BaseButton>
                 </div>
@@ -176,12 +196,12 @@ export const TalentTrackView: FC<TalentTrackViewProps> = ({ track, onClose, onSe
         return (
             <div className="octane-talent-begin">
                 <div className="octane-talent-begin__title">{localizeWithFallback(`talent.track.${name}.begin.title`, '')}</div>
-                <div className="octane-talent-begin__text">{localizeWithFallback(`talent.track.${name}.begin.description`, '')}</div>
+                <FormattedText className="octane-talent-begin__text" text={localizeWithFallback(`talent.track.${name}.begin.description`, '')} />
+                <span className="octane-talent-begin__label is-register">{localizeWithFallback(`talent.track.${name}.begin.register`, 'REGISTER AT HABBO')}</span>
                 <div className="octane-talent-begin__avatar">
-                    <span>{localizeWithFallback(`talent.track.${name}.begin.register`, 'REGISTER AT HABBO')}</span>
                     <LayoutAvatarImageView direction={2} figure={figure} />
-                    <img alt="" className="octane-talent-begin__check" src={checkMark} />
                 </div>
+                <img alt="" className="octane-talent-begin__check" src={checkMark} />
             </div>
         );
     };
@@ -195,30 +215,37 @@ export const TalentTrackView: FC<TalentTrackViewProps> = ({ track, onClose, onSe
             onBackdropClick={onClose}
             onClose={onClose}
         >
-            <div ref={panoramaRef} className="octane-talent-track__panorama">
-                {renderBegin()}
-                {track.levels.map((level, index) => (
-                    <div key={level.level} className="octane-talent-track__level" data-level-index={index}>
-                        <TalentLevelView level={level} trackName={name} onSelectTask={onSelectTask} />
-                    </div>
-                ))}
+            <div className="octane-talent-track__viewport">
+                <div ref={panoramaRef} className="octane-talent-track__panorama">
+                    {renderBegin()}
+                    {track.levels.map((level, index) => (
+                        <div key={level.level} className="octane-talent-track__level" data-level-index={index}>
+                            <TalentLevelView level={level} trackName={name} onSelectTask={onSelectTask} />
+                        </div>
+                    ))}
+                    <div className="octane-talent-track__end" />
+                </div>
+                <img alt="" className="octane-talent-track__mask is-left" src={maskLeft} />
+                <img alt="" className="octane-talent-track__mask is-right" src={maskRight} />
             </div>
             <div className="octane-talent-progress">
                 <div className="octane-talent-progress__title">
                     {localizeWithFallback(`talent.track.${name}.progress.title`, localizeWithFallback('talent.track.common.progress.title', 'YOUR PROGRESS'))}
                 </div>
                 <div className="octane-talent-progress__bar">
-                    <div className="octane-talent-progress__achieved" style={{ width: `${progress * 100}%` }} />
+                    <div className="octane-talent-progress__achieved" style={{ width: talentProgressPosition(progress) }} />
                     {track.levels.slice(1).map((level, index) => (
                         <span
                             key={level.level}
                             className={`octane-talent-progress__divider ${(index + 1) / track.levels.length < progress ? 'is-achieved' : ''}`}
-                            style={{ left: `${((index + 1) / track.levels.length) * 100}%` }}
+                            style={{ left: talentProgressPosition((index + 1) / track.levels.length) }}
                         />
                     ))}
-                    <div className="octane-talent-progress__needle" style={{ left: `${progress * 100}%` }}>
+                    <div className="octane-talent-progress__needle" style={{ left: talentProgressPosition(progress) }}>
                         <img alt="" className="octane-talent-progress__glow" src={avatarGlow} />
-                        <LayoutAvatarImageView headOnly direction={2} figure={figure} />
+                        <div className="octane-talent-progress__head">
+                            <LayoutAvatarImageView headOnly compactHead compactHeadPadding={0} compactHeadSize={33} direction={2} figure={figure} />
+                        </div>
                         <div className="octane-talent-progress__balloon">{localizeWithFallback('talent.track.common.progress.position', 'You are here')}</div>
                     </div>
                 </div>

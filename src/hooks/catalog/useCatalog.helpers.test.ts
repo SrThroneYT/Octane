@@ -112,6 +112,19 @@ describe('findNodeByName', () => {
 
         expect(findNodeByName('b', root, root)).toBeNull();
     });
+
+    it('follows a page path when a name is used twice', () => {
+        const wiredEffects = makeNode({ pageName: 'effects' }) as any;
+        const clothingEffects = makeNode({ pageName: 'effects' }) as any;
+        const furni = makeNode({ pageName: 'furni', children: [makeNode({ pageName: 'wired', children: [wiredEffects] })] }) as any;
+        const clothing = makeNode({ pageName: 'clothing', children: [clothingEffects] }) as any;
+        const root = makeNode({ pageName: 'root', children: [furni, clothing] }) as any;
+
+        expect(findNodeByName('effects', root, root)).toBe(wiredEffects);
+        expect(findNodeByName('clothing/effects', root, root)).toBe(clothingEffects);
+        expect(findNodeByName('clothing/hats', root, root)).toBeNull();
+        expect(findNodeByName('clothing/clothing', root, root)).toBeNull();
+    });
 });
 
 // ---------------------------------------------------------------------------

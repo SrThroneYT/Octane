@@ -160,11 +160,14 @@ export const InventoryView: FC<{}> = () => {
         setTypeFilter('any');
     }, [mainFilter, section]);
 
+    // The items of the open tab (furni, collectibles or rentables): its empty view and filter bar go by these.
+    const sectionGroupItems = useMemo(() => (section ? inFurnitureSection(groupItems, section, collectiblesEnabled) : groupItems), [groupItems, section, collectiblesEnabled]);
+
     const filteredGroupItems = useMemo(() => {
         if (!section) return groupItems;
 
-        return filterFurnitureGroupItems(inFurnitureSection(groupItems, section, collectiblesEnabled), appliedSearch, mainFilter as FurniMainFilter, typeFilter);
-    }, [groupItems, appliedSearch, mainFilter, typeFilter, section, collectiblesEnabled]);
+        return filterFurnitureGroupItems(sectionGroupItems, appliedSearch, mainFilter as FurniMainFilter, typeFilter);
+    }, [groupItems, sectionGroupItems, appliedSearch, mainFilter, typeFilter, section]);
 
     const filteredBadgeCodes = useMemo(() => {
         const comparison = appliedSearch.toLocaleLowerCase().trim();
@@ -272,7 +275,7 @@ export const InventoryView: FC<{}> = () => {
 
     if (!isVisible) return null;
 
-    const showFilter = !isTrading && !isWiredTrading && ((section !== null && groupItems.length > 0) || currentTab === TAB_BADGES);
+    const showFilter = !isTrading && !isWiredTrading && ((section !== null && sectionGroupItems.length > 0) || currentTab === TAB_BADGES);
 
     return (
         <>
@@ -318,7 +321,12 @@ export const InventoryView: FC<{}> = () => {
                             )}
                             <div className={`octane-inventory-content ${section ? 'is-furniture' : ''}`}>
                                 {section && (
-                                    <InventoryFurnitureView filteredGroupItems={filteredGroupItems} roomPreviewer={roomPreviewer} roomSession={roomSession} />
+                                    <InventoryFurnitureView
+                                        filteredGroupItems={filteredGroupItems}
+                                        roomPreviewer={roomPreviewer}
+                                        roomSession={roomSession}
+                                        sectionGroupItems={sectionGroupItems}
+                                    />
                                 )}
                                 {showsCollectibles && <InventoryCollectiblesView />}
                                 {currentTab === TAB_PETS && <InventoryPetView roomPreviewer={roomPreviewer} roomSession={roomSession} />}

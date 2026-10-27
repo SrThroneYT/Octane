@@ -10,7 +10,7 @@ const classes = {
     },
     rounded: 'rounded-md',
     color: {
-        default: 'focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+        default: 'focus:outline-none'
     }
 };
 

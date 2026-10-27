@@ -9,125 +9,195 @@
     image-rendering: pixelated;
 }
 
-/* ---- Talent track (window is the desktop minus 100 px each side) ---- */
+/* ---- Talent track (talent_track layout; the window is the desktop minus 100 px each side) ---- */
 
 .octane-talent-track.octane-air-modal__window {
     width: calc(100vw - 200px) !important;
     min-width: min(700px, calc(100vw - 16px));
 }
 
+/* frame: the panorama starts 20 px down and is 280 high, its scrollbar (10 px) right under it. */
+.octane-talent-track__viewport {
+    position: relative;
+    margin-top: 20px;
+}
+
 .octane-talent-track__panorama {
     display: flex;
-    gap: 0;
-    height: 300px;
+    height: 290px;
     overflow-x: auto;
     overflow-y: hidden;
-    padding-bottom: 6px;
 }
 
-.octane-talent-track__level {
+.octane-talent-track__panorama > * {
     flex: none;
+    height: 280px;
 }
 
+.octane-talent-track__end {
+    width: 100px;
+}
+
+.octane-talent-track__mask {
+    position: absolute;
+    top: 0;
+    width: 24px;
+    height: 280px;
+    pointer-events: none;
+}
+
+.octane-talent-track__mask.is-left {
+    left: 0;
+}
+
+.octane-talent-track__mask.is-right {
+    right: 0;
+}
+
+/* begin_helper / begin_citizenship: 250 x 280, everything placed as in the layout. */
 .octane-talent-begin {
     position: relative;
-    flex: none;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
     width: 250px;
-    padding: 20px 20px 10px;
 }
 
 .octane-talent-begin__title {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    width: 311px;
     font-size: 18px;
     font-weight: 700;
     line-height: 22px;
 }
 
 .octane-talent-begin__text {
-    color: #333333;
+    position: absolute;
+    left: 20px;
+    top: 49px;
+    width: 230px;
 }
 
-.octane-talent-begin__badge,
-.octane-talent-begin__avatar {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 6px;
-    margin-top: auto;
+.octane-talent-begin__label {
+    position: absolute;
+    width: 76px;
     color: #333333;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
+    line-height: 12px;
+    text-align: right;
 }
 
-.octane-talent-begin__avatar > div {
+.octane-talent-begin__label.is-citizenship {
+    left: 124px;
+    top: 166px;
+}
+
+.octane-talent-begin__label.is-register {
+    left: 89px;
+    top: 201px;
+}
+
+.octane-talent-begin__emblem {
+    position: absolute;
+    left: 203px;
+    top: 182px;
+}
+
+.octane-talent-begin__button {
+    position: absolute;
+    left: 54px;
+    top: 227px;
+    width: 200px;
+}
+
+.octane-talent-begin__avatar {
+    position: absolute;
+    left: 169px;
+    top: 144px;
     width: 90px;
     height: 130px;
 }
 
 .octane-talent-begin__check {
     position: absolute;
-    right: 26px;
-    top: 28px;
+    left: 216px;
+    top: 172px;
 }
 
+/* level_pane: separator at y30, title (50,30), description (50,55), illustration (700,0), status list (10,100). */
 .octane-talent-level {
     position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    min-width: 600px;
-    height: 100%;
-    padding: 20px 20px 0 30px;
-    border-left: 1px solid #dddddd;
+    box-sizing: border-box;
+    min-width: 880px;
+    height: 280px;
+    padding: 100px 30px 0 10px;
 }
 
-.octane-talent-level__head {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-    min-height: 60px;
+.octane-talent-level::before {
+    content: "";
+    position: absolute;
+    left: 24px;
+    top: 30px;
+    bottom: 10px;
+    border-left: 1px solid #cccccc;
 }
 
 .octane-talent-level__title {
-    font-size: 14px;
+    position: absolute;
+    left: 50px;
+    top: 30px;
+    font-size: 16px;
     font-weight: 700;
+    line-height: 19px;
+    white-space: nowrap;
 }
 
 .octane-talent-level__description {
-    max-width: 320px;
+    position: absolute;
+    left: 50px;
+    top: 55px;
+    width: 320px;
     color: #333333;
+    font-size: 11px;
+    line-height: 14px;
 }
 
 .octane-talent-level__illustration {
-    flex: none;
+    position: absolute;
+    left: 700px;
+    top: 0;
     width: 170px;
     height: 120px;
-    margin-top: -20px;
     object-fit: contain;
     object-position: bottom center;
+    pointer-events: none;
 }
 
 .octane-talent-level__status {
+    position: relative;
     display: flex;
     gap: 10px;
+    height: 180px;
 }
 
+/* level_reward: 350 x 180, its border 155 high from y20; it widens when its rewards need more room. */
 .octane-talent-reward {
     position: relative;
     flex: none;
-    width: 350px;
-    padding-top: 20px;
+    min-width: 350px;
+    height: 180px;
 }
 
 .octane-talent-reward__border {
-    min-height: 155px;
-    padding: 8px 10px;
+    position: relative;
+    box-sizing: border-box;
+    min-width: 350px;
+    height: 155px;
+    margin-top: 20px;
+    padding: 80px 10px 0;
     border-radius: 6px;
     background: #bdbdbd;
-    color: #333333;
+    color: #000000;
 }
 
 .octane-talent-reward.is-achieved .octane-talent-reward__border {
@@ -136,46 +206,107 @@
 }
 
 .octane-talent-reward__unlocked {
-    font-size: 10px;
+    position: absolute;
+    left: 10px;
+    top: 8px;
+    color: #ffffff;
+    font-size: 9px;
     font-weight: 700;
+    line-height: 12px;
 }
 
 .octane-talent-reward__description {
-    margin: 4px 0 10px;
+    position: absolute;
+    left: 10px;
+    top: 22px;
+    width: 330px;
+    max-height: 54px;
+    overflow: hidden;
+    font-size: 12px;
     font-weight: 700;
+    line-height: 16px;
 }
 
 .octane-talent-reward__list {
     display: flex;
-    flex-wrap: wrap;
     gap: 10px;
 }
 
 .octane-talent-reward__item {
+    position: relative;
     display: flex;
-    align-items: center;
-    gap: 4px;
-    min-width: 61px;
-    min-height: 60px;
-    padding: 6px;
+    flex: none;
+    box-sizing: border-box;
+    height: 60px;
     border-radius: 6px;
     background: rgba(0, 0, 0, 0.2);
+    color: #ffffff;
 }
 
-.octane-talent-reward__item img {
-    max-width: 48px;
-    max-height: 48px;
+.octane-talent-reward__product {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 33px;
+    height: 33px;
+    margin: 14px;
+    border-radius: 4px;
+    background: #cccccc;
+}
+
+.octane-talent-reward__product img {
+    max-width: 31px;
+    max-height: 30px;
+}
+
+.octane-talent-reward__item.is-vip {
+    align-items: center;
+    width: 69px;
+    padding-left: 14px;
+}
+
+.octane-talent-reward__item.is-vip span {
+    margin-left: 6px;
+    font-weight: 700;
 }
 
 .octane-talent-reward__item.is-perk {
+    width: 200px;
+}
+
+.octane-talent-reward.is-locked .octane-talent-reward__item.is-perk {
+    background: #979797;
+}
+
+.octane-talent-reward__perk-icon {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+}
+
+.octane-talent-reward__perk-copy {
+    display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    max-width: 200px;
-    font-size: 11px;
+    min-width: 0;
+    padding: 9px 5px 0 0;
+    font-size: 10px;
+    line-height: 12px;
+}
+
+.octane-talent-reward__perk-copy span {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
 }
 
 .octane-talent-reward__perk-title {
+    font-size: 11px;
     font-weight: 700;
+    line-height: 13px;
 }
 
 .octane-talent-reward__stripe {
@@ -190,35 +321,38 @@
     top: 11px;
 }
 
+/* level_task: two rows of 80, each task 210 x 80 with its border 60 high from y20. */
 .octane-talent-level__tasks {
     display: flex;
     flex-direction: column;
-    gap: 0;
 }
 
 .octane-talent-level__task-row {
     display: flex;
     gap: 10px;
-    min-height: 80px;
+    height: 80px;
 }
 
 .octane-talent-task {
     position: relative;
-    display: flex;
-    gap: 2px;
+    display: block;
+    flex: none;
+    box-sizing: border-box;
     width: 210px;
     height: 60px;
     margin-top: 20px;
-    padding: 0 5px 0 0;
-    border: 1px solid #cccccc;
+    padding: 0;
+    border: 1px solid #b6b6b6;
     border-radius: 6px;
     background: #ffffff;
     color: #000000;
+    font: inherit;
     text-align: left;
 }
 
 .octane-talent-task.is-ongoing {
     border: 2px solid #3d7fbf;
+    background: #ffffff;
     cursor: pointer;
 }
 
@@ -228,7 +362,9 @@
 }
 
 .octane-talent-task__badge {
-    flex: none;
+    position: absolute;
+    left: 0;
+    top: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -236,15 +372,23 @@
     height: 58px;
 }
 
+.octane-talent-task.is-ongoing .octane-talent-task__badge {
+    top: 3px;
+    height: 45px;
+}
+
 .octane-talent-task__copy {
-    min-width: 0;
-    padding-top: 8px;
+    position: absolute;
+    left: 60px;
+    top: 9px;
+    width: 145px;
 }
 
 .octane-talent-task__title {
     overflow: hidden;
     font-size: 11px;
     font-weight: 700;
+    line-height: 15px;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -255,13 +399,13 @@
     font-size: 10px;
     line-height: 12px;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
 }
 
 .octane-talent-task__progress {
     position: absolute;
-    left: 5px;
-    bottom: 5px;
+    left: 4px;
+    top: 46px;
     width: 50px;
     height: 6px;
     background: url("@/assets/images/talent/talent_task_progress_bg.png") repeat-x;
@@ -275,24 +419,31 @@
 
 .octane-talent-task__check {
     position: absolute;
-    right: 8px;
+    left: 182px;
     top: -9px;
 }
 
+/* progress_container: 80 high under the scrollbar; the balloon hangs below it (frame is 445 high). */
 .octane-talent-progress {
     position: relative;
-    padding: 18px 24px 38px;
-    border-top: 1px solid #dddddd;
+    height: 80px;
+    margin-bottom: 46px;
 }
 
 .octane-talent-progress__title {
-    margin-bottom: 6px;
+    position: absolute;
+    left: 24px;
+    top: 18px;
     font-size: 12px;
     font-weight: 700;
+    line-height: 17px;
 }
 
 .octane-talent-progress__bar {
-    position: relative;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 40px;
     height: 16px;
     background: url("@/assets/images/talent/talent_unachieved_mid.png") repeat-x;
 }
@@ -314,41 +465,59 @@
     background-image: url("@/assets/images/talent/talent_achieved_div.png");
 }
 
+/* The needle's middle sits on the position: needle (36,27) 33 x 34, glow (25,15) 55 x 55, balloon (42,64). */
 .octane-talent-progress__needle {
     position: absolute;
-    top: -14px;
+    top: -13px;
     width: 33px;
     height: 34px;
-    transform: translateX(-50%);
+    margin-left: -16px;
 }
 
-.octane-talent-progress__needle > div {
+.octane-talent-progress__head {
     position: relative;
     width: 33px;
     height: 34px;
     overflow: hidden;
 }
 
+/* The shared .avatar-image box is 90 x 130; the needle's head fills the 33 x 34 widget instead. */
+.octane-talent-progress__head .avatar-image {
+    width: 100%;
+    height: 100%;
+}
+
 .octane-talent-progress__glow {
     position: absolute;
-    left: -13px;
+    left: -11px;
     top: -12px;
-    width: 59px;
-    height: 59px;
+    width: 55px;
+    height: 55px;
+    pointer-events: none;
 }
 
 .octane-talent-progress__balloon {
     position: absolute;
-    left: 50%;
-    top: 38px;
-    padding: 2px 8px;
+    left: 6px;
+    top: 37px;
+    padding: 6px 10px;
     border-radius: 4px;
     background: #a3201d;
     color: #ffffff;
     font-size: 10px;
     font-weight: 700;
+    line-height: 13px;
     white-space: nowrap;
-    transform: translateX(-50%);
+}
+
+.octane-talent-progress__balloon::before {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: -5px;
+    border-right: 5px solid transparent;
+    border-bottom: 5px solid #a3201d;
+    border-left: 5px solid transparent;
 }
 
 /* ---- Task dialogs ---- */

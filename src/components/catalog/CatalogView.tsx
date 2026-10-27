@@ -124,12 +124,11 @@ const CatalogViewInner: FC<{}> = () => {
                         return;
                     case 'open':
                         if (parts.length > 2) {
-                            if (parts.length === 4) {
-                                switch (parts[2]) {
-                                    case 'offerId':
-                                        openPageByOfferId(parseInt(parts[3]));
-                                        return;
-                                }
+                            if (parts.length === 4 && parts[2] === 'offerId') {
+                                openPageByOfferId(parseInt(parts[3]));
+                            } else if (parts.length > 3) {
+                                // A page path: catalog/open/clothing/effects.
+                                openPageByName(parts.slice(2).join('/'));
                             } else {
                                 const pageId = Number(parts[2]);
 
