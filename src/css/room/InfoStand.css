@@ -485,3 +485,37 @@
     background: #2f4c6b;
     opacity: 1;
 }
+
+/*
+ * AIR's infostands (userview, furni_view, bot_view, pet_view) are style-0 windows: every text, input and
+ * button is Volter 9 px white, the names Volter Bold. Panels built from the shared Text/Button parts used to
+ * come out in the condensed Ubuntu at 12-13 px.
+ */
+.octane-infostand-area {
+    font-family: Volter, monospace;
+    font-size: 9px;
+    line-height: 12px;
+}
+
+.octane-infostand-area :where(*):not(svg, svg *) {
+    font-family: Volter, monospace !important;
+    font-size: 9px !important;
+}
+
+/* The infostand buttons carry an important Tailwind size; an important rule in an earlier layer (base)
+   outranks one in the utilities layer, so the AIR size is set there too. */
+@layer base {
+    .octane-infostand-area :where(*):not(svg, svg *) {
+        font-family: Volter, monospace !important;
+        font-size: 9px !important;
+    }
+}
+
+.octane-infostand-area :where(.text-sm, p, span, div, button, input, textarea) {
+    line-height: 12px;
+}
+
+.octane-infostand-area .octane-infostand__name,
+.octane-infostand-area .octane-infostand__identity {
+    font-weight: 700 !important;
+}

@@ -771,7 +771,7 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
                 <Column className="h-full p-[8px] overflow-auto" gap={1} overflow="visible">
                     <div className="flex flex-col gap-1">
                         <Flex alignItems="center" gap={1} justifyContent="between">
-                            <Text small wrap variant="white">
+                            <Text small wrap className="octane-infostand__name" variant="white">
                                 {avatarInfo.name}
                             </Text>
                             <FaTimes className="cursor-pointer fa-icon" onClick={onClose} />
