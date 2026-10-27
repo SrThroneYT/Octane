@@ -34,7 +34,7 @@ export const TalentTaskDialogView: FC<TalentTaskDialogViewProps> = ({ trackName,
                 <div className="octane-talent-dialog__top">
                     <LayoutBadgeImageView badgeCode={task.badgeCode} />
                     <div>
-                        <div className="octane-talent-dialog__instruction">{getTalentTaskInstruction(task.badgeCode)}</div>
+                        <div className="octane-talent-dialog__instruction">{getTalentTaskInstruction(task.badgeCode, task.totalScore)}</div>
                         <div>{getTalentTaskTitle(task.badgeCode)}</div>
                     </div>
                 </div>

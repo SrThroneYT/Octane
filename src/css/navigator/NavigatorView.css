@@ -637,7 +637,8 @@
     background: transparent !important;
     box-shadow: none !important;
     color: #111;
-    font-size: 11px;
+    font-family: Volter, monospace;
+    font-size: 9px;
     line-height: 16px;
     text-align: left;
     cursor: pointer;
@@ -682,7 +683,7 @@
     box-shadow: none !important;
     color: #000;
     font-family: HabboAirUbuntu, UbuntuRegular, Ubuntu, sans-serif;
-    font-size: 11px;
+    font-size: 12px;
     font-style: normal;
     line-height: 16px;
     outline: 0;
@@ -881,7 +882,7 @@
     );
     color: #fff !important;
     font-family: HabboAirUbuntu, UbuntuBold, Ubuntu, sans-serif;
-    font-size: 11px !important;
+    font-size: 12px !important;
     font-weight: 700 !important;
     line-height: 14px !important;
     image-rendering: var(--octane-pixel-art, pixelated);
@@ -897,7 +898,7 @@
 
 .octane-navigator-air__usercount span {
     color: #fff !important;
-    font-size: 11px !important;
+    font-size: 12px !important;
     font-weight: 700 !important;
     line-height: 14px !important;
 }
@@ -1088,9 +1089,9 @@
     width: 100px;
     height: 30px;
     padding: 2px 6px 0;
-    font-family: HabboAirUbuntu, UbuntuBold, Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, Ubuntu, sans-serif;
     font-size: 10px;
-    font-weight: 700;
+    font-weight: 400;
     line-height: 12px;
 }
 
@@ -1238,9 +1239,9 @@
 .octane-navigator-air__room-popover-description {
     max-height: 80px;
     overflow: hidden;
-    color: #333;
-    font-size: 11px;
-    line-height: 13px;
+    color: #000;
+    font-size: 12px;
+    line-height: 16px;
 }
 
 .octane-navigator-air__room-popover-owner-row {
@@ -1266,7 +1267,7 @@
     color: #111;
     cursor: pointer;
     font-family: HabboAirUbuntu, UbuntuBold, Ubuntu, sans-serif;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     text-decoration: underline;
 }
@@ -1284,7 +1285,7 @@
     grid-template-columns: 70px 85px;
     grid-auto-rows: 20px;
     align-content: start;
-    font-size: 11px;
+    font-size: 12px;
 }
 
 .octane-navigator-air__room-popover-properties .is-label {
@@ -1308,7 +1309,7 @@
     background: transparent;
     color: #111;
     cursor: pointer;
-    font-size: 11px;
+    font-size: 12px;
     text-align: left;
 }
 
@@ -1357,14 +1358,17 @@
     gap: 4px;
 }
 
+/* tag layout: tag_region #f1a700 with tag_text u_small (10 px) white. */
 .octane-navigator-air__tag {
-    padding: 0;
     border: 0;
-    background: transparent;
-    color: #0f557b;
+    padding: 2px 3px;
+    border-radius: 2px;
+    background: #f1a700;
+    color: #fff;
     cursor: pointer;
-    font-size: 11px;
-    text-decoration: underline;
+    font-size: 10px;
+    line-height: 15px;
+    text-decoration: none;
 }
 
 .octane-navigator-air__room-popover-event {
@@ -1399,12 +1403,13 @@
     display: block;
     overflow: hidden;
     color: #fff;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 16px;
 }
 
 .octane-navigator-air__room-popover-event-name {
     height: 16px;
+    font-weight: 700;
     white-space: nowrap;
     text-overflow: ellipsis;
 }

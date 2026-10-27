@@ -80,7 +80,8 @@
     max-height: 32px !important;
     /* 9px of the side padding is the tab's cap bitmap. */
     padding: 7px 10px 10px !important;
-    font-size: 11px !important;
+    /* tab_container_button label: u_button_tab, 12 px. */
+    font-size: 12px !important;
     line-height: 17px !important;
     overflow: hidden;
     border-radius: 0 !important;
@@ -322,9 +323,10 @@
     word-break: break-word;
 }
 
+/* furni_description: u_regular, 12 px black. */
 .octane-inventory-furni-desc {
-    font-size: 11px;
-    color: #333;
+    font-size: 12px;
+    color: #000;
     word-break: break-word;
 }
 

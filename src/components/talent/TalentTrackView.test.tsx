@@ -8,6 +8,7 @@ vi.mock('../../api', async () => {
     return {
         ...actual,
         GetConfigurationValue: (_key: string, fallback: unknown) => fallback,
+        LocalizeBadgeDescription: () => 'Rate %limit% Helpers.',
         localizeWithFallback: (key: string, fallback: string) =>
             key === 'talent.track.helper.guide.begin.description' ? 'Help others.<br><br>You are on your way.' : fallback
     };
@@ -21,7 +22,7 @@ vi.mock('../../common', () => ({
 
 vi.mock('../help/habbo-way/HabboWayPagerView', () => ({ LibraryImageView: () => <div /> }));
 
-import { TalentTrackView, talentProgressPosition } from './TalentTrackView';
+import { getTalentTaskInstruction, TalentTrackView, talentProgressPosition } from './TalentTrackView';
 
 afterEach(cleanup);
 
@@ -40,5 +41,10 @@ describe('TalentTrackView', () => {
         expect(talentProgressPosition(0)).toBe('calc(52px + (100% - 104px) * 0)');
         expect(talentProgressPosition(0.5)).toBe('calc(52px + (100% - 104px) * 0.5)');
         expect(talentProgressPosition(2)).toBe('calc(52px + (100% - 104px) * 1)');
+    });
+
+    it('fills the %limit% the badge texts leave open with the task goal', () => {
+        expect(getTalentTaskInstruction('ACH_GuideFeedbackGiver1', 5)).toBe('Rate 5 Helpers.');
+        expect(getTalentTaskInstruction('ACH_GuideFeedbackGiver1')).toBe('Rate %limit% Helpers.');
     });
 });

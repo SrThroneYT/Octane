@@ -34,8 +34,12 @@ import { LibraryImageView } from '../help/habbo-way/HabboWayPagerView';
 
 export const getTalentTaskTitle = (badgeCode: string): string => LocalizeBadgeName(badgeCode).toUpperCase();
 
-export const getTalentTaskInstruction = (badgeCode: string): string =>
-    localizeWithFallback(`badge_instruction_${getAchievementBaseCode(badgeCode)}`, LocalizeBadgeDescription(badgeCode));
+/** The task's text; a %limit% the badge texts leave open is the task's goal (its total score). */
+export const getTalentTaskInstruction = (badgeCode: string, limit?: number): string => {
+    const text = localizeWithFallback(`badge_instruction_${getAchievementBaseCode(badgeCode)}`, LocalizeBadgeDescription(badgeCode));
+
+    return limit > 0 ? text.replaceAll('%limit%', String(limit)) : text;
+};
 
 // AIR formatted_text: the begin texts carry small HTML such as <br>.
 const FormattedText: FC<{ className: string; text: string }> = ({ className, text }) => (
@@ -65,7 +69,7 @@ const TalentTaskView: FC<{ task: ITalentTask; onSelect: (task: ITalentTask) => v
             </div>
             <div className="octane-talent-task__copy">
                 <div className="octane-talent-task__title">{getTalentTaskTitle(task.badgeCode)}</div>
-                <div className="octane-talent-task__description">{getTalentTaskInstruction(task.badgeCode)}</div>
+                <div className="octane-talent-task__description">{getTalentTaskInstruction(task.badgeCode, task.totalScore)}</div>
             </div>
             {ongoing && (
                 <div className="octane-talent-task__progress">
@@ -240,7 +244,7 @@ export const TalentTrackView: FC<TalentTrackViewProps> = ({ track, onClose, onSe
                     <div className="octane-talent-progress__needle" style={{ left: talentProgressPosition(progress) }}>
                         <img alt="" className="octane-talent-progress__glow" src={avatarGlow} />
                         <div className="octane-talent-progress__head">
-                            <LayoutAvatarImageView headOnly direction={2} figure={figure} />
+                            <LayoutAvatarImageView headOnly compactHead compactHeadPadding={0} compactHeadSize={33} direction={2} figure={figure} />
                         </div>
                         <div className="octane-talent-progress__balloon">{localizeWithFallback('talent.track.common.progress.position', 'You are here')}</div>
                     </div>
