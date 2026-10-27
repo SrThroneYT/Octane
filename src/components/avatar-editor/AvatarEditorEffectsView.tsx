@@ -39,6 +39,9 @@ const EffectTimeLeft: FC<{ effect: OwnedAvatarEffect }> = ({ effect }) => {
     );
 };
 
+/** The shop page of the effects tab: the stock catalogue's Clothing > Effects. */
+const EFFECTS_SHOP_PAGE = 'clothing/effects';
+
 /* Official avatar editor effects tab (EffectsView + EffectsParamView): a "remove" item, then the
    owned effects; picking one previews it and saving the look puts it on. */
 export const AvatarEditorEffectsView: FC<{
@@ -47,7 +50,8 @@ export const AvatarEditorEffectsView: FC<{
 }> = (props) => {
     const { selectedType = AVATAR_EDITOR_NO_EFFECT, onSelect = null } = props;
     const { effects = [] } = useAvatarEffects();
-    const shopPage = GetConfigurationValue<string>('avatareditor.effects.buy.button.catalog.page.name', '');
+    // AIR EffectsParamView opens this page; by default the Effects page under Clothing (a path, as Wired has an Effects page too).
+    const shopPage = GetConfigurationValue<string>('avatareditor.effects.buy.button.catalog.page.name', EFFECTS_SHOP_PAGE) || EFFECTS_SHOP_PAGE;
     const selectedEffect = effects.find((effect) => effect.type === selectedType) ?? null;
 
     return (

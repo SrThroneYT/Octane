@@ -1,0 +1,74 @@
+/*
+ * The catalogue's text as AIR draws it (catalog_ubuntu_with_tabs, layout_default_ubuntu, gridItem_with_price,
+ * purchaseWidget). Loaded after the other catalogue sheets.
+ *
+ * AIR's catalogue is set in Ubuntu: u_regular 12 px for text, u_bold 12 px for the navigation, u_italic 12 px
+ * #666666 for hints, u_headline_big 18 px for the page title, u_headline_small 14 px for "Select an item".
+ * Our `Ubuntu` face is the condensed cut (Ubuntu-C), so the whole window takes the regular one; the few places
+ * that are condensed or Volter in AIR too keep their own face.
+ */
+
+.octane-catalog-window {
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+}
+
+.octane-catalog-window
+    :where(*):not(svg, svg *, .layout-item-count, .octane-catalog-air-frontpage__title, .octane-catalog-air-bc__item-head, .octane-catalog-air-info__recycler-title, .octane-catalog-air-info__recycler-title *) {
+    font-family: inherit !important;
+}
+
+/* Tabs: u_button_tab, 12 px regular. */
+.octane-catalog-window .octane-card-tab-item,
+.octane-catalog-window .octane-catalog-tab-label {
+    font-size: 12px !important;
+}
+
+/* search.helper / search.input: 12 px, #666666. */
+.octane-catalog-window .octane-catalog-search-shell input {
+    color: #666666 !important;
+    font-size: 12px !important;
+    line-height: 16px !important;
+}
+
+.octane-catalog-window .octane-catalog-search-shell input::placeholder {
+    color: #666666;
+    opacity: 1;
+}
+
+/* normal_topitem_template: u_bold 12 px #666666 etched #b4b4ae; normal_subitem_template: bold italic #52819a. */
+.octane-catalog-window .octane-catalog-navigation-item {
+    font-size: 12px;
+    line-height: 17px;
+}
+
+.octane-catalog-window .octane-catalog-navigation-label {
+    color: inherit !important;
+}
+
+/* The highlighted row (item_hilight_inner #63c5e9) carries white text. */
+.octane-catalog-window .octane-catalog-navigation-item.is-active {
+    color: #ffffff;
+    text-shadow: none;
+}
+
+/* layout_default: the page text and the "select a product" hint are u_regular / u_italic 12 px. */
+.octane-catalog-window .octane-catalog-welcome,
+.octane-catalog-window .octane-catalog-welcome > * {
+    font-size: 12px !important;
+    line-height: 16px;
+}
+
+/* gridItem_with_price: the price is 12 px bold. */
+.octane-catalog-window .octane-catalog-grid-price,
+.octane-catalog-window .octane-catalog-grid-price-entry {
+    font-size: 12px !important;
+    font-weight: 700;
+}
+
+/* purchaseWidget selection_information: u_headline_small, 14 px bold #666666. */
+.octane-catalog-window .octane-catalog-purchase-selection-prompt {
+    color: #666666;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 700;
+}
