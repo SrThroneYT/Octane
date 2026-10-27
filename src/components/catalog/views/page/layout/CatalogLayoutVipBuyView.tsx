@@ -27,9 +27,7 @@ import {
 } from '../../../../../hooks';
 import { CatalogClubPurchaseConfirmView } from './CatalogClubPurchaseConfirmView';
 import { CatalogLayoutProps } from './CatalogLayout.types';
-import { getClubMembershipSummary, groupClubOffers, isVipPurchaseLayout } from './clubPurchase.helpers';
-
-const CLUB_WINDOW_ID = 1;
+import { clubOffersWindowId, getClubMembershipSummary, groupClubOffers, isVipPurchaseLayout } from './clubPurchase.helpers';
 
 export const CatalogLayoutVipBuyView: FC<CatalogLayoutProps> = ({ page = null }) => {
     const [pendingOffer, setPendingOffer] = useState<ClubOfferData | null>(null);
@@ -42,11 +40,11 @@ export const CatalogLayoutVipBuyView: FC<CatalogLayoutProps> = ({ page = null })
     const { data: giftConfiguration = null } = useGiftConfiguration();
     const { purse = null, getCurrencyAmount = null } = usePurse();
     const { showConfirm = null, simpleAlert = null } = useNotification();
-    const { data: offers = null } = useClubOffers(CLUB_WINDOW_ID);
     const isPurchasingRef = useRef(false);
     const pageData = currentPage ?? page;
     const layoutCode = pageData?.layoutCode ?? 'club_buy';
     const isVipPage = isVipPurchaseLayout(layoutCode);
+    const { data: offers = null } = useClubOffers(clubOffersWindowId(layoutCode));
     const offerGroups = useMemo(() => groupClubOffers(layoutCode, offers ?? []), [layoutCode, offers]);
     const membership = useMemo(() => getClubMembershipSummary(purse), [purse]);
 

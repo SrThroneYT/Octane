@@ -1,5 +1,5 @@
 import { AddLinkEventTracker, FollowFriendMessageComposer, GetSessionDataManager, ILinkEventTracker, RemoveLinkEventTracker } from '@octane/renderer';
-import { FC, KeyboardEvent, useEffect, useRef, useState } from 'react';
+import { FC, KeyboardEvent, UIEvent, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { FaTimes } from 'react-icons/fa';
 import { GetUserProfile, LocalizeText, ReportType, SendMessageComposer, useHabbiconCatalog } from '../../../../api';
 import { HabbiconsDmIcon } from '../../../../assets/images/habbicons';
@@ -13,8 +13,11 @@ import { FriendsMessengerHabbiconPickerView } from './FriendsMessengerHabbiconPi
 import { FriendsMessengerThreadView } from './messenger-thread/FriendsMessengerThreadView';
 import { BaseButton } from '../../../../common/BaseButton';
 import { TabBar, TabBarTab } from '../../../../common/TabBar';
+import { Hint } from '../../../../common/Tooltip';
 
 const MESSENGER_VISIBLE_AVATARS = 7;
+/** How long the window keeps its place for an older history page that was asked for. */
+const OLDER_PAGE_WAIT_MS = 5000;
 
 export const FriendsMessengerView: FC<{}> = (props) => {
     const [isVisible, setIsVisible] = useState(false);
@@ -30,6 +33,8 @@ export const FriendsMessengerView: FC<{}> = (props) => {
         sendMessage = null,
         sendHabbiconMessage,
         setActiveThreadId = null,
+        setWindowOpen = null,
+        loadOlderHistory = null,
         closeThread = null,
         typingUserIds = [],
         sendTypingStatus = null
@@ -40,6 +45,11 @@ export const FriendsMessengerView: FC<{}> = (props) => {
     const messagesBox = useRef<HTMLDivElement>(null);
     const isTypingRef = useRef<boolean>(false);
     const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
+    // The scroll position to keep while an older history page goes in above the messages.
+    const stickToBottomRef = useRef(true);
+    const lastScrolledThreadRef = useRef(-1);
+    const sendingRef = useRef(false);
+    const olderPageAnchorRef = useRef<{ threadId: number; height: number; top: number; at: number }>(null);
 
     const stopTyping = () => {
         if (typingTimeoutRef.current) {
@@ -79,9 +89,11 @@ export const FriendsMessengerView: FC<{}> = (props) => {
     const openProfile = () => activeThread && activeThread.participant && GetUserProfile(activeThread.participant.id);
 
     const send = async () => {
-        if (!activeThread || !messageText.length) return;
+        if (!activeThread || !messageText.length || sendingRef.current) return;
 
         stopTyping();
+        // Own messages always bring the conversation to its newest line.
+        stickToBottomRef.current = true;
 
         const trimmedText = messageText.trimStart();
         const shouldTranslateOutgoing = settings.enabled && !!trimmedText.length && trimmedText.charAt(0) !== ':';
@@ -92,7 +104,16 @@ export const FriendsMessengerView: FC<{}> = (props) => {
             return;
         }
 
-        const translation = await translateOutgoing(messageText);
+        // Enter again while the translation is pending must not send the text twice.
+        sendingRef.current = true;
+
+        let translation: Awaited<ReturnType<typeof translateOutgoing>> = null;
+
+        try {
+            translation = await translateOutgoing(messageText);
+        } finally {
+            sendingRef.current = false;
+        }
 
         if (translation && translation.translatedText?.length && translation.translatedText.length <= 255) {
             sendMessage(activeThread, GetSessionDataManager().userId, translation.translatedText, 0, null, undefined, translation);
@@ -158,22 +179,68 @@ export const FriendsMessengerView: FC<{}> = (props) => {
         return () => RemoveLinkEventTracker(linkTracker);
     }, [getFriend, getMessageThread, setActiveThreadId]);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (!isVisible || !activeThread) return;
         if (!messagesBox.current) return;
 
-        messagesBox.current.scrollTop = messagesBox.current.scrollHeight;
+        const box = messagesBox.current;
+        const anchor = olderPageAnchorRef.current;
+
+        // Forget the anchor on another conversation, or when the page never came (nothing older to add).
+        if (anchor && (anchor.threadId !== activeThread.threadId || Date.now() - anchor.at > OLDER_PAGE_WAIT_MS)) olderPageAnchorRef.current = null;
+
+        // An older page went in above: stay on the message that was in view.
+        if (olderPageAnchorRef.current) {
+            if (box.scrollHeight > anchor.height) {
+                box.scrollTop = box.scrollHeight - anchor.height + anchor.top;
+                olderPageAnchorRef.current = null;
+            }
+
+            return;
+        }
+
+        // Follow new lines only for a reader at the bottom, a newly selected conversation or an own message; someone
+        // reading older history stays where they are when a receipt or a line arrives.
+        const switched = lastScrolledThreadRef.current !== activeThread.threadId;
+
+        lastScrolledThreadRef.current = activeThread.threadId;
+
+        if (switched || stickToBottomRef.current) box.scrollTop = box.scrollHeight;
     }, [isVisible, activeThread]);
+
+    const onMessagesScroll = (event: UIEvent<HTMLDivElement>) => {
+        const box = event.currentTarget;
+
+        stickToBottomRef.current = box.scrollHeight - box.scrollTop - box.clientHeight < 24;
+
+        if (!activeThread || olderPageAnchorRef.current || box.scrollTop >= 48 || box.scrollHeight <= box.clientHeight) return;
+
+        const anchor = { threadId: activeThread.threadId, height: box.scrollHeight, top: box.scrollTop, at: Date.now() };
+
+        if (loadOlderHistory?.(activeThread)) olderPageAnchorRef.current = anchor;
+    };
+
+    // Stop typing when the conversation changes, not on every update of it (a clone after each line or receipt).
+    const activeThreadId = activeThread?.threadId ?? -1;
 
     useEffect(() => {
         return () => {
             stopTyping();
         };
-    }, [activeThread]);
+    }, [activeThreadId]);
+
+    useEffect(() => setWindowOpen?.(isVisible), [isVisible, setWindowOpen]);
+
+    // AIR MainView: the window hides once its last conversation is closed, and does not open without one.
+    useEffect(() => {
+        if (isVisible && !visibleThreads.length) setIsVisible(false);
+    }, [isVisible, visibleThreads.length]);
 
     useEffect(() => {
         if (isVisible && !activeThread) {
-            if (lastThreadId > 0) {
+            const lastThreadOpen = lastThreadId > 0 && visibleThreads.some((thread) => thread.threadId === lastThreadId);
+
+            if (lastThreadOpen) {
                 setActiveThreadId(lastThreadId);
             } else {
                 if (visibleThreads.length > 0) setActiveThreadId(visibleThreads[0].threadId);
@@ -234,28 +301,30 @@ export const FriendsMessengerView: FC<{}> = (props) => {
                                 liveFriend?.gender ?? thread.participant.gender
                             );
 
+                            // AIR MainView: hovering a head shows the friend's name.
                             return (
-                                <TabBarTab
-                                    key={thread.threadId}
-                                    value={thread.threadId}
-                                    data-participant-id={thread.participant.id}
-                                    className={'messenger-avatar-tab' + (activeThread === thread ? ' active' : '') + (thread.unread ? ' unread' : '')}
-                                    aria-label={thread.participant.name}
-                                    onClick={() => setActiveThreadId(thread.threadId)}
-                                >
-                                    {isStaff ? (
-                                        <StaffChatFrankIconView size={35} className="staff-chat-frank" />
-                                    ) : (
-                                        <LayoutAvatarImageView
-                                            figure={figure}
-                                            headOnly={true}
-                                            compactHead={true}
-                                            compactHeadSize={35}
-                                            compactHeadPadding={0}
-                                            direction={thread.participant.id < 0 ? 3 : 2}
-                                        />
-                                    )}
-                                </TabBarTab>
+                                <Hint key={thread.threadId} content={thread.participant.name}>
+                                    <TabBarTab
+                                        value={thread.threadId}
+                                        data-participant-id={thread.participant.id}
+                                        className={'messenger-avatar-tab' + (activeThread === thread ? ' active' : '') + (thread.unread ? ' unread' : '')}
+                                        aria-label={thread.participant.name}
+                                        onClick={() => setActiveThreadId(thread.threadId)}
+                                    >
+                                        {isStaff ? (
+                                            <StaffChatFrankIconView size={35} className="staff-chat-frank" />
+                                        ) : (
+                                            <LayoutAvatarImageView
+                                                figure={figure}
+                                                headOnly={true}
+                                                compactHead={true}
+                                                compactHeadSize={35}
+                                                compactHeadPadding={0}
+                                                direction={thread.participant.id < 0 ? 3 : 2}
+                                            />
+                                        )}
+                                    </TabBarTab>
+                                </Hint>
                             );
                         })}
                     </TabBar>
@@ -278,22 +347,28 @@ export const FriendsMessengerView: FC<{}> = (props) => {
                             <div className="messenger-actions">
                                 {activeThread.participant.id > 0 && (
                                     <>
-                                        <BaseButton
-                                            className="messenger-btn icon-btn follow"
-                                            aria-label={LocalizeText('friendlist.tip.follow')}
-                                            onClick={followFriend}
-                                        />
-                                        <BaseButton
-                                            className="messenger-btn icon-btn profile"
-                                            aria-label={LocalizeText('infostand.profile.link.tooltip')}
-                                            onClick={openProfile}
-                                        />
-                                        <BaseButton
-                                            className="messenger-btn danger"
-                                            onClick={() => report(ReportType.IM, { reportedUserId: activeThread.participant.id })}
-                                        >
-                                            {LocalizeText('messenger.window.button.report')}
-                                        </BaseButton>
+                                        <Hint content={LocalizeText('messenger.followfriend.tooltip')}>
+                                            <BaseButton
+                                                className="messenger-btn icon-btn follow"
+                                                aria-label={LocalizeText('messenger.followfriend.tooltip')}
+                                                onClick={followFriend}
+                                            />
+                                        </Hint>
+                                        <Hint content={LocalizeText('infostand.profile.link.tooltip')}>
+                                            <BaseButton
+                                                className="messenger-btn icon-btn profile"
+                                                aria-label={LocalizeText('infostand.profile.link.tooltip')}
+                                                onClick={openProfile}
+                                            />
+                                        </Hint>
+                                        <Hint content={LocalizeText('messenger.window.button.report.tooltip')}>
+                                            <BaseButton
+                                                className="messenger-btn danger"
+                                                onClick={() => report(ReportType.IM, { reportedUserId: activeThread.participant.id })}
+                                            >
+                                                {LocalizeText('messenger.window.button.report')}
+                                            </BaseButton>
+                                        </Hint>
                                     </>
                                 )}
                                 <BaseButton className="messenger-btn close-btn" onClick={(event) => closeThread(activeThread.threadId)}>
@@ -302,7 +377,7 @@ export const FriendsMessengerView: FC<{}> = (props) => {
                             </div>
                         </div>
 
-                        <div ref={messagesBox} className="chat-messages">
+                        <div ref={messagesBox} className="chat-messages" onScroll={onMessagesScroll}>
                             <FriendsMessengerThreadView thread={activeThread} />
                         </div>
 
@@ -313,17 +388,20 @@ export const FriendsMessengerView: FC<{}> = (props) => {
                         )}
 
                         <div className="messenger-input-row">
-                            <input
-                                maxLength={255}
-                                placeholder={LocalizeText('messenger.window.input.default', ['FRIEND_NAME'], [activeThread.participant.name])}
-                                type="text"
-                                value={messageText}
-                                onChange={(event) => handleInputChange(event.target.value)}
-                                onKeyDown={onKeyDown}
-                            />
-                            <BaseButton className="messenger-btn send" onClick={() => void send()}>
-                                {LocalizeText('widgets.chatinput.say')}
-                            </BaseButton>
+                            {/* AIR illumina_input: the Say button sits inside the input's border, on its right. */}
+                            <div className="messenger-input-box">
+                                <input
+                                    maxLength={120}
+                                    placeholder={LocalizeText('messenger.window.input.default', ['FRIEND_NAME'], [activeThread.participant.name])}
+                                    type="text"
+                                    value={messageText}
+                                    onChange={(event) => handleInputChange(event.target.value)}
+                                    onKeyDown={onKeyDown}
+                                />
+                                <BaseButton className="messenger-btn send" onClick={() => void send()}>
+                                    {LocalizeText('widgets.chatinput.say')}
+                                </BaseButton>
+                            </div>
                             <BaseButton
                                 className="messenger-btn habbicon"
                                 aria-label={LocalizeText('messenger.habbicons.tooltip')}

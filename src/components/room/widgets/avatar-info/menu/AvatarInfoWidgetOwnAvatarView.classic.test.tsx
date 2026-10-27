@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
     config: new Map<string, unknown>(),
     createLinkEvent: vi.fn(),
     effectId: 0,
+    handItemBlocked: false,
     hasClub: true,
     hasVip: true,
     posture: 'std',
@@ -22,6 +23,7 @@ afterEach(() => {
     vi.clearAllMocks();
     mocks.config.clear();
     mocks.effectId = 0;
+    mocks.handItemBlocked = false;
     mocks.hasClub = true;
     mocks.hasVip = true;
     mocks.posture = 'std';
@@ -38,6 +40,7 @@ vi.mock('@octane/renderer', () => ({
         WAVE: { ordinal: 1 }
     },
     CreateLinkEvent: mocks.createLinkEvent,
+    GetRoomEngine: () => ({ activeRoomHasHanditemControlBlocked: mocks.handItemBlocked }),
     RoomControllerLevel: { GUEST: 0 },
     RoomObjectCategory: { UNIT: 100 },
     RoomObjectVariable: { FIGURE_EFFECT: 'figure_effect' },
@@ -160,4 +163,17 @@ describe('AIR own-avatar menu', () => {
         expect(onClose).toHaveBeenCalledTimes(3);
     });
 
+
+    it('hides drop hand item while the room blocks hand items (ConfigurationItemStates)', () => {
+        mocks.handItemBlocked = true;
+        renderMenu();
+
+        expect(screen.queryByText('avatar.widget.drop_hand_item')).toBeNull();
+
+        cleanup();
+        mocks.handItemBlocked = false;
+        renderMenu();
+
+        expect(screen.getByText('avatar.widget.drop_hand_item')).toBeInTheDocument();
+    });
 });

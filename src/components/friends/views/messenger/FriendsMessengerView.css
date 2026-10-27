@@ -99,7 +99,7 @@
 
 .messenger-window .messenger-avatar-navigation {
     position: absolute;
-    top: 36px;
+    top: 40px;
     right: 1px;
     left: 1px;
     display: flex;
@@ -189,10 +189,10 @@
 
 .messenger-window .messenger-thread-header {
     position: absolute;
-    top: 80px;
+    top: 79px;
     right: 9px;
     left: 8px;
-    height: 31px;
+    height: 38px;
     padding: 0;
     background: #e4e4e4;
 }
@@ -226,7 +226,7 @@
 
 .messenger-window .messenger-actions {
     position: absolute;
-    top: 13px;
+    top: 18px;
     right: 0;
     left: 0;
     display: flex;
@@ -302,7 +302,7 @@
 
 .messenger-window .chat-messages {
     position: absolute;
-    top: 122px;
+    top: 124px;
     right: 9px;
     bottom: 49px;
     left: 7px;
@@ -432,6 +432,17 @@
     image-rendering: var(--octane-pixel-art, pixelated);
 }
 
+/* AIR msg_notification: the same 50px box as an invitation, without the green, the caution sign centred in it. */
+.messenger-window .messenger-notification.is-warning {
+    background: #fff;
+}
+
+.messenger-window .messenger-notification.is-warning img {
+    flex: 0 0 34px;
+    min-width: 0;
+    object-fit: none;
+}
+
 .messenger-window .messenger-message-failed {
     color: #a33;
     text-decoration: line-through;
@@ -475,17 +486,28 @@
     gap: 3px;
 }
 
-.messenger-window .messenger-input-row input {
-    width: auto;
+/* illumina_input: one white 30px box with the text field and, on its right, the Say button (x 165 of 244). */
+.messenger-window .messenger-input-box {
+    display: flex;
     min-width: 0;
-    height: 29px;
-    min-height: 29px;
+    height: 30px;
     flex: 1 1 auto;
-    padding: 4px 7px;
+    align-items: center;
+    padding: 0 2px 0 0;
     border: 1px solid #b8b8b8;
     border-radius: 5px;
-    outline: 0;
     background: #fff;
+}
+
+.messenger-window .messenger-input-box input {
+    width: auto;
+    min-width: 0;
+    height: 100%;
+    flex: 1 1 auto;
+    padding: 4px 6px;
+    border: 0;
+    outline: 0;
+    background: transparent;
     color: #555;
     font-size: 11px;
 }
@@ -493,7 +515,8 @@
 .messenger-window .messenger-btn.send {
     width: 55px;
     min-width: 55px;
-    height: 28px;
+    height: 24px;
+    min-height: 24px;
 }
 
 .messenger-window .messenger-btn.habbicon {

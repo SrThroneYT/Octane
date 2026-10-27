@@ -92,3 +92,20 @@ describe.each([
         expect(setStringParam).toHaveBeenLastCalledWith('UTC');
     });
 });
+
+describe('date matches masks', () => {
+    beforeEach(() => setIntParams.mockClear());
+    afterEach(cleanup);
+
+    it.each([
+        ['every box', [0, 0, 127, 1, 1, 4095, 0, 0]],
+        ['no box', [0, 0, 0, 1, 1, 0, 0, 0]],
+        ['some boxes', [0, 0, 5, 1, 1, 2049, 0, 0]]
+    ])('sends %s back as AIR does', (_name, ints) => {
+        trigger = { intData: ints, stringData: '' };
+        render(<WiredConditionMatchDateView />);
+
+        save();
+        expect(setIntParams).toHaveBeenLastCalledWith(ints);
+    });
+});

@@ -112,7 +112,11 @@ const useWiredState = () => {
      * Saves the open configuration. With a target, it goes into that box instead (paste into): the
      * target keeps its own furni picks.
      */
-    const saveWired = (target: Triggerable = null) => {
+    // Each save says whether the window stays open: a save the server drops without an answer (more than 20
+    // picks, as AIR) must not leave the next one open.
+    const saveWired = (target: Triggerable = null, keepOpen = false) => {
+        keepOpenAfterSaveRef.current = keepOpen;
+
         const save = (trigger: Triggerable) => {
             if (!trigger) return;
 
@@ -445,8 +449,7 @@ const useWiredState = () => {
 
     /** Saves the box and keeps the window open, so the next change starts from what was saved. */
     const saveWiredAndKeepOpen = useCallback(() => {
-        keepOpenAfterSaveRef.current = true;
-        saveWired();
+        saveWired(null, true);
     }, [saveWired]);
 
     /**
@@ -620,8 +623,7 @@ const useWiredState = () => {
 
         if (pasteIntoModeRef.current && current && definition && definition.id !== current.id) {
             if (wiredClipboardKeyOf(definition) === wiredClipboardKeyOf(current)) {
-                keepOpenAfterSaveRef.current = true;
-                saveWired(definition);
+                saveWired(definition, true);
                 showSingleBubble?.(localizeWithFallback('notification.wired.pasted_into', 'The settings were applied'), NotificationBubbleType.INFO);
             } else {
                 showSingleBubble?.(

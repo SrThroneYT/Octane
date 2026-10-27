@@ -155,6 +155,17 @@ const setCurrentPage = (layoutCode: string) => {
 };
 
 describe('club purchase layout', () => {
+    it('asks each club page for its own offer window', () => {
+        for (const [layoutCode, windowId] of [['club_buy', 0], ['vip_buy', 1], ['loyalty_vip_buy', 6]] as const) {
+            setCurrentPage(layoutCode);
+            renderLayout(layoutCode);
+
+            expect(vi.mocked(useClubOffers)).toHaveBeenLastCalledWith(windowId);
+
+            cleanup();
+        }
+    });
+
     it('renders only VIP offers on the VIP page', () => {
         setCurrentPage('vip_buy');
         renderLayout('vip_buy');

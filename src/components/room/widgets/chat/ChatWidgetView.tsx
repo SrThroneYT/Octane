@@ -7,7 +7,7 @@ import { CHAT_TEXT_SIZE_EVENT } from '../chat-input/chatTextSize';
 import { ChatWidgetMessageView } from './ChatWidgetMessageView';
 import { ChatWidgetWindowView } from './ChatWidgetWindowView';
 import { measureBubbleVisualOffsets } from './chatBubbleMetrics';
-import { getChatViewerHeight, resolveFreeFlowLayout, resolveLineByLineLayout } from './freeFlowChatLayout';
+import { createLayoutBatcher, getChatViewerHeight, resolveFreeFlowLayout, resolveLineByLineLayout, resolveUntilSettled } from './freeFlowChatLayout';
 
 const CHAT_MOVE_UP_PIXELS = 19;
 const CHAT_REMOVE_TOP_MARGIN = -10;
@@ -22,6 +22,15 @@ export const ChatWidgetView: FC<{}> = (props) => {
     const nextScrollAtRef = useRef(0);
     const lastPlacedIdRef = useRef(0);
 
+    // Read through refs so the layout callbacks, and the effects that use them, stay the same across messages.
+    const chatMessagesRef = useRef(chatMessages);
+    const isLineByLineRef = useRef(isLineByLine);
+    const scrollSpeedRef = useRef(getScrollSpeed);
+
+    chatMessagesRef.current = chatMessages;
+    isLineByLineRef.current = isLineByLine;
+    scrollSpeedRef.current = getScrollSpeed;
+
     const removeHiddenChats = useCallback(() => {
         setChatMessages((prevValue) => {
             if (prevValue) {
@@ -34,8 +43,9 @@ export const ChatWidgetView: FC<{}> = (props) => {
         });
     }, [setChatMessages]);
 
+    // Reads only: every bubble's size in one go, so the browser lays the page out once.
     const refreshChatMeasurements = useCallback(() => {
-        chatMessages.forEach((chat) => {
+        chatMessagesRef.current.forEach((chat) => {
             if (!chat.elementRef) return;
 
             const visualOffsets = measureBubbleVisualOffsets(chat.elementRef);
@@ -45,11 +55,12 @@ export const ChatWidgetView: FC<{}> = (props) => {
             chat.visualOffsetTop = visualOffsets.top;
             chat.visualOffsetBottom = visualOffsets.bottom;
         });
-    }, [chatMessages]);
+    }, []);
 
-    // Free flow lets bubbles slide past each other sideways; line by line gives each its own row.
-    const resolveOverlappingChats = useCallback(() => {
-        const visibleChats = chatMessages.filter((chat) => chat.elementRef && chat.width > 0 && chat.height > 0);
+    // Free flow lets bubbles slide past each other sideways; line by line gives each its own row. `passes` layout
+    // passes in a row (stopping once nothing moves) give what that many separate requests gave.
+    const resolveOverlappingChats = useCallback((passes: number = 1) => {
+        const visibleChats = chatMessagesRef.current.filter((chat) => chat.elementRef && chat.width > 0 && chat.height > 0);
 
         if (visibleChats.length < 2) return;
 
@@ -63,7 +74,7 @@ export const ChatWidgetView: FC<{}> = (props) => {
             overflowTop: chat.visualOffsetTop,
             overflowBottom: chat.visualOffsetBottom
         }));
-        const positions = isLineByLine ? resolveLineByLineLayout(bubbles) : resolveFreeFlowLayout(bubbles);
+        const { positions } = resolveUntilSettled(bubbles, isLineByLineRef.current ? resolveLineByLineLayout : resolveFreeFlowLayout, passes);
         const byId = new Map(visibleChats.map((chat) => [chat.id, chat]));
 
         for (const position of positions) {
@@ -73,23 +84,40 @@ export const ChatWidgetView: FC<{}> = (props) => {
             if (chat.left !== position.left) chat.left = position.left;
             if (chat.top !== position.top) chat.top = position.top;
         }
-    }, [chatMessages, isLineByLine]);
+    }, []);
 
-    const makeRoom = useCallback(
-        (chat: ChatBubbleMessage) => {
-            // Like Habbo, a new line-by-line message restarts the scroll timer.
-            if (chat && chat.id > lastPlacedIdRef.current) {
-                lastPlacedIdRef.current = chat.id;
-
-                if (isLineByLine) nextScrollAtRef.current = Date.now() + getScrollSpeed;
-            }
-
+    const layoutPass = useCallback(
+        (passes: number = 1) => {
             refreshChatMeasurements();
-            resolveOverlappingChats();
+            resolveOverlappingChats(passes);
             removeHiddenChats();
         },
-        [getScrollSpeed, isLineByLine, refreshChatMeasurements, removeHiddenChats, resolveOverlappingChats]
+        [refreshChatMeasurements, removeHiddenChats, resolveOverlappingChats]
     );
+
+    // A crowded room asks for room many times a frame: the requests are laid out together once per frame. The +1
+    // pass stands for the extra layout each new message used to get.
+    const batcherRef = useRef<ReturnType<typeof createLayoutBatcher>>(null);
+
+    if (!batcherRef.current) batcherRef.current = createLayoutBatcher((pending) => layoutPass(pending + 1));
+
+    useEffect(() => () => batcherRef.current?.dispose(), []);
+
+    const makeRoom = useCallback((chat: ChatBubbleMessage) => {
+        // Like Habbo, a new line-by-line message restarts the scroll timer.
+        if (chat && chat.id > lastPlacedIdRef.current) {
+            lastPlacedIdRef.current = chat.id;
+
+            if (isLineByLineRef.current) nextScrollAtRef.current = Date.now() + scrollSpeedRef.current;
+        }
+
+        batcherRef.current.request();
+    }, []);
+
+    // As before, every new message in free flow pushes the next scroll back.
+    useEffect(() => {
+        nextScrollAtRef.current = Date.now() + getScrollSpeed;
+    }, [chatMessages, getScrollSpeed]);
 
     useEffect(() => {
         const resize = (event: UIEvent = null) => {
@@ -110,9 +138,8 @@ export const ChatWidgetView: FC<{}> = (props) => {
             });
 
             window.requestAnimationFrame(() => {
-                refreshChatMeasurements();
-                resolveOverlappingChats();
-                removeHiddenChats();
+                batcherRef.current.flushNow();
+                layoutPass();
             });
         };
 
@@ -123,10 +150,12 @@ export const ChatWidgetView: FC<{}> = (props) => {
         return () => {
             window.removeEventListener('resize', resize);
         };
-    }, [refreshChatMeasurements, removeHiddenChats, resolveOverlappingChats, setChatMessages]);
+    }, [layoutPass, setChatMessages]);
 
     useEffect(() => {
         const moveAllChatsUp = (amount: number) => {
+            batcherRef.current.flushNow();
+
             setChatMessages((prevValue) => {
                 prevValue.forEach((chat) => {
                     chat.top -= amount;
@@ -135,9 +164,7 @@ export const ChatWidgetView: FC<{}> = (props) => {
                 return prevValue;
             });
 
-            refreshChatMeasurements();
-            resolveOverlappingChats();
-            removeHiddenChats();
+            layoutPass();
         };
 
         const worker = new WorkerBuilder(IntervalWebWorker);
@@ -149,7 +176,7 @@ export const ChatWidgetView: FC<{}> = (props) => {
 
             if (now < nextScrollAtRef.current) return;
 
-            nextScrollAtRef.current = now + getScrollSpeed;
+            nextScrollAtRef.current = now + scrollSpeedRef.current;
             moveAllChatsUp(CHAT_MOVE_UP_PIXELS);
         };
 
@@ -160,15 +187,14 @@ export const ChatWidgetView: FC<{}> = (props) => {
 
             worker.terminate();
         };
-    }, [getScrollSpeed, refreshChatMeasurements, removeHiddenChats, resolveOverlappingChats, setChatMessages]);
+    }, [getScrollSpeed, layoutPass, setChatMessages]);
 
     useEffect(() => {
         const onTextSizeChange = () => {
             window.requestAnimationFrame(() => {
                 window.requestAnimationFrame(() => {
-                    refreshChatMeasurements();
-                    resolveOverlappingChats();
-                    removeHiddenChats();
+                    batcherRef.current.flushNow();
+                    layoutPass();
                 });
             });
         };
@@ -176,7 +202,7 @@ export const ChatWidgetView: FC<{}> = (props) => {
         window.addEventListener(CHAT_TEXT_SIZE_EVENT, onTextSizeChange);
 
         return () => window.removeEventListener(CHAT_TEXT_SIZE_EVENT, onTextSizeChange);
-    }, [refreshChatMeasurements, removeHiddenChats, resolveOverlappingChats]);
+    }, [layoutPass]);
 
     return (
         <div

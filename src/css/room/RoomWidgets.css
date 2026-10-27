@@ -1138,6 +1138,42 @@
     border-image-source: url('../../assets/images/avatar-menu/air/button-thick-hover.png');
 }
 
+/* WIN63 own_avatar_decorating: no name row, one 101px button in a 103px list. */
+.octane-avatar-action-menu--decorate {
+    padding: 11px 0 12px;
+}
+
+.octane-avatar-action-menu--decorate .air-avatar-menu-buttons {
+    width: 103px;
+    margin-left: 6px;
+}
+
+.octane-avatar-action-menu--decorate .air-avatar-menu-buttons > .octane-context-menu-item {
+    width: 101px;
+    min-width: 101px;
+    max-width: 101px;
+    margin: 0;
+}
+
+.octane-avatar-action-menu--decorate .air-avatar-menu-buttons > .octane-context-menu-item::before {
+    width: 107px;
+}
+
+/* WIN63 use_product_menu: 102px buttons in a 104px list. */
+.octane-avatar-action-menu--use-product .air-avatar-menu-buttons {
+    width: 104px;
+}
+
+.octane-avatar-action-menu--use-product .air-avatar-menu-buttons > .octane-context-menu-item {
+    width: 102px;
+    min-width: 102px;
+    max-width: 102px;
+}
+
+.octane-avatar-action-menu--use-product .air-avatar-menu-buttons > .octane-context-menu-item::before {
+    width: 108px;
+}
+
 .air-avatar-menu-buttons > .octane-context-menu-item:active::before {
     border-image-source: url('../../assets/images/avatar-menu/air/button-thick-pressed.png');
 }

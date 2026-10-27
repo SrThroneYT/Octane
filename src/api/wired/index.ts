@@ -43,3 +43,4 @@ export * from './WiredClockFurni';
 export * from './WiredChests';
 export * from './WiredSetupShare';
 export * from './WiredObjectInspection';
+export * from './WiredVariableCatalog';

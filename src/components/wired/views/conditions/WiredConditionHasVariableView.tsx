@@ -163,7 +163,8 @@ export const WiredConditionHasVariableView: FC = () => {
         if (requiresFurni <= WiredFurniType.STUFF_SELECTION_OPTION_NONE) setFurniIds([]);
     };
 
-    const validate = () => !!variableToken.length;
+    // AIR saves an empty variable; the condition then passes only when negated.
+    const validate = () => true;
 
     const handleTargetChange = (nextTargetType: ConditionVariableTargetType) => {
         if (nextTargetType === targetType) return;

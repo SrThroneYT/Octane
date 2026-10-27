@@ -24,3 +24,25 @@ describe('infostand furni band (official InfoStandFurniView)', () => {
         expect(infostandFurniOwnerText(furni(false, false))).toBe('furni.owner:alice');
     });
 });
+
+describe('branding options', () => {
+    it('splits each setting at its first "=" only', async () => {
+        const { parseBrandingOptions } = await import('./infostandFurni.helpers');
+
+        expect(parseBrandingOptions('imageUrl=https://x/a.png?v=2\ta=b=c\t=x\tnoeq\tscale=100')).toEqual({
+            keys: ['imageUrl', 'a', 'scale'],
+            values: ['https://x/a.png?v=2', 'b=c', '100']
+        });
+    });
+
+    it('saves the edited values as they are, a cleared number as 0', async () => {
+        const { brandingSaveMap, parseBrandingOptions } = await import('./infostandFurni.helpers');
+        const { keys, values } = parseBrandingOptions('imageUrl=https://x/a.png?v=2\tclickUrl=\toffsetX=');
+
+        expect([...brandingSaveMap(keys, values)]).toEqual([
+            ['imageUrl', 'https://x/a.png?v=2'],
+            ['clickUrl', ''],
+            ['offsetX', '0']
+        ]);
+    });
+});

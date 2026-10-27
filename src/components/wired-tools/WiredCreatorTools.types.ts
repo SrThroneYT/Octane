@@ -169,9 +169,17 @@ export interface InspectionVariable {
 
 export interface VariableDefinition {
     key: string;
+    /** The server's variable id (`user:12`, `-125`, `~133`) of a catalogue variable. */
+    variableId?: string;
     itemId?: number;
     target: 'Furni' | 'User' | 'Global' | 'Context';
+    /** The official target (0 furni, 1 user, -10 global, -20 context) of a catalogue variable. */
+    variableTarget?: number;
     type: string;
+    /** The official type id (0 created, 1 internal, 2 sub, 3 smart) of a catalogue variable. */
+    variableType?: number;
+    /** The official availability id of a catalogue variable. */
+    availabilityType?: number;
     hasValue: boolean;
     isReadOnly?: boolean;
     availability: string;

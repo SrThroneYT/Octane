@@ -1,25 +1,30 @@
 import { FC, MouseEvent, useState } from 'react';
-import { LocalizeText, MessengerFriend, OpenMessengerChat } from '../../../../../api';
+import { GetConfigurationValue, LocalizeText, MessengerFriend, OpenMessengerChat } from '../../../../../api';
 import { LayoutAvatarImageView, Popover, PopoverContent, PopoverTrigger, UserProfileIconView } from '../../../../../common';
 import { useFriends } from '../../../../../hooks';
 import { isStaffChatIdentity } from '../../../staffChatIdentity';
 import { StaffChatFrankIconView } from '../../../StaffChatFrankIconView';
 import { resolveAvatarFigure } from '../resolveAvatarFigure';
 import { resolveAvatarGender } from '../resolveAvatarGender';
-import { canFollowFriendListEntry } from './friendsListActions.helpers';
+import { canChatWithFriendListEntry, canFollowFriendListEntry } from './friendsListActions.helpers';
 import { BaseButton } from '../../../../../common/BaseButton';
 import { Hint } from '../../../../../common/Tooltip';
 
-export const FriendsListGroupItemView: FC<{ friend: MessengerFriend; selected: boolean; selectFriend: (userId: number) => void }> = ({
+export const FriendsListGroupItemView: FC<{ friend: MessengerFriend; selected: boolean; selectFriend: (userId: number) => void; odd?: boolean }> = ({
     friend,
     selected,
-    selectFriend
+    selectFriend,
+    odd = false
 }) => {
     const [isRelationshipOpen, setIsRelationshipOpen] = useState(false);
     const { followFriend = null, updateRelationship = null } = useFriends();
     if (!friend) return null;
 
     const isStaffChat = isStaffChatIdentity(friend);
+    const showRelationship = friend.id > 0 && GetConfigurationValue<boolean>('relationship.status.enabled', true) !== false;
+    const canChat = canChatWithFriendListEntry(friend, GetConfigurationValue<boolean>('friend_list.persistent_message_status.enabled', true) !== false);
+    // AIR refreshFriendEntry: "name (real name)" when the friend has a real name.
+    const displayName = friend.realName ? `${friend.name} (${friend.realName})` : friend.name;
     const stop = (event: MouseEvent<HTMLElement>) => event.stopPropagation();
     const relationshipName = (() => {
         switch (friend.relationshipStatus) {
@@ -42,7 +47,7 @@ export const FriendsListGroupItemView: FC<{ friend: MessengerFriend; selected: b
 
     return (
         <div
-            className={`hfl-friend ${friend.online ? 'online' : 'offline'}${selected ? ' selected' : ''}`}
+            className={`hfl-friend ${friend.online ? 'online' : 'offline'}${odd ? ' hfl-row-odd' : ''}${selected ? ' selected' : ''}`}
             role="button"
             tabIndex={0}
             onClick={() => selectFriend(friend.id)}
@@ -67,9 +72,9 @@ export const FriendsListGroupItemView: FC<{ friend: MessengerFriend; selected: b
             <span className="hfl-friend-profile" onClick={stop}>
                 {!isStaffChat && <UserProfileIconView userId={friend.id} />}
             </span>
-            <span className="hfl-friend-name">{friend.name}</span>
+            <span className="hfl-friend-name">{displayName}</span>
             <div className="hfl-friend-actions" onClick={stop}>
-                {friend.id > 0 && (
+                {showRelationship && (
                     <Popover open={isRelationshipOpen} onOpenChange={setIsRelationshipOpen}>
                         <PopoverTrigger
                             className={`hfl-relationship ${relationshipName}`}
@@ -91,9 +96,11 @@ export const FriendsListGroupItemView: FC<{ friend: MessengerFriend; selected: b
                         <BaseButton aria-label={LocalizeText('friendlist.tip.follow')} type="button" className="hfl-action follow" onClick={() => followFriend(friend)} />
                     </Hint>
                 )}
-                <Hint content={LocalizeText('friendlist.tip.im')}>
-                    <BaseButton aria-label={LocalizeText('friendlist.tip.im')} type="button" className="hfl-action chat" onClick={() => OpenMessengerChat(friend.id)} />
-                </Hint>
+                {canChat && (
+                    <Hint content={LocalizeText('friendlist.tip.im')}>
+                        <BaseButton aria-label={LocalizeText('friendlist.tip.im')} type="button" className="hfl-action chat" onClick={() => OpenMessengerChat(friend.id)} />
+                    </Hint>
+                )}
             </div>
         </div>
     );

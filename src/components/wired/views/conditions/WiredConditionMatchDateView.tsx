@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { LocalizeText, WiredFurniType } from '../../../../api';
 import { Text } from '../../../../common';
 import { useWired } from '../../../../hooks';
@@ -101,47 +101,45 @@ export const WiredConditionMatchDateView: FC<{}> = () => {
     const { roomZone } = useWiredRoomTimezone();
     // The string param is the timezone; a box without one follows the room's.
     const [timezone, setTimezone] = useState('');
-    const currentYear = useMemo(() => new Date().getFullYear(), []);
     const [weekdayMask, setWeekdayMask] = useState(ALL_WEEKDAYS_MASK);
     const [dayMode, setDayMode] = useState(MODE_SKIP);
     const [dayFrom, setDayFrom] = useState(1);
     const [dayTo, setDayTo] = useState(31);
     const [monthMask, setMonthMask] = useState(ALL_MONTHS_MASK);
     const [yearMode, setYearMode] = useState(MODE_SKIP);
-    const [yearFrom, setYearFrom] = useState(currentYear);
-    const [yearTo, setYearTo] = useState(currentYear);
+    const [yearFrom, setYearFrom] = useState(0);
+    const [yearTo, setYearTo] = useState(0);
 
     useEffect(() => {
         if (!trigger) return;
 
-        // Official layout: [useDay, useYear, weekday mask (bit 0 Monday, 0 every day), dayMin, dayMax,
-        // month mask (bit 0 January, 0 every month), yearMin, yearMax]; the editor's masks start at bit 1.
+        // Official layout: [useDay, useYear, weekday mask (bit 0 Monday), dayMin, dayMax, month mask (bit 0
+        // January), yearMin, yearMax]; the editor's masks start at bit 1. As in AIR a mask is read as is:
+        // 0 is nothing checked.
         const d = trigger.intData;
         const [dFrom, dTo] = [clampValue(d[3] ?? 1, 1, 31), clampValue(d[4] ?? 31, 1, 31)];
-        const [yFrom, yTo] = [clampValue(d[6] ?? currentYear, 0, 9999), clampValue(d[7] ?? currentYear, 0, 9999)];
+        const [yFrom, yTo] = [clampValue(d[6] ?? 0, 0, 9999), clampValue(d[7] ?? 0, 0, 9999)];
 
-        setWeekdayMask(d[2] > 0 ? (d[2] << 1) & ALL_WEEKDAYS_MASK : ALL_WEEKDAYS_MASK);
+        setWeekdayMask(d[2] !== undefined ? (d[2] << 1) & ALL_WEEKDAYS_MASK : ALL_WEEKDAYS_MASK);
         setDayMode(toMode(d[0] === 1, dFrom, dTo));
         setDayFrom(dFrom);
         setDayTo(dTo);
-        setMonthMask(d[5] > 0 ? (d[5] << 1) & ALL_MONTHS_MASK : ALL_MONTHS_MASK);
+        setMonthMask(d[5] !== undefined ? (d[5] << 1) & ALL_MONTHS_MASK : ALL_MONTHS_MASK);
         setYearMode(toMode(d[1] === 1, yFrom, yTo));
         setYearFrom(yFrom);
         setYearTo(yTo);
         setTimezone((trigger.stringData ?? '').trim());
-    }, [currentYear, trigger]);
+    }, [trigger]);
 
+    // AIR sends the checked boxes as they are (every box 127 / 4095, none 0, which never matches).
     const save = () => {
-        const weekdays = weekdayMask || ALL_WEEKDAYS_MASK;
-        const months = monthMask || ALL_MONTHS_MASK;
-
         setIntParams([
             dayMode !== MODE_SKIP ? 1 : 0,
             yearMode !== MODE_SKIP ? 1 : 0,
-            weekdays === ALL_WEEKDAYS_MASK ? 0 : weekdays >> 1,
+            weekdayMask >> 1,
             clampValue(dayFrom, 1, 31),
             clampValue(dayMode === MODE_RANGE ? dayTo : dayFrom, 1, 31),
-            months === ALL_MONTHS_MASK ? 0 : months >> 1,
+            monthMask >> 1,
             clampValue(yearFrom, 0, 9999),
             clampValue(yearMode === MODE_RANGE ? yearTo : yearFrom, 0, 9999)
         ]);

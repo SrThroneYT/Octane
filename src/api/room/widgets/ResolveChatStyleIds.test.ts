@@ -45,9 +45,18 @@ describe('ResolveChatStyleIds', () => {
             style(5, { isAmbassadorOnly: true })
         ];
 
-        expect(ResolveChatStyleIds(styles, access({ disabledStyleIds: [3] }))).toEqual([0, 2]);
+        // A system style is never offered to a player without acc_anychatcolor (AIR), whatever its rank.
+        expect(ResolveChatStyleIds(styles, access({ disabledStyleIds: [3] }))).toEqual([0]);
         expect(
             ResolveChatStyleIds(styles, access({ hasSecurity: (rank) => rank <= 5, canUseSystemStyles: true, isClubMember: true, isAmbassador: true }))
         ).toEqual([0, 1, 2, 3, 4, 5]);
+    });
+
+    it('does not offer a ranked system style on rank alone', () => {
+        const styles = [style(1, { minRank: 5, isSystemStyle: true })];
+
+        expect(ResolveChatStyleIds(styles, access({ hasSecurity: () => true }))).toEqual([]);
+        expect(ResolveChatStyleIds(styles, access({ hasSecurity: () => false, canUseSystemStyles: true }))).toEqual([]);
+        expect(ResolveChatStyleIds(styles, access({ hasSecurity: () => true, canUseSystemStyles: true }))).toEqual([1]);
     });
 });

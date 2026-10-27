@@ -17,3 +17,42 @@ export const infostandFurniOwnerText = (info: FurniKind & Pick<AvatarInfoFurni, 
 
     return LocalizeText('furni.owner', ['name'], [info.ownerName]);
 };
+
+/** A branding setting's number range, as the server clamps it (RoomBackgroundSettings); null for a text setting. */
+export const BRANDING_NUMBER_RANGES: Readonly<Record<string, { min: number; max: number }>> = {
+    offsetX: { min: -10000, max: 10000 },
+    offsetY: { min: -10000, max: 10000 },
+    offsetZ: { min: -1000, max: 1000 },
+    scale: { min: 0, max: 500 },
+    alpha: { min: 0, max: 100 }
+};
+
+/** The branding settings: tab separated, each split at its first "=" only, so an address may hold "=". */
+export const parseBrandingOptions = (text: string): { keys: string[]; values: string[] } => {
+    const keys: string[] = [];
+    const values: string[] = [];
+
+    for (const part of (text ?? '').split('\t')) {
+        const index = part.indexOf('=');
+
+        if (index <= 0) continue;
+
+        keys.push(part.substring(0, index));
+        values.push(part.substring(index + 1));
+    }
+
+    return { keys, values };
+};
+
+/** The save map, built straight from the edited lists; a cleared number setting is saved as 0. */
+export const brandingSaveMap = (keys: string[], values: string[]): Map<string, string> => {
+    const map = new Map<string, string>();
+
+    keys.forEach((key, index) => {
+        const value = values[index] ?? '';
+
+        map.set(key, BRANDING_NUMBER_RANGES[key] && value.trim() === '' ? '0' : value);
+    });
+
+    return map;
+};

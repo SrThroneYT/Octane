@@ -2,6 +2,7 @@ import {
     AvatarAction,
     AvatarExpressionEnum,
     CreateLinkEvent,
+    GetRoomEngine,
     RoomControllerLevel,
     RoomObjectCategory,
     RoomObjectVariable,
@@ -86,7 +87,8 @@ export const AvatarInfoWidgetOwnAvatarView: FC<AvatarInfoWidgetOwnAvatarViewProp
     const isRidingHorse = IsRidingHorse();
     const isSwimming = SWIM_EFFECTS.includes(activeEffectId);
     const [mode, setMode] = useState(isDancing && hasClub && !hasActiveEffect ? MODE_CLUB_DANCES : MODE_NORMAL);
-    const { roomSession = null, isHandItemBlocked = false } = useRoom();
+    const { roomSession = null } = useRoom();
+    const isHandItemBlocked = GetRoomEngine().activeRoomHasHanditemControlBlocked;
     const { openInspectionForUser, showInspectButton } = useWiredTools();
 
     const expressionsMenuEnabled = GetConfigurationValue('avatar.expressions_menu.enabled', true);

@@ -10,7 +10,10 @@
     width: 100%;
     height: 46px;
     pointer-events: all;
-    background: #55534e;
+    /* AIR bottom bar: a see-through dark strip with a lighter line along its top edge. */
+    border-top: 1px solid rgba(96, 94, 95, 0.7);
+    background: rgba(43, 42, 44, 0.7);
+    background-clip: padding-box;
 }
 
 .octane-toolbar-mobile-hobba {

@@ -335,3 +335,45 @@ export const getRewardTrackResultText = (prefix: string, resultCode: number, fal
 
     return localizeWithFallback(`${prefix}fail.${resultCode}`, LocalizeText(`${prefix}fail.${resultCode}`) || fallback);
 };
+
+/** How a daily task reward is drawn (AIR DailyTaskRewardView over ProductIconWidget), or null for no icon. */
+export type DailyTaskRewardIcon =
+    | { kind: 'currency'; type: number }
+    | { kind: 'badge'; code: string }
+    | { kind: 'furni'; productType: 's' | 'i'; classId: number }
+    | null;
+
+const LEGACY_DAILY_TASK_CURRENCIES: Record<string, number> = { credits: -1, duckets: 0, diamonds: 5 };
+
+/**
+ * AIR ProductIconWidget: product type 8 is a currency (the item type is its activity point type), 4 a badge (the
+ * item type is the code), 1 and 11 a floor furni and 0 a wall furni (the item type is the class id). A server that
+ * still sends the reward by name (product 0 with a word as the item type) is read the old way.
+ */
+export const getDailyTaskRewardIcon = (reward: Pick<DailyTaskData['rewards'][number], 'productItemTypeId' | 'rewardTypeId' | 'extraParams'>): DailyTaskRewardIcon => {
+    const itemType = (reward?.rewardTypeId ?? '').trim();
+    const numeric = /^-?\d+$/.test(itemType);
+
+    if (reward?.productItemTypeId === 0 && !numeric) {
+        const name = itemType.toLowerCase();
+
+        if (name in LEGACY_DAILY_TASK_CURRENCIES) return { kind: 'currency', type: LEGACY_DAILY_TASK_CURRENCIES[name] };
+        if (name === 'badge' && reward.extraParams) return { kind: 'badge', code: reward.extraParams };
+
+        return null;
+    }
+
+    switch (reward?.productItemTypeId) {
+        case 8:
+            return numeric ? { kind: 'currency', type: Number(itemType) } : null;
+        case 4:
+            return itemType ? { kind: 'badge', code: itemType } : null;
+        case 1:
+        case 11:
+            return numeric ? { kind: 'furni', productType: 's', classId: Number(itemType) } : null;
+        case 0:
+            return numeric ? { kind: 'furni', productType: 'i', classId: Number(itemType) } : null;
+        default:
+            return null;
+    }
+};

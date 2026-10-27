@@ -3,11 +3,12 @@ import { FC, useLayoutEffect, useRef, useState } from 'react';
 import friendsBrowseArrowLeft from '../../../../assets/images/toolbar/air/friend-browse-arrow-left.png';
 import friendsBrowseArrowRight from '../../../../assets/images/toolbar/air/friend-browse-arrow-right.png';
 import friendsBrowseBg from '../../../../assets/images/toolbar/air/friends-browse-bg.png';
-import { LocalizeText, localizeWithFallback, MessengerFriend } from '../../../../api';
+import { localizeWithFallback, MessengerFriend } from '../../../../api';
 import { AIR_RAIL_CHAT_RESERVED_HALF, AIR_RAIL_EDGE_GAP, resolveAirFriendTabCapacity } from '../../../toolbar/bottomDockLayout';
 import { orderFriendsForBar } from '../../../../hooks/friends/friendBarNotifications.helpers';
 import { useFriendBarNotificationsStore } from '../../../../hooks/friends/friendBarNotificationsStore';
 import { FriendBarItemView } from './FriendBarItemView';
+import { FriendBarRequestsView } from './FriendBarRequestsView';
 import { BaseButton } from '../../../../common/BaseButton';
 
 const AIR_TAB_WIDTH = 127;
@@ -101,9 +102,7 @@ export const FriendBarView: FC<{ onlineFriends: MessengerFriend[]; requestsCount
         >
             {maxVisible > 0 && requestsCount > 0 && (
                 <motion.div variants={itemVariants}>
-                    <div className="friend-bar-item friend-bar-request find-friends-active flex h-[34px] items-center px-[10px] text-[0.83rem] whitespace-nowrap text-white">
-                        {requestsCount} {LocalizeText('friendbar.requests.title')}
-                    </div>
+                    <FriendBarRequestsView />
                 </motion.div>
             )}
             {showArrows && (

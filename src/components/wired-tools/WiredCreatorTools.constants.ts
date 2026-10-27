@@ -2,7 +2,7 @@ import contextInspectionIcon from '../../assets/images/wiredtools/context.png';
 import furniInspectionIcon from '../../assets/images/wiredtools/furni.png';
 import globalInspectionIcon from '../../assets/images/wiredtools/global.png';
 import userInspectionIcon from '../../assets/images/wiredtools/user.png';
-import { InspectionElementButton, VariableDefinition, VariablesElementButton, VariablesElementType, WiredToolsTab } from './WiredCreatorTools.types';
+import { InspectionElementButton, VariablesElementButton, WiredToolsTab } from './WiredCreatorTools.types';
 
 export const TABS: Array<{ key: WiredToolsTab; label: string }> = [
     { key: 'monitor', label: 'Monitor' },
@@ -144,9 +144,6 @@ export const VARIABLES_ELEMENTS: VariablesElementButton[] = [
     { key: 'context', label: 'Context', icon: contextInspectionIcon }
 ];
 
-export const INTERNAL_FURNI_OPACITY_VARIABLE_ITEM_ID = -1001;
-export const INTERNAL_FURNI_GRAVITY_VARIABLE_ITEM_ID = -1002;
-
 export const EDITABLE_FURNI_VARIABLES: string[] = [
     '@position_x',
     '@position_y',
@@ -181,200 +178,6 @@ export const WIRED_BUILTIN_TEXT_CONNECTORS: Record<'furni' | 'user', Record<stri
 export const getBuiltinTextConnectorLabel = (holder: 'furni' | 'user', key: string, value: number): string | undefined =>
     WIRED_BUILTIN_TEXT_CONNECTORS[holder][key]?.[value];
 
-const createVariableDefinition = (
-    key: string,
-    target: 'Furni' | 'User' | 'Global' | 'Context',
-    availability: string = 'Always',
-    canWriteTo = false
-): VariableDefinition => ({
-    key,
-    target,
-    type: 'Internal',
-    hasValue: true,
-    availability,
-    canWriteTo,
-    canCreateDelete: false,
-    canIntercept: false,
-    hasCreationTime: false,
-    hasUpdateTime: false,
-    isTextConnected: false,
-    isAlwaysAvailable: availability === 'Always'
-});
-
-export const VARIABLE_DEFINITIONS: Record<VariablesElementType, VariableDefinition[]> = {
-    furni: [
-        createVariableDefinition('~teleport.target_id', 'Furni', 'Conditional'),
-        createVariableDefinition('~recolorable_furni.color.rgb', 'Furni', 'Conditional', true),
-        createVariableDefinition('~recolorable_furni.color.rgb.red', 'Furni', 'Conditional', true),
-        createVariableDefinition('~recolorable_furni.color.rgb.green', 'Furni', 'Conditional', true),
-        createVariableDefinition('~recolorable_furni.color.rgb.blue', 'Furni', 'Conditional', true),
-        createVariableDefinition('~background_color.hue', 'Furni', 'Conditional'),
-        createVariableDefinition('~background_color.saturation', 'Furni', 'Conditional'),
-        createVariableDefinition('~background_color.lightness', 'Furni', 'Conditional'),
-        createVariableDefinition('~walk_helper.is_multi_walk', 'Furni', 'Conditional'),
-        createVariableDefinition('~area_hide.root_x', 'Furni', 'Conditional'),
-        createVariableDefinition('~area_hide.root_y', 'Furni', 'Conditional'),
-        createVariableDefinition('~area_hide.width', 'Furni', 'Conditional'),
-        createVariableDefinition('~area_hide.length', 'Furni', 'Conditional'),
-        createVariableDefinition('~area_hide.is_invisible_furni', 'Furni', 'Conditional'),
-        createVariableDefinition('~area_hide.hiding_wallitems', 'Furni', 'Conditional'),
-        createVariableDefinition('~area_hide.inverted', 'Furni', 'Conditional'),
-        createVariableDefinition('~chest.available_amount', 'Furni', 'Conditional'),
-        createVariableDefinition('~chest.locked', 'Furni', 'Conditional'),
-        createVariableDefinition('~chest.is_auto_lock', 'Furni', 'Conditional'),
-        createVariableDefinition('~chest.capacity', 'Furni', 'Conditional'),
-        createVariableDefinition('~chest.is_open', 'Furni', 'Conditional'),
-        createVariableDefinition('~chest.is_donatable', 'Furni', 'Conditional'),
-        // Counters and game timers: 0 initial, 1 running, 2 paused; the time shown in pulses (half seconds).
-        createVariableDefinition('~clock.state', 'Furni', 'Conditional'),
-        createVariableDefinition('~clock.pulse_count', 'Furni', 'Conditional', true),
-        createVariableDefinition('~clock.is_game_aware', 'Furni', 'Conditional'),
-        createVariableDefinition('@id', 'Furni'),
-        createVariableDefinition('@class_id', 'Furni'),
-        createVariableDefinition('@height', 'Furni'),
-        createVariableDefinition('@state', 'Furni', 'Always', true),
-        createVariableDefinition('@position_x', 'Furni', 'Always', true),
-        createVariableDefinition('@position_y', 'Furni', 'Always', true),
-        // AIR's packed x << 8 | y and x << 16 | y << 8 | rotation: writing one moves (and turns) in one move.
-        createVariableDefinition('@position', 'Furni', 'Always', true),
-        createVariableDefinition('@occupation', 'Furni', 'Always', true),
-        createVariableDefinition('@rotation', 'Furni', 'Always', true),
-        createVariableDefinition('@altitude', 'Furni', 'Always', true),
-        createVariableDefinition('@opacity', 'Furni', 'Always', true),
-        createVariableDefinition('@gravity', 'Furni', 'Always', true),
-        createVariableDefinition('@is_invisible', 'Furni', 'Conditional'),
-        createVariableDefinition('@wallitem_offset', 'Furni', 'Conditional', true),
-        createVariableDefinition('@type', 'Furni'),
-        createVariableDefinition('@can_sit_on', 'Furni', 'Conditional'),
-        createVariableDefinition('@can_lay_on', 'Furni', 'Conditional'),
-        createVariableDefinition('@can_stand_on', 'Furni', 'Conditional'),
-        createVariableDefinition('@is_stackable', 'Furni', 'Conditional'),
-        createVariableDefinition('@dimensions.x', 'Furni'),
-        createVariableDefinition('@dimensions.y', 'Furni'),
-        createVariableDefinition('@owner_id', 'Furni'),
-        createVariableDefinition('@projectile.animation.position.x', 'Furni', 'Conditional'),
-        createVariableDefinition('@projectile.animation.position.y', 'Furni', 'Conditional'),
-        createVariableDefinition('@projectile.animation.position.altitude', 'Furni', 'Conditional'),
-        { ...createVariableDefinition('@projectile.animation.is_travelling', 'Furni', 'Conditional'), hasValue: false },
-        createVariableDefinition('@projectile.animation.tiles_travelled', 'Furni', 'Conditional'),
-        createVariableDefinition('@projectile.animation.furni_collisions', 'Furni', 'Conditional'),
-        createVariableDefinition('@projectile.animation.user_collisions', 'Furni', 'Conditional')
-    ],
-    user: [
-        createVariableDefinition('@index', 'User'),
-        createVariableDefinition('@type', 'User'),
-        createVariableDefinition('@gender', 'User'),
-        createVariableDefinition('@level', 'User'),
-        createVariableDefinition('@achievement_score', 'User'),
-        createVariableDefinition('@is_hc', 'User', 'Conditional'),
-        createVariableDefinition('@has_rights', 'User', 'Conditional'),
-        createVariableDefinition('@is_owner', 'User', 'Conditional'),
-        createVariableDefinition('@is_group_admin', 'User', 'Conditional'),
-        createVariableDefinition('@is_muted', 'User', 'Conditional'),
-        createVariableDefinition('@is_trading', 'User', 'Conditional'),
-        createVariableDefinition('@is_frozen', 'User', 'Conditional'),
-        createVariableDefinition('@effect_id', 'User', 'Conditional'),
-        createVariableDefinition('@team_score', 'User', 'Conditional'),
-        createVariableDefinition('@team_color', 'User', 'Conditional'),
-        createVariableDefinition('@team_type', 'User', 'Conditional'),
-        createVariableDefinition('@sign', 'User', 'Conditional'),
-        createVariableDefinition('@dance', 'User', 'Conditional'),
-        createVariableDefinition('@is_idle', 'User', 'Conditional'),
-        createVariableDefinition('@handitem_id', 'User', 'Conditional'),
-        createVariableDefinition('@position_x', 'User', 'Always', true),
-        createVariableDefinition('@position_y', 'User', 'Always', true),
-        createVariableDefinition('@position', 'User', 'Always', true),
-        createVariableDefinition('@direction', 'User', 'Always', true),
-        createVariableDefinition('@altitude', 'User'),
-        createVariableDefinition('@favourite_group_id', 'User', 'Conditional'),
-        createVariableDefinition('@room_entry.method', 'User', 'Conditional'),
-        createVariableDefinition('@room_entry.teleport_id', 'User', 'Conditional'),
-        createVariableDefinition('@user_id', 'User', 'Conditional'),
-        createVariableDefinition('@bot_id', 'User', 'Conditional'),
-        createVariableDefinition('@pet_id', 'User', 'Conditional'),
-        createVariableDefinition('@pet_owner_id', 'User', 'Conditional'),
-        // The habbicon shown over the head, while its bubble shows.
-        { ...createVariableDefinition('@habbicon', 'User', 'Conditional', true), canCreateDelete: true, canIntercept: true },
-        // While a wired transaction window is open for the user.
-        createVariableDefinition('@transaction.in_trade', 'User', 'Conditional'),
-        createVariableDefinition('@transaction.start_time', 'User', 'Conditional'),
-        createVariableDefinition('@transaction.contract_id', 'User', 'Conditional'),
-        createVariableDefinition('@transaction.state', 'User', 'Conditional'),
-        createVariableDefinition('@transaction.can_accept', 'User', 'Conditional'),
-        createVariableDefinition('@transaction.current_multiplier', 'User', 'Conditional'),
-        createVariableDefinition('~pet.level', 'User', 'Conditional'),
-        createVariableDefinition('~pet.experience', 'User', 'Conditional'),
-        createVariableDefinition('~pet.energy', 'User', 'Conditional'),
-        createVariableDefinition('~pet.happiness', 'User', 'Conditional'),
-        createVariableDefinition('~pet.max_level', 'User', 'Conditional'),
-        createVariableDefinition('~pet.experience_required', 'User', 'Conditional'),
-        createVariableDefinition('~pet.max_energy', 'User', 'Conditional'),
-        createVariableDefinition('~pet.max_happiness', 'User', 'Conditional'),
-        createVariableDefinition('~pet.scratches', 'User', 'Conditional'),
-        createVariableDefinition('~pet.owner_id', 'User', 'Conditional'),
-        createVariableDefinition('~pet.creation_time', 'User', 'Conditional'),
-        createVariableDefinition('~horse.has_saddle', 'User', 'Conditional'),
-        createVariableDefinition('~horse.is_riding', 'User', 'Conditional'),
-        createVariableDefinition('~horse.controller_user_id', 'User', 'Conditional'),
-        createVariableDefinition('~plant.rarity_level', 'User', 'Conditional'),
-        createVariableDefinition('~plant.shape', 'User', 'Conditional'),
-        createVariableDefinition('~plant.color', 'User', 'Conditional'),
-        createVariableDefinition('~plant.can_breed', 'User', 'Conditional'),
-        createVariableDefinition('~plant.can_harvest', 'User', 'Conditional'),
-        createVariableDefinition('~plant.can_revive', 'User', 'Conditional'),
-        createVariableDefinition('~plant.is_dead', 'User', 'Conditional'),
-        createVariableDefinition('~plant.is_growing', 'User', 'Conditional'),
-        createVariableDefinition('~plant.remaining_wellbeing_seconds', 'User', 'Conditional'),
-        createVariableDefinition('~plant.remaining_growing_seconds', 'User', 'Conditional'),
-        createVariableDefinition('~plant.max_wellbeing_seconds', 'User', 'Conditional')
-    ],
-    global: [
-        createVariableDefinition('@furni_count', 'Global'),
-        createVariableDefinition('@user_count', 'Global'),
-        createVariableDefinition('@wired_timer', 'Global'),
-        createVariableDefinition('@team_red_score', 'Global'),
-        createVariableDefinition('@team_green_score', 'Global'),
-        createVariableDefinition('@team_blue_score', 'Global'),
-        createVariableDefinition('@team_yellow_score', 'Global'),
-        createVariableDefinition('@team_red_size', 'Global'),
-        createVariableDefinition('@team_green_size', 'Global'),
-        createVariableDefinition('@team_blue_size', 'Global'),
-        createVariableDefinition('@team_yellow_size', 'Global'),
-        createVariableDefinition('@room_id', 'Global'),
-        createVariableDefinition('@group_id', 'Global'),
-        createVariableDefinition('@timezone_server', 'Global'),
-        createVariableDefinition('@timezone_client', 'Global'),
-        createVariableDefinition('@current_time', 'Global'),
-        createVariableDefinition('@current_time.milliseconds_of_seconds', 'Global'),
-        createVariableDefinition('@current_time.seconds_of_minute', 'Global'),
-        createVariableDefinition('@current_time.minute_of_hour', 'Global'),
-        createVariableDefinition('@current_time.hour_of_day', 'Global'),
-        createVariableDefinition('@current_time.day_of_week', 'Global'),
-        createVariableDefinition('@current_time.day_of_month', 'Global'),
-        createVariableDefinition('@current_time.day_of_year', 'Global'),
-        createVariableDefinition('@current_time.week_of_year', 'Global'),
-        createVariableDefinition('@current_time.month_of_year', 'Global'),
-        createVariableDefinition('@current_time.year', 'Global')
-    ],
-    context: [
-        createVariableDefinition('@selector_furni_count', 'Context', 'Conditional'),
-        createVariableDefinition('@selector_user_count', 'Context', 'Conditional'),
-        createVariableDefinition('@signal_furni_count', 'Context', 'Conditional'),
-        createVariableDefinition('@signal_user_count', 'Context', 'Conditional'),
-        createVariableDefinition('@antenna_id', 'Context', 'Conditional'),
-        createVariableDefinition('@chat_type', 'Context', 'Conditional'),
-        createVariableDefinition('@chat_style', 'Context', 'Conditional'),
-        createVariableDefinition('@event.link.source_room_id', 'Context', 'Conditional'),
-        createVariableDefinition('@event.transaction_failed.reason', 'Context', 'Conditional'),
-        createVariableDefinition('@event.habbicon', 'Context', 'Conditional'),
-        createVariableDefinition('@event.transaction_complete.multiplier', 'Context', 'Conditional'),
-        createVariableDefinition('@event.transaction_complete.deposit.furni_count', 'Context', 'Conditional'),
-        createVariableDefinition('@event.transaction_complete.deposit.coins_count', 'Context', 'Conditional'),
-        createVariableDefinition('@event.transaction_complete.withdrawal.furni_count', 'Context', 'Conditional'),
-        createVariableDefinition('@event.transaction_complete.withdrawal.coins_count', 'Context', 'Conditional')
-    ]
-};
-
 export const WIRED_FREEZE_EFFECT_IDS: Set<number> = new Set([218, 12, 11, 53, 163]);
 
 export const TEAM_COLOR_NAMES: Record<number, string> = {
@@ -386,7 +189,6 @@ export const TEAM_COLOR_NAMES: Record<number, string> = {
 
 export const WEEKDAY_NAMES: string[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 export const MONTH_NAMES: string[] = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-export const DIRECTION_NAMES: string[] = ['North', 'North-East', 'East', 'South-East', 'South', 'South-West', 'West', 'North-West'];
 
 /**
  * The built-ins Habbo sends packed (an empty text table, RoomWiredInternalVariables `packed()`): one value

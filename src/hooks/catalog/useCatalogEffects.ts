@@ -10,10 +10,7 @@ import {
     CatalogPublishedMessageEvent,
     FurniturePlaceComposer,
     FurniturePlacePaintComposer,
-    GetConfiguration,
-    GetRoomContentLoader,
     GetRoomEngine,
-    GetSessionDataManager,
     GetTickerTime,
     LegacyDataType,
     LimitedEditionSoldOutEvent,
@@ -89,34 +86,12 @@ const scheduleWhenIdle = (run: () => void): void => {
     else setTimeout(run, 1000);
 };
 
-const refreshImportedFurnidata = (mergedRef: { current: boolean }, force: boolean = false) => {
-    if (!force && mergedRef.current) return;
-
-    try {
-        const base = GetConfiguration().getValue<string>('furnidata.url');
-
-        if (!base || !base.length) return;
-
-        const importedUrl = base.replace(/\/+$/, '') + '/custom/imported.jsonc';
-
-        GetSessionDataManager()
-            .mergeFurnitureDataFromUrl(importedUrl)
-            .then((added) => {
-                mergedRef.current = true;
-
-                if (added && added.length) GetRoomContentLoader().processFurnitureData(added);
-            })
-            .catch(() => {});
-    } catch {}
-};
-
 export const useCatalogEffects = (): void => {
     const queryClient = useQueryClient();
     const connectionState = useConnectionState();
     const { simpleAlert = null, showConfirm = null } = useNotification();
     const [catalogSkipPurchaseConfirmation] = useCatalogSkipPurchaseConfirmation();
     const [catalogPlaceMultipleObjects, setCatalogPlaceMultipleObjectsPreference] = useCatalogPlaceMultipleItems();
-    const importedFurnidataMerged = useRef(false);
     const wasAuthenticated = useRef(connectionState.authenticated);
 
     const isVisible = useCatalogStore((state) => state.isVisible);
@@ -192,11 +167,10 @@ export const useCatalogEffects = (): void => {
         if (was) dropCatalogCache();
     }, [connectionState.authenticated]);
 
-    // Opening the catalog: imported furnidata and the Builders Club counters.
+    // Opening the catalog: the Builders Club counters. New furnidata comes from the server (FurnitureDataReload).
     useEffect(() => {
         if (!isVisible) return;
 
-        refreshImportedFurnidata(importedFurnidataMerged);
         SendMessageComposer(new BuildersClubQueryFurniCountMessageComposer());
     }, [isVisible, currentType]);
 
@@ -317,8 +291,6 @@ export const useCatalogEffects = (): void => {
     });
 
     useMessageEvent<CatalogPublishedMessageEvent>(CatalogPublishedMessageEvent, () => {
-        importedFurnidataMerged.current = false;
-
         if (!connectionState.authenticated) return;
 
         invalidateCatalogIndex(useCatalogStore.getState().currentType);

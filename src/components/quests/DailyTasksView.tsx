@@ -1,12 +1,10 @@
 import { AddLinkEventTracker, CreateLinkEvent, DailyTaskData, GetSessionDataManager, ILinkEventTracker, RemoveLinkEventTracker } from '@octane/renderer';
 import { FC, useEffect, useMemo, useState } from 'react';
-import { getDailyTaskImageUrl, getDailyTaskProgressPercent, getDailyTaskStyle, getDailyTasksWindowCaption, localizeWithFallback } from '../../api';
-import { Button, DraggableWindowPosition, LayoutBadgeImageView, LayoutCurrencyIcon, LayoutProgressBar, Text } from '../../common';
+import { getDailyTaskImageUrl, getDailyTaskProgressPercent, getDailyTaskRewardIcon, getDailyTaskStyle, getDailyTasksWindowCaption, localizeWithFallback } from '../../api';
+import { Button, DraggableWindowPosition, LayoutBadgeImageView, LayoutCurrencyIcon, LayoutFurniIconImageView, LayoutProgressBar, Text } from '../../common';
 import { useDailyTasks } from '../../hooks';
 import { OctaneCard } from '../../layout';
 import { Hint } from '../../common/Tooltip';
-
-const CURRENCY_TYPES: Record<string, number> = { credits: -1, duckets: 0, diamonds: 5 };
 
 /** One row of the official daily tasks list (task_template 402x119). */
 const DailyTaskRowView: FC<{ task: DailyTaskData; onClaim: (task: DailyTaskData) => void }> = ({ task, onClaim }) => {
@@ -51,13 +49,16 @@ const DailyTaskRowView: FC<{ task: DailyTaskData; onClaim: (task: DailyTaskData)
                 <div className="octane-daily-task-reward-title">{localizeWithFallback('dailytasks.reward', 'Reward')}</div>
                 <div className="octane-daily-task-rewards">
                     {task.rewards.map((reward, index) => {
-                        const type = reward.rewardTypeId.toLowerCase();
+                        const icon = getDailyTaskRewardIcon(reward);
 
                         return (
                             <div key={index} className="octane-daily-task-reward">
-                                {type in CURRENCY_TYPES && <LayoutCurrencyIcon type={CURRENCY_TYPES[type]} className="octane-daily-task-reward-icon" />}
-                                {type === 'badge' && <LayoutBadgeImageView badgeCode={reward.extraParams} />}
-                                {!(type in CURRENCY_TYPES) && type !== 'badge' && <div className="octane-daily-task-reward-generic">{reward.rewardTypeId}</div>}
+                                {icon?.kind === 'currency' && <LayoutCurrencyIcon type={icon.type} className="octane-daily-task-reward-icon" />}
+                                {icon?.kind === 'badge' && <LayoutBadgeImageView badgeCode={icon.code} />}
+                                {icon?.kind === 'furni' && (
+                                    <LayoutFurniIconImageView productType={icon.productType} productClassId={icon.classId} className="octane-daily-task-reward-icon" />
+                                )}
+                                {!icon && <div className="octane-daily-task-reward-generic">{reward.rewardTypeId}</div>}
                                 {reward.amount > 1 && <span className="octane-daily-task-reward-amount">x{reward.amount}</span>}
                             </div>
                         );

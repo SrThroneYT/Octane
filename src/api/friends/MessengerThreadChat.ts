@@ -22,19 +22,30 @@ export class MessengerThreadChat {
     private _targetLanguage: string;
     private _failureText: string = null;
 
-    constructor(senderId: number, message: string, secondsSinceSent: number = 0, extraData: string = null, type: number = 0) {
-        this._id = ++MessengerThreadChat.CHAT_ID;
+    /** An id for a line made later, so an update run twice gives both runs the same line id. */
+    public static nextId(): number {
+        return ++MessengerThreadChat.CHAT_ID;
+    }
+
+    constructor(senderId: number, message: string, secondsSinceSent: number = 0, extraData: string = null, type: number = 0, id: number = 0) {
+        this._id = id > 0 ? id : ++MessengerThreadChat.CHAT_ID;
         this._type = type;
         this._senderId = senderId;
         this._message = message;
         this._secondsSinceSent = secondsSinceSent;
         this._extraData = extraData;
-        this._date = new Date();
+        // When it was sent: a message from the history or the offline store comes with its age.
+        this._date = new Date(Date.now() - Math.max(0, secondsSinceSent || 0) * 1000);
         this._showTranslation = false;
         this._originalMessage = message;
         this._translatedMessage = '';
         this._detectedLanguage = '';
         this._targetLanguage = '';
+    }
+
+    /** A copy that can be changed without changing this line (React state must not be changed in place). */
+    public clone(): MessengerThreadChat {
+        return Object.assign(Object.create(MessengerThreadChat.prototype), this);
     }
 
     public setTranslation(originalMessage: string, translatedMessage: string, detectedLanguage: string, targetLanguage: string): void {

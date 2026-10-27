@@ -180,3 +180,21 @@
 .octane-epic-popup-close:hover {
     background: linear-gradient(#ffffff, #ececec);
 }
+
+/* new_friend_entity region_profile: the head of a closed tab is a 33 x 35 link to the profile. */
+.friend-bar .friend-bar-friend .friend-bar-profile-region {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    z-index: 11;
+    width: 33px;
+    height: 35px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.friend-bar .friend-bar-friend.is-selected .friend-bar-profile-region {
+    display: none;
+}

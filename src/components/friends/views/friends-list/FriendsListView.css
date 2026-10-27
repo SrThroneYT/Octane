@@ -201,7 +201,7 @@
     height: 17px;
     padding: 1px 4px 0;
     border: 0;
-    background: #ededed;
+    background: #eee;
     font-weight: 700 !important;
     text-align: left;
 }
@@ -253,22 +253,22 @@
     height: 20px;
     min-height: 20px;
     overflow: visible;
-    background: #fff;
+    background: #eee;
     cursor: pointer;
 }
 
-.hfl-friend:hover,
-.hfl-friend.selected {
-    background: #c9eafa;
+/*
+ * AIR FriendsView.refreshEntry + laf.getRowShadingColor(1): one stripe over the whole list, section headers included:
+ * odd rows #ffffff, even rows #eeeeee, the selected friend #b8e2fc, and no hover colour.
+ */
+.hfl-section-header.hfl-row-odd,
+.hfl-friend.hfl-row-odd {
+    background: #fff;
 }
 
-.hfl-list .hfl-friend:nth-child(even) {
-    background: #ededed;
-}
-
-.hfl-list .hfl-friend:nth-child(even):hover,
-.hfl-list .hfl-friend:nth-child(even).selected {
-    background: #c9eafa;
+.hfl-friend.selected,
+.hfl-friend.selected.hfl-row-odd {
+    background: #b8e2fc;
 }
 
 .hfl-friend-avatar,
@@ -719,10 +719,11 @@
     background: #fff;
 }
 
+/* AIR SearchView: the search tab is #b6b6b6, rows (captions included) alternate #9f9f9f / #b6b6b6. */
 .hfl-search-results {
     height: 100%;
     overflow: hidden;
-    background: #bdbdbd;
+    background: #b6b6b6;
 }
 
 .hfl-search-results-scroll {
@@ -780,11 +781,13 @@
 }
 
 .hfl-search-section h4 {
-    height: 17px;
+    height: 20px;
     margin: 0;
-    padding: 3px 5px 0;
-    background: #aaa;
+    padding: 5px 5px 0;
+    background: #9f9f9f;
+    font-family: Volter, monospace;
     font-size: 9px;
+    font-weight: 700;
 }
 
 .hfl-search-result,
@@ -796,64 +799,105 @@
     background: #fff;
 }
 
+.hfl-search-result {
+    background: #9f9f9f;
+    cursor: pointer;
+}
+
+.hfl-search-section h4.hfl-row-odd,
+.hfl-search-result.hfl-row-odd {
+    background: #b6b6b6;
+}
+
+/* AIR FriendRequestsView.refreshShading uses the friends stripe: odd #ffffff, even #eeeeee. */
+.hfl-request {
+    background: #eee;
+}
+
+.hfl-request.hfl-row-odd {
+    background: #fff;
+}
+
 .hfl-request {
     grid-template-columns: 15px minmax(0, 1fr) auto;
     padding: 0 5px;
 }
 
+/* friend_request_entry: 16 x 14 accept / reject boxes 9px apart, the skin's accept (#33cc00) and decline (#ff3333) symbols. */
 .hfl-request-actions {
-    gap: 6px;
+    gap: 9px;
 }
 
 .hfl-request-actions button {
-    position: relative;
     width: 16px;
     height: 14px;
     padding: 0;
     border: 0;
-    background: transparent;
+    background: transparent center / auto no-repeat;
+    image-rendering: pixelated;
 }
 
-.hfl-request-actions button::before,
-.hfl-request-actions button::after {
-    position: absolute;
-    content: "";
+.hfl-request-actions .accept {
+    background-image: url("@/assets/images/friends/swf/request_accept.png");
 }
 
-.hfl-request-actions .accept::before {
-    top: 5px;
-    left: 2px;
-    width: 10px;
-    height: 5px;
-    border-bottom: 3px solid #009a28;
-    border-left: 3px solid #009a28;
-    transform: rotate(-45deg);
+.hfl-request-actions .decline {
+    background-image: url("@/assets/images/friends/swf/request_decline.png");
 }
 
-.hfl-request-actions .decline::before,
-.hfl-request-actions .decline::after {
-    top: 1px;
-    left: 7px;
-    width: 3px;
-    height: 12px;
-    background: #d22;
-}
-
-.hfl-request-actions .decline::before { transform: rotate(45deg); }
-.hfl-request-actions .decline::after { transform: rotate(-45deg); }
-
+/*
+ * friend_requests_footer: a white 223 x 67 footer, a #d9d9d9 border inset 5px, and the two 203 x 21 buttons stacked
+ * inside it, accept all over dismiss all, each with its symbol at x 9 and a Volter 9 caption.
+ */
 .hfl-request-footer {
     display: flex;
-    justify-content: center;
-    gap: 5px;
-    padding: 5px;
+    flex-direction: column;
+    gap: 4px;
+    margin: 5px;
+    padding: 4px;
+    border: 1px solid #d9d9d9;
+    background: #fff;
 }
 
 .hfl-request-footer button {
-    min-width: 80px;
+    display: flex;
+    align-items: center;
+    width: 100%;
     height: 21px;
-    padding: 0 5px;
+    padding: 0 0 0 8px;
+    gap: 6px;
     border: 1px solid #777;
     border-radius: 4px;
     background: linear-gradient(#fff, #ddd);
+    color: #000;
+    font-family: Volter, monospace;
+    font-size: 9px;
+    text-align: left;
+}
+
+.hfl-request-footer button:disabled {
+    opacity: .55;
+}
+
+.hfl-request-footer-icon {
+    flex: 0 0 16px;
+    height: 14px;
+    background: center / auto no-repeat;
+    image-rendering: pixelated;
+}
+
+.hfl-request-footer-icon.accept {
+    background-image: url("@/assets/images/friends/swf/request_accept.png");
+}
+
+.hfl-request-footer-icon.decline {
+    background-image: url("@/assets/images/friends/swf/request_decline.png");
+}
+
+/* friend_request_entry info_text: an answered request shows "accepted" / "declined" in place of its buttons. */
+.hfl-request-info {
+    flex: 0 0 auto;
+    padding: 1px 4px 0;
+    line-height: 13px;
+    white-space: nowrap;
 }

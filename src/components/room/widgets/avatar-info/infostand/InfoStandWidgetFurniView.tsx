@@ -71,7 +71,7 @@ import statXIcon from '../../../../../assets/images/infostand/stat-x.png';
 import statYIcon from '../../../../../assets/images/infostand/stat-y.png';
 import chestLockedIcon from '../../../../../assets/images/groups/native/forum_forum_locked.png';
 import { ImagePositionEditorView } from './ImagePositionEditorView';
-import { infostandFurniOwnerText, infostandFurniPanelClass } from './infostandFurni.helpers';
+import { BRANDING_NUMBER_RANGES, brandingSaveMap, infostandFurniOwnerText, infostandFurniPanelClass, parseBrandingOptions } from './infostandFurni.helpers';
 import { BaseButton } from '../../../../../common/BaseButton';
 import { NumberInput } from '../../../../../common/NumberInput';
 import { Hint } from '../../../../../common/Tooltip';
@@ -489,16 +489,10 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
                 const extraParam = avatarInfo.extraParam.substr(RoomWidgetEnumItemExtradataParameter.BRANDING_OPTIONS.length);
 
                 if (extraParam) {
-                    const parts = extraParam.split('\t');
+                    const { keys, values } = parseBrandingOptions(extraParam);
 
-                    for (const part of parts) {
-                        const value = part.split('=');
-
-                        if (value && value.length === 2) {
-                            furniKeyss.push(value[0]);
-                            furniValuess.push(value[1]);
-                        }
-                    }
+                    furniKeyss.push(...keys);
+                    furniValuess.push(...values);
                 }
             }
         }
@@ -634,25 +628,6 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
         [customValues]
     );
 
-    const getFurniSettingsAsString = useCallback(() => {
-        if (furniKeys.length === 0 || furniValues.length === 0) return '';
-
-        let data = '';
-
-        let i = 0;
-
-        while (i < furniKeys.length) {
-            const key = furniKeys[i];
-            const value = furniValues[i];
-
-            data = data + (key + '=' + value + '\t');
-
-            i++;
-        }
-
-        return data;
-    }, [furniKeys, furniValues]);
-
     const getBrandingOffset = useCallback(
         (key: string): number => {
             const index = furniKeys.indexOf(key);
@@ -744,16 +719,7 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
                     SendMessageComposer(new RoomRemoveBackgroundComposer());
                     break;
                 case 'save_branding_configuration': {
-                    const mapData = new Map<string, string>();
-                    const dataParts = getFurniSettingsAsString().split('\t');
-
-                    if (dataParts) {
-                        for (const part of dataParts) {
-                            const [key, value] = part.split('=', 2);
-
-                            mapData.set(key, value);
-                        }
-                    }
+                    const mapData = brandingSaveMap(furniKeys, furniValues);
 
                     GetRoomEngine().modifyRoomObjectDataWithMap(avatarInfo.id, avatarInfo.category, RoomObjectOperationType.OBJECT_SAVE_STUFF_DATA, mapData);
                     break;
@@ -773,7 +739,7 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
                 }
             }
         },
-        [avatarInfo, pickupMode, customKeys, customValues, getFurniSettingsAsString, pickupRoomObject]
+        [avatarInfo, pickupMode, customKeys, customValues, furniKeys, furniValues, pickupRoomObject]
     );
 
     if (!avatarInfo) return null;
@@ -1219,18 +1185,32 @@ export const InfoStandWidgetFurniView: FC<InfoStandWidgetFurniViewProps> = (prop
                                         <hr className="m-0 bg-[#0003] border-0 opacity-[.5] h-px" />
                                         <div className="flex flex-col gap-1">
                                             {furniKeys.map((key, index) => {
+                                                const range = BRANDING_NUMBER_RANGES[key];
+
                                                 return (
-                                                    <Flex key={index} alignItems="center" gap={1}>
-                                                        <Text small wrap align="end" className="col-span-4" variant="white">
+                                                    <Flex key={index} column gap={0}>
+                                                        <Text small wrap variant="white">
                                                             {key}
                                                         </Text>
-                                                        <OctaneInput
-                                                            type="text"
-                                                            className="text-black"
-                                                            style={{ color: '#000' }}
-                                                            value={furniValues[index]}
-                                                            onChange={(event) => onFurniSettingChange(index, event.target.value)}
-                                                        />
+                                                        {range ? (
+                                                            <NumberInput
+                                                                className="form-control form-control-sm text-black"
+                                                                style={{ color: '#000' }}
+                                                                min={range.min}
+                                                                max={range.max}
+                                                                value={furniValues[index]}
+                                                                onChange={(event) => onFurniSettingChange(index, event.target.value)}
+                                                            />
+                                                        ) : (
+                                                            <OctaneInput
+                                                                type="text"
+                                                                className="text-black"
+                                                                style={{ color: '#000' }}
+                                                                placeholder={key === 'imageUrl' || key === 'clickUrl' ? 'https://' : undefined}
+                                                                value={furniValues[index]}
+                                                                onChange={(event) => onFurniSettingChange(index, event.target.value)}
+                                                            />
+                                                        )}
                                                     </Flex>
                                                 );
                                             })}

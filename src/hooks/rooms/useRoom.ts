@@ -4,7 +4,6 @@ import {
     GetRenderer,
     GetRoomEngine,
     GetStage,
-    HanditemBlockStateMessageEvent,
     IRoomSession,
     OctaneAdjustmentFilter,
     OctaneSprite,
@@ -50,7 +49,6 @@ const getViewportSize = () => {
 
 const useRoomState = () => {
     const [roomSession, setRoomSession] = useState<IRoomSession>(null);
-    const [isHandItemBlocked, setIsHandItemBlocked] = useState(false);
     const [roomBackground, setRoomBackground] = useState<OctaneSprite>(null);
     const [roomFilter, setRoomFilter] = useState<OctaneAdjustmentFilter>(null);
     const roomMasterRef = useRef<RoomTintTarget>(null);
@@ -120,11 +118,9 @@ const useRoomState = () => {
             case RoomEngineEvent.INITIALIZED:
                 SetActiveRoomId(event.roomId);
                 setRoomSession(session);
-                setIsHandItemBlocked(false);
                 return;
             case RoomEngineEvent.DISPOSED:
                 setRoomSession(null);
-                setIsHandItemBlocked(false);
                 return;
         }
     });
@@ -136,7 +132,6 @@ const useRoomState = () => {
                 return;
             case RoomSessionEvent.ENDED:
                 setRoomSession(null);
-                setIsHandItemBlocked(false);
                 // A wired click setting belongs to the room that sent it.
                 GetRoomEngine().setWiredClickSettings(0, 0);
                 return;
@@ -151,16 +146,6 @@ const useRoomState = () => {
         if (!parser) return;
 
         GetRoomEngine().setWiredClickSettings(parser.userOption, parser.furniOption);
-    });
-
-    useMessageEvent<HanditemBlockStateMessageEvent>(HanditemBlockStateMessageEvent, (event) => {
-        const parser = event.getParser();
-        const session = roomSession || GetRoomSession();
-
-        if (!parser || !session) return;
-        if (parser.stateData.roomId !== session.roomId) return;
-
-        setIsHandItemBlocked(parser.stateData.blocked);
     });
 
     useOctaneEvent<RoomEngineObjectEvent>(
@@ -363,7 +348,7 @@ const useRoomState = () => {
     }, [roomSession]);
 
     // roomBackgroundColor: the room background colour (AIR roomDesktop.roomBackgroundColor), used by the camera scene.
-    return { roomSession, isHandItemBlocked, roomBackgroundColor: originalRoomBackgroundColor };
+    return { roomSession, roomBackgroundColor: originalRoomBackgroundColor };
 };
 
 export const useRoom = () => useSharedHook(useRoomState);

@@ -146,6 +146,15 @@ export class RoomControllerLevel {
     static readonly MODERATOR = 5;
 }
 
+// Mirrors the perk codes of `packages/communication/.../perk/common/PerkEnum.ts` that the client checks.
+export class PerkEnum {
+    static readonly USE_GUIDE_TOOL = 'USE_GUIDE_TOOL';
+    static readonly JUDGE_CHAT_REVIEWS = 'JUDGE_CHAT_REVIEWS';
+    static readonly NAVIGATOR_ROOM_THUMBNAIL_CAMERA = 'NAVIGATOR_ROOM_THUMBNAIL_CAMERA';
+}
+
+export class PerkAllowancesMessageEvent {}
+
 // Mirrors `packages/api/src/octane/session/enum/SecurityLevel.ts`. Kept
 // around so any consumer that still imports the renderer enum
 // (non-deprecated code path) compiles cleanly under the mock.

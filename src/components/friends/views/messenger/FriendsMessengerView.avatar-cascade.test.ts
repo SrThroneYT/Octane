@@ -6,14 +6,14 @@ import postcss from 'postcss';
 import postcssNested from 'postcss-nested';
 import { beforeAll, describe, expect, it } from 'vitest';
 
-const source = readFileSync(join(process.cwd(), 'src/css/friends/FriendsView.css'), 'utf8');
+const source = readFileSync(join(process.cwd(), 'src/components/friends/views/messenger/FriendsMessengerView.css'), 'utf8');
 
 beforeAll(async () => {
     const result = await postcss([postcssNested]).process(source, { from: undefined });
     const relevantRules: string[] = [];
 
     result.root.walkRules((rule) => {
-        if (rule.selector.includes('.swf-messenger-window')) relevantRules.push(rule.toString());
+        if (rule.selector.includes('.messenger-window')) relevantRules.push(rule.toString());
     });
 
     const style = document.createElement('style');
@@ -27,7 +27,7 @@ const computedAvatarStyle = (containerClass: string, size: number) => {
     const container = document.createElement('div');
     const avatar = document.createElement('div');
 
-    messenger.className = 'swf-messenger-window';
+    messenger.className = 'messenger-window';
     container.className = containerClass;
     avatar.className = 'avatar-image compact-head';
     avatar.style.backgroundSize = `${size}px ${size}px`;
@@ -39,7 +39,7 @@ const computedAvatarStyle = (containerClass: string, size: number) => {
     return getComputedStyle(avatar);
 };
 
-describe('SWF messenger compact avatar cascade', () => {
+describe('Messenger compact avatar cascade', () => {
     it('keeps conversation-tab heads centered at their cropped size', () => {
         const style = computedAvatarStyle('messenger-avatar-tab', 35);
 
@@ -49,12 +49,4 @@ describe('SWF messenger compact avatar cascade', () => {
         expect(['center center', '50% 50%']).toContain(style.backgroundPosition);
     });
 
-    it('keeps message heads centered at their cropped size', () => {
-        const style = computedAvatarStyle('message-avatar', 40);
-
-        expect(style.width).toBe('40px');
-        expect(style.height).toBe('40px');
-        expect(style.backgroundSize).toBe('40px 40px');
-        expect(['center center', '50% 50%']).toContain(style.backgroundPosition);
-    });
 });

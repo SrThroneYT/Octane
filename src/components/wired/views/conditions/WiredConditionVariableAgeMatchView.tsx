@@ -12,7 +12,6 @@ import { WiredVariablePicker } from '../WiredVariablePicker';
 import {
     createFallbackVariableEntry,
     flattenWiredVariablePickerEntries,
-    getCustomVariableItemId,
     IWiredVariablePickerEntry,
     normalizeVariableTokenFromWire
 } from '../WiredVariablePickerData';
@@ -209,13 +208,13 @@ export const WiredConditionVariableAgeMatchView: FC<{}> = () => {
     const save = () => {
         const parsedDuration = parseInt(durationInput.trim(), 10);
 
-        const durationVariableId = fromVariable ? getCustomVariableItemId(durationToken) : 0;
+        const durationFromVariable = fromVariable && !!durationToken;
 
         setStringParam('');
         setVariableIds(
             wiredVariableIdList(
                 toWiredVariableId(targetType, variableToken),
-                durationVariableId > 0 ? toWiredVariableId(wiredValueTargetKey(durationTarget), durationToken) : ''
+                durationFromVariable ? toWiredVariableId(wiredValueTargetKey(durationTarget), durationToken) : ''
             )
         );
         setIntParams([
@@ -225,7 +224,7 @@ export const WiredConditionVariableAgeMatchView: FC<{}> = () => {
             0,
             Number.isFinite(parsedDuration) ? Math.max(0, parsedDuration) : 0,
             durationUnit,
-            fromVariable && durationVariableId > 0 ? 1 : 0,
+            durationFromVariable ? 1 : 0,
             durationTarget
         ]);
         setSourceTypes({ furni: [furniSource], users: [userSource] });
@@ -237,7 +236,7 @@ export const WiredConditionVariableAgeMatchView: FC<{}> = () => {
         if (!variableToken.length) return false;
         if (targetType === 'global' && compareValue !== COMPARE_VALUE_UPDATED) return false;
         if (!durationValid) return false;
-        if (fromVariable && getCustomVariableItemId(durationToken) <= 0) return false;
+        if (fromVariable && !durationToken) return false;
 
         return true;
     };

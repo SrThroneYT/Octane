@@ -150,6 +150,36 @@
     }
   }
 
+  /* AIR relationship_<type>: a 16px row with a 17x14 icon slot, a bold underlined link and the regular "others". */
+  .octane-infostand__relationship {
+    display: flex;
+    align-items: flex-start;
+    height: 16px;
+    font-family: Volter, monospace;
+    font-size: 9px;
+    line-height: 14px;
+    white-space: pre;
+    -webkit-font-smoothing: none;
+  }
+
+  .octane-infostand__relationship-icon {
+    display: flex;
+    flex: none;
+    width: 17px;
+    height: 14px;
+  }
+
+  .octane-infostand__relationship-name {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-weight: bold;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
   .octane-infostand__identity {
     background: #3d3d3d;
     color: #ffffff;

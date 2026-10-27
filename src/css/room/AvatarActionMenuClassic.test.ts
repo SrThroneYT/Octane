@@ -88,3 +88,41 @@ describe('AIR own_avatar_menu bubble', () => {
     });
 
 });
+
+describe('AIR decorate and use-product bubbles', () => {
+    const mount = (variant: string) => {
+        const stylesheet = document.createElement('style');
+        const menu = document.createElement('div');
+        const buttons = document.createElement('div');
+        const item = document.createElement('div');
+
+        stylesheet.textContent = avatarMenuCss;
+        menu.className = `octane-context-menu octane-avatar-action-menu octane-avatar-action-menu--own octane-avatar-action-menu--${variant}`;
+        buttons.className = 'air-avatar-menu-buttons';
+        item.className = 'octane-context-menu-item';
+        buttons.append(item);
+        menu.append(buttons);
+        document.head.append(stylesheet);
+        document.body.append(menu);
+
+        return { menu: getComputedStyle(menu), buttons: getComputedStyle(buttons), item: getComputedStyle(item) };
+    };
+
+    it('draws own_avatar_decorating with one 101px button in a 103px list', () => {
+        const { menu, buttons, item } = mount('decorate');
+
+        expect(menu.width).toBe('115px');
+        expect(menu.padding).toBe('11px 0px 12px');
+        expect(buttons.width).toBe('103px');
+        expect(buttons.marginLeft).toBe('6px');
+        expect(item.width).toBe('101px');
+        expect(item.marginLeft).toBe('0px');
+    });
+
+    it('draws use_product_menu with 102px buttons in a 104px list', () => {
+        const { buttons, item } = mount('use-product');
+
+        expect(buttons.width).toBe('104px');
+        expect(item.width).toBe('102px');
+    });
+});

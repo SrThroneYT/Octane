@@ -1,5 +1,5 @@
 import { Collapsible } from '@base-ui/react/collapsible';
-import { NavigatorSearchResultList, NavigatorSearchSaveComposer } from '@octane/renderer';
+import { NavigatorSearchResultList, NavigatorSearchSaveComposer, PerkEnum } from '@octane/renderer';
 import { FC } from 'react';
 import { LocalizeText, localizeWithFallback, NavigatorSearchResultViewDisplayMode, SendMessageComposer } from '../../../../api';
 import categoryCollapse from '../../../../assets/images/navigator/air/category-collapse.png';
@@ -9,7 +9,7 @@ import navViewMini from '../../../../assets/images/navigator/air/nav-view-mini.p
 import navViewRow from '../../../../assets/images/navigator/air/nav-view-row.png';
 import navViewThumbs from '../../../../assets/images/navigator/air/nav-view-thumbs.png';
 import { LayoutSearchSavesView } from '../../../../common';
-import { useNavigatorData, useNavigatorUiStore } from '../../../../hooks';
+import { useNavigatorData, useNavigatorUiStore, usePerkAllowed } from '../../../../hooks';
 import { NavigatorSearchResultItemView } from './NavigatorSearchResultItemView';
 import { BaseButton } from '../../../../common/BaseButton';
 import { Hint } from '../../../../common/Tooltip';
@@ -31,15 +31,21 @@ export const NavigatorSearchResultView: FC<NavigatorSearchResultViewProps> = (pr
 
         return state.expandedResultCodes.includes(searchResult.code) || (!state.collapsedResultCodes.includes(searchResult.code) && !searchResult.closed);
     });
-    const displayMode = useNavigatorUiStore((state) => state.resultViewModes[searchResult.code] ?? searchResult.mode);
+    const thumbnailPerk = usePerkAllowed(PerkEnum.NAVIGATOR_ROOM_THUMBNAIL_CAMERA);
+    const chosenMode = useNavigatorUiStore((state) => state.resultViewModes[searchResult.code] ?? searchResult.mode);
+    // AIR BlockResultsView: without the thumbnail perk every block is rows, except under the official view.
+    const officialView = topLevelContext?.code === 'official_view' || parentCode === 'official_view';
+    const displayMode = thumbnailPerk ? chosenMode : officialView ? searchResult.mode : NavigatorSearchResultViewDisplayMode.LIST;
 
     const getResultTitle = () => {
         const name = searchResult.code;
 
-        if (!name || !name.length) return searchResult.data;
+        // AIR: the server's block text when it has one, else the search code's title.
+        if (searchResult.data) return searchResult.data;
+        if (!name || !name.length) return '';
         if (name.startsWith('${')) return name.slice(2, name.length - 1);
 
-        return localizeWithFallback('navigator.searchcode.title.' + name, searchResult.data || name);
+        return localizeWithFallback('navigator.searchcode.title.' + name, name);
     };
 
     const toggleDisplayMode = () => {
@@ -85,7 +91,7 @@ export const NavigatorSearchResultView: FC<NavigatorSearchResultViewProps> = (pr
                     <span>{resultTitle}</span>
                 </Collapsible.Trigger>
                 <div className="octane-navigator-air__category-controls">
-                    {isExtended && displayMode === NavigatorSearchResultViewDisplayMode.LIST && (
+                    {isExtended && thumbnailPerk && displayMode === NavigatorSearchResultViewDisplayMode.LIST && (
                         <Hint content={tileViewLabel}>
                             <BaseButton
                                 type="button"
@@ -97,7 +103,7 @@ export const NavigatorSearchResultView: FC<NavigatorSearchResultViewProps> = (pr
                             </BaseButton>
                         </Hint>
                     )}
-                    {isExtended && isTileMode && (
+                    {isExtended && thumbnailPerk && isTileMode && (
                         <Hint content={listViewLabel}>
                             <BaseButton
                                 type="button"

@@ -5,6 +5,7 @@ import {
     formatFriendlySeconds,
     getCampaignCounterStyle,
     getDailyTaskProgressPercent,
+    getDailyTaskRewardIcon,
     getDailyTaskStyle,
     getFriendlyTimeParts,
     getPremiumBoostPercent,
@@ -188,5 +189,27 @@ describe('next quest timer', () => {
         expect(getQuestWaitSecondsLeft({ waitPeriodSeconds: 12 } as never, 1)).toBe(12);
         expect(getQuestWaitSecondsLeft({ waitPeriodSeconds: -4 } as never, 1)).toBe(0);
         expect(getQuestWaitSecondsLeft(null, 1)).toBe(0);
+    });
+});
+
+describe('getDailyTaskRewardIcon (AIR ProductIconWidget)', () => {
+    const reward = (productItemTypeId: number, rewardTypeId: string, extraParams = '') => ({ productItemTypeId, rewardTypeId, extraParams });
+
+    it('reads the product type the server sends', () => {
+        expect(getDailyTaskRewardIcon(reward(8, '0'))).toEqual({ kind: 'currency', type: 0 });
+        expect(getDailyTaskRewardIcon(reward(8, '-1'))).toEqual({ kind: 'currency', type: -1 });
+        expect(getDailyTaskRewardIcon(reward(4, 'ACH_Daily1'))).toEqual({ kind: 'badge', code: 'ACH_Daily1' });
+        expect(getDailyTaskRewardIcon(reward(1, '230'))).toEqual({ kind: 'furni', productType: 's', classId: 230 });
+        expect(getDailyTaskRewardIcon(reward(11, '230'))).toEqual({ kind: 'furni', productType: 's', classId: 230 });
+        expect(getDailyTaskRewardIcon(reward(0, '4001'))).toEqual({ kind: 'furni', productType: 'i', classId: 4001 });
+        expect(getDailyTaskRewardIcon(reward(8, 'credits'))).toBeNull();
+        expect(getDailyTaskRewardIcon(reward(-1, 'furni'))).toBeNull();
+    });
+
+    it('still reads a reward an older server sends by name', () => {
+        expect(getDailyTaskRewardIcon(reward(0, 'duckets'))).toEqual({ kind: 'currency', type: 0 });
+        expect(getDailyTaskRewardIcon(reward(0, 'Diamonds'))).toEqual({ kind: 'currency', type: 5 });
+        expect(getDailyTaskRewardIcon(reward(0, 'badge', 'ACH_X'))).toEqual({ kind: 'badge', code: 'ACH_X' });
+        expect(getDailyTaskRewardIcon(reward(0, 'pixels'))).toBeNull();
     });
 });
