@@ -89,8 +89,9 @@
   font-weight: 700;
   font-size: 15px;
 }
+/* games_main mode_description: Ubuntu 13 px. */
 .game-tile__desc {
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.35;
   opacity: 0.8;
   display: -webkit-box;
@@ -148,7 +149,7 @@
   height: 472px;
   flex: 0 0 auto;
   color: #1077ac;
-  font-family: Ubuntu, Arial, sans-serif;
+  font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
   image-rendering: var(--octane-pixel-art, pixelated);
   filter: drop-shadow(4px 4px 4px rgba(0, 0, 0, 0.34));
 }
@@ -339,6 +340,7 @@
   max-width: 165px;
   color: #fff;
   font-size: 14px;
+  font-weight: 700;
   /* AIR reset_text: white with a 0x1077ac stroke (reset_text_stroke). */
   text-shadow: -1px 0 #1077ac, 0 1px #1077ac, 1px 0 #1077ac, 0 -1px #1077ac,
     -1px -1px #1077ac, 1px 1px #1077ac, -1px 1px #1077ac, 1px -1px #1077ac;
@@ -1289,7 +1291,7 @@
   min-height: 35px;
   box-sizing: border-box;
   color: #000;
-  font-family: Ubuntu, sans-serif;
+  font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
   font-size: 12px;
   line-height: 15px;
   padding: 10px 15px 10px 32px;
@@ -1418,9 +1420,10 @@
   flex-direction: column;
   gap: 4px;
 }
+/* snowwar_ending team1Score / team2Score: Ubuntu 24 px bold. */
 .snowwar-results__team-score {
   text-align: center;
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 700;
 }
 .snowwar-results__team-list {
@@ -1467,22 +1470,24 @@
   gap: 1px;
   padding: 3px 8px;
 }
+/* playerName: Ubuntu 14 px bold. */
 .snowwar-results__player-name {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* playerHitsLabel / playerKillsLabel: 11 px bold; playerHits / playerKills: u_bold 12 px. */
 .snowwar-results__stat {
   display: flex;
   gap: 8px;
   font-size: 11px;
+  font-weight: 700;
   line-height: 14px;
-  text-transform: uppercase;
 }
 .snowwar-results__stat span:last-child {
-  font-weight: 700;
+  font-size: 12px;
 }
 .snowwar-results__player-score {
   width: 60px;
@@ -1514,12 +1519,13 @@
   gap: 3px;
   font-weight: 700;
 }
+/* mostHitsLabel / mostKillsLabel: Ubuntu 17 px bold; playerName: 14 px bold white. */
 .snowwar-results__spotlight-title {
-  font-size: 13px;
-  text-transform: uppercase;
+  font-size: 17px;
 }
 .snowwar-results__spotlight-name {
-  font-size: 12px;
+  color: #fff;
+  font-size: 14px;
 }
 .snowwar-results__buttons {
   display: flex;
@@ -1538,6 +1544,7 @@
   border: 0;
   background: none;
   color: #fff;
+  /* statusContainer: games_left Ubuntu 13 px. */
   font-size: 13px;
   text-align: left;
   display: flex;
@@ -1546,7 +1553,7 @@
   cursor: pointer;
 }
 .snowwar-results__games-left {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
 }
 .snowwar-results__games-left--blue {
@@ -1555,8 +1562,9 @@
 .snowwar-results__games-left--red {
   color: #ff5a5a;
 }
+/* status.text_get_vip: Ubuntu 13 px underlined. */
 .snowwar-results__status-vip {
-  font-size: 11px;
+  font-size: 13px;
   color: #ffd75e;
   text-decoration: underline;
 }
@@ -1566,7 +1574,9 @@
   padding: 0;
   background: none;
   color: #8ed5ff;
+  /* leave_link: u_bold 12 px underlined. */
   font-size: 12px;
+  font-weight: 700;
   text-decoration: underline;
   cursor: pointer;
 }
@@ -1980,7 +1990,9 @@
   padding: 0;
   background: none;
   color: #8ed5ff;
-  font-size: 11px;
+  /* instructions_link / leaderboard_link: Ubuntu 14 px bold underlined. */
+  font-size: 14px;
+  font-weight: 700;
   text-decoration: underline;
   cursor: pointer;
 }
@@ -1995,10 +2007,11 @@
   display: flex;
   align-items: baseline;
   gap: 6px;
-  font-size: 11px;
+  /* games_left label: Ubuntu 14 px; the count: 20 px bold over its UbuntuThick stroke. */
+  font-size: 14px;
 }
 .game-tile__games-left-count {
-  font-size: 18px;
+  font-size: 20px;
   line-height: 1;
   font-weight: 700;
 }
@@ -2013,7 +2026,8 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  font-size: 11px;
+  /* games.lobby.get.games: Ubuntu 14 px. */
+  font-size: 14px;
 }
 .game-tile__token-buttons {
   display: flex;
@@ -2040,15 +2054,21 @@
   padding: 0;
   background: none;
   color: #ffd75e;
-  font-size: 11px;
+  /* games.lobby.get.vip: Ubuntu 14 px underlined. */
+  font-size: 14px;
   line-height: 1.2;
   text-align: left;
+  text-decoration: underline;
   cursor: pointer;
 }
 .game-tile__hc-icon {
   width: 24px;
   height: 24px;
   flex-shrink: 0;
+}
+/* play_text: Ubuntu 20 px bold white. */
+.game-tile__actions .game-tile__play {
+  font-size: 20px;
 }
 .game-tile__play--blocked {
   background: #cccccc;
@@ -2126,7 +2146,9 @@
   min-height: 21px;
   margin-top: 5px;
   text-align: center;
-  font-size: 13px;
+  /* instruction_text: Ubuntu 16 px bold. */
+  font-size: 16px;
+  font-weight: 700;
 }
 .snowwar-instructions__back {
   align-self: flex-start;
@@ -2135,7 +2157,8 @@
   padding: 0;
   background: none;
   color: #8ed5ff;
-  font-size: 12px;
+  /* instructions_back: Ubuntu 13 px underlined. */
+  font-size: 13px;
   text-decoration: underline;
   cursor: pointer;
 }
@@ -2199,8 +2222,9 @@
   padding: 0;
   background: none;
   color: #2f6d95;
-  font-size: 13px;
-  font-weight: 700;
+  /* games_main cancel_link: Ubuntu 12 px underlined. */
+  font-size: 12px;
+  font-weight: 400;
   text-decoration: underline;
   cursor: pointer;
 }
@@ -2229,8 +2253,9 @@
   height: 97px;
   image-rendering: var(--octane-pixel-art, pixelated);
 }
+/* loadingContainer arenaName: Ubuntu 14 px bold; loadingText: 17 px bold. */
 .snowwar-loading__arena-name {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
 }
 .snowwar-loading__spinner {
@@ -2243,7 +2268,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: 17px;
   font-weight: 700;
 }
 .snowwar-loading__status img {
@@ -2272,10 +2297,11 @@
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-family: Ubuntu, Arial, sans-serif;
-  font-size: 14px;
+  /* The style 3 frame caption: 12 px bold white. */
+  font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+  font-size: 12px;
   font-weight: 700;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+  text-shadow: none;
 }
 .snowwar-leaderboard-frame .snowwar-leaderboard {
   filter: none;
@@ -2339,7 +2365,7 @@
   display: inline-block;
   isolation: isolate;
   color: #fff;
-  font-family: SnowWarUbuntuBold, Ubuntu, Arial, sans-serif;
+  font-family: SnowWarUbuntuBold, HabboAirUbuntu, UbuntuRegular, sans-serif;
   font-weight: normal;
   white-space: nowrap;
   text-shadow: none;
@@ -2350,7 +2376,22 @@
   inset: 0;
   z-index: -1;
   color: var(--snowwar-stroke, #1077ac);
-  font-family: SnowWarUbuntuThick, Ubuntu, Arial, sans-serif;
+  font-family: SnowWarUbuntuThick, HabboAirUbuntu, UbuntuRegular, sans-serif;
   white-space: nowrap;
   pointer-events: none;
+}
+
+/* games_main, snowwar_ending, snowwar_leaderboard and the in-game HUD all name font_face=Ubuntu (the regular cut);
+   our `Ubuntu` face, which the body inherits, is the condensed one. The outlined captions keep their own faces. */
+.game-center-main,
+.snowwar-overlay,
+.snowwar-leaderboard-overlay,
+.snowwar-toast {
+  font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+}
+
+@layer base {
+  :is(.game-center-main, .snowwar-overlay, .snowwar-leaderboard-overlay, .snowwar-toast) :where(*):not(svg, svg *, .snowwar-stroke) {
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+  }
 }

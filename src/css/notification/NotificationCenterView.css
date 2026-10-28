@@ -725,7 +725,7 @@
         inset 0 -1px 0 rgba(0, 0, 0, 0.42),
         0 2px 0 rgba(0, 0, 0, 0.24) !important;
     color: #ffffff;
-    font-family: Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     font-size: 11px !important;
     line-height: 1.15;
     text-shadow: 1px 1px 0 #000000;
@@ -803,6 +803,8 @@
 }
 
 .octane-friendonline-notification__message {
+    /* notification_friendonline: a style 3 text without text_style, u_regular 12 px 0xcfcfcf (regular Ubuntu). */
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     position: absolute;
     left: 8px;
     top: 6px;
@@ -1076,7 +1078,7 @@
     background: transparent !important;
     box-shadow: none !important;
     color: #ffffff;
-    font-family: Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     font-size: 12px !important;
     line-height: 14px;
     text-shadow: none;
@@ -1126,7 +1128,7 @@
     border-image-repeat: stretch !important;
     background: transparent !important;
     color: #ffffff !important;
-    font-family: Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     font-size: 12px;
     font-weight: 400;
     line-height: 16px;
@@ -1152,7 +1154,7 @@
     border-image-source: none !important;
     background: transparent !important;
     color: #ffffff !important;
-    font-family: Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     font-size: 12px;
     font-weight: 400;
     text-decoration: underline;
@@ -1174,7 +1176,7 @@
     height: 92px;
     isolation: isolate;
     color: #ffffff;
-    font-family: Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     font-size: 12px;
     line-height: 14px;
 }
@@ -1249,7 +1251,7 @@
     border-image-repeat: stretch !important;
     background: transparent !important;
     color: #ffffff !important;
-    font-family: Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     font-size: 12px;
     line-height: 16px;
     cursor: pointer;
@@ -1275,7 +1277,7 @@
     border: 0 !important;
     background: transparent !important;
     color: #ffffff !important;
-    font-family: Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     font-size: 12px;
     line-height: 17px;
     text-decoration: underline;

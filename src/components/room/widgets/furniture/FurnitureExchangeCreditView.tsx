@@ -2,6 +2,7 @@ import { FC } from 'react';
 import { LocalizeText, localizeWithFallback } from '../../../../api';
 import { Button, Column, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Text } from '../../../../common';
 import { useFurnitureExchangeWidget } from '../../../../hooks';
+import '../../../../css/room/FurniWindowsBAir.css';
 
 export const FurnitureExchangeCreditView: FC<{}> = (props) => {
     const { objectId = -1, value = 0, isNft = false, onClose = null, redeem = null } = useFurnitureExchangeWidget();
@@ -9,7 +10,7 @@ export const FurnitureExchangeCreditView: FC<{}> = (props) => {
     if (objectId === -1) return null;
 
     return (
-        <OctaneCardView className="octane-widget-exchange-credit" theme="primary-slim">
+        <OctaneCardView className="octane-widget-exchange-credit octane-furni-exchange-credit" theme="primary-slim">
             <OctaneCardHeaderView headerText={LocalizeText('catalog.redeem.dialog.title')} onCloseClick={onClose} />
             <OctaneCardContentView center>
                 <div className="flex gap-2 overflow-hidden">

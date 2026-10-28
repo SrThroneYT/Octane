@@ -3,10 +3,15 @@ import { LocalizeText } from '../../../../api';
 import { Text } from '../../../../common';
 import { Select } from '../../../../common/Select';
 
-/** Ubuntu Wired BorderSection; chest settings use this style, not the Illumina stack editor. */
-export const ChestSettingsSection: FC<PropsWithChildren<{ title: string }>> = ({ title, children }) => <fieldset className="octane-chest-settings__section"><legend>{title}</legend>{children}</fieldset>;
+/** A titled group of the chest settings window (a bordered box with its caption in the border). */
+export const ChestSettingsSection: FC<PropsWithChildren<{ title: string }>> = ({ title, children }) => (
+    <fieldset className="octane-chest-settings__section">
+        <legend>{title}</legend>
+        {children}
+    </fieldset>
+);
 
-interface ChestSelectOption<T extends number> {
+export interface ChestSelectOption<T extends number> {
     value: T;
     label: string;
 }
@@ -19,16 +24,43 @@ interface ChestSelectProps<T extends number> {
     disabled?: boolean;
 }
 
-/** The chest windows' drop menus, on the client's own select. */
-export const ChestSelect = <T extends number>({ label, value, options, onSelect, disabled = false }: ChestSelectProps<T>) =>
-    <Select
-        aria-label={label}
-        className="form-select form-select-sm"
-        disabled={disabled}
-        value={value}
-        onChange={(event) => onSelect(Number(event.target.value) as T)}>
-        {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-    </Select>;
+/** A numeric drop menu of the chest windows, on the client's Select. */
+export function ChestSelect<T extends number>(props: ChestSelectProps<T>) {
+    const { label, value, options, onSelect, disabled = false } = props;
+
+    return (
+        <Select
+            aria-label={label}
+            className="form-select form-select-sm"
+            disabled={disabled}
+            value={value}
+            onChange={(event) => onSelect(Number(event.target.value) as T)}
+        >
+            {options.map(({ value: optionValue, label: optionLabel }) => (
+                <option key={optionValue} value={optionValue}>
+                    {optionLabel}
+                </option>
+            ))}
+        </Select>
+    );
+}
+
+/** The chest looks: AIR offers four chest states, eight content preview modes and one to four previewed items. */
+const STATE_COUNT = 4;
+const PREVIEW_MODE_COUNT = 8;
+const PREVIEW_AMOUNTS = [1, 2, 3, 4];
+const PREVIEW_OFF = 0;
+
+const APPEARANCE_KEY = 'wiredchests.settings.appearance';
+
+/** Options 0..count-1, each labelled by `<key>.<n>`. */
+const numberedOptions = (key: string, count: number): ChestSelectOption<number>[] => {
+    const options: ChestSelectOption<number>[] = [];
+
+    for (let index = 0; index < count; index++) options.push({ value: index, label: LocalizeText(`${key}.${index}`) });
+
+    return options;
+};
 
 interface ChestAppearanceFieldsProps {
     isFurni: boolean;
@@ -41,19 +73,43 @@ interface ChestAppearanceFieldsProps {
 }
 
 /**
- * AIR ChestSettingsUI: 4 states, 8 preview modes and a retained, disabled count when preview is off.
- * Ported from Volt (GPL-3.0).
+ * The appearance group of the chest settings. Every chest picks its state; a furni chest also picks how its contents
+ * are previewed and how many items show. Switching the preview off only greys the amount out, so the chosen amount is
+ * still there (and saved) when the preview is switched back on. A coin chest has no contents to preview.
  */
-export const ChestAppearanceFields: FC<ChestAppearanceFieldsProps> = ({ isFurni, state, previewMode, previewAmount, onStateChange, onPreviewModeChange, onPreviewAmountChange }) => <>
-    <Text bold>{LocalizeText('wiredchests.settings.appearance.state')}</Text>
-    <ChestSelect label={LocalizeText('wiredchests.settings.appearance.state')} value={state} onSelect={onStateChange} options={Array.from({ length: 4 }, (_, value) => ({ value, label: LocalizeText(`wiredchests.settings.appearance.state.${value}`) }))} />
-    {isFurni && <>
-        <Text bold>{LocalizeText('wiredchests.settings.appearance.preview')}</Text>
-        <ChestSelect label={LocalizeText('wiredchests.settings.appearance.preview')} value={previewMode} onSelect={onPreviewModeChange} options={Array.from({ length: 8 }, (_, value) => ({ value, label: LocalizeText(`wiredchests.settings.appearance.preview.${value}`) }))} />
-        <Text small style={{ opacity: 0.6 }}>{LocalizeText('wiredchests.settings.appearance.preview.note')}</Text>
-        <div aria-disabled={previewMode === 0} style={{ display: 'grid', gap: 5, opacity: previewMode === 0 ? 0.5 : 1 }}>
-            <Text bold>{LocalizeText('wiredchests.settings.appearance.preview_amount')}</Text>
-            <ChestSelect label={LocalizeText('wiredchests.settings.appearance.preview_amount')} value={previewAmount} disabled={previewMode === 0} onSelect={onPreviewAmountChange} options={[1, 2, 3, 4].map(value => ({ value, label: String(value) }))} />
-        </div>
-    </>}
-</>;
+export const ChestAppearanceFields: FC<ChestAppearanceFieldsProps> = (props) => {
+    const { isFurni, state, previewMode, previewAmount, onStateChange, onPreviewModeChange, onPreviewAmountChange } = props;
+    const stateLabel = LocalizeText(`${APPEARANCE_KEY}.state`);
+    const previewLabel = LocalizeText(`${APPEARANCE_KEY}.preview`);
+    const amountLabel = LocalizeText(`${APPEARANCE_KEY}.preview_amount`);
+    const previewOff = previewMode === PREVIEW_OFF;
+
+    return (
+        <>
+            <Text bold>{stateLabel}</Text>
+            <ChestSelect label={stateLabel} value={state} options={numberedOptions(`${APPEARANCE_KEY}.state`, STATE_COUNT)} onSelect={onStateChange} />
+            {isFurni && (
+                <>
+                    <Text bold>{previewLabel}</Text>
+                    <ChestSelect
+                        label={previewLabel}
+                        value={previewMode}
+                        options={numberedOptions(`${APPEARANCE_KEY}.preview`, PREVIEW_MODE_COUNT)}
+                        onSelect={onPreviewModeChange}
+                    />
+                    <span className="octane-chest-settings__note">{LocalizeText(`${APPEARANCE_KEY}.preview.note`)}</span>
+                    <div className={`octane-chest-settings__amount${previewOff ? ' is-off' : ''}`} aria-disabled={previewOff}>
+                        <Text bold>{amountLabel}</Text>
+                        <ChestSelect
+                            label={amountLabel}
+                            value={previewAmount}
+                            disabled={previewOff}
+                            options={PREVIEW_AMOUNTS.map((amount) => ({ value: amount, label: String(amount) }))}
+                            onSelect={onPreviewAmountChange}
+                        />
+                    </div>
+                </>
+            )}
+        </>
+    );
+};

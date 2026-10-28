@@ -10,6 +10,7 @@ import { LocalizeText, SendMessageComposer } from '../../../../api';
 import { Button, Flex, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Text } from '../../../../common';
 import { LayoutPrizeProductImageView } from '../../../../common/layout/LayoutPrizeProductImageView';
 import { useMessageEvent } from '../../../../hooks';
+import '../../../../css/room/FurniWindowsBAir.css';
 
 interface FurnitureMysteryBoxOpenDialogViewProps {
     ownerId: number;
@@ -57,7 +58,7 @@ export const FurnitureMysteryBoxOpenDialogView: FC<FurnitureMysteryBoxOpenDialog
     if (mode === ViewMode.HIDDEN) return null;
 
     return (
-        <OctaneCardView className="octane-mysterybox-dialog" theme="primary-slim">
+        <OctaneCardView className="octane-mysterybox-dialog octane-furni-mysterybox" theme="primary-slim">
             <OctaneCardHeaderView
                 headerText={
                     mode === ViewMode.WAITING ? LocalizeText(`mysterybox.dialog.${isOwner ? 'owner' : 'other'}.title`) : LocalizeText('mysterybox.reward.title')
@@ -67,7 +68,7 @@ export const FurnitureMysteryBoxOpenDialogView: FC<FurnitureMysteryBoxOpenDialog
             <OctaneCardContentView>
                 {mode === ViewMode.WAITING && (
                     <>
-                        <Text variant="primary"> {LocalizeText(`mysterybox.dialog.${isOwner ? 'owner' : 'other'}.subtitle`)} </Text>
+                        <Text className="octane-furni-mysterybox__subtitle" variant="black"> {LocalizeText(`mysterybox.dialog.${isOwner ? 'owner' : 'other'}.subtitle`)} </Text>
                         <Text> {LocalizeText(`mysterybox.dialog.${isOwner ? 'owner' : 'other'}.description`)} </Text>
                         <Text> {LocalizeText(`mysterybox.dialog.${isOwner ? 'owner' : 'other'}.waiting`)}</Text>
                         <Button className="mt-auto" variant="danger" onClick={close}>

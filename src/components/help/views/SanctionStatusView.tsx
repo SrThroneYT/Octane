@@ -48,11 +48,11 @@ export const SanctionSatusView: FC<{}> = (props) => {
     if (!sanctionInfo) return null;
 
     return (
-        <OctaneCardView className="octane-help min-w-0 w-[min(450px,calc(100vw-16px))] max-w-[calc(100vw-16px)] max-h-[calc(100vh-16px)]" theme="primary-slim">
+        <OctaneCardView className="octane-help octane-sanction-info min-w-0 w-[min(450px,calc(100vw-16px))] max-w-[calc(100vw-16px)] max-h-[calc(100vh-16px)]" theme="primary-slim">
             <OctaneCardHeaderView headerText={LocalizeText('help.sanction.info.title')} onCloseClick={() => setSanctionInfo(null)} />
             <OctaneCardContentView className="text-black">
                 <div className="flex min-h-[170px] flex-col">
-                    <div className="flex flex-col gap-1">
+                    <div className="octane-sanction-info__body flex flex-col gap-1">
                         {sanctionInfo.sanctionReason === 'cfh.reason.EMPTY' ? (
                             <div className="font-bold">{LocalizeText('help.sanction.current.none')}</div>
                         ) : (

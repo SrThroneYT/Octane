@@ -17,6 +17,7 @@ import { useFurnitureDimmerWidget, useOctaneEvent } from '../../../../hooks';
 import { classNames } from '../../../../layout';
 import { Checkbox } from '../../../../common/Checkbox';
 import { BaseButton } from '../../../../common/BaseButton';
+import '../../../../css/room/FurniWindowsAAir.css';
 
 export const FurnitureDimmerView: FC<{}> = (props) => {
     const [isVisible, setIsVisible] = useState(false);

@@ -4,6 +4,7 @@ import { GetConfigurationValue, LocalizeText } from '../../../../api';
 import { Button, LayoutPetImageView, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Text } from '../../../../common';
 import { usePetPackageWidget } from '../../../../hooks';
 import { BaseButton } from '../../../../common/BaseButton';
+import '../../../../css/room/FurniWindowsBAir.css';
 
 const PET_PACKAGE_PREVIEW: Record<string, { typeId: number; paletteId: number }> = {
     val11_present: { typeId: 11, paletteId: 0 },
@@ -42,7 +43,7 @@ export const PetPackageWidgetView: FC<{}> = (props) => {
             {isVisible && (
                 <OctaneCardView
                     isResizable={false}
-                    className="octane-pet-package min-w-0 w-[min(340px,calc(100vw-16px))] max-w-[calc(100vw-16px)] max-h-[calc(100vh-16px)]"
+                    className="octane-pet-package octane-furni-petpackage min-w-0 w-[min(340px,calc(100vw-16px))] max-w-[calc(100vw-16px)] max-h-[calc(100vh-16px)]"
                     theme="primary-slim"
                 >
                     <OctaneCardHeaderView
@@ -67,7 +68,7 @@ export const PetPackageWidgetView: FC<{}> = (props) => {
                             <div className="flex flex-col gap-1">
                                 <div className="flex items-center bg-white rounded py-1 px-2 input-pet-package-container">
                                     <input
-                                        className="min-h-[calc(1.5em+ .5rem+2px)] px-[.5rem] py-[.25rem] rounded-[.2rem] form-control-sm input-pet-package w-full min-w-0 text-[#555555] placeholder:text-[#8a8a8a]"
+                                        className="min-h-[calc(1.5em+ .5rem+2px)] px-[.5rem] py-[.25rem] rounded-[.2rem] form-control-sm input-pet-package w-full min-w-0 text-[#888888] placeholder:text-[#8a8a8a]"
                                         maxLength={GetConfigurationValue('pet.package.name.max.length')}
                                         placeholder={
                                             objectType === 'gnome_box'

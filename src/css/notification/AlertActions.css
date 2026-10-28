@@ -47,8 +47,9 @@
     border: 1px solid #919191;
     border-radius: 3px;
     background: #ffffff;
-    font-size: 12px;
-    line-height: 17px;
+    color: #000000; /* motd_notification_item message_text: style 0, text_color 0x0 */
+    font-size: 9px;
+    line-height: 12px;
     overflow-wrap: anywhere;
 }
 
@@ -56,4 +57,59 @@
     display: flex;
     justify-content: center;
     padding-top: 8px;
+}
+
+/*
+ * Text as AIR draws the alerts. habbo_window_alert, habbo_window_alert_link and habbo_window_confirm are
+ * Ubuntu (style 3) frames: the text and the cancel link are u_regular 12 px, the button is a button_thick
+ * (button_shiny_bold, 12 px bold). Regular Ubuntu, which in Octane is HabboAirUbuntu (our `Ubuntu` face is
+ * the condensed cut). The hotel event, Octane info and furnidata alerts are Octane's own designs and keep
+ * their faces; the MOTD is a style 0 window (below).
+ */
+.octane-alert:not(.octane-alert-hotel-event, .octane-alert-octane-info, .octane-alert-furnidata, .octane-motd-alert) .octane-card-content-shell {
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    font-size: 12px;
+    line-height: 15px;
+}
+
+@layer base {
+    .octane-alert:not(.octane-alert-hotel-event, .octane-alert-octane-info, .octane-alert-furnidata, .octane-motd-alert)
+        .octane-card-content-shell
+        :where(*):not(svg, svg *, .notification-command-name, .notification-command-args) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
+
+    /* Button's size is an important utility (12.6 px); button_shiny_bold is 12 px bold. */
+    .octane-alert:not(.octane-alert-hotel-event, .octane-alert-octane-info, .octane-alert-furnidata, .octane-motd-alert, .octane-abusive-alert)
+        .octane-card-content-shell
+        :where(.habbo-btn-primary, .habbo-btn-secondary, .habbo-btn-danger) {
+        font-size: 12px !important;
+        font-weight: 700 !important;
+    }
+}
+
+/*
+ * motd_notification: a style 1 (classic black) frame whose messages (motd_notification_item, style 0 text) and
+ * OK button (style 0, button_regular) are Volter 9 px.
+ */
+.octane-alert.octane-motd-alert .octane-card-content-shell {
+    font-family: Volter, sans-serif;
+    font-size: 9px;
+    line-height: 12px;
+}
+
+@layer base {
+    .octane-alert.octane-motd-alert .octane-card-content-shell :where(*):not(svg, svg *) {
+        font-family: Volter, sans-serif !important;
+    }
+
+    .octane-alert.octane-motd-alert .octane-motd-actions :where(button) {
+        font-size: 9px !important;
+        font-weight: 400 !important;
+    }
+}
+
+/* Markup inside a message (p, li) would take the card's 12 px. */
+.octane-alert.octane-motd-alert .octane-motd-item :where(p, li, label, td) {
+    font-size: 9px;
 }

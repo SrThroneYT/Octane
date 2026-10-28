@@ -155,7 +155,7 @@ export const NavigatorRoomInfoView: FC<NavigatorRoomInfoViewProps> = (props) => 
             <OctaneCardHeaderView headerText={LocalizeText('navigator.roomsettings.roominfo')} onCloseClick={() => processAction('close')} />
             <OctaneCardContentView className="octane-room-info__content text-black max-h-[calc(100vh-72px)]" overflow="auto">
                 <div className="octane-room-info__heading">
-                    <Text bold>{navigatorData.enteredGuestRoom.roomName}</Text>
+                    <Text bold className="octane-room-info__name">{navigatorData.enteredGuestRoom.roomName}</Text>
                     <Hint content={LocalizeText('navigator.room.popup.room.info.home')}>
                         <BaseButton aria-label={LocalizeText('navigator.room.popup.room.info.home')}
                             type="button"
@@ -169,14 +169,14 @@ export const NavigatorRoomInfoView: FC<NavigatorRoomInfoViewProps> = (props) => 
                 </div>
                 {navigatorData.enteredGuestRoom.showOwner && (
                     <Flex alignItems="center" gap={1} className="octane-room-info__meta">
-                        <Text small bold variant="muted">{LocalizeText('navigator.roomownercaption')}</Text>
+                        <Text bold className="octane-room-info__caption">{LocalizeText('navigator.roomownercaption')}</Text>
                         <UserProfileIconView userId={navigatorData.enteredGuestRoom.ownerId} />
-                        <Text small>{navigatorData.enteredGuestRoom.ownerName}</Text>
+                        <Text>{navigatorData.enteredGuestRoom.ownerName}</Text>
                     </Flex>
                 )}
                 <Flex alignItems="center" gap={1} className="octane-room-info__meta">
-                    <Text small bold variant="muted">{LocalizeText('navigator.roomrating')}</Text>
-                    <Text small>{navigatorData.currentRoomRating}</Text>
+                    <Text bold className="octane-room-info__caption">{LocalizeText('navigator.roomrating')}</Text>
+                    <Text>{navigatorData.currentRoomRating}</Text>
                 </Flex>
                 <Text className="octane-room-info__description">{navigatorData.enteredGuestRoom.description}</Text>
                 <LayoutRoomThumbnailView
@@ -221,12 +221,12 @@ export const NavigatorRoomInfoView: FC<NavigatorRoomInfoViewProps> = (props) => 
                 </Flex>
                 <Flex pointer alignItems="center" component={BaseButton} gap={1} className="octane-room-info__room-link border-0 bg-transparent p-0 text-left" onClick={() => processAction('toggle_room_link')}>
                     <img src={weblinkIcon} alt="" />
-                    <Text small underline>{LocalizeText('navigator.embed.caption')}</Text>
+                    <Text underline>{LocalizeText('navigator.embed.caption')}</Text>
                 </Flex>
                 {navigatorData.enteredGuestRoom.habboGroupId > 0 && (
                     <Flex pointer alignItems="center" component={BaseButton} gap={1} className="octane-room-info__group border-0 bg-transparent p-0 text-left" onClick={() => processAction('open_group_info')}>
                         <LayoutBadgeImageView badgeCode={navigatorData.enteredGuestRoom.groupBadgeCode} className="flex-none" isGroup={true} />
-                        <Text small underline>{LocalizeText('navigator.guildbase', ['groupName'], [navigatorData.enteredGuestRoom.groupName])}</Text>
+                        <Text underline>{LocalizeText('navigator.guildbase', ['groupName'], [navigatorData.enteredGuestRoom.groupName])}</Text>
                     </Flex>
                 )}
                 <div className="octane-room-info__actions">

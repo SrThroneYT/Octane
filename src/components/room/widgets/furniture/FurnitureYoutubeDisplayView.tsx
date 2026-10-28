@@ -4,6 +4,7 @@ import { AutoGrid, AutoGridProps, LayoutGridItem, OctaneCardContentView, OctaneC
 import { useFurnitureYoutubeWidget } from '../../../../hooks';
 import ReactPlayer from '../../../youtube/YoutubeReactPlayer';
 import { BaseButton } from '../../../../common/BaseButton';
+import '../../../../css/room/FurniWindowsCAir.css';
 
 interface FurnitureYoutubeDisplayViewProps extends AutoGridProps {}
 

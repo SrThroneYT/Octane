@@ -4,6 +4,10 @@
     min-width: 0;
     min-height: 224px;
     max-height: calc(100vh - 16px);
+    /* rentablespace is a style 3 frame: regular Ubuntu, text u_regular 12 px. */
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    font-size: 12px;
+    line-height: 16px;
 
     .rentablespace-rent-view,
     .rentablespace-rented-view,
@@ -68,9 +72,11 @@
         background: url('@/assets/images/room-widgets/rentablespace-widget/habboclub.png') no-repeat center;
     }
 
+    /* rented_to_label / time_label: u_headline_small, 14 px bold. */
     .rentablespace-headline {
         font-weight: bold;
-        font-size: 13px;
+        font-size: 14px;
+        line-height: 19px;
     }
 
     .rentablespace-cancel-button {
@@ -86,5 +92,24 @@
         min-height: 100px;
         color: #ff0000;
         white-space: normal;
+    }
+}
+
+/* The shared Button carries an important 12.6 px size (utilities layer) and the card shell sets condensed
+   Ubuntu; important rules in the base layer outrank both. Buttons are 12 px, the rent button's price and
+   label u_headline_medium 16 px bold. */
+@layer base {
+    .octane-widget-rentablespace :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
+
+    .octane-widget-rentablespace :where(button) {
+        font-size: 12px !important;
+    }
+
+    .octane-widget-rentablespace .rentablespace-rent-button,
+    .octane-widget-rentablespace .rentablespace-rent-button :where(span) {
+        font-size: 16px !important;
+        font-weight: 700 !important;
     }
 }

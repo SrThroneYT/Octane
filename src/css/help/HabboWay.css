@@ -119,7 +119,7 @@
 }
 
 .octane-habboway__text {
-    color: #333333;
+    color: #000000; /* correct_description / wrong_description / description: no text_color, black */
 }
 
 .octane-habboway__buttons {
@@ -142,7 +142,7 @@
     border-radius: 6px;
     background: linear-gradient(#ffffff, #e2e2e2);
     color: #000000;
-    font-size: 11px;
+    font-size: 10px; /* previous / next / back captions and the quiz / ok buttons: il_button, 10 px bold */
     font-weight: 700;
     cursor: pointer;
 }
@@ -237,6 +237,7 @@
     min-height: 25px;
     border-bottom: 1px solid #dddddd;
     color: #555555;
+    font-size: 10px; /* top_indicator: il_border, 10 px bold, 0x555555 */
     font-weight: 700;
 }
 
@@ -371,5 +372,38 @@
 
 .octane-habboway-quiz__wait {
     color: #555555;
+    font-size: 9px; /* retake_time_notice: il_small, 9 px */
+}
+
+/*
+ * Text as AIR draws habbo_way, safety_booklet and quiz_question: Illumina (style 101) frames in regular
+ * Ubuntu (our `Ubuntu` face is the condensed cut). Plain texts carry no text_style: il_regular 11 px.
+ * The modal titles above the frame are il_frame_modal_title, also regular Ubuntu.
+ */
+.octane-habboway,
+.octane-habboway-quiz {
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+}
+
+@layer base {
+    .octane-habboway :where(*):not(svg, svg *),
+    .octane-habboway-quiz :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
+}
+
+.octane-habboway .octane-air-modal__content,
+.octane-habboway-quiz .octane-air-modal__content {
+    font-size: 11px;
+    line-height: 14px;
+}
+
+.octane-habboway-quiz .octane-air-modal__content label {
+    font-size: 11px;
+}
+
+/* The card's `button` rule (12 px) outranks the bare button classes, so the il_button size is scoped. */
+.octane-habboway :is(.octane-habboway__nav, .octane-habboway__action),
+.octane-habboway-quiz :is(.octane-habboway__nav, .octane-habboway__action) {
     font-size: 10px;
 }

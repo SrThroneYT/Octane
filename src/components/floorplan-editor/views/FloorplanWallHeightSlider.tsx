@@ -12,9 +12,10 @@ export const FloorplanWallHeightSlider: FC<Props> = ({ value, onChange }) => {
     const clamped = Math.max(MIN_WALL_HEIGHT, Math.min(MAX_WALL_HEIGHT, value));
 
     return (
+        // AIR wall_height_controls: a horizontal slider beside the wall height number.
         <Slider
-            orientation="vertical"
-            className="fp-slider"
+            bare
+            className="fp-hslider is-ladder"
             style={{ '--fp-count': count } as CSSProperties}
             min={MIN_WALL_HEIGHT}
             max={MAX_WALL_HEIGHT}
@@ -22,8 +23,8 @@ export const FloorplanWallHeightSlider: FC<Props> = ({ value, onChange }) => {
             value={clamped}
             thumbAriaLabel="Wall height"
             title={`Wall height ${clamped}`}
-            trackClassName="fp-slider-track is-ladder"
-            thumbClassName="fp-slider-thumb"
+            trackClassName="fp-hslider-track"
+            thumbClassName="fp-hslider-thumb"
             trackStyle={{ '--fp-rung': `${(100 / count).toFixed(4)}%` } as CSSProperties}
             trackTestId="wall-height-track"
             renderThumbContent={() => <span data-testid="wall-height-thumb" data-value={clamped} hidden />}

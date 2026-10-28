@@ -1,18 +1,20 @@
-/* Official main_help: the sections of the help page, 400 px wide inside the window. */
+/* Official main_help (main2): the sections of the help page, 400 px wide inside the window. An Illumina
+   (style 101) frame, so the plain texts are il_regular: regular Ubuntu 11 px. */
 .octane-help-index {
     display: flex;
     flex-direction: column;
     gap: 6px;
     color: #000000;
-    font-size: 12px;
-    line-height: 16px;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    font-size: 11px;
+    line-height: 14px;
 }
 
 .octane-help-index__section-title {
     padding-bottom: 2px;
     border-bottom: 1px solid #c8c8c8;
     color: #555555;
-    font-size: 11px;
+    font-size: 10px; /* separator captions: il_border, 10 px bold */
     font-weight: 700;
     letter-spacing: 0.5px;
     text-align: center;
@@ -66,10 +68,11 @@
     min-width: 0;
 }
 
+/* help.main.help.title / help.main2.bully.subtitle: il_heading_2, 12 px bold. */
 .octane-help-index__heading {
-    font-size: 15px;
+    font-size: 12px;
     font-weight: 700;
-    line-height: 18px;
+    line-height: 15px;
 }
 
 .octane-help-index__text {
@@ -90,8 +93,8 @@
     border-image-repeat: stretch;
     background: transparent;
     color: #000000;
-    font-family: Ubuntu, sans-serif;
-    font-size: 12px;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    font-size: 10px; /* button style 100/101 (illumina_light_button): il_button, 10 px bold */
     font-weight: 700;
     cursor: pointer;
     image-rendering: var(--octane-pixel-art, pixelated);
@@ -155,8 +158,8 @@
     border: 0;
     background: transparent;
     color: #1f5c7a;
-    font-family: Ubuntu, sans-serif;
-    font-size: 12px;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    font-size: 12px; /* self_help / habboway / safetybooklet links: il_heading_2, 12 px bold, underlined */
     font-weight: 700;
     text-align: left;
     text-decoration: underline;
@@ -165,6 +168,7 @@
 
 .octane-help-index .octane-help-index__link.is-plain {
     color: #000000;
+    font-size: 11px; /* help.main.self.tips.content: no text_style, il_regular 11 px */
     font-weight: 400;
     text-decoration: none;
 }
@@ -209,4 +213,10 @@
     gap: 16px;
     justify-content: center;
     padding-top: 2px;
+}
+
+/* The two status links come from the report layout's start page (sanction_info_link, reports_status):
+   u_bold with font_size 14, underlined. */
+.octane-help-index .octane-help-index__status .octane-help-index__link {
+    font-size: 14px;
 }

@@ -14,7 +14,8 @@
     background: var(--caption-body) !important;
     box-shadow: none !important;
     color: #ffffff;
-    font-family: Ubuntu, sans-serif;
+    /* The caption (st3, bold) and the description (font_size 11) are regular Ubuntu, not our condensed `Ubuntu`. */
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     font-size: 11px !important;
     line-height: 14px;
     text-shadow: none;

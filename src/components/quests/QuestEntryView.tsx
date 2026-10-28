@@ -83,14 +83,14 @@ export const QuestEntryView: FC<QuestEntryViewProps> = (props) => {
                     <div className="octane-quest-block-body">
                         {waiting && (
                             <>
-                                <Text small>{localizeWithFallback('quests.list.nextquestavailable', 'The next quest will be available in')}</Text>
+                                <Text className="octane-quest-delay-desc">{localizeWithFallback('quests.list.nextquestavailable', 'The next quest will be available in')}</Text>
                                 <Text bold className="octane-quest-delay">
                                     {formatQuestWaitTime(waitSeconds)}
                                 </Text>
                             </>
                         )}
                         {!waiting && <Text className="octane-quest-desc">{description}</Text>}
-                        {!waiting && hint.length > 0 && <Text small className="octane-quest-hint" dangerouslySetInnerHTML={{ __html: hint }} />}
+                        {!waiting && hint.length > 0 && <Text className="octane-quest-hint" dangerouslySetInnerHTML={{ __html: hint }} />}
                         {isQuestRewardVisible(quest.activityPointType, quest.rewardCurrencyAmount) && !waiting && (
                             <div className="octane-quest-reward">
                                 <span>{localizeWithFallback('quests.list.rewardcaption', 'Reward:')}</span>
@@ -101,7 +101,7 @@ export const QuestEntryView: FC<QuestEntryViewProps> = (props) => {
                     </div>
                     <div className="octane-quest-block-actions">
                         {!accepted && !waiting && (
-                            <Button variant="success" className="octane-quest-accept" onClick={() => onAccept && onAccept(quest)}>
+                            <Button variant="secondary" className="octane-quest-accept" onClick={() => onAccept && onAccept(quest)}>
                                 {localizeWithFallback('quests.list.accept', 'Accept quest')}
                             </Button>
                         )}

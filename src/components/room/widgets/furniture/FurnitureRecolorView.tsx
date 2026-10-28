@@ -17,6 +17,7 @@ import {
 import { Button, LayoutColorSwatchView, LayoutFurniImageView, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Text } from '../../../../common';
 import { useFurnitureRecolorWidget } from '../../../../hooks';
 import { Select } from '../../../../common/Select';
+import '../../../../css/room/FurniWindowsCAir.css';
 
 const WHITE = 0xffffff;
 

@@ -2,6 +2,7 @@ import { FC } from 'react';
 import { LayoutTrophyView } from '../../../../common';
 import { TROPHY_VIEW_NIKO_GOLD, TROPHY_VIEW_NIKO_SILVER, useFurnitureTrophyWidget } from '../../../../hooks';
 import { FurnitureNikoTrophyView } from './FurnitureNikoTrophyView';
+import '../../../../css/room/FurniWindowsAAir.css';
 
 /** Official `TrophyFurniWidget.updateInterface`: the Niko views open `NikoTrophyView`, everything else the trophy card. */
 export const FurnitureTrophyView: FC<{}> = (props) => {

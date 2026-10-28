@@ -70,6 +70,7 @@ import { Checkbox } from '../../../../common/Checkbox';
 import { Select } from '../../../../common/Select';
 import { BaseButton } from '../../../../common/BaseButton';
 import { Hint } from '../../../../common/Tooltip';
+import '../../../../css/room/FurniWindowsCAir.css';
 
 interface ChestLogRow {
     type: string;
@@ -692,7 +693,7 @@ export const FurnitureChestView: FC = () => {
                             style={{ imageRendering: PIXEL_ART_RENDERING, display: 'block' }}
                         />
                         {/* balance_cont @ (9,68): "Saldo" label = balance_txt @ (2,7), font 11, auto_size left */}
-                        <div style={{ position: 'absolute', left: 11, top: 75, width: 45, color: '#5b4632', fontWeight: 'bold', fontSize: 11, lineHeight: 1, textAlign: 'left' }}>
+                        <div style={{ position: 'absolute', left: 11, top: 75, width: 45, color: '#5b4632', fontSize: 11, lineHeight: 1, textAlign: 'left' }}>
                             {LocalizeText('wiredchests.balance')}
                         </div>
                         {/* balance_container: AS3 centers it horizontally inside balance_cont (x9..63) at runtime
@@ -923,7 +924,7 @@ export const FurnitureChestView: FC = () => {
                                     {chestObject.typeId > 0 && <LayoutFurniImageView productType={FurnitureType.FLOOR} productClassId={chestObject.typeId} direction={2} />}
                                 </div>
                                 <Column gap={1}>
-                                    <Text bold>
+                                    <Text bold className="octane-chest__title">
                                         {LocalizeText('wiredchests.upgrade.capacity.extra', ['purchase_capacity'], [String(upgradeStep * upgradeQty)])}
                                     </Text>
                                     <Text small>
@@ -952,14 +953,14 @@ export const FurnitureChestView: FC = () => {
                                 {COST_CREDITS > 0 && (
                                     <>
                                         <LayoutCurrencyIcon type={-1} />
-                                        <Text bold>{COST_CREDITS * upgradeQty}</Text>
+                                        <Text bold className="octane-chest__price">{COST_CREDITS * upgradeQty}</Text>
                                     </>
                                 )}
-                                {COST_CREDITS > 0 && COST_DIAMONDS > 0 && <Text bold>+</Text>}
+                                {COST_CREDITS > 0 && COST_DIAMONDS > 0 && <Text bold className="octane-chest__price">+</Text>}
                                 {COST_DIAMONDS > 0 && (
                                     <>
                                         <LayoutCurrencyIcon type={5} />
-                                        <Text bold>{COST_DIAMONDS * upgradeQty}</Text>
+                                        <Text bold className="octane-chest__price">{COST_DIAMONDS * upgradeQty}</Text>
                                     </>
                                 )}
                             </Flex>
@@ -974,7 +975,7 @@ export const FurnitureChestView: FC = () => {
                                 </Text>
                             )}
                             <div className="octane-chest__actions">
-                                <ChestButton wide disabled={!!upgradeError} onClick={buyUpgrade}>
+                                <ChestButton wide className="octane-chest__btn--buy" disabled={!!upgradeError} onClick={buyUpgrade}>
                                     {LocalizeText('wiredchests.upgrade.buy')}
                                 </ChestButton>
                                 <ChestButton wide onClick={() => setShowUpgrade(false)}>
@@ -1057,11 +1058,11 @@ export const FurnitureChestView: FC = () => {
                                     )}
                                 </div>
                                 <Column gap={1}>
-                                    <Text bold>{LocalizeText('wiredchests.upgrade.wired.info')}</Text>
+                                    <Text bold className="octane-chest__title">{LocalizeText('wiredchests.upgrade.wired.info')}</Text>
                                     <Text small dangerouslySetInnerHTML={{ __html: SanitizeHtml(LocalizeText('wiredchests.big_fat_warning')) }} />
                                 </Column>
                             </Flex>
-                            <Text bold>{LocalizeText('wiredchests.upgrade.wired.cost')}</Text>
+                            <Text bold className="octane-chest__price">{LocalizeText('wiredchests.upgrade.wired.cost')}</Text>
                             {isStarter && (
                                 <Text small className="octane-chest__upgrade-error">
                                     {LocalizeText(
@@ -1075,7 +1076,7 @@ export const FurnitureChestView: FC = () => {
                                 <ChestButton wide onClick={() => setConfirmWiredUpgrade(false)}>
                                     {LocalizeText('wiredchests.cancel')}
                                 </ChestButton>
-                                <ChestButton wide disabled={isStarter || wiredUpgradeBuying} onClick={buyWiredUpgrade}>
+                                <ChestButton wide className="octane-chest__btn--buy" disabled={isStarter || wiredUpgradeBuying} onClick={buyWiredUpgrade}>
                                     {LocalizeText('wiredchests.upgrade.buy')}
                                 </ChestButton>
                             </div>
@@ -1136,7 +1137,7 @@ export const FurnitureChestView: FC = () => {
                                     </li>
                                 ))}
                             </ul>
-                            <Text bold>{localizeWithFallback('wiredchests.capacity_info.title', 'About capacity')}</Text>
+                            <Text bold className="octane-chest__title">{localizeWithFallback('wiredchests.capacity_info.title', 'About capacity')}</Text>
                             <Text small>{localizeWithFallback('wiredchests.capacity_info.desc', '')}</Text>
                             <ul className="octane-chest__rules">
                                 {CAPACITY_INFO_RULES.map((key) => (

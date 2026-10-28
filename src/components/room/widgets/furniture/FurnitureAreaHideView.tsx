@@ -3,6 +3,7 @@ import { LocalizeText } from '../../../../api';
 import { Button, Column, Flex, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Text } from '../../../../common';
 import { Checkbox } from '../../../../common/Checkbox';
 import { getAreaHideControlState, useFurnitureAreaHideWidget } from '../../../../hooks';
+import '../../../../css/room/FurniWindowsCAir.css';
 
 export const FurnitureAreaHideView: FC<{}> = (props) => {
     const {
@@ -59,7 +60,7 @@ export const FurnitureAreaHideView: FC<{}> = (props) => {
                         />
                         <Column gap={1}>
                             <Text>{LocalizeText('widget.areahide.options.invisibility')}</Text>
-                            <Text>{LocalizeText('widget.areahide.options.invisibility.info')}</Text>
+                            <Text className="octane-area-hide__info">{LocalizeText('widget.areahide.options.invisibility.info')}</Text>
                         </Column>
                     </Flex>
                     <Flex gap={1}>
@@ -80,7 +81,7 @@ export const FurnitureAreaHideView: FC<{}> = (props) => {
                         />
                         <Column gap={1}>
                             <Text>{LocalizeText('widget.areahide.options.invert')}</Text>
-                            <Text>{LocalizeText('widget.areahide.options.invert.info')}</Text>
+                            <Text className="octane-area-hide__info">{LocalizeText('widget.areahide.options.invert.info')}</Text>
                         </Column>
                     </Flex>
                 </Column>

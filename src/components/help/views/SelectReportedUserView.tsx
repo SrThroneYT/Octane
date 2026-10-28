@@ -85,7 +85,7 @@ export const SelectReportedUserView: FC<{}> = (props) => {
                                         <span className="octane-help-user__avatar">
                                             <LayoutAvatarImageView headOnly compactHead compactHeadSize={30} compactHeadPadding={0} direction={2} figure={user.look ?? ''} />
                                         </span>
-                                        <span>{user.username}</span>
+                                        <span className="octane-help-user__name">{user.username}</span>
                                     </span>
                                 </LayoutGridItem>
                             );

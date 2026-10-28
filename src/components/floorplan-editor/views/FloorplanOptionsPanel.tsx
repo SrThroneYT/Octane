@@ -44,7 +44,7 @@ export const FloorplanOptionsPanel: FC<Props> = ({ state, dispatch }) => {
             </div>
 
             <div className="fp-control-group is-centered is-right" data-testid="floorplan-appearance">
-                <div className="fp-group-label">{localizeOr('floor.plan.editor.appearance', 'Appearance')}</div>
+                <div className="fp-group-label">{localizeOr('floor.plan.editor.room.options', localizeOr('floor.plan.editor.appearance', 'Appearance'))}</div>
                 <ThicknessStepper value={state.thickness.wall} onChange={setWall} testIdPrefix="wall-thickness" labelKeyPrefix="navigator.roomsettings.wall_thickness" />
                 <ThicknessStepper value={state.thickness.floor} onChange={setFloor} testIdPrefix="floor-thickness" labelKeyPrefix="navigator.roomsettings.floor_thickness" />
             </div>

@@ -45,8 +45,10 @@
     border: 0;
 }
 
+/* no_videos_label: il_regular_white, 11 px white. */
 .octane-vimeo-viewer-empty {
     color: #ffffff;
+    font-size: 11px;
 }
 
 .octane-vimeo-viewer-id {
@@ -84,4 +86,11 @@
 
 .octane-vimeo-viewer-id-input:disabled {
     color: #555555;
+}
+
+/* vimeo_viewer is a style 3 (Ubuntu) frame; our `Ubuntu` face is the condensed cut. */
+@layer base {
+    .octane-vimeo-viewer-content :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
 }

@@ -5,6 +5,7 @@ import { Column, DraggableWindow, Text } from '../../../../common';
 import { useFurnitureHighScoreWidget } from '../../../../hooks';
 import { ContextMenuHeaderView } from '../context-menu/ContextMenuHeaderView';
 import { ContextMenuListView } from '../context-menu/ContextMenuListView';
+import '../../../../css/room/FurniWindowsBAir.css';
 
 export const FurnitureHighScoreView: FC<{}> = (props) => {
     const { stuffDatas = null, getScoreType = null, getClearType = null, isConfigured = null, isTimeScore = null, formatScore = null } = useFurnitureHighScoreWidget();
@@ -19,8 +20,8 @@ export const FurnitureHighScoreView: FC<{}> = (props) => {
 
                 return (
                     <DraggableWindow key={index} uniqueKey={`high-score-${objectId}`}>
-                        <Column className="octane-widget-high-score octane-context-menu bg-[#1e1f23] p-2 w-[280px] max-w-[280px] h-[320px]" gap={0}>
-                            <ContextMenuHeaderView classNames={['drag-handler cursor-move']}>
+                        <Column className="octane-widget-high-score octane-furni-highscore octane-context-menu bg-[#1e1f23] p-2 w-[280px] max-w-[280px] h-[320px]" gap={0}>
+                            <ContextMenuHeaderView classNames={['drag-handler cursor-move', 'octane-furni-highscore__caption']}>
                                 {configured
                                     ? LocalizeText(
                                         'high.score.display.caption',
@@ -35,10 +36,10 @@ export const FurnitureHighScoreView: FC<{}> = (props) => {
                             <ContextMenuListView className="!h-auto" gap={1} overflow="hidden">
                                 <div className="flex flex-col gap-1">
                                     <div className="flex items-center justify-between">
-                                        <Text bold center className="col-span-8" variant="white">
+                                        <Text center className="col-span-8 octane-furni-highscore__head" variant="white">
                                             {LocalizeText('high.score.display.users.header')}
                                         </Text>
-                                        <Text bold center className="col-span-4" variant="white">
+                                        <Text center className="col-span-4 octane-furni-highscore__head" variant="white">
                                             {LocalizeText(timeScore ? 'high.score.display.time.header' : 'high.score.display.score.header')}
                                         </Text>
                                     </div>
@@ -48,10 +49,10 @@ export const FurnitureHighScoreView: FC<{}> = (props) => {
                                     {stuffData.entries.map((entry, index) => {
                                         return (
                                             <div key={index} className="flex items-center justify-between">
-                                                <Text center className="col-span-8" variant="white">
+                                                <Text center className="col-span-8 octane-furni-highscore__entry" variant="white">
                                                     {entry.users.join(', ')}
                                                 </Text>
-                                                <Text center className="col-span-4" variant="white">
+                                                <Text center className="col-span-4 octane-furni-highscore__entry" variant="white">
                                                     {formatScore(entry.score, stuffData.scoreType)}
                                                 </Text>
                                             </div>

@@ -4,6 +4,7 @@ import { OctaneCardContentView, OctaneCardHeaderView, OctaneCardView } from '../
 import { useFurniturePlaylistEditorWidget } from '../../../../../hooks';
 import { DiskInventoryView } from './DiskInventoryView';
 import { SongPlaylistView } from './SongPlaylistView';
+import '../../../../../css/room/FurniWindowsCAir.css';
 
 export const FurniturePlaylistEditorWidgetView: FC<{}> = (props) => {
     const {

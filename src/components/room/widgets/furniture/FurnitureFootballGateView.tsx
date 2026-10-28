@@ -3,6 +3,7 @@ import { FC } from 'react';
 import { LocalizeText } from '../../../../api';
 import { Button, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Text } from '../../../../common';
 import { useFurnitureFootballGateWidget } from '../../../../hooks';
+import '../../../../css/room/FurniWindowsCAir.css';
 
 export const FurnitureFootballGateView: FC<{}> = (props) => {
     const { objectId = -1, setObjectId = null, onClose = null } = useFurnitureFootballGateWidget();

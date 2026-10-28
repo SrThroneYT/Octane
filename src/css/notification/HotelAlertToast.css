@@ -92,6 +92,8 @@
 }
 
 .hotel-alert-toast-body {
+    /* Regular Ubuntu like the AIR notifications; the inherited `Ubuntu` face is the condensed cut. */
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     display: flex;
     flex-direction: column;
     gap: 2px;

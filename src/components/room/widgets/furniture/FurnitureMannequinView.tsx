@@ -5,6 +5,7 @@ import { Button, Column, LayoutAvatarImageView, LayoutCurrencyIcon, OctaneCardCo
 import { useFurnitureMannequinWidget, useHasPermission } from '../../../../hooks';
 import { OctaneInput } from '../../../../layout';
 import { BaseButton } from '../../../../common/BaseButton';
+import '../../../../css/room/FurniWindowsAAir.css';
 
 const MODE_NONE: number = -1;
 const MODE_CONTROLLER: number = 0;
@@ -101,7 +102,7 @@ export const FurnitureMannequinView: FC<{}> = (props) => {
                     <Column grow justifyContent="between" overflow="auto">
                         {mode === MODE_CONTROLLER && (
                             <>
-                                <OctaneInput type="text" value={name} onBlur={saveName} onChange={(event) => setName(event.target.value)} />
+                                <OctaneInput className="octane-mannequin__name-input" type="text" value={name} onBlur={saveName} onChange={(event) => setName(event.target.value)} />
                                 <div className="flex flex-col gap-1">
                                     <Button variant="success" onClick={(event) => setMode(MODE_UPDATE)}>
                                         {LocalizeText('mannequin.widget.style')}
@@ -115,11 +116,15 @@ export const FurnitureMannequinView: FC<{}> = (props) => {
                         {mode === MODE_UPDATE && (
                             <>
                                 <div className="flex flex-col gap-1">
-                                    <Text bold>{name}</Text>
-                                    <Text wrap>{LocalizeText('mannequin.widget.savetext')}</Text>
+                                    <Text bold className="octane-mannequin__name">
+                                        {name}
+                                    </Text>
+                                    <Text wrap className="octane-mannequin__text">
+                                        {LocalizeText('mannequin.widget.savetext')}
+                                    </Text>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <Text component={BaseButton} type="button" pointer underline onClick={(event) => setMode(MODE_CONTROLLER)}>
+                                    <Text component={BaseButton} type="button" pointer underline className="octane-mannequin__back" onClick={(event) => setMode(MODE_CONTROLLER)}>
                                         {LocalizeText('mannequin.widget.back')}
                                     </Text>
                                     <Button variant="success" onClick={saveFigure}>
@@ -131,8 +136,10 @@ export const FurnitureMannequinView: FC<{}> = (props) => {
                         {mode === MODE_PEER && (
                             <>
                                 <div className="flex flex-col gap-1">
-                                    <Text bold>{name}</Text>
-                                    <Text>{LocalizeText('mannequin.widget.weartext')}</Text>
+                                    <Text italics className="octane-mannequin__name octane-mannequin__name--peer">
+                                        {name}
+                                    </Text>
+                                    <Text className="octane-mannequin__text">{LocalizeText('mannequin.widget.weartext')}</Text>
                                 </div>
                                 <Button variant="success" onClick={wearFigure}>
                                     {LocalizeText('mannequin.widget.wear')}
@@ -141,10 +148,10 @@ export const FurnitureMannequinView: FC<{}> = (props) => {
                         )}
                         {mode === MODE_NO_CLUB && (
                             <div className="flex justify-center items-center grow!">
-                                <Text>{LocalizeText('mannequin.widget.clubnotification')}</Text>
+                                <Text className="octane-mannequin__notice">{LocalizeText('mannequin.widget.clubnotification')}</Text>
                             </div>
                         )}
-                        {mode === MODE_WRONG_GENDER && <Text>{LocalizeText('mannequin.widget.wronggender')}</Text>}
+                        {mode === MODE_WRONG_GENDER && <Text className="octane-mannequin__text">{LocalizeText('mannequin.widget.wronggender')}</Text>}
                     </Column>
                 </div>
             </OctaneCardContentView>

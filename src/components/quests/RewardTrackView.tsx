@@ -242,11 +242,15 @@ const RewardTrackPremiumConfirmView: FC<{ track: RewardTrackData; pending: boole
         <OctaneCard.Content className="octane-reward-track-premium-content">
             <div className="octane-reward-track-premium-panel">
                 <div className="octane-reward-track-premium-icon" />
-                <Text bold>{localizeWithFallback('reward_track.rewards.premium', 'Premium')}</Text>
-                <Text small>{localizeWithFallback('reward_track.rewards.premium.info', 'Extra rewards for pass holders')}</Text>
+                <Text bold className="octane-reward-track-premium-title">
+                    {localizeWithFallback('reward_track.rewards.premium', 'Premium')}
+                </Text>
+                <Text className="octane-reward-track-premium-info">
+                    {localizeWithFallback('reward_track.rewards.premium.info', 'Extra rewards for pass holders')}
+                </Text>
             </div>
             <div className="octane-reward-track-premium-benefits">
-                <Text>{localizeWithFallback('reward_track.premium.confirm.desc', 'The premium pass unlocks the premium row of rewards for this track.')}</Text>
+                <Text className="octane-reward-track-premium-desc">{localizeWithFallback('reward_track.premium.confirm.desc', 'The premium pass unlocks the premium row of rewards for this track.')}</Text>
                 {track.taskPointsBoost > 1 && (
                     <div className="octane-reward-track-premium-benefit">
                         {localizeWithFallback(
@@ -284,7 +288,7 @@ const RewardTrackPremiumConfirmView: FC<{ track: RewardTrackData; pending: boole
                 )}
             </div>
             <div className="octane-reward-track-premium-cost">
-                <span>{localizeWithFallback('catalog.purchase.confirmation.dialog.cost', 'Cost')}</span>
+                <span className="octane-reward-track-premium-cost-label">{localizeWithFallback('catalog.purchase.confirmation.dialog.cost', 'Cost')}</span>
                 {track.costCredits > 0 && (
                     <span className="octane-reward-track-premium-price">
                         {track.costCredits} <LayoutCurrencyIcon type={-1} />
@@ -298,10 +302,10 @@ const RewardTrackPremiumConfirmView: FC<{ track: RewardTrackData; pending: boole
                 )}
             </div>
             <div className="octane-reward-track-premium-buttons">
-                <Button variant="secondary" disabled={pending} onClick={onCancel}>
+                <Button variant="secondary" className="octane-reward-track-premium-cancel" disabled={pending} onClick={onCancel}>
                     {localizeWithFallback('reward_track.premium.confirm.cancel', 'Cancel')}
                 </Button>
-                <Button variant="success" disabled={pending} onClick={onConfirm}>
+                <Button variant="success" className="octane-reward-track-premium-buy" disabled={pending} onClick={onConfirm}>
                     {localizeWithFallback('reward_track.premium.confirm.buy', 'Buy')}
                 </Button>
             </div>
