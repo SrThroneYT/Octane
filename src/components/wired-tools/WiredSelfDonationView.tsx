@@ -83,7 +83,7 @@ export const WiredSelfDonationView = ({ onClose }: WiredSelfDonationViewProps) =
 
     return (
         <OctaneCardView
-            className="min-w-[420px] max-w-[420px] max-h-[560px]"
+            className="octane-wired-menu min-w-[420px] max-w-[420px] max-h-[560px]"
             theme="primary-slim"
             uniqueKey="wired-self-donation"
             windowPosition={DraggableWindowPosition.TOP_LEFT}

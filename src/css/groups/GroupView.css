@@ -1,5 +1,6 @@
 .octane-groups-window {
-    font-family: Ubuntu, sans-serif;
+    /* AIR's group windows are Ubuntu frames; our `Ubuntu` face is the condensed cut. */
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     color: #111111;
 }
 
@@ -428,7 +429,8 @@
     height: 25px !important;
     min-height: 25px !important;
     padding: 2px 6px !important;
-    font-size: 13px !important;
+    /* type_drop_menu: the Ubuntu drop menu, 12 px (the filter input beside it is 13 px). */
+    font-size: 12px !important;
 }
 
 .octane-group-members-list-grid {
@@ -563,7 +565,8 @@
 .octane-group-members .octane-groups-footer .text {
     width: 178px;
     text-align: center;
-    color: rgba(0, 0, 0, .7) !important;
+    /* footer_info_txt: u_regular, 12 px black. */
+    color: #000000 !important;
     font-size: 12px;
 }
 
@@ -581,7 +584,7 @@
         inset 0 1px 0 rgba(255, 255, 255, 0.08),
         inset 0 -1px 0 rgba(0, 0, 0, 0.55),
         0 2px 0 rgba(0, 0, 0, 0.35);
-    font-family: Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     image-rendering: var(--octane-pixel-art, pixelated);
     transition: height 0.18s ease;
 }

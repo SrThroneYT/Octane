@@ -262,7 +262,7 @@ export const WiredShareTabView: FC<{}> = () => {
                                   )}
                         </Text>
                         <div className="max-h-[160px] overflow-y-auto rounded border border-[#9d998e] bg-[#f4f0e8]">
-                            <table className="w-full text-[11px]">
+                            <table className="w-full text-[12px]">
                                 <thead>
                                     <tr className="text-left">
                                         <th className="px-1">{localizeWithFallback('wiredmenu.share.col.box', 'Box')}</th>

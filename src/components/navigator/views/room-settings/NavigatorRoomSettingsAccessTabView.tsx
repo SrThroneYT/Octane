@@ -37,7 +37,9 @@ export const NavigatorRoomSettingsAccessTabView: FC<NavigatorRoomSettingsTabView
     return (
         <>
             <Column gap={1}>
-                <Text bold>{LocalizeText('navigator.roomsettings.roomaccess.caption')}</Text>
+                <Text bold className="octane-room-settings-caption">
+                    {LocalizeText('navigator.roomsettings.roomaccess.caption')}
+                </Text>
                 <Text small>{LocalizeText('navigator.roomsettings.roomaccess.info')}</Text>
             </Column>
             <Column gap={2}>

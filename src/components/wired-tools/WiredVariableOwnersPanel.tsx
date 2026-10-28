@@ -150,7 +150,7 @@ export const WiredVariableOwnersPanel = (props: WiredVariableOwnersPanelProps) =
 
     return (
         <OctaneCardView
-            className="min-w-[860px] max-w-[860px] max-h-[620px]"
+            className="octane-wired-menu min-w-[860px] max-w-[860px] max-h-[620px]"
             theme="primary-slim"
             uniqueKey={uniqueKey}
             windowPosition={DraggableWindowPosition.TOP_LEFT}

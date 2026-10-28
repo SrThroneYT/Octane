@@ -111,7 +111,8 @@
 
 .octane-extended-profile__status-text {
   color: #111;
-  font-size: 11px;
+  /* status_txt: u_bold, 12 px. */
+  font-size: 12px;
   font-weight: 700;
   line-height: 1;
 }
@@ -190,6 +191,8 @@
   padding: 12px 4px;
   color: #555;
   font-size: 12px;
+  /* profile.full_profile_hidden: 12 px bold #555555. */
+  font-weight: 700;
   text-align: center;
 }
 
@@ -350,6 +353,8 @@
 .octane-extended-profile-groups {
   display: grid;
   grid-template-columns: 82px minmax(0, 1fr);
+  /* One row the panel's height, so a long group list scrolls instead of growing out of the window. */
+  grid-template-rows: minmax(0, 1fr);
   gap: 7px;
   min-height: 236px;
   height: 100%;
@@ -359,6 +364,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
 }
 
 .octane-extended-profile-groups__count {
@@ -370,6 +376,8 @@
 
 .octane-extended-profile-groups__list {
   flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   padding-right: 2px;
 }
@@ -648,4 +656,15 @@
 
 .octane-extended-profile-window__content {
   position: relative;
+}
+
+/* new_extended_profile is an Illumina (style 100) frame in Ubuntu; our `Ubuntu` face is the condensed cut. */
+.octane-extended-profile-window {
+  font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+}
+
+@layer base {
+  .octane-extended-profile-window :where(*):not(svg, svg *) {
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+  }
 }

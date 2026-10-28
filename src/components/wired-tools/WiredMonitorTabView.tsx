@@ -38,7 +38,7 @@ export const WiredMonitorTabView = (props: WiredMonitorTabViewProps) => {
                     <div className="flex items-center justify-between gap-2">
                         <Text bold>{localizeWithFallback('wiredmenu.monitor.statistics', 'Statistics:')}</Text>
                         <BaseButton
-                            className="rounded border border-[#7f7f7f] bg-[#ece9e1] px-2 py-[2px] text-[11px] text-[#333] hover:bg-[#e3ded2]"
+                            className="rounded border border-[#7f7f7f] bg-[#ece9e1] px-2 py-[2px] text-[12px] text-[#333] hover:bg-[#e3ded2]"
                             type="button"
                             onClick={onOpenMonitorInfo}
                         >

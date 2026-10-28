@@ -268,8 +268,8 @@ export const NavigatorRoomSettingsBasicTabView: FC<NavigatorRoomSettingsTabViewP
                 gap={1}
                 onClick={deleteRoom}
             >
-                <FaTimes className="fa-icon shrink-0 text-[#a81a12]" />
-                <Text variant="danger" underline bold className="whitespace-nowrap">
+                <FaTimes className="fa-icon shrink-0 text-[#bb2200]" />
+                <Text variant="danger" underline bold className="octane-room-settings-delete whitespace-nowrap">
                     {LocalizeText('navigator.roomsettings.delete')}
                 </Text>
             </Flex>

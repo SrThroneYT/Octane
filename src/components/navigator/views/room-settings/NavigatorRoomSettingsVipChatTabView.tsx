@@ -31,7 +31,7 @@ export const NavigatorRoomSettingsVipChatTabView: FC<NavigatorRoomSettingsTabVie
     return (
         <>
             <div className="flex flex-col gap-1">
-                <Text small bold>
+                <Text small bold className="octane-room-settings-caption">
                     {LocalizeText('navigator.roomsettings.vip.caption')}
                 </Text>
                 <Text small>{LocalizeText('navigator.roomsettings.vip.info')}</Text>

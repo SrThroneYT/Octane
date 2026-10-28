@@ -1504,7 +1504,8 @@
     .form-check-label,
     label,
     .text-black,
-    .text-black\/60 {
+    .text-black\/60,
+    .text-\[\#000000\] {
         color: #fff !important;
         text-shadow: none;
     }
@@ -1736,4 +1737,73 @@
 .octane-wired .octane-wired__picker-button:disabled svg,
 .octane-wired .octane-wired__value-input-button:disabled img {
     opacity: 0.5;
+}
+
+/*
+ * The text of the wired box body, as AIR's wired_style_illumina and wired_style_volter templates set it.
+ * Illumina: il_regular 11 px (bold texts 11 px bold), inputs 11 px #4a4a4a, buttons il_button 10 px bold, in
+ * regular Ubuntu (our `Ubuntu` face is the condensed cut). Volter and its coloured proto variants: Volter 9 px,
+ * bold texts Volter Bold, inputs and buttons too. Section titles used to be 12-13 px and the Volter boxes
+ * kept their labels, links and buttons in the condensed Ubuntu.
+ */
+.octane-wired.octane-wired--style-illumina .octane-wired__body {
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    font-size: 11px;
+}
+
+.octane-wired.octane-wired--style-illumina .octane-wired__body :where(*):not(svg, svg *) {
+    font-family: inherit !important;
+    font-size: 11px !important;
+}
+
+.octane-wired.octane-wired--style-illumina .octane-wired__body :where(input, textarea) {
+    color: #4a4a4a;
+}
+
+.octane-wired.octane-wired--style-illumina .octane-wired__body button.font-bold,
+.octane-wired.octane-wired--style-illumina .octane-wired__body button.font-bold * {
+    font-size: 10px !important;
+}
+
+.octane-wired.octane-wired--volter .octane-wired__body {
+    font-family: Volter, monospace;
+    font-size: 9px;
+}
+
+.octane-wired.octane-wired--volter .octane-wired__body :where(*):not(svg, svg *) {
+    font-family: Volter, monospace !important;
+    font-size: 9px !important;
+}
+
+/* The footer buttons carry an important Tailwind size; an important rule in the earlier base layer outranks it. */
+@layer base {
+    .octane-wired.octane-wired--style-illumina .octane-wired__body :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+        font-size: 11px !important;
+    }
+
+    .octane-wired.octane-wired--style-illumina .octane-wired__body button.font-bold,
+    .octane-wired.octane-wired--style-illumina .octane-wired__body button.font-bold * {
+        font-size: 10px !important;
+    }
+
+    .octane-wired.octane-wired--volter .octane-wired__body :where(*):not(svg, svg *) {
+        font-family: Volter, monospace !important;
+        font-size: 9px !important;
+    }
+}
+
+/*
+ * The wired menu (wired_menu_view, wired_menu_table_view) and the windows it opens are Ubuntu frames: regular
+ * Ubuntu at 12 px, titles and table heads bold. Our `Ubuntu` face is the condensed cut, so they take the regular
+ * one; the share tab's code fields keep their monospace.
+ */
+.octane-wired-menu {
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+}
+
+@layer base {
+    .octane-wired-menu :where(*):not(svg, svg *, .font-mono) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
 }
