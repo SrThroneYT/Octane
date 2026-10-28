@@ -1,5 +1,6 @@
 import { FC, useEffect, useRef, useState } from 'react';
 import { GetConfigurationValue } from '../../api';
+import { resolveAdsFrame } from '../../api/utils/resolveAdsFrame';
 import { OctaneCardContentView, OctaneCardHeaderView, OctaneCardView } from '../../common';
 import { configFileUrl } from '../../secure-assets';
 
@@ -24,6 +25,8 @@ const parsePublisherIdFromAdsTxt = (text: string): string | null => {
 
 export const GoogleAdsView: FC<{}> = () => {
     const adsEnabled = GetConfigurationValue<boolean>('show.google.ads', false);
+    // An ad page on another origin keeps the ad script away from the client's session.
+    const adsFrameUrl = GetConfigurationValue<string>('ads.frame.url', '');
     const [isOpen, setIsOpen] = useState(false);
     const [publisherId, setPublisherId] = useState<string | null>(null);
     const [config, setConfig] = useState<AdsenseConfig | null>(null);
@@ -121,9 +124,15 @@ export const GoogleAdsView: FC<{}> = () => {
     if (!adsEnabled) return null;
     if (!isOpen) return null;
 
+    const adsFrame =
+        adsFrameUrl && publisherId && config?.slot
+            ? resolveAdsFrame(adsFrameUrl, { publisherId, slot: config.slot, format: config.format, fullWidthResponsive: config.fullWidthResponsive }, window.location.origin)
+            : null;
+    const framed = !!adsFrameUrl;
+
     return (
         <OctaneCardView className="octane-google-ads" uniqueKey="google-ads" theme="primary">
-            {publisherId && (
+            {publisherId && !framed && (
                 <script async crossOrigin="anonymous" src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-${publisherId}`} />
             )}
             <OctaneCardHeaderView headerText="Sponsored" onCloseClick={() => setIsOpen(false)} />
@@ -131,7 +140,19 @@ export const GoogleAdsView: FC<{}> = () => {
                 <div className="flex items-center justify-center w-[300px] h-[250px] bg-white">
                     {loadError && <div className="text-xs text-red-600 text-center px-2">Ads unavailable: {loadError}</div>}
                     {!loadError && (!publisherId || !config) && <div className="text-xs text-gray-500">Loading…</div>}
-                    {!loadError && publisherId && config?.slot && (
+                    {!loadError && framed && adsFrame && (
+                        <iframe
+                            className="w-full h-full border-0"
+                            referrerPolicy="strict-origin"
+                            sandbox={adsFrame.sandbox}
+                            src={adsFrame.src}
+                            title="Sponsored"
+                        />
+                    )}
+                    {!loadError && framed && publisherId && config?.slot && !adsFrame && (
+                        <div className="text-xs text-red-600 text-center px-2">Ads unavailable: ads.frame.url is not a web URL</div>
+                    )}
+                    {!loadError && !framed && publisherId && config?.slot && (
                         <ins
                             ref={insRef}
                             key={`${publisherId}-${config.slot}`}

@@ -126,6 +126,7 @@
     "friendbar.notifications.enabled": true,
     "radio_ui.enabled": false,
     "show.google.ads": false,
+    "ads.frame.url": "",
     "hc.disabled": false,
     "club.membership.extend.promotion.enabled": true,
     "raid.protection.enabled": true,
