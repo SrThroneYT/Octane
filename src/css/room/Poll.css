@@ -4,6 +4,14 @@
     width: 382px;
     min-height: 0;
     max-height: none;
+    /* poll_offer / poll_question are style 3 frames in AIR's regular Ubuntu; our `Ubuntu` face is condensed. */
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+}
+
+@layer base {
+    .octane-widget-poll.octane-poll :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
 }
 
 .octane-poll .octane-card-content-shell {
@@ -71,8 +79,9 @@
     max-height: 420px;
 }
 
+/* poll_question_text: u_regular 12 px, not bold. */
 .octane-poll-question {
-    font-weight: 700;
+    font-weight: 400;
 }
 
 .octane-poll-answers {
@@ -97,7 +106,9 @@
     border-radius: 4px;
     background: #ffffff;
     color: #000000;
+    /* poll_answer_text_input poll_answer_input: u_bold 12 px. */
     font-size: 12px;
+    font-weight: 700;
 }
 
 .octane-poll-footer {
@@ -120,14 +131,15 @@
     border: 0;
     background: transparent;
     color: #333333;
-    font-family: Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     font-size: 12px;
     text-decoration: underline;
     cursor: pointer;
 }
 
+/* poll_offer_button_later: text_color 0x333333 like the cancel link. */
 .octane-poll-footer .octane-poll-link.is-later {
-    color: #666666;
+    color: #333333;
 }
 
 .octane-poll-footer .octane-poll-link:hover {
@@ -143,8 +155,9 @@
     border-image: var(--habbo-skin-shiny-thick-green) 5 fill / 5px stretch;
     background: transparent;
     color: #ffffff;
-    font-family: Ubuntu, sans-serif;
-    font-size: 14px;
+    /* button_thick label: 12 px bold. */
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    font-size: 12px;
     font-weight: 700;
     text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
     cursor: pointer;

@@ -42,11 +42,13 @@
 .octane-chat-history-time {
     flex: 0 0 54px;
     margin: 6px 0 0 0;
-    color: rgba(255, 255, 255, 0.72);
-    font-family: Ubuntu, sans-serif;
-    font-size: 11px;
-    line-height: 13px;
-    text-shadow: 0 1px #000000;
+    /* AIR ChatHistory TEXT_FORMAT_TIMESTAMP: Ubuntu (regular cut) 12, 0xa0a0a0, italic, no filter. */
+    color: #a0a0a0;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    font-size: 12px;
+    font-style: italic;
+    font-weight: 400;
+    line-height: 15px;
 }
 
 .octane-chat-history-message {
@@ -90,9 +92,11 @@
     padding: 2px 8px;
     border-radius: 4px;
     background: rgba(255, 255, 255, 0.82);
+    /* AIR ChatHistoryRoomChangeEntry: Ubuntu (regular cut) 12. The colour stays dark on our white pill. */
     color: #222222;
-    font-family: Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     font-size: 12px;
+    font-weight: 400;
     line-height: 16px;
 }
 

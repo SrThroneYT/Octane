@@ -107,9 +107,10 @@
     height: 56px;
     overflow: hidden;
     overflow-wrap: anywhere;
-    font-size: 14px;
+    /* u_headline_medium: 16 px bold. */
+    font-size: 16px;
     font-weight: 700;
-    line-height: 18px;
+    line-height: 20px;
 }
 
 /* expiration_info: x10 y87 268x39, word wrap. */
@@ -129,7 +130,8 @@
     width: 209px;
     height: 19px;
     overflow: hidden;
-    font-size: 12px;
+    /* u_headline_small: 14 px bold. */
+    font-size: 14px;
     font-weight: 700;
     line-height: 19px;
     text-align: right;
@@ -272,4 +274,12 @@
 .octane-marketplace-post-offer-button:focus-visible {
     outline: 1px solid #000000;
     outline-offset: 1px;
+}
+
+/* The card shell hands its condensed `Ubuntu` to spans, labels, inputs and buttons with a higher specificity than
+   the rule above; AIR's frame is the regular Ubuntu, so an important rule in the base layer puts it back. */
+@layer base {
+    .octane-marketplace-post-offer-content :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
 }

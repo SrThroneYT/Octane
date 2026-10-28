@@ -17,8 +17,8 @@
 
 .octane-abusive-alert__text {
     flex: 1;
-    font-size: 12px;
-    line-height: 17px;
+    font-size: 11px; /* help.emergency.abusive.description: no text_style in an Illumina frame, il_regular 11 px */
+    line-height: 14px;
     white-space: pre-line;
 }
 
@@ -35,7 +35,8 @@
     width: 100%;
     min-height: 34px;
     padding: 6px 14px;
-    font-size: 0.82rem;
+    font-size: 12px; /* sanction_info ok_button: button_thick, button_shiny_bold 12 px bold */
+    font-weight: 700;
     text-align: center;
 }
 
@@ -54,7 +55,7 @@
     border: 0;
     background: transparent;
     color: #2f2f2f;
-    font-size: 0.78rem;
+    font-size: 14px; /* sanction_info faq_link: u_bold with font_size 14, underlined */
     font-weight: 700;
     text-decoration: underline;
     text-align: left;
@@ -105,4 +106,120 @@
     flex-direction: column;
     min-width: 0;
     line-height: 15px;
+}
+
+/*
+ * Text as AIR draws the help windows. The help page (main2) is an Illumina frame, the report steps
+ * (report), the sanction status (sanction_info) and the report status (my_reports) are Ubuntu (style 3)
+ * frames: all in regular Ubuntu, which in Octane is HabboAirUbuntu (our `Ubuntu` face is the condensed cut).
+ */
+.octane-help,
+.octane-change-username {
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+}
+
+@layer base {
+    .octane-help :where(*):not(svg, svg *),
+    .octane-change-username :where(*):not(svg, svg *),
+    .octane-abusive-alert :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
+}
+
+/* report: the step texts carry no text_style, u_regular 12 px black. */
+.octane-help-report {
+    font-size: 12px;
+    line-height: 15px;
+}
+
+/* The step titles (message_phase_title, help.emergency.main.step.two.title, help.emergency.chat_report.subtitle,
+   help.cfh.button.send): u_headline_medium, 16 px bold. Text fontSize={4} renders as .fs-4. */
+.octane-help-report .fs-4 {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 20px;
+}
+
+/* user_prototype user_name: il_border, 10 px bold. */
+.octane-help-user__name {
+    font-size: 10px;
+    font-weight: 700;
+}
+
+/* The bar of the reported user (container "user"): a 0x8899a2 strip, user_info_title u_bold 12 px 0xefefef,
+   reported_user_name u_headline_big 18 px white and change_user id_link_strong 11 px bold 0xefefef. */
+.octane-help .octane-help-selected-user {
+    border-color: #6f7f88;
+    background: #8899a2;
+    color: #ffffff;
+}
+
+.octane-help .octane-help-selected-user__text {
+    line-height: normal;
+}
+
+.octane-help .octane-help-selected-user__text > span {
+    color: #efefef;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.octane-help .octane-help-selected-user__text > b {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 22px;
+}
+
+.octane-help .octane-help-selected-user .help-link {
+    color: #efefef;
+    font-size: 11px;
+}
+
+/* The card's `button` rule (12 px, condensed) outranks the bare .help-link, so the sizes are scoped. */
+.octane-help .help-link {
+    font-size: 14px;
+}
+
+.octane-help .habbo-btn-green {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* sanction_info: the sanction text is font_size 14. */
+.octane-sanction-info__body {
+    font-size: 14px;
+    line-height: 18px;
+}
+
+/* name_change: the texts sit in a style 100 container without a text_style: il_regular 11 px. */
+.octane-change-username .octane-card-content-shell {
+    font-size: 11px;
+    line-height: 14px;
+}
+
+@layer base {
+    /* The report step buttons (continue_button, back_button, submit_button, reason_prototype) are
+       container_buttons with a white u_headline_medium caption: 16 px bold. Button's own size is an
+       important utility, so this lives in the base layer. */
+    .octane-help-report :where(.habbo-btn-primary, .habbo-btn-secondary, .habbo-btn-danger) {
+        font-size: 16px !important;
+        font-weight: 700 !important;
+    }
+
+    /* my_reports appeal_button: a plain style 3 button, button_shiny_regular 12 px. */
+    .octane-my-reports .octane-my-reports__appeal {
+        font-size: 12px !important;
+        font-weight: 400 !important;
+    }
+
+    /* abusive_notice close_button: button style 101, il_button 10 px bold. */
+    .octane-abusive-alert .octane-abusive-alert__actions :where(button) {
+        font-size: 10px !important;
+        font-weight: 700 !important;
+    }
+
+    .octane-change-username .octane-card-content-shell :where(p, span, label, button, input) {
+        font-size: 11px !important;
+    }
 }

@@ -176,9 +176,11 @@
     line-height: 16px;
 }
 
+/* hint_txt: html, Ubuntu 12, black. */
 .octane-quest-hint {
     margin-top: 4px;
-    color: #333;
+    color: #000;
+    font-size: 12px;
 }
 
 .octane-quest-hint a {
@@ -216,7 +218,7 @@
     cursor: pointer;
     text-decoration: underline;
     font-size: 12px;
-    color: #1d1d1d;
+    color: #000;
 }
 
 .octane-quest-details {
@@ -725,11 +727,12 @@
     min-width: 200px;
 }
 
+/* benefit_*_txt: Ubuntu 11. */
 .octane-reward-track-premium-benefit {
     padding: 4px 8px;
     border-radius: 4px;
     background: #f3dcf7;
-    font-size: 12px;
+    font-size: 11px;
 }
 
 .octane-reward-track-premium-benefit::before {
@@ -1550,4 +1553,78 @@
     height: 32px;
     flex-shrink: 0;
     image-rendering: pixelated;
+}
+
+/* ---- AIR text pass: quests list, quest details, daily tasks, premium pass confirmation ----
+ * Quests (512x448), the Quest details frame, dailytasks / dailytasks_unclaimed and
+ * reward_track_premium_purchase_confirmation are Ubuntu (style 3) frames whose texts name font_face=Ubuntu,
+ * the regular cut; our `Ubuntu` face is the condensed one. */
+.octane-quests,
+.octane-quest-details,
+.octane-daily-tasks,
+.octane-reward-track-premium {
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+}
+
+@layer base {
+    :where(.octane-quests, .octane-quest-details, .octane-daily-tasks, .octane-reward-track-premium) :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
+
+    /* The common Button carries an important 12.6 px Tailwind size that only an important base-layer rule
+       outranks. get_hc_btn / accept_button (button_thick) and claim_txt / confirm_button: 12 px bold;
+       unclaimed_btn / cancel_button (button style 3, button_shiny_regular): 12 px regular. */
+    :where(.octane-quests, .octane-daily-tasks) :where(.octane-quests-get-hc, .octane-quest-accept, .octane-daily-task-claim),
+    .octane-quest-details .octane-quest-accept,
+    .octane-reward-track-premium .octane-reward-track-premium-buy {
+        font-size: 12px !important;
+        font-weight: 700 !important;
+    }
+
+    .octane-daily-tasks .octane-daily-tasks-unclaimed-button,
+    .octane-reward-track-premium .octane-reward-track-premium-cancel {
+        font-size: 12px !important;
+        font-weight: 400 !important;
+    }
+}
+
+/* hc_info_text: text style 3 default, Ubuntu 12 regular black. */
+.octane-quests-hc-text {
+    color: #000;
+    font-size: 12px;
+    line-height: 15px;
+}
+
+/* delay_desc_txt: Ubuntu 12 regular. */
+.octane-quest-delay-desc {
+    font-size: 12px;
+}
+
+/* progress_bar_cont / progress_txt (ProgressBar): Ubuntu 12 bold white. */
+.octane-daily-task-progress {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* premium_info: title Ubuntu 14 bold 0x5d2c82, info Ubuntu 11 0x4d3559; description_txt 12 bold 0x2d1f35;
+   the cost caption 12 bold 0x57356b over the 13 px bold prices. */
+.octane-reward-track-premium-title {
+    color: #5d2c82;
+    font-size: 14px;
+}
+
+.octane-reward-track-premium-info {
+    color: #4d3559;
+    font-size: 11px;
+}
+
+.octane-reward-track-premium-desc {
+    color: #2d1f35;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.octane-reward-track-premium-cost-label {
+    font-size: 12px;
+    font-weight: 700;
 }

@@ -6,6 +6,7 @@ import { Button, Checkbox, OctaneCardContentView, OctaneCardHeaderView, OctaneCa
 import { useFurnitureStackHeightWidget } from '../../../../hooks';
 import { NumberInput } from '../../../../common/NumberInput';
 import { Hint } from '../../../../common/Tooltip';
+import '../../../../css/room/FurniWindowsAAir.css';
 
 /**
  * Official `CustomStackHeightWidget` (`custom_stack_height_xml`): description, the move up / move down

@@ -55,10 +55,13 @@ export const FloorplanToolbar: FC<Props> = ({ state, dispatch, canUndo, canRedo,
                         </Base>
                     );
                 })}
+            </div>
+            {/* Octane's extra tools, in a row of their own under AIR's five. */}
+            <div className="fp-tools is-extra">
                 <Base component={BaseButton} type="button"
                     pointer
                     data-testid="tool-select-all"
-                    className="fp-tool is-gap"
+                    className="fp-tool is-extra"
                     title={state.brush.action === 'UNSET' ? 'Erase all tiles' : 'Apply brush to all tiles'}
                     onClick={() => {
                         exitPan();
@@ -77,7 +80,7 @@ export const FloorplanToolbar: FC<Props> = ({ state, dispatch, canUndo, canRedo,
                             ? 'Rectangular selection mode active — drag on the canvas to apply the brush'
                             : 'Rectangular selection — apply the brush to all tiles in an area'
                     }
-                    className={`fp-tool ${state.squareSelect && !panMode ? 'is-active' : ''}`}
+                    className={`fp-tool is-extra ${state.squareSelect && !panMode ? 'is-active' : ''}`}
                     onClick={() => {
                         exitPan();
                         dispatch({ type: 'SQUARE_SELECT_TOGGLE' });
@@ -91,7 +94,7 @@ export const FloorplanToolbar: FC<Props> = ({ state, dispatch, canUndo, canRedo,
                         data-testid="tool-pan"
                         data-active={panMode ? 'true' : 'false'}
                         title={panMode ? 'Hand mode active — drag to pan the view' : 'Hand mode — drag to pan the view'}
-                        className={`fp-tool is-gap ${panMode ? 'is-active' : ''}`}
+                        className={`fp-tool is-extra is-gap ${panMode ? 'is-active' : ''}`}
                         onClick={() => setPanMode(!panMode)}
                     >
                         <span className="octane-icon icon-hand-mode" />
@@ -103,7 +106,7 @@ export const FloorplanToolbar: FC<Props> = ({ state, dispatch, canUndo, canRedo,
                             pointer={Boolean(canUndo)}
                             data-testid="tool-undo"
                             title="Undo (Ctrl+Z)"
-                            className={`fp-tool is-compact is-gap ${canUndo ? '' : 'is-disabled'}`}
+                            className={`fp-tool is-extra is-gap ${canUndo ? '' : 'is-disabled'}`}
                             onClick={canUndo && onUndo ? onUndo : undefined}
                         >
                             <FaUndo size={16} />
@@ -112,7 +115,7 @@ export const FloorplanToolbar: FC<Props> = ({ state, dispatch, canUndo, canRedo,
                             pointer={Boolean(canRedo)}
                             data-testid="tool-redo"
                             title="Redo (Ctrl+Shift+Z)"
-                            className={`fp-tool is-compact ${canRedo ? '' : 'is-disabled'}`}
+                            className={`fp-tool is-extra ${canRedo ? '' : 'is-disabled'}`}
                             onClick={canRedo && onRedo ? onRedo : undefined}
                         >
                             <FaRedo size={16} />

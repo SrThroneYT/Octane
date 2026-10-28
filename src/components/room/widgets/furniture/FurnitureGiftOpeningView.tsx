@@ -3,6 +3,7 @@ import { FC } from 'react';
 import { attemptItemPlacement, CatalogPageName, LocalizeText } from '../../../../api';
 import { Button, Column, LayoutGiftTagView, LayoutImage, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Text } from '../../../../common';
 import { useCatalogUiState, useFurniturePresentWidget, useInventoryFurni } from '../../../../hooks';
+import '../../../../css/room/FurniWindowsBAir.css';
 
 export const FurnitureGiftOpeningView: FC<{}> = (props) => {
     const {
@@ -39,7 +40,7 @@ export const FurnitureGiftOpeningView: FC<{}> = (props) => {
     };
 
     return (
-        <OctaneCardView className="octane-gift-opening" theme="primary-slim">
+        <OctaneCardView className="octane-gift-opening octane-furni-gift-opening" theme="primary-slim">
             <OctaneCardHeaderView
                 headerText={LocalizeText(senderName ? 'widget.furni.present.window.title_from' : 'widget.furni.present.window.title', ['name'], [senderName])}
                 onCloseClick={onClose}
@@ -71,10 +72,10 @@ export const FurnitureGiftOpeningView: FC<{}> = (props) => {
                         </Column>
                         <Column grow>
                             <Column center gap={1}>
-                                <Text small wrap>
+                                <Text wrap className="octane-furni-gift-opening__message">
                                     {LocalizeText('widget.furni.present.message_opened')}
                                 </Text>
-                                <Text bold fontSize={5}>
+                                <Text bold className="octane-furni-gift-opening__name">
                                     {text}
                                 </Text>
                             </Column>

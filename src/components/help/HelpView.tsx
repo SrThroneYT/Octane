@@ -101,7 +101,7 @@ export const HelpView: FC<{}> = (props) => {
                     <OctaneCardHeaderView headerText={LocalizeText('help.button.cfh')} onCloseClick={onClose} />
                     <OctaneCardContentView className="text-black">
                         {isReporting ? (
-                            <Column grow gap={2} justifyContent="between" overflow="hidden">
+                            <Column grow className="octane-help-report" gap={2} justifyContent="between" overflow="hidden">
                                 <CurrentStepView />
                             </Column>
                         ) : (

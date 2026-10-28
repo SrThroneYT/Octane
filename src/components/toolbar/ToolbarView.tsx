@@ -424,7 +424,7 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
                                 } }
                                 className="tb-icon" />
                             { (unseenProgMenuCount > 0) &&
-                                <LayoutItemCountView count={ unseenProgMenuCount } className="pointer-events-none absolute -right-1 top-0" /> }
+                                <LayoutItemCountView count={ unseenProgMenuCount } className="octane-toolbar-count pointer-events-none absolute -right-1 top-0" /> }
                         </motion.div> }
                     { GetConfigurationValue('game.center.enabled') &&
                         <motion.div variants={ itemVariants } className="tb-slot">
@@ -447,7 +447,7 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
                         <motion.div variants={ itemVariants } className="relative tb-slot tb-slot-inventory">
                             <ToolbarItemView icon="inventory" onClick={ () => CreateLinkEvent('inventory/toggle') } className="tb-icon" />
                             { (getFullCount > 0) &&
-                                <LayoutItemCountView count={ getFullCount } className="absolute -right-1 top-0" /> }
+                                <LayoutItemCountView count={ getFullCount } className="octane-toolbar-count absolute -right-1 top-0" /> }
                         </motion.div> }
                     { !leftCollapsed &&
                     <motion.div variants={ itemVariants } className="relative tb-slot tb-slot-tall tb-slot-memenu">
@@ -474,7 +474,7 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
                         </motion.div>
                         <img src={ memenuCircleImg } alt="" className="tb-memenu-circle" />
                         { (meMenuCount > 0) &&
-                            <LayoutItemCountView count={ meMenuCount } className="pointer-events-none absolute -right-1 -top-1 z-10" /> }
+                            <LayoutItemCountView count={ meMenuCount } className="octane-toolbar-count pointer-events-none absolute -right-1 -top-1 z-10" /> }
                     </motion.div> }
                     { (!leftCollapsed && isInRoom && showToolbarButton) &&
                         <motion.div variants={ itemVariants } className="tb-slot tb-slot-tall">
@@ -506,7 +506,7 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
                         <motion.div variants={ itemVariants } className="relative tb-slot tb-slot-fit">
                             <ToolbarItemView icon="modtools" onClick={ () => CreateLinkEvent('mod-tools/show') } className="tb-icon" />
                             { (openTicketsCount > 0) &&
-                                <LayoutItemCountView count={ openTicketsCount } className="pointer-events-none absolute -right-1 -top-1 z-10" /> }
+                                <LayoutItemCountView count={ openTicketsCount } className="octane-toolbar-count pointer-events-none absolute -right-1 -top-1 z-10" /> }
                         </motion.div> }
                     { (isHk && hkEnabled) &&
                         <motion.div variants={ itemVariants } className="tb-slot tb-slot-fit">
@@ -529,7 +529,7 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
                     <motion.div variants={ itemVariants } className="relative tb-slot">
                         <ToolbarItemView icon="friendall" onClick={ () => CreateLinkEvent('friends/toggle') } className="tb-icon" />
                         { (requests.length > 0) &&
-                            <LayoutItemCountView count={ requests.length } className="absolute -right-2 -top-1" /> }
+                            <LayoutItemCountView count={ requests.length } className="octane-toolbar-count absolute -right-2 -top-1" /> }
                     </motion.div>
                     <motion.div variants={ itemVariants } className="tb-slot">
                         <ToolbarItemView icon="friendsearch" onClick={ () => SendMessageComposer(new FindNewFriendsMessageComposer()) } className="tb-icon" />
@@ -603,13 +603,13 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
                         </motion.div>
                         <img src={ memenuCircleImg } alt="" className="tb-memenu-circle" />
                         { (meMenuCount > 0) &&
-                            <LayoutItemCountView count={ meMenuCount } className="pointer-events-none absolute -right-1 -top-1 z-10" /> }
+                            <LayoutItemCountView count={ meMenuCount } className="octane-toolbar-count pointer-events-none absolute -right-1 -top-1 z-10" /> }
                     </motion.div>
                     { isInRoom &&
                         <motion.div variants={ itemVariants } className="relative">
                             <ToolbarItemView icon="inventory" onClick={ () => CreateLinkEvent('inventory/toggle') } className="tb-icon" />
                             { (getFullCount > 0) &&
-                                <LayoutItemCountView count={ getFullCount } className="absolute -right-1 top-0" /> }
+                                <LayoutItemCountView count={ getFullCount } className="octane-toolbar-count absolute -right-1 top-0" /> }
                         </motion.div> }
                     { fortuneWheelEnabled &&
                         <motion.div variants={ itemVariants }>
@@ -641,7 +641,7 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
                         <motion.div variants={ itemVariants } className="relative">
                             <ToolbarItemView icon="friendall" onClick={ () => CreateLinkEvent('friends/toggle') } className="tb-icon" />
                             { (requests.length > 0) &&
-                                <LayoutItemCountView count={ requests.length } className="absolute -right-2 -top-1" /> }
+                                <LayoutItemCountView count={ requests.length } className="octane-toolbar-count absolute -right-2 -top-1" /> }
                         </motion.div> }
                     { (!socialInSideStack && mentionsEnabled) &&
                         <motion.div variants={ itemVariants } className="relative">
@@ -672,7 +672,7 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
                     <motion.div variants={ itemVariants } className="relative">
                         <ToolbarItemView icon="modtools" onClick={ () => CreateLinkEvent('mod-tools/show') } className="tb-icon" />
                         { (openTicketsCount > 0) &&
-                            <LayoutItemCountView count={ openTicketsCount } className="pointer-events-none absolute -right-1 -top-1 z-10" /> }
+                            <LayoutItemCountView count={ openTicketsCount } className="octane-toolbar-count pointer-events-none absolute -right-1 -top-1 z-10" /> }
                     </motion.div> }
                 { (isHk && hkEnabled) &&
                     <motion.div variants={ itemVariants }>
@@ -686,7 +686,7 @@ export const ToolbarView: FC<{ isInRoom: boolean }> = props =>
                     <motion.div variants={ itemVariants } className="relative">
                         <ToolbarItemView icon="friendall" onClick={ () => CreateLinkEvent('friends/toggle') } className="tb-icon" />
                         { (requests.length > 0) &&
-                            <LayoutItemCountView count={ requests.length } className="pointer-events-none absolute -right-1 -top-1 z-10" /> }
+                            <LayoutItemCountView count={ requests.length } className="octane-toolbar-count pointer-events-none absolute -right-1 -top-1 z-10" /> }
                     </motion.div> }
                 { socialInSideStack &&
                     <motion.div variants={ itemVariants }>

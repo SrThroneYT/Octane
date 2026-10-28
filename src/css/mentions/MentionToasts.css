@@ -12,7 +12,7 @@
     background: transparent !important;
     box-shadow: none !important;
     color: #ffffff;
-    font-family: Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     font-size: 12px !important;
     line-height: 14px;
     text-shadow: none;
@@ -76,7 +76,7 @@
     border-image-source: none !important;
     background: transparent !important;
     color: #ffffff !important;
-    font-family: Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     font-size: 12px;
     font-weight: 400;
     text-decoration: underline;
@@ -98,7 +98,7 @@
     border-image-repeat: stretch !important;
     background: transparent !important;
     color: #ffffff !important;
-    font-family: Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     font-size: 12px;
     font-weight: 400;
     line-height: 16px;

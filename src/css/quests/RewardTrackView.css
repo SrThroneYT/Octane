@@ -525,7 +525,9 @@
     border: 1px solid #a51a17;
     border-radius: 9px;
     background: #ee2924;
+    /* previous/next_unclaimed_count: il_regular_white, bold (11 px). */
     color: #fff;
+    font-size: 11px;
     font-weight: bold;
     line-height: 16px;
     text-align: center;
@@ -1186,4 +1188,16 @@
 .octane-reward-track-content > .octane-reward-track-admin-toggle {
     top: 12px;
     right: 18px;
+}
+
+/* AIR text pass: reward_track_main_xml (also the Introduction track) is an Ubuntu (style 3) frame whose texts
+   are the regular Ubuntu cut; our `Ubuntu` face is the condensed one. */
+.octane-reward-track {
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+}
+
+@layer base {
+    .octane-reward-track :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
 }

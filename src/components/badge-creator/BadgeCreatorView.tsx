@@ -15,6 +15,7 @@ import { Button, Column, Flex, OctaneCardContentView, OctaneCardHeaderView, Octa
 import { useNotification } from '../../hooks';
 import { BaseButton } from '../../common/BaseButton';
 import { Hint } from '../../common/Tooltip';
+import '../../css/badge-creator/BadgeCreatorView.css';
 
 const t = (key: string, fallback: string, params?: string[], replacements?: string[]): string => {
     try {
@@ -463,7 +464,7 @@ export const BadgeCreatorView: FC<{}> = () => {
     return (
         <OctaneCardView className="octane-badge-creator w-[760px] h-[680px]" isResizable={false} theme="primary-slim" uniqueKey="badge-creator">
             <OctaneCardHeaderView headerText={t('badgecreator.title', 'Badge Creator')} onCloseClick={() => setIsVisible(false)} />
-            <OctaneCardContentView className="text-black">
+            <OctaneCardContentView className="octane-badge-creator__content text-black">
                 <Flex gap={2} className="badge-creator-main">
                     <Column gap={2}>
                         <div

@@ -6,7 +6,9 @@
  * - me_menu_other_settings_xml: 242x184, extended for Polaris catalog controls
  *
  * AIR uses border style 6 tinted #79756e, Ubuntu 12px text and fixed pixel
- * controls. Polaris-only controls follow the official widgets in each view.
+ * controls. Every title, label and button in those layouts is u_regular:
+ * regular (not condensed) Ubuntu, 12 px, #ffffff. Our `Ubuntu` face is the
+ * condensed cut, so the windows name the regular one. Polaris-only controls follow the official widgets in each view.
  */
 
 .user-settings-window.air-settings-window {
@@ -33,7 +35,7 @@
     background: transparent;
     color: #ffffff;
     filter: drop-shadow(3px 3px 3px rgba(0, 0, 0, 0.35));
-    font-family: UbuntuRegular, Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     font-size: 12px;
     font-weight: 400;
     line-height: 17px;
@@ -81,7 +83,7 @@
     padding: 0 10px;
     color: #ffffff;
     cursor: move;
-    font: 400 12px/17px UbuntuRegular, Ubuntu, sans-serif;
+    font: 400 12px/17px HabboAirUbuntu, UbuntuRegular, sans-serif;
     text-align: left;
     text-shadow: none;
     white-space: nowrap;
@@ -136,7 +138,7 @@
     box-shadow: none;
     color: #111111;
     cursor: pointer;
-    font: 400 12px/16px UbuntuRegular, Ubuntu, sans-serif;
+    font: 400 12px/16px HabboAirUbuntu, UbuntuRegular, sans-serif;
     text-align: center;
     text-overflow: ellipsis;
     text-shadow: none;
@@ -221,7 +223,7 @@
     min-width: 60px;
     padding-right: 4px;
     color: #ffffff;
-    font: 400 12px/18px UbuntuRegular, Ubuntu, sans-serif;
+    font: 400 12px/18px HabboAirUbuntu, UbuntuRegular, sans-serif;
     white-space: nowrap;
 }
 
@@ -320,7 +322,7 @@
     width: 100%;
     margin: 0;
     color: #ffffff;
-    font: 400 12px/17px UbuntuRegular, Ubuntu, sans-serif;
+    font: 400 12px/17px HabboAirUbuntu, UbuntuRegular, sans-serif;
 }
 
 .air-settings-check-row {
@@ -403,7 +405,7 @@
     border-radius: 5px;
     background: #ffffff;
     color: #111111;
-    font: 400 12px/22px UbuntuRegular, Ubuntu, sans-serif;
+    font: 400 12px/22px HabboAirUbuntu, UbuntuRegular, sans-serif;
 }
 
 /* Prose wraps to the width the controls give the window instead of
@@ -412,7 +414,7 @@
     contain: inline-size;
     margin: 0 0 5px;
     color: #ffffff;
-    font: 400 12px/16px UbuntuRegular, Ubuntu, sans-serif;
+    font: 400 12px/16px HabboAirUbuntu, UbuntuRegular, sans-serif;
 }
 
 .air-settings-chat__list {
@@ -448,7 +450,7 @@
     margin: 0;
     padding: 0;
     color: #ffffff;
-    font: 400 12px/17px UbuntuRegular, Ubuntu, sans-serif;
+    font: 400 12px/17px HabboAirUbuntu, UbuntuRegular, sans-serif;
 }
 
 .air-settings-privacy__content legend {
@@ -514,7 +516,7 @@
     border-radius: 3px;
     background: #ffffff;
     color: #111111;
-    font: 400 12px/20px UbuntuRegular, Ubuntu, sans-serif;
+    font: 400 12px/20px HabboAirUbuntu, UbuntuRegular, sans-serif;
 }
 
 .air-settings-wordfilter__error {
@@ -555,10 +557,53 @@
     background: transparent;
     color: #ffffff;
     cursor: pointer;
-    font: 700 13px/16px UbuntuRegular, Ubuntu, sans-serif;
+    font: 700 13px/16px HabboAirUbuntu, UbuntuRegular, sans-serif;
 }
 
 .air-settings-wordfilter__remove:hover,
 .air-settings-wordfilter__remove:focus-visible {
     color: #ffb4a8;
+}
+
+/* The whole window is regular Ubuntu, including whatever a shared control
+   (Select trigger, Checkbox) brings along with its own font utilities. */
+@layer base {
+    .user-settings-window :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
+}
+
+/*
+ * Account settings (user-account-settings) is an Octane extra with no AIR
+ * layout. It keeps its own layout and takes the AIR text conventions: regular
+ * Ubuntu, u_regular 12 px text, u_bold 12 px headings, 12 px regular buttons,
+ * u_headline_small 14 px bold for the user name and u_small 10 px for the fine
+ * print (password strength, username rules).
+ */
+.user-account-settings-window {
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+}
+
+@layer base {
+    .user-account-settings-window :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
+
+    .user-account-settings__hero :where(*):not(svg, svg *),
+    .user-account-settings__content :where(*):not(svg, svg *, .user-account-settings__fine-print) {
+        font-size: 12px !important;
+    }
+
+    .user-account-settings__hero .user-account-settings__name {
+        font-size: 14px !important;
+        font-weight: 700 !important;
+    }
+
+    .user-account-settings__content .user-account-settings__fine-print {
+        font-size: 10px !important;
+    }
+
+    .user-account-settings__content button {
+        font-weight: 400 !important;
+    }
 }

@@ -4,6 +4,7 @@ import { localizeWithFallback, ProductImageUtility, WIRED_CHEST_REWARD_LINK } fr
 import { BaseButton, Button, Column, Flex, LayoutCurrencyIcon, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Text } from '../../../../common';
 import { useRoom } from '../../../../hooks';
 import { IWiredRewardReceipt, useWiredRewardStore, WIRED_REWARD_MAX_OPEN } from '../../../../hooks/rooms/widgets/wiredRewardStore';
+import '../../../../css/room/FurniWindowsCAir.css';
 
 /** AIR RewardNotificationView: the frame is 276 px wide. */
 const REWARD_WIDTH = 276;

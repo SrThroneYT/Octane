@@ -3,6 +3,7 @@ import { GetConfigurationValue, LocalizeText, localizeWithFallback } from '../..
 import { DraggableWindow, DraggableWindowPosition } from '../../../../common';
 import { BaseButton } from '../../../../common/BaseButton';
 import { ECOTRONBOX_CARD_FURNIMATIC, useFurnitureEcotronBoxWidget } from '../../../../hooks';
+import '../../../../css/room/FurniWindowsBAir.css';
 
 /**
  * Official `ecotronbox_card` / `ecotronbox_card_furnimatic` (257 x 114): the gift-card background from
@@ -26,7 +27,7 @@ export const FurnitureEcotronBoxView: FC = () => {
 
     return (
         <DraggableWindow handleSelector=".octane-ecotronbox-card" offsetLeft={50} offsetTop={50} windowPosition={DraggableWindowPosition.TOP_LEFT}>
-            <div className={`octane-ecotronbox-card${isFurnimatic ? ' is-furnimatic' : ''}`} style={{ backgroundImage: `url(${background})` }}>
+            <div className={`octane-ecotronbox-card octane-furni-ecotronbox${isFurnimatic ? ' is-furnimatic' : ''}`} style={{ backgroundImage: `url(${background})` }}>
                 <div className="octane-ecotronbox-date">{date}</div>
                 <div className="octane-ecotronbox-preview">{prizeImageUrl && <img alt="" src={prizeImageUrl} />}</div>
                 <div className="octane-ecotronbox-msg">{prizeName ?? title}</div>

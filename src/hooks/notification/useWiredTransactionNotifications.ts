@@ -10,18 +10,12 @@ type ShowSingleBubble = (message: string, type: string, imageUrl?: string, inter
 
 /** The bubbles and alerts of the wired transactions, trades and rewards. */
 export const useWiredTransactionNotifications = (simpleAlert: SimpleAlert, showSingleBubble: ShowSingleBubble) => {
-    // AIR notifications onWiredTransactionFail: fail text with the localized reason (ported from Volt, GPL-3.0).
+    // WiredTransactionFail: AIR shows `wired_transactions.notification.fail` with the failure reason's own text as %reason%.
     useMessageEvent<WiredTransactionFailEvent>(WiredTransactionFailEvent, (event) => {
-        const parser = event.getParser();
+        const reasonText = LocalizeText(`wired_transactions.notification.fail.${ event.getParser().failureReason }`);
+        const message = LocalizeText('wired_transactions.notification.fail', ['reason'], [reasonText]);
 
-        showSingleBubble(
-            LocalizeText(
-                'wired_transactions.notification.fail',
-                ['reason'],
-                [LocalizeText(`wired_transactions.notification.fail.${ parser.failureReason }`)],
-            ),
-            NotificationBubbleType.INFO,
-        );
+        showSingleBubble(message, NotificationBubbleType.INFO);
     });
 
     // WiredTradeError: a refused trade action, with AIR's trading error icon (e.g. 5, more than the requirements ask).

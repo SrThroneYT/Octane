@@ -58,7 +58,7 @@ export const DiskInventoryView: FC<DiskInventoryViewProps> = (props) =>
         <>
             <div className="flex justify-center py-3 rounded bg-success container-fluid">
                 <img alt="" className="my-music" src={GetConfigurationValue('image.library.url') + 'playlist/title_mymusic.gif'} />
-                <h2 className="ms-4">{LocalizeText('playlist.editor.my.music')}</h2>
+                <h2 className="octane-playlist__title ms-4">{LocalizeText('playlist.editor.my.music')}</h2>
             </div>
             <div className="h-full py-2 mt-4 overflow-y-scroll">
                 <AutoGrid columnCount={3} columnMinWidth={95} gap={1}>
@@ -78,7 +78,7 @@ export const DiskInventoryView: FC<DiskInventoryViewProps> = (props) =>
                                     onClick={() => setSelectedItem((prev) => (prev === index ? -1 : index))}
                                 >
                                     <div className="shrink-0 disk-image -mb-2" style={{ backgroundColor: GetDiskColor(songInfo?.songData) }}></div>
-                                    <Text fullWidth truncate className="text-center">
+                                    <Text fullWidth truncate className="octane-playlist__song text-center">
                                         {songInfo?.name}
                                     </Text>
                                     {selectedItem === index && (
@@ -103,7 +103,7 @@ export const DiskInventoryView: FC<DiskInventoryViewProps> = (props) =>
                 </AutoGrid>
             </div>
             <div className="p-1 text-black playlist-bottom">
-                <h5>{LocalizeText('playlist.editor.text.get.more.music')}</h5>
+                <h5 className="octane-playlist__subtitle">{LocalizeText('playlist.editor.text.get.more.music')}</h5>
                 <div>{LocalizeText('playlist.editor.text.you.have.no.songdisks.available')}</div>
                 <div>{LocalizeText('playlist.editor.text.you.can.buy.some.from.the.catalogue')}</div>
                 <BaseButton className="btn btn-primary btn-sm" onClick={() => openCatalogPage()}>

@@ -3,6 +3,7 @@ import { GetConfigurationValue, OpenUrl, SanitizeHtml, localizeWithFallback } fr
 import { OctaneCardContentView, OctaneCardHeaderView, OctaneCardView } from '../../../../common';
 import { BaseButton } from '../../../../common/BaseButton';
 import { TROPHY_VIEW_NIKO_GOLD } from '../../../../hooks';
+import '../../../../css/room/FurniWindowsAAir.css';
 
 interface FurnitureNikoTrophyViewProps {
     view: number;

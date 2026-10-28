@@ -3,6 +3,7 @@ import { ColorUtils } from '../../../../api';
 import { DraggableWindow, DraggableWindowPosition } from '../../../../common';
 import { useFurnitureSpamWallPostItWidget } from '../../../../hooks';
 import { BaseButton } from '../../../../common/BaseButton';
+import '../../../../css/room/FurniWindowsAAir.css';
 
 // Must match PostItColor on the gameserver — YELLOW is the server-side default.
 const STICKIE_COLORS = ['FF9C9C', 'FFC69C', 'FFFF33', '9CFF9C', '9CFFE8', '9CCEFF', 'C69CFF', 'FF9CFF'];

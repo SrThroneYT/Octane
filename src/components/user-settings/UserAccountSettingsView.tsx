@@ -397,7 +397,7 @@ export const UserAccountSettingsView: FC<{}> = () =>
         <OctaneCardView className="user-account-settings-window min-w-0 w-[min(360px,calc(100vw-16px))] max-w-[calc(100vw-16px)] max-h-[calc(100vh-16px)]" theme="primary-slim" uniqueKey="user-account-settings">
             <OctaneCardHeaderView headerText={ localizeWithFallback('usersettings.title', "User Settings") } onCloseClick={ close } />
 
-            <div className="relative flex items-center gap-3 px-3 py-2 bg-[linear-gradient(180deg,#5ba4c4_0%,#418db0_100%)] text-white">
+            <div className="user-account-settings__hero relative flex items-center gap-3 px-3 py-2 bg-[linear-gradient(180deg,#5ba4c4_0%,#418db0_100%)] text-white">
                 <div className="absolute inset-0 opacity-20 pointer-events-none [background-image:radial-gradient(rgba(255,255,255,0.5)_1px,transparent_1px)] [background-size:6px_6px]" />
                 { session.figure && (
                     <div className="relative w-[60px] h-[60px] shrink-0 rounded-full bg-white/20 border-2 border-white/40 overflow-hidden">
@@ -412,12 +412,12 @@ export const UserAccountSettingsView: FC<{}> = () =>
                 ) }
                 <div className="relative flex flex-col leading-tight">
                     <Text small className="text-white/80 uppercase tracking-wider">{ localizeWithFallback('usersettings.account.label', "My account") }</Text>
-                    <Text bold className="text-white text-[15px]">{ session.username || localizeWithFallback('usersettings.guest', "Guest") }</Text>
+                    <Text bold className="user-account-settings__name text-white">{ session.username || localizeWithFallback('usersettings.guest', "Guest") }</Text>
                     <Text small className="text-white/80">{ localizeWithFallback('usersettings.subtitle', "Manage your account and security") }</Text>
                 </div>
             </div>
 
-            <OctaneCardContentView className="flex flex-col gap-2 text-black">
+            <OctaneCardContentView className="user-account-settings__content flex flex-col gap-2 text-black">
                 { section === 'menu' && (
                     <div className="flex flex-col gap-2">
                         <Text small className="text-black/60 uppercase tracking-wider px-1">{ localizeWithFallback('usersettings.menu.section', "Account") }</Text>
@@ -543,7 +543,7 @@ export const UserAccountSettingsView: FC<{}> = () =>
                                     <div className="flex-1 h-1.5 rounded-full bg-black/10 overflow-hidden">
                                         <div className={ `h-full ${ strength.color } transition-all` } style={ { width: `${ (strength.score / 4) * 100 }%` } } />
                                     </div>
-                                    <span className="text-[10px] text-black/60 w-12 text-right">{ strength.labelKey ? LocalizeText(strength.labelKey) : '' }</span>
+                                    <span className="user-account-settings__fine-print text-black/60 w-12 text-right">{ strength.labelKey ? LocalizeText(strength.labelKey) : '' }</span>
                                 </div>
                             ) }
                         </label>
@@ -731,7 +731,7 @@ export const UserAccountSettingsView: FC<{}> = () =>
                                     <FaCheckCircle className="absolute right-2 text-[#00800b]" size={ 12 } />
                                 ) }
                             </div>
-                            <span className="text-[10px] text-black/50">{ LocalizeText('usersettings.username.rules', [ 'min', 'max' ], [ MIN_USERNAME_LENGTH.toString(), MAX_USERNAME_LENGTH.toString() ]) }</span>
+                            <span className="user-account-settings__fine-print text-black/50">{ LocalizeText('usersettings.username.rules', [ 'min', 'max' ], [ MIN_USERNAME_LENGTH.toString(), MAX_USERNAME_LENGTH.toString() ]) }</span>
                         </label>
 
                         { feedback && (

@@ -1,8 +1,9 @@
 import { OpenMysteryTrophyMessageComposer } from '@octane/renderer';
 import { FC, useState } from 'react';
-import { LocalizeText, SendMessageComposer } from '../../../../api';
+import { LocalizeText, localizeWithFallback, SendMessageComposer } from '../../../../api';
 import { Button, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Text } from '../../../../common';
 import { BaseButton } from '../../../../common/BaseButton';
+import '../../../../css/room/FurniWindowsBAir.css';
 
 interface FurnitureMysteryTrophyOpenDialogViewProps {
     objectId: number;
@@ -23,15 +24,22 @@ export const FurnitureMysteryTrophyOpenDialogView: FC<FurnitureMysteryTrophyOpen
     return (
         <OctaneCardView
             isResizable={false}
-            className="octane-mysterytrophy-dialog min-w-0 w-[min(400px,calc(100vw-16px))] max-w-[calc(100vw-16px)] max-h-[calc(100vh-16px)]"
+            className="octane-mysterytrophy-dialog octane-furni-mysterytrophy min-w-0 w-[min(400px,calc(100vw-16px))] max-w-[calc(100vw-16px)] max-h-[calc(100vh-16px)]"
             theme="primary-slim"
         >
-            <OctaneCardHeaderView center headerText={LocalizeText('mysterytrophy.header.title')} onCloseClick={onClose} />
+            <OctaneCardHeaderView
+                center
+                headerText={localizeWithFallback('mysterytrophy.name.title', LocalizeText('mysterytrophy.header.title'))}
+                onCloseClick={onClose}
+            />
             <OctaneCardContentView>
                 <div className="flex mysterytrophy-dialog-top p-3">
                     <div className="mysterytrophy-image shrink-0"></div>
-                    <div className="m-2">
+                    <div className="m-2 flex flex-col">
                         <Text className="mysterytrophy-text-big" variant="white">
+                            {LocalizeText('mysterytrophy.header.title')}
+                        </Text>
+                        <Text className="octane-furni-mysterytrophy__description" variant="white">
                             {LocalizeText('mysterytrophy.header.description')}
                         </Text>
                     </div>

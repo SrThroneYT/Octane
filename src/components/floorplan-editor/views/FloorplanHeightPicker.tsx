@@ -14,7 +14,7 @@ export const FloorplanHeightPicker: FC<Props> = ({ selectedH, onSelect }) => {
     const gradient = useMemo(() => {
         const stops: string[] = [];
         for (let i = 0; i < count; i++) {
-            const h = HEIGHT_BRUSH_MAX - i;
+            const h = HEIGHT_BRUSH_MIN + i;
             const fill = tileFill({ h, blocked: false });
             const startPct = (i / count) * 100;
             const endPct = ((i + 1) / count) * 100;
@@ -23,15 +23,16 @@ export const FloorplanHeightPicker: FC<Props> = ({ selectedH, onSelect }) => {
             stops.push(`${fill} ${endPct.toFixed(2)}%`);
         }
 
-        return `linear-gradient(to bottom, ${stops.join(', ')})`;
+        return `linear-gradient(to right, ${stops.join(', ')})`;
     }, [count]);
 
     const thumbColor = tileFill({ h: selectedH, blocked: false });
 
     return (
+        // AIR tile_height_colormap: a horizontal colour bar, lowest height on the left, with the pointer under it.
         <Slider
-            orientation="vertical"
-            className="fp-slider"
+            bare
+            className="fp-hslider is-colormap"
             style={{ '--fp-count': count } as CSSProperties}
             min={HEIGHT_BRUSH_MIN}
             max={HEIGHT_BRUSH_MAX}
@@ -39,8 +40,8 @@ export const FloorplanHeightPicker: FC<Props> = ({ selectedH, onSelect }) => {
             value={selectedH}
             thumbAriaLabel="Brush height"
             title={`Brush height ${selectedH}`}
-            trackClassName="fp-slider-track"
-            thumbClassName="fp-slider-thumb"
+            trackClassName="fp-hslider-track"
+            thumbClassName="fp-hslider-thumb"
             trackStyle={{ background: gradient }}
             trackTestId="height-track"
             renderThumbContent={() => <span data-testid="height-thumb" data-value={selectedH} data-thumb-color={thumbColor} hidden />}

@@ -13,6 +13,7 @@ import {
 } from '../../../../common';
 import { useFurnitureCraftingWidget, useRoom } from '../../../../hooks';
 import { BaseButton } from '../../../../common/BaseButton';
+import '../../../../css/room/FurniWindowsCAir.css';
 
 export const FurnitureCraftingView: FC<{}> = (props) => {
     const {
@@ -70,7 +71,7 @@ export const FurnitureCraftingView: FC<{}> = (props) => {
                 <div className="crafting-widget-layout flex grow! gap-2 overflow-hidden">
                     <div className="crafting-widget-pane flex flex-col w-full gap-2 min-w-0">
                         <Column fullHeight overflow="hidden">
-                            <div className="bg-muted rounded py-1 text-center">{LocalizeText('crafting.title.products')}</div>
+                            <div className="octane-crafting__heading bg-muted rounded py-1 text-center">{LocalizeText('crafting.title.products')}</div>
                             <AutoGrid columnCount={5}>
                                 {recipes.length > 0 &&
                                     recipes.map((item) => (
@@ -84,7 +85,7 @@ export const FurnitureCraftingView: FC<{}> = (props) => {
                             </AutoGrid>
                         </Column>
                         <Column fullHeight overflow="hidden">
-                            <div className="bg-muted rounded py-1 text-center">{LocalizeText('crafting.title.mixer')}</div>
+                            <div className="octane-crafting__heading bg-muted rounded py-1 text-center">{LocalizeText('crafting.title.mixer')}</div>
                             <AutoGrid columnCount={5}>
                                 {ingredients.length > 0 &&
                                     ingredients.map((item) => (
@@ -101,14 +102,14 @@ export const FurnitureCraftingView: FC<{}> = (props) => {
                     </div>
                     <div className="crafting-widget-pane flex flex-col w-full gap-2 min-w-0">
                         {!selectedRecipe && (
-                            <Column center fullHeight className="text-black text-center">
+                            <Column center fullHeight className="octane-crafting__info text-black text-center">
                                 {LocalizeText('crafting.info.start')}
                             </Column>
                         )}
                         {selectedRecipe && (
                             <>
                                 <div className="flex flex-col h-full overflow-hidden">
-                                    <div className="bg-muted rounded py-1 text-center">{LocalizeText('crafting.current_recipe')}</div>
+                                    <div className="octane-crafting__heading bg-muted rounded py-1 text-center">{LocalizeText('crafting.current_recipe')}</div>
                                     <AutoGrid columnCount={5}>
                                         {!!requiredIngredients &&
                                             requiredIngredients.length > 0 &&
@@ -133,12 +134,12 @@ export const FurnitureCraftingView: FC<{}> = (props) => {
                                 </div>
                                 <div className="flex flex-col h-full gap-2">
                                     <div className="flex flex-col h-full bg-muted rounded gap-2">
-                                        <div className="py-1 text-center">{LocalizeText('crafting.result')}</div>
+                                        <div className="octane-crafting__heading py-1 text-center">{LocalizeText('crafting.result')}</div>
                                         <div className="flex items-center justify-center flex-col h-full pb-1 gap-1">
                                             <div className="flex flex-col h-full">
                                                 <img alt="" src={selectedRecipe.iconUrl} />
                                             </div>
-                                            <div className="text-black">{selectedRecipe.localizedName}</div>
+                                            <div className="octane-crafting__info text-black">{selectedRecipe.localizedName}</div>
                                         </div>
                                     </div>
                                     <Button

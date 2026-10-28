@@ -16,4 +16,11 @@ describe('navigator text (navigator_frame_2, room_info_popup_bubble, property, t
         expect(rule('.octane-navigator-air__tag')).toContain('font-size: 10px');
         expect(rule('.octane-navigator-air__room-popover-event-name')).toContain('font-weight: 700');
     });
+
+    it('lets a long property value wrap without running into the next row', () => {
+        const properties = rule('.octane-navigator-air__room-popover-properties');
+
+        expect(properties).toContain('grid-template-columns: 70px minmax(0, 1fr)');
+        expect(properties).toContain('grid-auto-rows: minmax(20px, auto)');
+    });
 });

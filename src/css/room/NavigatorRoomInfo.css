@@ -8,7 +8,10 @@
     gap: 3px;
     padding: 8px 8px 10px !important;
     background: #e9e9e1 !important;
-    color: #111;
+    color: #000000;
+    /* roominfo is a style 3 frame in Ubuntu; our `Ubuntu` face is the condensed cut. Its texts are u_regular 12 px. */
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    font-size: 12px;
 }
 
 .octane-room-info__heading {
@@ -17,6 +20,17 @@
     align-items: center;
     justify-content: space-between;
     font-size: 12px;
+}
+
+/* room_name: u_bold 12 px. */
+.octane-room-info__name {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* owner_caption / rating_caption: u_bold 12 px #777777; owner_name / rating_txt: u_regular 12 px. */
+.octane-room-info__caption {
+    color: #777777;
 }
 
 .octane-room-info__home {
@@ -33,8 +47,8 @@
 }
 
 .octane-room-info__meta {
-    min-height: 14px;
-    font-size: 11px;
+    min-height: 16px;
+    font-size: 12px;
 }
 
 .octane-room-info__meta .user-profile-icon {
@@ -45,8 +59,8 @@
 .octane-room-info__description {
     min-height: 0;
     overflow-wrap: anywhere;
-    font-size: 11px;
-    line-height: 13px;
+    font-size: 12px;
+    line-height: 15px;
 }
 
 .octane-room-info__thumbnail {
@@ -75,8 +89,8 @@
 .octane-room-info__room-link {
     min-height: 17px;
     margin: 1px 0 2px;
-    color: #111;
-    font-size: 11px;
+    color: #000000;
+    font-size: 12px;
     cursor: pointer;
 }
 
@@ -104,9 +118,10 @@
     min-height: 29px;
     height: 29px;
     padding: 0 8px;
-    font-family: UbuntuRegular, Ubuntu, sans-serif;
-    font-size: 11px;
-    font-weight: 700;
+    /* buttons_cont: style 3 buttons, button_shiny_regular 12 px regular. */
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    font-size: 12px;
+    font-weight: 400;
     line-height: 29px;
     text-align: center;
 }
@@ -114,4 +129,10 @@
 .octane-room-info__action.habbo-btn-primary,
 .octane-room-info__action.habbo-btn-danger {
     border-radius: 0 !important;
+}
+
+@layer base {
+    .octane-room-info :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
 }

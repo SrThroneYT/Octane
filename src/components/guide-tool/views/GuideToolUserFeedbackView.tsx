@@ -17,7 +17,7 @@ export const GuideToolUserFeedbackView: FC<GuideToolUserFeedbackViewProps> = (pr
         <div className="flex flex-col">
             <Flex className="octane-card-panel p-2" gap={1} justifyContent="between">
                 <Column gap={0}>
-                    <Text bold>{userName}</Text>
+                    <Text bold className="octane-guide-tool__heading-2">{userName}</Text>
                     <Text>{LocalizeText('guide.help.request.user.feedback.guide.desc')}</Text>
                 </Column>
                 <Button disabled={!onReport} variant="danger" onClick={() => onReport?.()}>
@@ -25,14 +25,14 @@ export const GuideToolUserFeedbackView: FC<GuideToolUserFeedbackViewProps> = (pr
                 </Button>
             </Flex>
             <div className="flex flex-col gap-1">
-                <Text bold>{LocalizeText('guide.help.request.user.feedback.closed.title')}</Text>
+                <Text bold className="octane-guide-tool__heading-2">{LocalizeText('guide.help.request.user.feedback.closed.title')}</Text>
                 <Text>{LocalizeText('guide.help.request.user.feedback.closed.desc')}</Text>
             </div>
             {userName && userName.length > 0 && (
                 <>
                     <hr className="octane-card-divider m-0 mt-auto" />
                     <div className="flex flex-col">
-                        <Text bold center>
+                        <Text bold center className="octane-guide-tool__heading-2">
                             {LocalizeText('guide.help.request.user.feedback.question')}
                         </Text>
                         <div className="flex gap-1">

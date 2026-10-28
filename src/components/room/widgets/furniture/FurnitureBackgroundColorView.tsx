@@ -3,6 +3,7 @@ import { FC, useMemo } from 'react';
 import { ColorUtils, LocalizeText } from '../../../../api';
 import { Button, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Slider, Text } from '../../../../common';
 import { useFurnitureBackgroundColorWidget } from '../../../../hooks';
+import '../../../../css/room/FurniWindowsAAir.css';
 
 export const FurnitureBackgroundColorView: FC<{}> = (props) => {
     const {

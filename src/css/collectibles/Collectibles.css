@@ -18,6 +18,18 @@
     overflow: hidden;
 }
 
+/* collectible_view and collectible_reward are Ubuntu (style 3) frames; our `Ubuntu` face is the condensed cut. */
+.octane-collectibles-hub,
+.octane-collectibles-reward-box {
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+}
+
+@layer base {
+    :is(.octane-collectibles-hub, .octane-collectibles-reward-box) :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
+}
+
 /* ---- header (collector_hub_header, 498x122) ---- */
 
 .octane-collectibles-header {
@@ -90,9 +102,15 @@
     display: grid;
     grid-template-columns: 158px auto;
     row-gap: 8px;
+    /* current_score_key / current_hiscore_key / current_hiscore_value: 13 px with bold=false;
+       only current_score_value keeps its u_bold. */
     font-size: 13px;
-    font-weight: bold;
+    font-weight: 400;
     text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.octane-collectibles-score > .octane-collectibles-score-value:nth-child(2) {
+    font-weight: 700;
 }
 
 .octane-collectibles-score-key {
@@ -180,8 +198,9 @@
     border-radius: 6px 6px 0 0;
     background: #b6bec5;
     color: #000;
+    /* tab_button style 3: u_button_tab, 12 px regular. */
     font-size: 12px;
-    font-weight: bold;
+    font-weight: 400;
     cursor: pointer;
 }
 
@@ -253,9 +272,11 @@
     background: linear-gradient(#3aa7ec, #2079b8);
 }
 
+/* ok_button is a style 3 button: button_shiny_regular, 12 px regular black. */
 .octane-collectibles-button.is-plain {
     background: linear-gradient(#f2f2f2, #c8c8c8);
     color: #000;
+    font-weight: 400;
 }
 
 .octane-collectibles-button:disabled {
@@ -311,13 +332,19 @@
     border: 0;
     border-radius: 3px;
     background: #b4b4ae;
-    color: #000;
+    /* item_title: u_bold #666666 with a white top etching. */
+    color: #666666;
+    font-weight: 700;
+    text-shadow: 0 -1px 0 #fff;
     text-align: left;
     cursor: pointer;
 }
 
 .octane-collectibles-navigation-item.is-active {
     background: linear-gradient(#82d1ed, #63c5e9);
+    /* The highlighted row (item_hilight_inner #63c5e9) carries white text, as in the catalogue. */
+    color: #ffffff;
+    text-shadow: none;
 }
 
 .octane-collectibles-navigation-hint {
@@ -341,8 +368,9 @@
     padding: 0 2px;
     border-radius: 3px;
     color: #fff;
+    /* progress_text: 10 px regular white (the large one u_regular 12). */
     font-size: 10px;
-    font-weight: bold;
+    font-weight: 400;
     text-align: center;
     line-height: 14px;
 }
@@ -372,7 +400,18 @@
     padding: 0 2px 0 4px;
     border: 1px solid #cbd1d8;
     border-radius: 4px;
-    font-weight: bold;
+    /* collection_header_container: a filled 0xcbd1d8 border. */
+    background: #cbd1d8;
+}
+
+/* collection_name: Ubuntu 16 px regular, black (no text_color). */
+.octane-collectibles-collection-name {
+    overflow: hidden;
+    color: #000000;
+    font-size: 16px;
+    font-weight: 400;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .octane-collectibles-preview {
@@ -421,7 +460,8 @@
     top: 0;
     height: 26px;
     background: rgba(0, 0, 0, 0.84);
-    font-weight: bold;
+    /* preview_furni_name: u_regular 12 px white. */
+    font-weight: 400;
     text-align: center;
     line-height: 26px;
 }
@@ -453,7 +493,14 @@
     background: rgba(17, 11, 20, 0.73);
 }
 
+/* product_info_key: 0xeb8f01; product_info_value: white. */
+.octane-collectibles-preview-info div > span:first-child {
+    color: #eb8f01;
+}
+
+/* preview_reward_text / procuct_score_text: 11 px white. */
 .octane-collectibles-preview-bar {
+    font-size: 11px;
     margin: 4px;
     padding: 6px 4px;
     border-radius: 3px;
@@ -476,6 +523,17 @@
     padding-top: 3px;
     background: rgba(0, 0, 0, 0.67);
     text-align: center;
+    /* preview_score_text: u_regular 12 px white; the values carry their own <b>. */
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+/* preview_reward_text: 11 px regular white, centred. */
+.octane-collectibles-collection-progress .octane-collectibles-preview-bar {
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 14px;
 }
 
 .octane-collectibles-completion {
@@ -490,8 +548,14 @@
     background: rgba(0, 0, 0, 0.84);
 }
 
+/* completion_bonus: 11 px 0xffd300; reward_furni_name: u_regular 12 px white. */
+.octane-collectibles-completion-header > span:first-child {
+    color: #ffd300;
+    font-size: 11px;
+}
+
 .octane-collectibles-completion-name {
-    font-weight: bold;
+    font-weight: 400;
 }
 
 .octane-collectibles-claim-button {
@@ -538,17 +602,30 @@
     gap: 8px;
 }
 
+/* price_text / mintlimit_text: u_bold 14 px. */
 .octane-collectibles-price {
     display: flex;
     align-items: center;
     gap: 3px;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: bold;
 }
 
 .octane-collectibles-mint-limit {
     margin-right: auto;
+    font-size: 14px;
     font-weight: bold;
+}
+
+/* stamp_pricing on the collect bar: u_regular 12 px; silver_cost_text by the stamps: 16 px, bold=false. */
+.octane-collectibles-mint .octane-collectibles-buy-bar .octane-collectibles-price {
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.octane-collectibles-stamps .octane-collectibles-price {
+    font-size: 16px;
+    font-weight: 400;
 }
 
 /* ---- product grids (itemgrid_collection, 52x61 cells) ---- */
@@ -656,13 +733,16 @@
     font-size: 10px;
 }
 
+/* collection_text / expires_text: 10 px html with a bold key; item_name: u_bold 12 px white. */
 .octane-collectibles-reward-texts {
     display: flex;
     flex-direction: column;
     gap: 1px;
+    font-size: 10px;
 }
 
 .octane-collectibles-reward-name {
+    font-size: 12px;
     font-weight: bold;
 }
 
@@ -703,9 +783,10 @@
     flex: 1;
 }
 
+/* transfer_fee_text: 16 px, bold=false. */
 .octane-collectibles-transfer-fee span {
     font-size: 16px;
-    font-weight: bold;
+    font-weight: 400;
 }
 
 .octane-collectibles-info-title,
@@ -793,9 +874,15 @@
     flex-direction: column;
 }
 
+/* stamps_header: 13 px, mint_token_balance: 30 px, both bold=false. */
+.octane-collectibles-stamps-balance > span:first-child {
+    font-size: 13px;
+}
+
 .octane-collectibles-stamps-value {
-    font-size: 24px;
-    font-weight: bold;
+    font-size: 30px;
+    font-weight: 400;
+    line-height: 1;
 }
 
 .octane-collectibles-stamps-buy {

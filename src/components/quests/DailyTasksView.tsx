@@ -153,6 +153,7 @@ export const DailyTasksView: FC<{}> = () => {
                         <div className="octane-daily-tasks-extra">
                             <Button
                                 variant="secondary"
+                                className="octane-daily-tasks-unclaimed-button"
                                 title={localizeWithFallback('dailytasks.unclaimed.tooltip', 'Rewards of earlier days you have not claimed yet')}
                                 onClick={() => setShowUnclaimed(true)}
                             >
@@ -166,13 +167,13 @@ export const DailyTasksView: FC<{}> = () => {
                         ))}
                     </div>
                     <div className="octane-quests-hc-info">
-                        <Text small>
+                        <Text className="octane-quests-hc-text">
                             {hasClub
                                 ? localizeWithFallback('hc.has.double_duckets.info', 'You get double duckets as you are an HC member!')
                                 : localizeWithFallback('hc.get.double_duckets.info', 'Get HC membership to gain double duckets!')}
                         </Text>
                         {!hasClub && (
-                            <Button variant="success" onClick={() => CreateLinkEvent('catalog/open/hc_membership')}>
+                            <Button variant="success" className="octane-quests-get-hc" onClick={() => CreateLinkEvent('catalog/open/hc_membership')}>
                                 {localizeWithFallback('generic.get_hc', 'Get HC')}
                             </Button>
                         )}

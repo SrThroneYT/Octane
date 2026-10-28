@@ -162,3 +162,11 @@
     min-width: 50px;
     max-width: 105px;
 }
+
+/* The card shell hands its condensed `Ubuntu` to the info span and the buttons with a higher specificity than the
+   rules above; AIR's frames are the regular Ubuntu, so an important rule in the base layer puts it back. */
+@layer base {
+    .octane-marketplace-token-dialog-content :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
+}

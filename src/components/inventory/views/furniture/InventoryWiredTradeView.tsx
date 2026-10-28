@@ -453,7 +453,7 @@ export const InventoryWiredTradeView: FC<{}> = () => {
                             )}
                             {paymentOnly && showYouGet && (
                                 <div
-                                    className="octane-wired-trade-bubble-note"
+                                    className="octane-wired-trade-bubble-note is-disclaimer"
                                     dangerouslySetInnerHTML={{
                                         __html: SanitizeHtml(localizeWithFallback(
                                             'inventory.wired_trading.requirements.receive_text_disclaimer',

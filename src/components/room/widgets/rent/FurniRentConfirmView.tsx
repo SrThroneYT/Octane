@@ -13,6 +13,7 @@ import { FC, useEffect, useRef, useState } from 'react';
 import { LocalizeText, localizeWithFallback, NotificationAlertType, SendMessageComposer } from '../../../../api';
 import { Button, Column, LayoutCurrencyIcon, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Text } from '../../../../common';
 import { useMessageEvent, useNotification, usePurse, useRoom } from '../../../../hooks';
+import '../../../../css/room/FurniWindowsBAir.css';
 
 interface RentRequest {
     objectId: number;
@@ -102,21 +103,21 @@ export const FurniRentConfirmView: FC = () => {
         : localizeWithFallback('rent.confirmation.title.extend', 'Confirm Rentable extension');
 
     return (
-        <OctaneCardView className="octane-widget-rent-confirm" theme="primary-slim">
+        <OctaneCardView className="octane-widget-rent-confirm octane-furni-rent-confirm" theme="primary-slim">
             <OctaneCardHeaderView headerText={title} onCloseClick={() => setOffer(null)} />
             <OctaneCardContentView gap={2}>
-                <Text bold>{offer.name}</Text>
-                {!offer.buyout && <Text small>{localizeWithFallback('rent.confirmation.rental.description', 'You are about to rent the selected piece of furni for 7 more days:')}</Text>}
+                <Text bold className="octane-furni-rent-confirm__name">{offer.name}</Text>
+                {!offer.buyout && <Text className="octane-furni-rent-confirm__description">{localizeWithFallback('rent.confirmation.rental.description', 'You are about to rent the selected piece of furni for 7 more days:')}</Text>}
                 <Column gap={1}>
                     {offer.credits > 0 && (
                         <div className="flex items-center gap-1">
-                            <Text bold>{offer.credits}</Text>
+                            <Text className="octane-furni-rent-confirm__price">{offer.credits}</Text>
                             <LayoutCurrencyIcon type={-1} />
                         </div>
                     )}
                     {offer.points > 0 && (
                         <div className="flex items-center gap-1">
-                            <Text bold>{offer.points}</Text>
+                            <Text className="octane-furni-rent-confirm__price">{offer.points}</Text>
                             <LayoutCurrencyIcon type={offer.pointsType} />
                         </div>
                     )}

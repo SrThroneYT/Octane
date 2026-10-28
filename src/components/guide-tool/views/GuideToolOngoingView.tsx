@@ -84,7 +84,7 @@ export const GuideToolOngoingView: FC<GuideToolOngoingViewProps> = (props) => {
                 )}
                 {!isGuide && (
                     <Column gap={0}>
-                        <Text bold>{userName}</Text>
+                        <Text bold className="octane-guide-tool__heading-2">{userName}</Text>
                         <Text>{LocalizeText('guide.help.request.user.ongoing.guide.desc')}</Text>
                     </Column>
                 )}
@@ -143,7 +143,7 @@ export const GuideToolOngoingView: FC<GuideToolOngoingViewProps> = (props) => {
                         {LocalizeText('widgets.chatinput.say')}
                     </Button>
                 </div>
-                {isTyping && <Text variant="muted">{LocalizeText('guide.help.common.typing')}</Text>}
+                {isTyping && <Text className="octane-guide-tool__typing">{LocalizeText('guide.help.common.typing')}</Text>}
             </div>
             <Button fullWidth variant="success" onClick={resolve}>
                 {LocalizeText('guide.help.request.' + (isGuide ? 'guide' : 'user') + '.ongoing.close.link')}

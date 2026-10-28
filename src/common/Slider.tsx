@@ -26,6 +26,8 @@ export interface SliderProps {
     thumbAriaLabel?: string;
     /** `vertical` renders the bare Base UI parts (max at the top, no step buttons) so the caller styles them. */
     orientation?: 'horizontal' | 'vertical';
+    /** With `horizontal`: render the bare Base UI parts too (no step buttons, no indicator), like `vertical`. */
+    bare?: boolean;
     title?: string;
     controlClassName?: string;
     trackStyle?: CSSProperties;
@@ -58,6 +60,7 @@ export const Slider: FC<SliderProps> = (props) => {
         thumbClassName,
         thumbAriaLabel,
         orientation = 'horizontal',
+        bare = false,
         title,
         controlClassName,
         trackStyle,
@@ -117,25 +120,27 @@ export const Slider: FC<SliderProps> = (props) => {
         );
     };
 
-    if (orientation === 'vertical') {
+    if (orientation === 'vertical' || bare) {
+        const prefix = orientation === 'vertical' ? 'octane-slider-vertical' : 'octane-slider-bare';
+
         return (
             <BaseSlider.Root
                 disabled={disabled}
-                className={cn('octane-slider-vertical', className)}
+                className={cn(prefix, className)}
                 style={style}
                 title={title}
                 max={max}
                 min={min}
                 step={step}
-                orientation="vertical"
+                orientation={orientation}
                 thumbAlignment="center"
                 value={isRange ? valueArr : currentValue}
                 onValueChange={(next, details) => emit(toArray(next), details.activeThumbIndex)}
             >
-                <BaseSlider.Control className={cn('octane-slider-vertical-control', controlClassName)}>
-                    <BaseSlider.Track className={cn('octane-slider-vertical-track', trackClassName)} style={trackStyle} data-testid={trackTestId} />
+                <BaseSlider.Control className={cn(`${prefix}-control`, controlClassName)}>
+                    <BaseSlider.Track className={cn(`${prefix}-track`, trackClassName)} style={trackStyle} data-testid={trackTestId} />
                     {valueArr.map((_, i) => (
-                        <BaseSlider.Thumb key={i} index={i} aria-label={thumbAriaLabel} className={cn('octane-slider-vertical-thumb', thumbClassName)}>
+                        <BaseSlider.Thumb key={i} index={i} aria-label={thumbAriaLabel} className={cn(`${prefix}-thumb`, thumbClassName)}>
                             {renderThumbContent?.({ index: i, value: isRange ? valueArr : currentValue, valueNow: valueArr[i] ?? 0 })}
                         </BaseSlider.Thumb>
                     ))}
