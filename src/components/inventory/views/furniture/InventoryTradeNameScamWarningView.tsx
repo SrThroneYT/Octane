@@ -73,7 +73,7 @@ export const InventoryTradeNameScamWarningView: FC<{}> = () => {
     return (
         <OctaneCardView className="min-w-0 w-[min(356px,calc(100vw-16px))] max-w-[calc(100vw-16px)] max-h-[calc(100vh-16px)]" uniqueKey="trade-name-scam">
             <OctaneCardHeaderView headerText={localizeWithFallback('inventory.trading.namescam.title', 'Check who you are trading with')} onCloseClick={close} />
-            <div className="flex flex-col gap-2 bg-[#DFDFDF] p-2 text-sm">
+            <div className="octane-trade-name-scam-body flex flex-col gap-2 bg-[#DFDFDF] p-2">
                 <p className="m-0">
                     {localizeWithFallback(
                         'inventory.trading.namescam.warning',
@@ -87,10 +87,10 @@ export const InventoryTradeNameScamWarningView: FC<{}> = () => {
                         {warning.figure && <LayoutAvatarImageView direction={2} figure={warning.figure} headOnly />}
                     </div>
                     <div className="flex min-w-0 flex-1 flex-col">
-                        <span className="text-xs text-[#595959]">{localizeWithFallback('inventory.trading.namescam.trader', 'Trading with')}</span>
-                        <span className="truncate font-bold">{warning.userName}</span>
+                        <span className="octane-trade-name-scam-muted">{localizeWithFallback('inventory.trading.namescam.trader', 'Trading with')}</span>
+                        <span className="octane-trade-name-scam-trader truncate">{warning.userName}</span>
                     </div>
-                    <OctaneButton className="shrink-0 text-xs" onClick={() => GetUserProfile(warning.userId)}>
+                    <OctaneButton className="octane-trade-button shrink-0" onClick={() => GetUserProfile(warning.userId)}>
                         {localizeWithFallback('inventory.trading.namescam.open_profile', 'Profile')}
                     </OctaneButton>
                 </div>
@@ -116,11 +116,11 @@ export const InventoryTradeNameScamWarningView: FC<{}> = () => {
                 )}
                 <div className="flex items-center justify-end gap-2">
                     {lockSeconds > 0 && (
-                        <span className="text-xs text-[#595959]">
+                        <span className="octane-trade-name-scam-muted">
                             {localizeWithFallback('inventory.trading.namescam.close_countdown', `You can close this in ${lockSeconds} s`, ['seconds'], [String(lockSeconds)])}
                         </span>
                     )}
-                    <OctaneButton disabled={lockSeconds > 0} onClick={close}>
+                    <OctaneButton className="octane-trade-button" disabled={lockSeconds > 0} onClick={close}>
                         {localizeWithFallback('inventory.trading.namescam.close', 'OK')}
                     </OctaneButton>
                 </div>

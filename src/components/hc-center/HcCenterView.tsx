@@ -28,6 +28,7 @@ import {
 } from '../../common';
 import { useInventoryBadges, useMessageEvent, usePurse, useSessionInfo } from '../../hooks';
 import { BaseButton } from '../../common/BaseButton';
+import '../../css/hc-center/HcCenterView.css';
 
 export const HcCenterView: FC<{}> = (props) => {
     const [isVisible, setIsVisible] = useState(false);
@@ -158,7 +159,7 @@ export const HcCenterView: FC<{}> = (props) => {
     );
 
     return (
-        <OctaneCardView className="min-w-0 w-[min(430px,calc(100vw-16px))] max-w-[calc(100vw-16px)] max-h-[calc(100vh-16px)] resize-none" theme="primary-slim">
+        <OctaneCardView className="octane-hc-center-window min-w-0 w-[min(430px,calc(100vw-16px))] max-w-[calc(100vw-16px)] max-h-[calc(100vh-16px)] resize-none" theme="primary-slim">
             <OctaneCardHeaderView headerText={LocalizeText('generic.hccenter')} onCloseClick={() => setIsVisible(false)} />
             <Flex className="bg-muted/50 p-3" position="relative">
                 <Column gap={2}>
@@ -175,22 +176,22 @@ export const HcCenterView: FC<{}> = (props) => {
                 <Flex gap={2} alignItems="center" className="p-2 rounded bg-card-grid-item/30">
                     <LayoutBadgeImageView badgeCode={badgeCode} className="shrink-0" />
                     <Column gap={0} className="min-h-[48px] leading-4">
-                        <Text bold>{LocalizeText('hccenter.status.' + clubStatus)}</Text>
-                        <Text small className="text-gray-700" dangerouslySetInnerHTML={{ __html: getInfoText() }} />
+                        <Text bold className="octane-hc-center__status-title">{LocalizeText('hccenter.status.' + clubStatus)}</Text>
+                        <Text className="octane-hc-center__status-info" dangerouslySetInnerHTML={{ __html: getInfoText() }} />
                     </Column>
                 </Flex>
                 {GetConfigurationRecord('hc.center')['payday.info'] && (
                     <Flex className="rounded overflow-hidden border border-card-grid-item-border">
                         <Column className="bg-primary p-3 flex-1 text-white" gap={1}>
-                            <Text bold className="text-white">
+                            <Text bold variant="white" className="octane-hc-center__title">
                                 {LocalizeText('hccenter.special.title')}
                             </Text>
-                            <Text small className="text-white/80">
+                            <Text variant="white" className="octane-hc-center__info">
                                 {LocalizeText('hccenter.special.info')}
                             </Text>
                             <div className="mt-auto">
                                 <BaseButton type="button"
-                                    className="text-white/90 text-sm cursor-pointer hover:underline"
+                                    className="octane-hc-center__link octane-hc-center__link--white cursor-pointer"
                                     onClick={() => CreateLinkEvent('habbopages/' + GetConfigurationRecord('hc.center')['payday.habbopage'])}
                                 >
                                     {LocalizeText('hccenter.special.infolink')}
@@ -198,27 +199,27 @@ export const HcCenterView: FC<{}> = (props) => {
                             </div>
                         </Column>
                         <Column
-                            className="w-[200px] shrink-0 p-3 bg-contain bg-no-repeat bg-center text-[#6b3502]"
+                            className="octane-hc-center__postit w-[200px] shrink-0 p-3 bg-contain bg-no-repeat bg-center"
                             gap={1}
                             style={{ backgroundImage: `url(${paydayBg})` }}
                         >
-                            <Text bold small>
+                            <Text bold variant={null} className="octane-hc-center__postit-title">
                                 {LocalizeText('hccenter.special.time.title')}
                             </Text>
                             <Flex gap={1} alignItems="center">
                                 <div className="w-5 h-5 shrink-0 bg-contain bg-no-repeat bg-center" style={{ backgroundImage: `url(${clockIcon})` }} />
-                                <Text bold>{getHcPaydayTime()}</Text>
+                                <Text variant={null} className="octane-hc-center__postit-content">{getHcPaydayTime()}</Text>
                             </Flex>
                             {clubStatus === ClubStatus.ACTIVE && (
                                 <Column gap={0} className="mt-1">
-                                    <Text bold small>
+                                    <Text bold variant={null} className="octane-hc-center__postit-title">
                                         {LocalizeText('hccenter.special.amount.title')}
                                     </Text>
-                                    <Text bold className="text-center">
+                                    <Text variant={null} className="octane-hc-center__postit-content text-center">
                                         {getHcPaydayAmount()}
                                     </Text>
                                     <BaseButton type="button"
-                                        className="text-primary text-sm cursor-pointer hover:underline self-end"
+                                        className="octane-hc-center__link octane-hc-center__link--blue cursor-pointer self-end"
                                         onClick={() => CreateLinkEvent('habbopages/' + GetConfigurationRecord('hc.center')['payday.habbopage'])}
                                     >
                                         {LocalizeText('hccenter.breakdown.infolink')}
@@ -231,12 +232,12 @@ export const HcCenterView: FC<{}> = (props) => {
                 {GetConfigurationRecord('hc.center')['gift.info'] && (
                     <Flex className="rounded bg-success/90 p-3" alignItems="center" gap={2}>
                         <Column gap={0} className="flex-1">
-                            <Text bold className="text-white">
+                            <Text bold variant="white" className="octane-hc-center__title">
                                 {LocalizeText('hccenter.gift.title')}
                             </Text>
                             <Text
-                                small
-                                className="text-white/80"
+                                variant="white"
+                                className="octane-hc-center__info"
                                 dangerouslySetInnerHTML={{
                                     __html:
                                         unclaimedGifts > 0
@@ -260,12 +261,12 @@ export const HcCenterView: FC<{}> = (props) => {
                         gap={1}
                         style={{ backgroundImage: `url(${benefitsBg})` }}
                     >
-                        <Text bold variant="primary">
+                        <Text bold variant={null} className="octane-hc-center__title octane-hc-center__title--blue">
                             {LocalizeText('hccenter.general.title')}
                         </Text>
-                        <Text small className="text-gray-700" dangerouslySetInnerHTML={{ __html: LocalizeText('hccenter.general.info') }} />
+                        <Text className="octane-hc-center__info" dangerouslySetInnerHTML={{ __html: LocalizeText('hccenter.general.info') }} />
                         <BaseButton type="button"
-                            className="text-primary text-sm cursor-pointer hover:underline mt-1"
+                            className="octane-hc-center__link octane-hc-center__link--blue cursor-pointer mt-1"
                             onClick={() => CreateLinkEvent('habbopages/' + GetConfigurationRecord('hc.center')['benefits.habbopage'])}
                         >
                             {LocalizeText('hccenter.general.infolink')}

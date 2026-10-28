@@ -31,7 +31,8 @@
     flex: 0 0 478px;
     width: 478px;
     height: 274px;
-    font-size: 11px;
+    /* The layout's texts carry no text_style: u_regular, 12 px. */
+    font-size: 12px;
     color: #000;
 }
 
@@ -230,6 +231,8 @@
     top: 5px;
     width: 136px;
     white-space: nowrap;
+    /* seconds_left_text: text_color 0xbf272a. */
+    color: #bf272a;
 }
 
 /* AIR's cancel sits at 415 with "Cancel"; anchored to the right edge so a longer caption ("Annuleren") stays inside. */
@@ -262,8 +265,9 @@
     box-shadow: 0 0 0 3px rgba(79, 188, 227, 0.6);
 }
 
+/* bubble_title: plain u_regular (no bold var). */
 .octane-wired-trade-bubble-title {
-    font-weight: bold;
+    font-weight: 400;
     opacity: 0.5;
     margin-bottom: 6px;
 }
@@ -309,6 +313,11 @@
     margin-top: 6px;
 }
 
+/* disclaimer_text: text_color 0xbf272a. */
+.octane-wired-trade-bubble-note.is-disclaimer {
+    color: #bf272a;
+}
+
 .octane-wired-trade-rule {
     display: flex;
     flex-wrap: wrap;
@@ -336,4 +345,55 @@
 
 .octane-wired-trade-and {
     opacity: 0.8;
+}
+
+/*
+ * Trade text (AIR inventory_trading, inventory_trading_wired, inventory_trading_name_scam_warning). These are
+ * Ubuntu frames: the texts carry no text_style, so u_regular 12 px black; the user names in the offer titles are
+ * bold; the style 3 buttons draw button_shiny_regular, 12 px regular (our
+ * buttons were 11-12.6 px bold). Our `Ubuntu` face is the condensed cut and the card shell hands it to spans and
+ * buttons, so the trade body takes the regular one.
+ */
+.octane-inventory-window .octane-inventory-body.is-trade,
+.octane-trade-name-scam-body {
+    color: #000000;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    font-size: 12px;
+    line-height: 16px;
+}
+
+/* text_list_0 / text_list_1: bold_text (the user) + plain_text (are offering), u_regular 12 px. */
+.octane-trade-offer-title {
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.octane-trade-offer-title .octane-trade-offer-user {
+    font-weight: 700;
+}
+
+/* inventory_trading_name_scam_warning: trader_label / close_countdown_text 0x555555, trader_name_text 13 px bold. */
+.octane-trade-name-scam-body .octane-trade-name-scam-muted {
+    color: #555555;
+    font-size: 12px;
+}
+
+.octane-trade-name-scam-body .octane-trade-name-scam-trader {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* The buttons carry important Tailwind sizes and the card shell's condensed face; an important rule in the
+   earlier base layer outranks both. */
+@layer base {
+    .octane-inventory-window .octane-inventory-body.is-trade :where(*):not(svg, svg *),
+    .octane-trade-name-scam-body :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
+
+    .octane-inventory-window .octane-inventory-body.is-trade :where(.octane-trade-button, .octane-wired-trade-accept, .octane-wired-trade-cancel),
+    .octane-trade-name-scam-body .octane-trade-button {
+        font-size: 12px !important;
+        font-weight: 400 !important;
+    }
 }

@@ -29,8 +29,9 @@
     border-radius: 4px;
     background: #2a2a2a;
     color: #ffffff;
-    font-family: monospace;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     font-size: 18px;
+    font-variant-numeric: tabular-nums;
     font-weight: bold;
     line-height: 1;
     text-align: center;
@@ -65,14 +66,16 @@
     padding-right: 6px;
 }
 
+/* request_title: il_heading_2 12 px bold. */
 .octane-guardian-accept__title {
     margin-top: 10px;
-    font-size: 16px;
+    font-size: 12px;
     font-weight: bold;
 }
 
+/* request_type: plain text, black. */
 .octane-guardian-accept__type {
-    color: #555555;
+    color: #000000;
 }
 
 .octane-guardian-accept__description {
@@ -90,6 +93,8 @@
     justify-self: center;
     width: 200px;
     min-height: 40px;
+    /* the button label: il_button 10 px bold */
+    font-size: 10px;
     font-weight: bold;
 }
 
@@ -113,17 +118,19 @@
     right: 0;
 }
 
+/* subtitle: il_border 10 px bold 0x222222; incident_time: il_small 9 px. */
 .octane-guardian-vote__subtitle {
     display: flex;
     align-items: baseline;
     gap: 6px;
     margin-top: 34px;
     color: #222222;
+    font-size: 10px;
     font-weight: bold;
 }
 
 .octane-guardian-vote__time {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: normal;
 }
 
@@ -178,8 +185,10 @@
     padding-top: 6px;
 }
 
+/* the vote question: il_border 10 px bold 0x222222. */
 .octane-guardian-vote__question {
     color: #222222;
+    font-size: 10px;
     font-weight: bold;
 }
 
@@ -220,10 +229,11 @@
     cursor: default;
 }
 
+/* the vote captions: plain 11 px text, 0x444444. */
 .octane-guardian-vote__label {
     width: 68px;
     color: #444444;
-    font-weight: bold;
+    font-weight: 400;
     text-align: center;
 }
 
@@ -239,14 +249,15 @@
     width: min(232px, calc(100vw - 32px));
 }
 
+/* waiting title: il_heading_1 14 px bold 0x888888; its description il_small 9 px. */
 .octane-guardian-results__waiting {
     text-align: center;
-    font-size: 11px;
+    font-size: 9px;
 }
 
 .octane-guardian-results__waiting-title {
     color: #888888;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: bold;
 }
 
@@ -258,11 +269,15 @@
     padding: 0 8px;
     border-radius: 4px;
     background: #ffffff;
+    /* result_text: il_heading_3 10 px bold */
+    font-size: 10px;
     font-weight: bold;
 }
 
+/* votes heading: il_heading_3 10 px bold 0x444444. */
 .octane-guardian-results__heading {
     color: #444444;
+    font-size: 10px;
     font-weight: bold;
 }
 
@@ -279,6 +294,8 @@
     justify-content: space-between;
     min-height: 46px;
     padding: 0 12px 0 20px;
+    /* vote_text: il_heading_3 10 px bold */
+    font-size: 10px;
     font-weight: bold;
 }
 
@@ -346,10 +363,19 @@
     min-width: 0;
 }
 
+/* chat_review_reporter_feedback caption_txt: il_heading_title 18 px bold 0x333333. */
 .octane-guardian-feedback__caption {
     color: #333333;
-    font-size: 15px;
+    font-size: 18px;
     font-weight: bold;
+    line-height: 22px;
+}
+
+/* pending_bully_request subtitle: il_heading_1 14 px bold 0xc30000. */
+.octane-guardian-pending .octane-guardian-feedback__caption {
+    color: #c30000;
+    font-size: 14px;
+    line-height: 17px;
 }
 
 .octane-guardian-feedback__illustration {
@@ -370,9 +396,19 @@
     flex: none;
 }
 
+/* the report label and user_name: il_border 10 px bold (0x444444 for the label); room_name 0x444444. */
 .octane-guardian-pending__heading {
     color: #444444;
+    font-size: 10px;
     font-weight: bold;
+}
+
+.octane-guardian-pending__user b {
+    font-size: 10px;
+}
+
+.octane-guardian-pending__user span:not(.octane-guardian-pending__time) {
+    color: #444444;
 }
 
 .octane-guardian-pending__user {
@@ -396,4 +432,30 @@
 .octane-guardian-pending__time {
     color: #666666;
     font-size: 11px;
+}
+
+/*
+ * Text face and size: Illumina (style 100) frames in regular Ubuntu (our `Ubuntu` face is the condensed cut),
+ * plain text il_regular 11 px, button captions il_button 10 px bold. The guardian review windows also carry
+ * .octane-guide-tool, whose rules in GuideTool.css cover them; the reporter's feedback and pending windows are here.
+ */
+.octane-guardian-feedback .octane-card-content-shell,
+.octane-guardian-pending .octane-card-content-shell {
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    font-size: 11px;
+    line-height: 14px;
+}
+
+@layer base {
+    .octane-guardian-feedback .octane-card-content-shell :where(*):not(svg, svg *),
+    .octane-guardian-pending .octane-card-content-shell :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
+
+    .octane-guardian-feedback .octane-card-content-shell button.font-bold,
+    .octane-guardian-feedback .octane-card-content-shell button.font-bold *,
+    .octane-guardian-pending .octane-card-content-shell button.font-bold,
+    .octane-guardian-pending .octane-card-content-shell button.font-bold * {
+        font-size: 10px !important;
+    }
 }

@@ -550,7 +550,7 @@
     width: 189px;
 }
 
-/* layout_marketplace_own_items: redeem_info (10,0) 340 wide, u_italic, word wrap. */
+/* layout_marketplace_own_items: redeem_info (10,0) 340 wide, u_italic (12 px), word wrap. */
 .octane-marketplace-own-info {
     display: flex;
     flex: 0 0 auto;
@@ -558,9 +558,9 @@
     gap: 8px;
     min-height: 34px;
     padding: 0 10px;
-    font-size: 11px;
+    font-size: 12px;
     font-style: italic;
-    line-height: 13px;
+    line-height: 15px;
 }
 
 .octane-marketplace-own-info > span {
@@ -603,9 +603,10 @@
     line-height: 19px;
 }
 
+/* search_placeholder: text_color 0x666666, no blend. */
 .marketplace-own-search-input input::placeholder {
     color: #666666;
-    opacity: 0.5;
+    opacity: 1;
 }
 
 /* cancel_search_btn: a 19x19 region at (137,3) with icons_close at (5,4). */

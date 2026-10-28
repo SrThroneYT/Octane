@@ -48,12 +48,12 @@ export const GuideToolMenuView: FC<GuideToolMenuViewProps> = (props) => {
                     onClick={() => processAction('toggle_duty')}
                 />
                 <Column gap={0}>
-                    <Text bold>{LocalizeText('guide.help.guide.tool.yourstatus')}</Text>
+                    <Text className="octane-guide-tool__status-caption">{LocalizeText('guide.help.guide.tool.yourstatus')}</Text>
                     <Text>{LocalizeText(`guide.help.guide.tool.duty.${isOnDuty ? 'on' : 'off'}`)}</Text>
                 </Column>
             </Flex>
             <div className="flex flex-col gap-1">
-                <Text bold>{LocalizeText('guide.help.guide.tool.tickettypeselection.caption')}</Text>
+                <Text bold className="octane-guide-tool__heading-3">{LocalizeText('guide.help.guide.tool.tickettypeselection.caption')}</Text>
                 <div className="flex items-center gap-1">
                     <Checkbox checked={isHandlingGuideRequests} disabled={isOnDuty} onCheckedChange={(nextChecked) => setIsHandlingGuideRequests(nextChecked)} />
                     <Text>{LocalizeText('guide.help.guide.tool.tickettypeselection.guiderequests')}</Text>

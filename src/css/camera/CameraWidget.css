@@ -12,7 +12,9 @@
     overflow: visible;
     justify-content: flex-start !important;
     color: #ffffff;
-    font-family: Ubuntu, sans-serif;
+    /* camera_interface is an AIR (style 3) window: regular Ubuntu, not our condensed `Ubuntu` face. Its visible
+       captions are NativeText rasters of the AIR text styles; this only covers DOM fallback text. */
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     image-rendering: var(--octane-pixel-art, pixelated);
 }
 
@@ -1184,9 +1186,10 @@
     border: 4px solid transparent;
     border-image: url('../../assets/images/habbo-skin/slices/button-thick-default.png') 4 fill / 4px stretch;
     background: transparent;
-    color: #111111;
-    font-family: Ubuntu, sans-serif;
-    font-size: 11px;
+    /* button_thick label: button_shiny_bold, 12px bold black regular Ubuntu. */
+    color: #000000;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    font-size: 12px;
     font-weight: 700;
     cursor: pointer;
     image-rendering: var(--octane-pixel-art, pixelated);
@@ -1206,3 +1209,21 @@
     cursor: default;
 }
 
+
+/* camera_editor, photo_purchase_confirmation and iro_room_thumbnail_camera are AIR (style 3) frames in regular Ubuntu.
+   Their captions are NativeText rasters; this keeps any DOM text (and the thumbnail buttons) off the condensed cut. */
+.octane-camera-capture,
+.octane-camera-editor,
+.octane-camera-checkout,
+.octane-room-thumbnail-camera {
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+}
+
+@layer base {
+    .octane-camera-capture :where(*):not(svg, svg *),
+    .octane-camera-editor :where(*):not(svg, svg *),
+    .octane-camera-checkout :where(*):not(svg, svg *),
+    .octane-room-thumbnail-camera :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
+}

@@ -15,7 +15,7 @@ const ProgressionItem: FC<{ name: string; iconClassName: string; label: string; 
     <BaseButton type="button" className="octane-toolbar-progression-item" data-name={name} aria-label={label} onClick={onClick}>
         <span className={`octane-toolbar-progression-icon ${iconClassName}`} />
         <span className="octane-toolbar-progression-label">{label}</span>
-        {count > 0 && <LayoutItemCountView count={count} />}
+        {count > 0 && <LayoutItemCountView className="octane-toolbar-count" count={count} />}
     </BaseButton>
 );
 

@@ -251,7 +251,7 @@ export const InventoryTradeView: FC<InventoryTradeViewProps> = (props) => {
                                     />
                                 </Column>
                                 <Column overflow="hidden" size={6}>
-                                    <Button disabled={!groupItem} variant="secondary" onClick={(event) => changeCount(groupItem.getUnlockedCount())}>
+                                    <Button className="octane-trade-button" disabled={!groupItem} variant="secondary" onClick={(event) => changeCount(groupItem.getUnlockedCount())}>
                                         {LocalizeText('inventory.trading.areoffering')}
                                     </Button>
                                 </Column>
@@ -264,8 +264,9 @@ export const InventoryTradeView: FC<InventoryTradeViewProps> = (props) => {
                     <Grid overflow="hidden">
                         <Column overflow="hidden" size={6}>
                             <div className="flex justify-between items-center">
-                                <Text>
-                                    {LocalizeText('inventory.trading.you')} {LocalizeText('inventory.trading.areoffering')}:
+                                <Text className="octane-trade-offer-title">
+                                    <span className="octane-trade-offer-user">{LocalizeText('inventory.trading.you')}</span>{' '}
+                                    {LocalizeText('inventory.trading.areoffering')}:
                                 </Text>
                                 {getLockIcon(ownUser.accepts)}
                             </div>
@@ -305,8 +306,8 @@ export const InventoryTradeView: FC<InventoryTradeViewProps> = (props) => {
                         </Column>
                         <Column overflow="hidden" size={6}>
                             <div className="flex justify-between items-center">
-                                <Text>
-                                    {otherUser.userName} {LocalizeText('inventory.trading.isoffering')}:
+                                <Text className="octane-trade-offer-title">
+                                    <span className="octane-trade-offer-user">{otherUser.userName}</span> {LocalizeText('inventory.trading.isoffering')}:
                                 </Text>
                                 {getLockIcon(otherUser.accepts)}
                             </div>
@@ -343,31 +344,31 @@ export const InventoryTradeView: FC<InventoryTradeViewProps> = (props) => {
                         </div>
                     )}
                     <div className="flex grow! justify-between">
-                        <Button variant="danger" onClick={cancelTrade}>
+                        <Button className="octane-trade-button" variant="danger" onClick={cancelTrade}>
                             {LocalizeText('generic.cancel')}
                         </Button>
                         {tradeState === TradeState.TRADING_STATE_READY && (
-                            <Button disabled={!ownUser.itemCount && !otherUser.itemCount} variant="secondary" onClick={progressTrade}>
+                            <Button className="octane-trade-button" disabled={!ownUser.itemCount && !otherUser.itemCount} variant="secondary" onClick={progressTrade}>
                                 {LocalizeText('inventory.trading.accept')}
                             </Button>
                         )}
                         {tradeState === TradeState.TRADING_STATE_RUNNING && (
-                            <Button disabled={!ownUser.itemCount && !otherUser.itemCount} variant="secondary" onClick={progressTrade}>
+                            <Button className="octane-trade-button" disabled={!ownUser.itemCount && !otherUser.itemCount} variant="secondary" onClick={progressTrade}>
                                 {LocalizeText(ownUser.accepts ? 'inventory.trading.modify' : 'inventory.trading.accept')}
                             </Button>
                         )}
                         {tradeState === TradeState.TRADING_STATE_COUNTDOWN && (
-                            <Button disabled variant="secondary">
+                            <Button className="octane-trade-button" disabled variant="secondary">
                                 {LocalizeText('inventory.trading.countdown', ['counter'], [countdownTick.toString()])}
                             </Button>
                         )}
                         {tradeState === TradeState.TRADING_STATE_CONFIRMING && (
-                            <Button variant="secondary" onClick={progressTrade}>
+                            <Button className="octane-trade-button" variant="secondary" onClick={progressTrade}>
                                 {LocalizeText('inventory.trading.button.restore')}
                             </Button>
                         )}
                         {tradeState === TradeState.TRADING_STATE_CONFIRMED && (
-                            <Button variant="secondary">{LocalizeText('inventory.trading.info.waiting')}</Button>
+                            <Button className="octane-trade-button" variant="secondary">{LocalizeText('inventory.trading.info.waiting')}</Button>
                         )}
                     </div>
                 </Column>

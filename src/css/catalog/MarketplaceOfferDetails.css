@@ -80,3 +80,26 @@
         image-rendering: pixelated;
     }
 }
+
+/*
+ * marketplace_offer_details text: item_name u_bold 12, item_description u_italic 12, item_price / offer_count /
+ * average_price u_small 10 px, chart_title u_regular 12; back_button / buy_button / the chart selector draw
+ * button_shiny_regular, 12 px regular. The common Button carries an important 12.6 px bold Tailwind size, which
+ * only an important rule in the earlier base layer outranks.
+ */
+.octane-marketplace-offer-details .marketplace-details-small {
+    font-size: 10px;
+    line-height: 13px;
+}
+
+.octane-marketplace-offer-details .marketplace-details-chart-title {
+    font-size: 12px;
+    font-weight: 400;
+}
+
+@layer base {
+    .octane-marketplace-offer-details :where(.marketplace-details-back, .marketplace-details-buy, .marketplace-details-chart-selector > button) {
+        font-size: 12px !important;
+        font-weight: 400 !important;
+    }
+}

@@ -42,7 +42,7 @@ export const GuideToolReportView: FC<GuideToolReportViewProps> = ({ onClose }) =
                         )}
                     </Text>
                     {showError && (
-                        <Text bold small variant="danger" role="alert">
+                        <Text className="octane-guide-tool__error" role="alert">
                             {localizeWithFallback('guide.help.request.emergency.desc.error', 'The description cannot be empty.')}
                         </Text>
                     )}
@@ -55,7 +55,7 @@ export const GuideToolReportView: FC<GuideToolReportViewProps> = ({ onClose }) =
                             setShowError(false);
                         }}
                     ></textarea>
-                    <Text small>
+                    <Text bold className="octane-guide-tool__urgent-title">
                         {localizeWithFallback('guide.help.request.emergency.help.title', 'An emergency help request is only meant for urgent problems.')}
                     </Text>
                     <Button fullWidth variant="success" onClick={submit}>

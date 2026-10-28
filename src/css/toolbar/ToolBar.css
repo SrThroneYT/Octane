@@ -305,10 +305,92 @@
     border-radius: 4px;
     background: #ee2924;
     color: #ffffff;
-    font-size: 9px;
-    font-weight: 700;
+    /* new_textfield is u_small: 10px regular (not bold) AIR Ubuntu; our `Ubuntu` face is the condensed cut. */
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    font-size: 10px;
+    font-weight: 400;
     line-height: 18px;
     text-align: center;
     white-space: nowrap;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+/* AIR unseen item counter (habbo-window-manager-com new_items_counter / unseen_item_counter_xml), which BottomBarLeft,
+   MeMenuNewController and ProgMenuController hang on the top right of an icon: a red (0xee2924) border style 7 with the
+   `count` field in il_regular_white bold, i.e. 11px bold white regular Ubuntu. */
+.octane-toolbar-count {
+    min-width: 18px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    background: #ee2924;
+    color: #ffffff;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 11px;
+    text-align: center;
+}
+
+@layer base {
+    /* LayoutItemCountView forces a navy border with an important utility; only an earlier-layer !important beats it. */
+    .octane-toolbar-count {
+        border-color: #000000 !important;
+    }
+}
+
+/* prog_menu_view field_text: u_regular at font_size 9, white. The item box itself lives in QuestsView.css. */
+.octane-toolbar-progression .octane-toolbar-progression-label {
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    font-weight: 400;
+}
+
+/* me_menu_new_view: 60x48 regions with a 32x30 icon (grey until hovered) over field_text, u_regular at font_size 9,
+   white. AIR fits its 8 regions in 546 px; ours has more entries, so the bar wraps onto a second row at that width. */
+.octane-toolbar-me {
+    width: max-content;
+    max-width: min(560px, calc(100vw - 16px));
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.octane-toolbar-me-item {
+    position: relative;
+    width: 60px;
+    height: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 2px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.octane-toolbar-me-item:not(:hover) .octane-toolbar-me-icon {
+    filter: grayscale(1);
+}
+
+/* The icon keeps its own size from icons.css / QuestsView.css; the caption sits at AIR's y32 whatever its height. */
+.octane-toolbar-me-icon {
+    flex: 0 0 auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.octane-toolbar-me-label {
+    position: absolute;
+    top: 32px;
+    left: 0;
+    width: 60px;
+    overflow: hidden;
+    text-align: center;
+    color: #ffffff;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    font-size: 9px;
+    font-weight: 400;
+    line-height: 12px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }

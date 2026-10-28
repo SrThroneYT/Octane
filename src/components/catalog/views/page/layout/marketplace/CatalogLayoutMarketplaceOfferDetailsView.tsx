@@ -81,7 +81,7 @@ export const CatalogLayoutMarketplaceOfferDetailsView: FC<CatalogLayoutMarketpla
                 <div className="marketplace-details-text">
                     <Text bold>{getMarketplaceOfferText(offerData, 'name')}</Text>
                     <Text italics>{getMarketplaceOfferText(offerData, 'desc')}</Text>
-                    <Text small className="marketplace-details-price">
+                    <Text className="marketplace-details-price marketplace-details-small">
                         {localizeWithFallback(
                             'catalog.marketplace.offer_details.price',
                             `Cheapest price: ${offerData.price} credits`,
@@ -90,7 +90,7 @@ export const CatalogLayoutMarketplaceOfferDetailsView: FC<CatalogLayoutMarketpla
                         )}
                     </Text>
                     {stats && (
-                        <Text small>
+                        <Text className="marketplace-details-small">
                             {localizeWithFallback(
                                 'catalog.marketplace.offer_details.offer_count',
                                 `Offers: ${stats.offerCount}`,
@@ -99,7 +99,7 @@ export const CatalogLayoutMarketplaceOfferDetailsView: FC<CatalogLayoutMarketpla
                             )}
                         </Text>
                     )}
-                    <Text small>
+                    <Text className="marketplace-details-small">
                         {localizeWithFallback(
                             'catalog.marketplace.offer_details.average_price',
                             `Average price over the last ${averageDays} days: ${average} credits`,

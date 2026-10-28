@@ -1,10 +1,19 @@
 /* AIR purse_xml (1262): container 230x77, border style-9 230x76 color 0x686661. */
 
+/* AIR grid_purse / purse indicators / purse notices are Ubuntu (style 3) windows in the regular cut; our `Ubuntu`
+   face is the condensed one. */
+@layer base {
+    :where(.octane-purse-container, .octane-purse-notice) :where(*):not(svg, svg *),
+    .octane-purse-notice {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
+}
+
 .octane-purse-container {
     width: 100%;
     pointer-events: all;
     margin-top: 0;
-    font-family: Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     font-size: 12px;
     align-items: flex-end;
     gap: 3px;
@@ -110,13 +119,14 @@
     min-width: 10px;
     margin: 0;
     padding: 0;
-    font-size: 11px;
+    /* diamond_count / credit_count / ducket_count: u_bold, etching_color 0x45000000 etching_position bottom. */
+    font-size: 12px;
     font-weight: 700;
     line-height: 17px;
     letter-spacing: 0;
     color: rgba(255, 255, 255, 0.88) !important;
     text-align: right;
-    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.27);
 }
 
 .octane-purse .octane-purse-button.currency--1 .octane-purse-button__amount {
@@ -184,12 +194,13 @@
     border: 0;
     border-radius: 0;
     background: transparent;
+    /* join / days / earnings: u_bold, text_color 0xc1c4, no etching (only the icons carry one). */
     color: #00c1c4;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     line-height: 17px;
     white-space: nowrap;
-    text-shadow: 1px 1px 0 #000000;
+    text-shadow: none;
     box-shadow: none;
 }
 
@@ -580,7 +591,7 @@
     margin-left: auto;
     padding: 0 1px 1px;
     color: #ffffff;
-    font-family: Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     font-size: 12px;
     line-height: 1.25;
     pointer-events: all;
@@ -651,7 +662,7 @@
     border-image-repeat: stretch;
     background: transparent;
     color: #000000;
-    font: 12px Ubuntu, sans-serif;
+    font: 12px HabboAirUbuntu, UbuntuRegular, sans-serif;
     white-space: nowrap;
     cursor: pointer;
 }
@@ -702,7 +713,7 @@
     border: 0;
     background: transparent;
     color: #ffffff;
-    font: 12px/15px Ubuntu, sans-serif;
+    font: 12px/15px HabboAirUbuntu, UbuntuRegular, sans-serif;
     text-align: left;
     text-decoration: underline;
     text-shadow: 1px 1px 0 #000000;

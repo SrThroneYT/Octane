@@ -1,13 +1,27 @@
 import { CreateLinkEvent, GetRoomEngine, GetSessionDataManager, RoomObjectCategory } from '@octane/renderer';
 import { Dispatch, FC, PropsWithChildren, SetStateAction, useEffect, useRef } from 'react';
-import { DispatchUiEvent, GetConfigurationValue, GetRoomSession, GetUserProfile, LocalizeText, localizeWithFallback } from '../../api';
+import { DispatchUiEvent, GetConfigurationValue, GetRoomSession, GetUserProfile, localizeWithFallback } from '../../api';
 import { Flex, LayoutItemCountView } from '../../common';
 import { GuideToolEvent } from '../../events';
 import { useDailyTasks, useRewardTracks } from '../../hooks';
 import { isCollectiblesEnabled } from '../../hooks/collectibles/useCollectibles';
 import { useGroupForumUnreadStore } from '../../state/groupForumUnreadStore';
 import { BaseButton } from '../../common/BaseButton';
-import { Hint } from '../../common/Tooltip';
+
+/** One region of the official me_menu_new_view: a 32x30 icon over its 9 px caption (field_text). */
+const MeMenuItem: FC<{ name: string; iconClassName: string; label: string; count?: number; onClick: () => void }> = ({
+    name,
+    iconClassName,
+    label,
+    count = 0,
+    onClick
+}) => (
+    <BaseButton type="button" className="octane-toolbar-me-item" data-name={name} aria-label={label} onClick={onClick}>
+        <span className={`octane-toolbar-me-icon ${iconClassName}`} />
+        <span className="octane-toolbar-me-label">{label}</span>
+        {count > 0 && <LayoutItemCountView className="octane-toolbar-count" count={count} />}
+    </BaseButton>
+);
 
 export const ToolbarMeView: FC<
     PropsWithChildren<{
@@ -49,73 +63,98 @@ export const ToolbarMeView: FC<
     return (
         <Flex
             alignItems="center"
-            className="bg-[rgba(85,85,85,0.95)] border border-[solid] border-[#3d3d3d] [box-shadow:inset_2px_2px_rgba(255,255,255,.1),inset_-2px_-2px_rgba(0,0,0,.15)] rounded-[6px] p-2"
+            className="octane-toolbar-me bg-[rgba(85,85,85,0.95)] border border-[solid] border-[#3d3d3d] [box-shadow:inset_2px_2px_rgba(255,255,255,.1),inset_-2px_-2px_rgba(0,0,0,.15)] rounded-[6px] p-2"
             gap={2}
             innerRef={elementRef}
         >
             {GetConfigurationValue('guides.enabled') && useGuideTool && (
-                <BaseButton type="button"
-                    className="navigation-item relative octane-icon icon-me-helper-tool cursor-pointer"
-                    onClick={(event) => DispatchUiEvent(new GuideToolEvent(GuideToolEvent.TOGGLE_GUIDE_TOOL))}
+                <MeMenuItem
+                    name="guide"
+                    iconClassName="octane-icon icon-me-helper-tool"
+                    label={localizeWithFallback('widget.memenu.guide', 'Guide')}
+                    onClick={() => DispatchUiEvent(new GuideToolEvent(GuideToolEvent.TOGGLE_GUIDE_TOOL))}
                 />
             )}
-            <BaseButton type="button"
-                className="navigation-item relative octane-icon icon-me-achievements cursor-pointer"
-                onClick={(event) => CreateLinkEvent('achievements/toggle')}
-            >
-                {unseenAchievementCount > 0 && <LayoutItemCountView count={unseenAchievementCount} />}
-            </BaseButton>
-            <Hint content={localizeWithFallback('toolbar.me.quests', 'Quests')}><BaseButton aria-label={localizeWithFallback('toolbar.me.quests', 'Quests')} type="button"
-                className="navigation-item relative icon-me-quests cursor-pointer"
-                onClick={(event) => CreateLinkEvent('quests/toggle')}
-            /></Hint>
-            <Hint content={localizeWithFallback('toolbar.me.dailytasks', 'Daily rewards')}><BaseButton type="button"
-                className="navigation-item relative icon-me-dailytasks cursor-pointer"
-                onClick={(event) => CreateLinkEvent('dailytasks/toggle')}
-            >
-                {unseenDailyTaskCount > 0 && <LayoutItemCountView count={unseenDailyTaskCount} />}
-            </BaseButton></Hint>
-            <Hint content={localizeWithFallback('toolbar.me.rewardtrack', 'Reward track')}><BaseButton type="button"
-                className="navigation-item relative icon-me-rewardtrack cursor-pointer"
-                onClick={(event) => CreateLinkEvent('reward_track/toggle')}
-            >
-                {unseenRewardTrackCount > 0 && <LayoutItemCountView count={unseenRewardTrackCount} />}
-            </BaseButton></Hint>
-            {GetConfigurationValue<boolean>('talent.track.enabled', true) &&
-                <Hint content={localizeWithFallback('widget.memenu.talents', 'Talents')}><BaseButton aria-label={localizeWithFallback('widget.memenu.talents', 'Talents')} type="button"
-                    className="navigation-item relative icon-me-talents cursor-pointer"
-                    onClick={(event) => CreateLinkEvent('talent/open/current')}
-                /></Hint>}
-            <BaseButton type="button"
-                className="navigation-item relative octane-icon icon-me-profile cursor-pointer"
-                onClick={(event) => GetUserProfile(GetSessionDataManager().userId)}
+            <MeMenuItem
+                name="achievements"
+                iconClassName="octane-icon icon-me-achievements"
+                label={localizeWithFallback('widget.memenu.achievements', 'Achievements')}
+                count={unseenAchievementCount}
+                onClick={() => CreateLinkEvent('achievements/toggle')}
             />
-            <BaseButton type="button"
-                className="navigation-item relative octane-icon icon-me-rooms cursor-pointer"
-                onClick={(event) => CreateLinkEvent('navigator/search/myworld_view')}
+            <MeMenuItem
+                name="quests"
+                iconClassName="icon-me-quests"
+                label={localizeWithFallback('toolbar.me.quests', 'Quests')}
+                onClick={() => CreateLinkEvent('quests/toggle')}
             />
-            <BaseButton type="button" className="navigation-item relative octane-icon icon-me-clothing cursor-pointer" onClick={(event) => CreateLinkEvent('avatar-editor/toggle')} />
-            <Hint content={LocalizeText('toolbar.icon.label.badge_creator')}><BaseButton aria-label={LocalizeText('toolbar.icon.label.badge_creator')} type="button"
-                className="navigation-item relative octane-icon icon-me-badge-creator cursor-pointer"
-                onClick={(event) => CreateLinkEvent('badge-creator/toggle')}
-            /></Hint>
-            {isCollectiblesEnabled() && (
-                <Hint content={localizeWithFallback('memenu.collectibles', 'Collectibles')}>
-                    <BaseButton
-                        aria-label={localizeWithFallback('memenu.collectibles', 'Collectibles')}
-                        type="button"
-                        className="navigation-item relative icon-me-collectibles cursor-pointer"
-                        onClick={(event) => CreateLinkEvent('collectibles/open')}
-                    />
-                </Hint>
+            <MeMenuItem
+                name="dailytasks"
+                iconClassName="icon-me-dailytasks"
+                label={localizeWithFallback('toolbar.me.dailytasks', 'Daily rewards')}
+                count={unseenDailyTaskCount}
+                onClick={() => CreateLinkEvent('dailytasks/toggle')}
+            />
+            <MeMenuItem
+                name="rewardtrack"
+                iconClassName="icon-me-rewardtrack"
+                label={localizeWithFallback('toolbar.me.rewardtrack', 'Reward track')}
+                count={unseenRewardTrackCount}
+                onClick={() => CreateLinkEvent('reward_track/toggle')}
+            />
+            {GetConfigurationValue<boolean>('talent.track.enabled', true) && (
+                <MeMenuItem
+                    name="talents"
+                    iconClassName="icon-me-talents"
+                    label={localizeWithFallback('widget.memenu.talents', 'Talents')}
+                    onClick={() => CreateLinkEvent('talent/open/current')}
+                />
             )}
-            <BaseButton type="button" className="navigation-item relative octane-icon icon-me-settings cursor-pointer" onClick={(event) => CreateLinkEvent('user-settings/toggle')} />
-            <Hint content={LocalizeText('toolbar.icon.label.forums')}><BaseButton type="button"
-                className="navigation-item relative octane-icon icon-me-forums cursor-pointer"
-                onClick={(event) => CreateLinkEvent('groupforum/toggle')}
-            >
-                {unreadForumsCount > 0 && <LayoutItemCountView count={unreadForumsCount} />}
-            </BaseButton></Hint>
+            <MeMenuItem
+                name="profile"
+                iconClassName="octane-icon icon-me-profile"
+                label={localizeWithFallback('widget.memenu.profile', 'Profile')}
+                onClick={() => GetUserProfile(GetSessionDataManager().userId)}
+            />
+            <MeMenuItem
+                name="rooms"
+                iconClassName="octane-icon icon-me-rooms"
+                label={localizeWithFallback('widget.memenu.myrooms', 'Rooms')}
+                onClick={() => CreateLinkEvent('navigator/search/myworld_view')}
+            />
+            <MeMenuItem
+                name="clothes"
+                iconClassName="octane-icon icon-me-clothing"
+                label={localizeWithFallback('widget.memenu.editavatar', 'Clothes')}
+                onClick={() => CreateLinkEvent('avatar-editor/toggle')}
+            />
+            <MeMenuItem
+                name="badgecreator"
+                iconClassName="octane-icon icon-me-badge-creator"
+                label={localizeWithFallback('toolbar.icon.label.badge_creator', 'Badges')}
+                onClick={() => CreateLinkEvent('badge-creator/toggle')}
+            />
+            {isCollectiblesEnabled() && (
+                <MeMenuItem
+                    name="collectibles"
+                    iconClassName="icon-me-collectibles"
+                    label={localizeWithFallback('memenu.collectibles', 'Collectibles')}
+                    onClick={() => CreateLinkEvent('collectibles/open')}
+                />
+            )}
+            <MeMenuItem
+                name="settings"
+                iconClassName="octane-icon icon-me-settings"
+                label={localizeWithFallback('widget.memenu.settings', 'Settings')}
+                onClick={() => CreateLinkEvent('user-settings/toggle')}
+            />
+            <MeMenuItem
+                name="forums"
+                iconClassName="octane-icon icon-me-forums"
+                label={localizeWithFallback('widget.memenu.forums', 'Forums')}
+                count={unreadForumsCount}
+                onClick={() => CreateLinkEvent('groupforum/toggle')}
+            />
             {children}
         </Flex>
     );

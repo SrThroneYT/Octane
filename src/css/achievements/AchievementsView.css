@@ -11,7 +11,7 @@
     padding: 0;
     --octane-card-surface: #e9e9e1;
     border: 1px solid transparent !important;
-    font-family: HabboAirUbuntu, Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     image-rendering: var(--octane-pixel-art, pixelated);
 }
 
@@ -25,7 +25,16 @@
 .octane-achievements-air,
 .octane-achievements-air * {
     box-sizing: border-box;
-    font-family: HabboAirUbuntu, Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+}
+
+/* AIR Achievements (quest_main_window) is an Ubuntu (style 3) frame and every text in it names font_face=Ubuntu,
+   the regular cut; our `Ubuntu` face is the condensed one, so the window title and anything a shared rule paints
+   in it are pinned to the regular cut too. */
+@layer base {
+    .octane-achievements-air :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
 }
 
 .octane-achievements-air .air-achievements-content.octane-card-content-shell {
@@ -41,7 +50,7 @@
     flex: 0 0 auto;
     gap: 4px;
     overflow: visible;
-    font-family: HabboAirUbuntu, Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
 }
 
 .octane-achievements-air .air-achievements-categories {
@@ -75,7 +84,7 @@
     box-shadow: none;
     color: #000000;
     cursor: pointer;
-    font-family: HabboAirUbuntu, Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     image-rendering: var(--octane-pixel-art, pixelated);
 }
 
@@ -449,7 +458,7 @@
     flex: 0 0 129px;
     overflow: hidden;
     color: #000000;
-    font-family: HabboAirUbuntu, Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
 }
 
 .octane-achievements-air .air-achievement-details::before {
@@ -570,7 +579,7 @@
     height: 23px;
     overflow: hidden;
     color: #ffffff;
-    font-family: HabboAirUbuntu, Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     image-rendering: var(--octane-pixel-art, pixelated);
 }
 
