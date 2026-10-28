@@ -64,6 +64,7 @@
     "login_right.repeat": "",
     "login_right": "",
     "login.remember.rotate.interval.minutes": 15,
+    "login.remember.cookie": false,
     "// ---- Hotel view ----": "",
     "hotelview": {
         "room.pool": "791",

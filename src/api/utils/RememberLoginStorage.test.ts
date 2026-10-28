@@ -1,6 +1,6 @@
 /* @vitest-environment jsdom */
 import { beforeEach, describe, expect, it } from 'vitest';
-import { GetRememberLogin, SetRememberLogin, StoreRememberLoginFromPayload } from './RememberLogin';
+import { GetRememberLogin, isRememberedLogin, rememberRequestBody, SetRememberLogin, StoreRememberLoginFromPayload } from './RememberLogin';
 
 const KEY = 'nitro.auth.remember';
 const stored = () => JSON.parse(window.localStorage.getItem(KEY) || 'null');
@@ -33,6 +33,33 @@ describe('remembered login storage', () => {
         window.localStorage.setItem(KEY, JSON.stringify({ ssoTicket: 'old-ticket', expiresAt: 4102444800 }));
 
         expect(GetRememberLogin()).toBeNull();
+        expect(stored()).toBeNull();
+    });
+
+    it('in cookie mode stores that a login is remembered, never a token', () => {
+        StoreRememberLoginFromPayload({ rememberExpiresAt: 4102444800, accessToken: 'access-1' }, 'alice', true);
+
+        expect(stored()).toEqual({ cookie: true, expiresAt: 4102444800, username: 'alice' });
+        expect(isRememberedLogin(GetRememberLogin())).toBe(true);
+        expect(rememberRequestBody(GetRememberLogin()!)).toEqual({ rememberCookie: true });
+    });
+
+    it('in cookie mode keeps a token a server without cookie support sent back', () => {
+        StoreRememberLoginFromPayload({ rememberToken: 'remember-1', rememberExpiresAt: 4102444800 }, 'alice', true);
+
+        expect(stored()).toEqual({ token: 'remember-1', expiresAt: 4102444800, username: 'alice' });
+        expect(rememberRequestBody(GetRememberLogin()!)).toEqual({ rememberToken: 'remember-1' });
+    });
+
+    it('a cookie entry never holds a token, whatever it is given', () => {
+        SetRememberLogin({ cookie: true, expiresAt: 4102444800, username: 'alice' });
+
+        expect(JSON.stringify(stored())).not.toContain('token');
+    });
+
+    it('in cookie mode a reply without an expiry stores nothing', () => {
+        StoreRememberLoginFromPayload({ accessToken: 'access-1' }, 'alice', true);
+
         expect(stored()).toBeNull();
     });
 });
