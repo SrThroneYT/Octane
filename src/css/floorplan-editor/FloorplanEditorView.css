@@ -345,23 +345,6 @@
     min-height: 0;
 }
 
-.fp-view-switch {
-    position: absolute;
-    right: 6px;
-    bottom: 6px;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    padding: 2px;
-    border-radius: 12px;
-    background: rgba(0, 0, 0, 0.45);
-}
-
-.fp-view-switch .fp-pill {
-    min-width: 30px;
-}
-
 /* The shared card content rules set buttons to 11.5 px; the editor's controls are u_regular / button_shiny_bold 12 px. */
 .octane-floorplan-window .octane-card-content-shell :is(.fp-btn, .fp-select button) {
     font-size: 12px;
@@ -472,29 +455,6 @@
     gap: 6px;
 }
 
-.fp-stage-toggles {
-    position: absolute;
-    left: 8px;
-    bottom: 8px;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.fp-stage-hint {
-    position: absolute;
-    left: 8px;
-    top: 8px;
-    z-index: 10;
-    padding: 2px 6px;
-    border-radius: 3px;
-    background: rgba(0, 0, 0, 0.55);
-    color: #d7d7d7;
-    font-size: 10px;
-    pointer-events: none;
-}
-
 .fp-round-btn {
     display: flex;
     align-items: center;
@@ -531,32 +491,6 @@
     width: 24px;
     height: 24px;
     font-size: 10px;
-}
-
-.fp-pill {
-    padding: 2px 8px;
-    border: 0;
-    border-radius: 10px;
-    cursor: pointer;
-    background: rgba(255, 255, 255, 0.18);
-    color: #e6e6e6;
-    font-size: 11px;
-    font-weight: 700;
-    line-height: 16px;
-}
-
-.fp-pill:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-.fp-pill.is-on {
-    background: var(--fp-blue);
-    color: #ffffff;
-}
-
-.fp-pill:disabled {
-    opacity: 0.4;
-    cursor: default;
 }
 
 /* main_buttons: reload on the left, import/export, cancel and save on the right; 120x35 button_thick, 12 px bold. */
@@ -661,4 +595,23 @@
     .octane-floorplan-window :where(*):not(svg, svg *) {
         font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
     }
+}
+
+/* preview_wrapper: AIR's flat preview bitmap on white, scrolling when the room is bigger than the panel. */
+.fp-air-preview {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+    border: 1px solid #8b8b84;
+    background: #ffffff;
+}
+
+/* margin: auto centres a small room and still lets a big one scroll from its top-left corner. */
+.fp-air-preview-canvas {
+    display: block;
+    flex: 0 0 auto;
+    margin: auto;
+    image-rendering: var(--octane-pixel-art, pixelated);
 }
