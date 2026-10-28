@@ -154,7 +154,7 @@ export const WiredArrayInspectorView = (props: WiredArrayInspectorViewProps) => 
 
     return (
         <OctaneCardView
-            className="min-w-[620px] max-w-[620px] max-h-[620px]"
+            className="octane-wired-menu min-w-[620px] max-w-[620px] max-h-[620px]"
             theme="primary-slim"
             uniqueKey="wired-array-inspector"
             windowPosition={DraggableWindowPosition.TOP_LEFT}

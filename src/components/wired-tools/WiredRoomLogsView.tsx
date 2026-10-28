@@ -172,7 +172,7 @@ export const WiredRoomLogsView = ({ onClose }: WiredRoomLogsViewProps) => {
 
     return (
         <OctaneCardView
-            className="min-w-[760px] max-w-[760px] max-h-[560px]"
+            className="octane-wired-menu min-w-[760px] max-w-[760px] max-h-[560px]"
             theme="primary-slim"
             uniqueKey="wired-room-logs"
             windowPosition={DraggableWindowPosition.TOP_LEFT}

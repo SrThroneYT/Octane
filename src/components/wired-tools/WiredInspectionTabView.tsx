@@ -200,7 +200,7 @@ export const WiredInspectionTabView = (props: WiredInspectionTabViewProps) => {
                             <span>{localizeWithFallback('wiredmenu.inspection.variables.value', 'Value')}</span>
                         </div>
                         {!displayedVariables.length && (
-                            <div className="h-[calc(100%-37px)] flex items-center justify-center text-[#b1aca2] text-[20px]">
+                            <div className="h-[calc(100%-37px)] flex items-center justify-center text-[#333333] text-[12px]">
                                 <Text>{localizeWithFallback('wiredmenu.table.empty', 'Nothing to display')}</Text>
                             </div>
                         )}

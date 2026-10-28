@@ -218,13 +218,13 @@ export const WiredChestsTabView: FC<{}> = () => {
 
         if (!hasDetails || (detail && !detail.items.length)) {
             return (
-                <div className="text-[11px] text-[#6b6659]">
+                <div className="text-[12px] text-[#6b6659]">
                     {localizeWithFallback('wiredchests.log_details.incomplete_data', 'No furni recorded for this transaction.')}
                 </div>
             );
         }
 
-        if (!detail) return <div className="text-[11px] text-[#6b6659]">...</div>;
+        if (!detail) return <div className="text-[12px] text-[#6b6659]">...</div>;
 
         return (
             <div className="flex flex-wrap gap-2">
@@ -240,7 +240,7 @@ export const WiredChestsTabView: FC<{}> = () => {
                                 '',
                             )}
                         />
-                        <span className="text-[11px] tabular-nums">x{item.quantity}</span>
+                        <span className="text-[12px] tabular-nums">x{item.quantity}</span>
                     </div>
                 ))}
             </div>
@@ -254,7 +254,7 @@ export const WiredChestsTabView: FC<{}> = () => {
                     <div className="flex items-center justify-between gap-2">
                         <Text bold>{localizeWithFallback('wiredmenu.chests.room_logs.title', 'Room transaction log')}</Text>
                         <Select
-                            className="rounded border border-[#7f7f7f] bg-[#ece9e1] px-2 py-[2px] text-[11px] text-[#333]"
+                            className="rounded border border-[#7f7f7f] bg-[#ece9e1] px-2 py-[2px] text-[12px] text-[#333]"
                             value={filter}
                             onChange={(event) => setFilter(parseInt(event.target.value, 10))}
                         >
@@ -267,7 +267,7 @@ export const WiredChestsTabView: FC<{}> = () => {
                     </div>
                     {!!onlyChestId && (
                         <div className="flex items-center justify-between gap-2 rounded border border-[#c08a5a] bg-[#f7e6cf] px-2 py-1">
-                            <span className="text-[11px] text-[#7a4a1c]">
+                            <span className="text-[12px] text-[#7a4a1c]">
                                 {localizeWithFallback(
                                     'wiredmenu.chests.room_logs.filtered_to_chest',
                                     'Showing chest %id% only',
@@ -282,7 +282,7 @@ export const WiredChestsTabView: FC<{}> = () => {
                     )}
                     <div className="max-h-[180px] overflow-y-auto border border-[#d1ccbf] rounded">{renderPreviewBody()}</div>
                     <div className="flex items-center justify-between gap-2">
-                        <span className="text-[11px] text-[#6b6659] tabular-nums">
+                        <span className="text-[12px] text-[#6b6659] tabular-nums">
                             {localizeWithFallback('wiredmenu.chests.room_logs.total', '%count% transactions', ['count'], [String(totalRows)])}
                         </span>
                         <Button disabled={!totalRows} variant="secondary" onClick={() => setDetailsOpen(true)}>
@@ -293,7 +293,7 @@ export const WiredChestsTabView: FC<{}> = () => {
 
                 <div className="bg-white rounded border border-[#b9b3a5] p-2 flex flex-col gap-2">
                     <Text bold>{localizeWithFallback('wiredmenu.chests.chest_control.title', 'Chest control')}</Text>
-                    <div className="text-[11px] text-[#6b6659]">
+                    <div className="text-[12px] text-[#6b6659]">
                         {localizeWithFallback(
                             'wiredmenu.chests.chest_control.hint',
                             'A locked chest still answers wired - only what people do by hand is blocked, in both directions.',
@@ -311,7 +311,7 @@ export const WiredChestsTabView: FC<{}> = () => {
                         </Button>
                     </div>
                     {!canManageAll && (
-                        <div className="text-[11px] text-[#8c877d]">
+                        <div className="text-[12px] text-[#8c877d]">
                             {localizeWithFallback('wiredmenu.chests.chest_control.owner_only', 'Only the room owner can lock every chest.')}
                         </div>
                     )}
@@ -372,7 +372,7 @@ const WiredChestTransactionsWindow: FC<WiredChestTransactionsWindowProps> = (pro
     } = props;
 
     return (
-        <OctaneCardView className="min-w-[720px] max-w-[720px]" theme="primary-slim" uniqueKey="wired-chest-transactions">
+        <OctaneCardView className="octane-wired-menu min-w-[720px] max-w-[720px]" theme="primary-slim" uniqueKey="wired-chest-transactions">
             <OctaneCardHeaderView
                 headerText={localizeWithFallback('wiredchests.logs.room_title', 'Room transactions')}
                 onCloseClick={onClose}
@@ -429,7 +429,7 @@ const WiredChestTransactionsWindow: FC<WiredChestTransactionsWindowProps> = (pro
                                             <td className="px-2 py-1 text-right tabular-nums">{row.deposited || '-'}</td>
                                             <td className="px-2 py-1 text-right">
                                                 <BaseButton
-                                                    className="rounded border border-[#7f7f7f] bg-[#ece9e1] px-2 py-[1px] text-[11px] text-[#333] hover:bg-[#e3ded2]"
+                                                    className="rounded border border-[#7f7f7f] bg-[#ece9e1] px-2 py-[1px] text-[12px] text-[#333] hover:bg-[#e3ded2]"
                                                     type="button"
                                                     onClick={() => onToggleDetail(row.transactionId, row.hasDetails)}
                                                 >
@@ -453,7 +453,7 @@ const WiredChestTransactionsWindow: FC<WiredChestTransactionsWindowProps> = (pro
                         <Button disabled={page <= 1} variant="secondary" onClick={() => onPage(page - 1)}>
                             {localizeWithFallback('wiredchests.logs.previous', 'Previous')}
                         </Button>
-                        <span className="text-[11px] text-[#6b6659] tabular-nums">
+                        <span className="text-[12px] text-[#6b6659] tabular-nums">
                             {localizeWithFallback(
                                 'wiredchests.logs.page',
                                 'Page %page% of %pages%',

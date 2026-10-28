@@ -99,7 +99,7 @@ export const WiredVariableHolderPanelView = (props: WiredVariableHolderPanelView
 
     return (
         <OctaneCardView
-            className="min-w-[430px] max-w-[430px] max-h-[620px]"
+            className="octane-wired-menu min-w-[430px] max-w-[430px] max-h-[620px]"
             theme="primary-slim"
             uniqueKey={uniqueKey}
             windowPosition={DraggableWindowPosition.TOP_LEFT}

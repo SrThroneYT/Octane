@@ -1792,3 +1792,18 @@
         font-size: 9px !important;
     }
 }
+
+/*
+ * The wired menu (wired_menu_view, wired_menu_table_view) and the windows it opens are Ubuntu frames: regular
+ * Ubuntu at 12 px, titles and table heads bold. Our `Ubuntu` face is the condensed cut, so they take the regular
+ * one; the share tab's code fields keep their monospace.
+ */
+.octane-wired-menu {
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+}
+
+@layer base {
+    .octane-wired-menu :where(*):not(svg, svg *, .font-mono) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
+}

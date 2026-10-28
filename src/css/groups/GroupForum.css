@@ -7,7 +7,7 @@
     min-height: var(--forum-min-height);
     padding: 0 !important;
     color: #000;
-    font-family: Ubuntu, sans-serif;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     font-size: 13px;
     line-height: 1;
     image-rendering: pixelated;

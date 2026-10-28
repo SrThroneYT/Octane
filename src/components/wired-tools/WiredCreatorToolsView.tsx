@@ -3170,7 +3170,7 @@ export const WiredCreatorToolsView: FC<{}> = () => {
                 </div>
             )}
             <OctaneCardView
-                className="min-w-[520px] max-w-[520px]"
+                className="octane-wired-menu min-w-[520px] max-w-[520px]"
                 theme="primary-slim"
                 uniqueKey="wired-creator-tools"
                 windowPosition={DraggableWindowPosition.TOP_LEFT}
@@ -3261,7 +3261,7 @@ export const WiredCreatorToolsView: FC<{}> = () => {
             </OctaneCardView>
             {isMonitorHistoryOpen && (
                 <OctaneCardView
-                    className="min-w-[760px] max-w-[760px] max-h-[520px]"
+                    className="octane-wired-menu min-w-[760px] max-w-[760px] max-h-[520px]"
                     theme="primary-slim"
                     uniqueKey="wired-monitor-history"
                     windowPosition={DraggableWindowPosition.TOP_LEFT}
@@ -3343,7 +3343,7 @@ export const WiredCreatorToolsView: FC<{}> = () => {
             )}
             {isMonitorInfoOpen && (
                 <OctaneCardView
-                    className="min-w-[560px] max-w-[560px] max-h-[520px]"
+                    className="octane-wired-menu min-w-[560px] max-w-[560px] max-h-[520px]"
                     theme="primary-slim"
                     uniqueKey="wired-monitor-info"
                     windowPosition={DraggableWindowPosition.TOP_LEFT}
@@ -3455,7 +3455,7 @@ export const WiredCreatorToolsView: FC<{}> = () => {
             )}
             {!!selectedMonitorErrorInfo && (
                 <OctaneCardView
-                    className="min-w-[470px] max-w-[470px] max-h-[500px]"
+                    className="octane-wired-menu min-w-[470px] max-w-[470px] max-h-[500px]"
                     theme="primary-slim"
                     uniqueKey="wired-monitor-error-info"
                     windowPosition={DraggableWindowPosition.TOP_LEFT}
