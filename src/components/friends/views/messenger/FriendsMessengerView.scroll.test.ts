@@ -23,6 +23,17 @@ describe('FriendsMessengerView routing and scroll behavior', () => {
         expect(source.match(/setActiveThreadId\(thread\.threadId\);/g)).toHaveLength(1);
     });
 
+    it('clears the field before the translation, so text typed meanwhile is not wiped', () => {
+        const source = readFileSync(join(process.cwd(), 'src/components/friends/views/messenger/FriendsMessengerView.tsx'), 'utf8');
+
+        const clear = source.indexOf("setMessageText('');", source.indexOf('sendingRef.current = true;'));
+        const translate = source.indexOf('await translateOutgoing(text)');
+
+        expect(clear).toBeGreaterThan(-1);
+        expect(translate).toBeGreaterThan(clear);
+        expect(source.indexOf("setMessageText('');", translate)).toBe(-1);
+    });
+
     it('uses final component names instead of implementation-origin prefixes', () => {
         const files = [
             'src/components/friends/views/friends-list/FriendsListView.tsx',
