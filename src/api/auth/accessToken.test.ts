@@ -17,4 +17,13 @@ describe('accessToken', () =>
         expect(getAccessToken()).toBe('');
         expect(getAccessTokenExpiresAt()).toBe(0);
     });
+
+    it('keeps the token out of storage, where any script on the origin could read it', () =>
+    {
+        setAccessToken('bearer-of-a-staff-member', 4102444800);
+
+        expect(getAccessToken()).toBe('bearer-of-a-staff-member');
+        expect(JSON.stringify({ ...window.localStorage })).not.toContain('bearer-of-a-staff-member');
+        expect(JSON.stringify({ ...window.sessionStorage })).not.toContain('bearer-of-a-staff-member');
+    });
 });
