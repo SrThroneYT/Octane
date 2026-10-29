@@ -54,9 +54,11 @@ export const CampaignView: FC<{}> = (props) => {
                 return copy;
             });
 
+            const reward = new CalendarItem(parser.productName, parser.customImage, parser.furnitureClassName);
+
             setReceivedProducts((prev) => {
                 const copy = new Map(prev);
-                copy.set(lastAttempt, new CalendarItem(parser.productName, parser.customImage, parser.furnitureClassName));
+                copy.set(lastAttempt, reward);
 
                 return copy;
             });

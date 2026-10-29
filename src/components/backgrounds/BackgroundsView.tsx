@@ -202,7 +202,7 @@ export const BackgroundsView: FC<BackgroundsViewProps> = ({
     );
 
     return (
-        <OctaneCardView uniqueKey="backgrounds" className="absolute min-w-[535px] max-w-[535px] min-h-[389px] max-h-[389px]">
+        <OctaneCardView uniqueKey="backgrounds" className="octane-backgrounds-window absolute min-w-[535px] max-w-[535px] min-h-[389px] max-h-[389px]">
             <OctaneCardHeaderView headerText="Profile Background" onCloseClick={() => setIsVisible(false)} />
             <OctaneCardTabsView>
                 {TABS.map((tab) => (
@@ -212,7 +212,7 @@ export const BackgroundsView: FC<BackgroundsViewProps> = ({
                 ))}
             </OctaneCardTabsView>
             <OctaneCardContentView gap={1}>
-                <Text bold center>
+                <Text bold center className="octane-backgrounds-window__prompt">
                     Select an Option
                 </Text>
                 <Grid gap={1} columnCount={7} overflow="auto">

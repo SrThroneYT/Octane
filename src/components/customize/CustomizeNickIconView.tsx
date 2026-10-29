@@ -39,6 +39,7 @@ import { LayoutCurrencyIcon } from '../../common/layout/LayoutCurrencyIcon';
 import { useMessageEvent } from '../../hooks';
 import { Select } from '../../common/Select';
 import { BaseButton } from '../../common/BaseButton';
+import '../../css/customize/CustomizeNickIconAirText.css';
 
 type CustomizeTab = 'icons' | 'prefix' | 'settings';
 type PrefixSubTab = 'library' | 'custom';
@@ -375,7 +376,7 @@ export const CustomizeNickIconView: FC<{}> = () => {
                                         className={`relative flex min-h-[126px] flex-col items-center justify-between gap-2 rounded border p-3 transition-colors ${item.active ? 'border-[#418db0] bg-[#dff3fb]' : 'border-black/10 bg-black/5'}`}
                                     >
                                         {item.active && (
-                                            <span className="absolute right-1 top-1 rounded bg-[#418db0] px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">
+                                            <span className="absolute right-1 top-1 rounded bg-[#418db0] px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
                                                 Active
                                             </span>
                                         )}
@@ -405,14 +406,14 @@ export const CustomizeNickIconView: FC<{}> = () => {
                         <div className="rounded border border-black/10 bg-black/5 p-1">
                             <div className="flex items-center gap-2">
                                 <BaseButton
-                                    className={`rounded px-3 py-1.5 text-[11px] font-bold transition-colors ${activePrefixSubTab === 'library' ? 'bg-[#418db0] text-white' : 'bg-white text-black'}`}
+                                    className={`rounded px-3 py-1.5 text-[12px] font-bold transition-colors ${activePrefixSubTab === 'library' ? 'bg-[#418db0] text-white' : 'bg-white text-black'}`}
                                     type="button"
                                     onClick={() => setActivePrefixSubTab('library')}
                                 >
                                     Library
                                 </BaseButton>
                                 <BaseButton
-                                    className={`rounded px-3 py-1.5 text-[11px] font-bold transition-colors ${activePrefixSubTab === 'custom' ? 'bg-[#418db0] text-white' : 'bg-white text-black'}`}
+                                    className={`rounded px-3 py-1.5 text-[12px] font-bold transition-colors ${activePrefixSubTab === 'custom' ? 'bg-[#418db0] text-white' : 'bg-white text-black'}`}
                                     type="button"
                                     onClick={() => setActivePrefixSubTab('custom')}
                                 >
@@ -433,7 +434,7 @@ export const CustomizeNickIconView: FC<{}> = () => {
                                             className={`relative flex min-h-[96px] flex-col gap-2 rounded border p-2.5 ${item.active ? 'border-[#418db0] bg-[#dff3fb]' : 'border-black/10 bg-black/5'}`}
                                         >
                                             {item.active && (
-                                                <span className="absolute right-1 top-1 rounded bg-[#418db0] px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">
+                                                <span className="absolute right-1 top-1 rounded bg-[#418db0] px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
                                                     Active
                                                 </span>
                                             )}
@@ -480,7 +481,7 @@ export const CustomizeNickIconView: FC<{}> = () => {
                                 <div className="mt-2 flex flex-col gap-2">
                                     <div className="flex items-center gap-2">
                                         <input
-                                            className="flex-1 rounded border border-black/10 bg-white px-3 py-2 text-sm"
+                                            className="flex-1 rounded border border-black/10 bg-white px-3 py-2 text-[12px]"
                                             maxLength={customPrefixMaxLength}
                                             placeholder="Enter your prefix"
                                             type="text"
@@ -493,7 +494,7 @@ export const CustomizeNickIconView: FC<{}> = () => {
                                     </div>
                                     <div className="flex flex-wrap items-center gap-2">
                                         <BaseButton
-                                            className="rounded border border-black/10 bg-white px-3 py-2 text-sm"
+                                            className="rounded border border-black/10 bg-white px-3 py-2 text-[12px]"
                                             type="button"
                                             onClick={() => setShowEmojiPicker(true)}
                                         >
@@ -523,7 +524,7 @@ export const CustomizeNickIconView: FC<{}> = () => {
                                         <div className="mb-2 text-[11px] leading-4 text-black/70">Effect</div>
                                         <div className="flex items-center gap-2">
                                             <Select
-                                                className="flex-1 rounded border border-black/10 bg-white px-2 py-2 text-sm"
+                                                className="flex-1 rounded border border-black/10 bg-white px-2 py-2 text-[12px]"
                                                 value={customPrefixEffect}
                                                 onChange={(event) => setCustomPrefixEffect(event.target.value)}
                                             >
@@ -544,7 +545,7 @@ export const CustomizeNickIconView: FC<{}> = () => {
                                             </Select>
                                             <div className="min-w-[130px] rounded border border-black/10 bg-black/5 px-2 py-2 text-center text-[11px] font-bold">
                                                 {selectedEffectOption.icon} {selectedEffectOption.label}
-                                                <div className="mt-1 text-[9px] uppercase text-black/60">{selectedEffectOption.tier}</div>
+                                                <div className="mt-1 text-[10px] uppercase text-black/60">{selectedEffectOption.tier}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -552,7 +553,7 @@ export const CustomizeNickIconView: FC<{}> = () => {
                                         <div className="mb-2 text-[11px] leading-4 text-black/70">Font</div>
                                         <div className="flex items-center gap-2">
                                             <Select
-                                                className="flex-1 rounded border border-black/10 bg-white px-2 py-2 text-sm"
+                                                className="flex-1 rounded border border-black/10 bg-white px-2 py-2 text-[12px]"
                                                 value={customPrefixFont}
                                                 onChange={(event) => setCustomPrefixFont(event.target.value)}
                                             >
@@ -572,8 +573,8 @@ export const CustomizeNickIconView: FC<{}> = () => {
                                                 </optgroup>
                                             </Select>
                                             <div className="min-w-[130px] rounded border border-black/10 bg-black/5 px-2 py-2 text-center text-[11px] font-bold">
-                                                <span style={customPrefixFontStyle}>{selectedFontOption.label}</span>
-                                                <div className="mt-1 text-[9px] uppercase text-black/60">{selectedFontOption.tier}</div>
+                                                <span className="customize-nick-icon-window__font-sample" style={customPrefixFontStyle}>{selectedFontOption.label}</span>
+                                                <div className="mt-1 text-[10px] uppercase text-black/60">{selectedFontOption.tier}</div>
                                             </div>
                                         </div>
                                         {!!customPrefixFont && (

@@ -88,10 +88,11 @@
 }
 
 .octane-badge-leaderboard__header-title {
+    /* main_view title_txt: font_size 16, bold, white over four offset shadow copies. */
     color: #ffffff;
-    font-size: 28px;
+    font-size: 16px;
     font-weight: 700;
-    line-height: 1;
+    line-height: 21px;
     text-shadow:
         0 1px 0 #4a4a4a,
         1px 0 0 #4a4a4a,
@@ -125,8 +126,9 @@
     border: 0;
     padding: 5px 9px;
     background: transparent;
+    /* hidden_dropdown has no text style of its own: u_regular 12 px. */
     color: #232323;
-    font-size: 14px;
+    font-size: 12px;
     line-height: 1.15;
     text-align: left;
     cursor: pointer;
@@ -187,8 +189,10 @@
 }
 
 .octane-badge-leaderboard__info-text {
-    color: #3b3b3b;
-    font-size: 15px;
+    /* rank_type_info: font_size 11, 0x222222, regular. */
+    color: #222222;
+    font-size: 11px;
+    font-weight: 400;
     line-height: 1.2;
     /* the info texts break their two sentences with a line break */
     white-space: pre-line;
@@ -237,28 +241,26 @@
     border-radius: 9999px;
     background: linear-gradient(180deg, #6a8db7 0%, #4d6788 100%);
     border: 1px solid #546b87;
+    /* rank_number: font_size 15, bold, white with a black bottom-right etching. */
     color: #ffffff;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
-    text-shadow: 0 1px 0 #31455d;
+    text-shadow: 1px 1px 0 #000000;
 }
 
 .octane-badge-leaderboard__rank.is-rank-1 {
     background: linear-gradient(180deg, #efcf58 0%, #c28e1f 100%);
     border-color: #af8325;
-    text-shadow: 0 1px 0 #7f6020;
 }
 
 .octane-badge-leaderboard__rank.is-rank-2 {
     background: linear-gradient(180deg, #d4d4d4 0%, #9d9d9d 100%);
     border-color: #8e8e8e;
-    text-shadow: 0 1px 0 #666666;
 }
 
 .octane-badge-leaderboard__rank.is-rank-3 {
     background: linear-gradient(180deg, #db9c4f 0%, #a56521 100%);
     border-color: #9a5c1c;
-    text-shadow: 0 1px 0 #784312;
 }
 
 .octane-badge-leaderboard__avatar {
@@ -291,16 +293,20 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: #202020;
-    font-size: 15px;
-    line-height: 1;
+    /* username_txt: no text style, so u_regular 12 px (not bold) in black. */
+    color: #000000;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 17px;
 }
 
 .octane-badge-leaderboard__score {
     width: 56px;
-    color: #1f1f1f;
-    font-size: 15px;
-    line-height: 1;
+    /* score_txt: u_regular with bold=true, 12 px. */
+    color: #000000;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 17px;
     text-align: right;
     padding-inline-start: 0;
 }
@@ -335,8 +341,10 @@
     border: 1px solid #8a8a8a;
     border-radius: 4px;
     background: linear-gradient(180deg, #fefefe 0%, #e8e8e6 100%);
+    /* previous_btn / next_btn: button_shiny_regular, 12 px regular. */
     color: #1f1f1f;
-    font-size: 15px;
+    font-size: 12px;
+    font-weight: 400;
     cursor: pointer;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
@@ -349,4 +357,18 @@
     color: #8d8d8d;
     background: linear-gradient(180deg, #ececec 0%, #d9d9d9 100%);
     cursor: default;
+}
+
+/* main_view is a style-3 Ubuntu layout; our `Ubuntu` face is the condensed cut, AIR's is the regular one.
+   The category menu is portalled out of the window, so it gets the face on its own. */
+.octane-badge-leaderboard,
+.octane-badge-leaderboard__category-menu {
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+}
+
+@layer base {
+    .octane-badge-leaderboard :where(*):not(svg, svg *),
+    .octane-badge-leaderboard__category-menu :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
 }

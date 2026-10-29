@@ -1,0 +1,27 @@
+/*
+ * Customize bubble identity has no AIR layout (it is an Octane window), so it follows the AIR text
+ * conventions: regular Ubuntu (our `Ubuntu` face is the condensed cut), u_regular / u_bold 12 px body and
+ * section heads, u_button_tab 12 px tabs, 12 px buttons, il_regular 11 px for the hints and item meta,
+ * il_border 10 px bold for the "Active" / tier badges. Sizes of the small text sit on the Tailwind classes in
+ * CustomizeNickIconView.tsx. The prefix previews (UserIdentityView `.prefix`) and the font sample keep the font the player picked.
+ */
+
+.customize-nick-icon-window {
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    font-size: 12px;
+}
+
+@layer base {
+    .customize-nick-icon-window :where(*):not(svg, svg *, .prefix, .prefix *, .customize-nick-icon-window__font-sample) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
+
+    /* Button's default `text-[.7875rem]!` (12.6 px) is an important utility, so the 12 px goes in base. */
+    .customize-nick-icon-window :is(.habbo-btn-primary, .habbo-btn-secondary, .habbo-btn-danger) {
+        font-size: 12px !important;
+    }
+}
+
+.customize-nick-icon-window .octane-card-tab-item {
+    font-size: 12px !important;
+}

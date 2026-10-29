@@ -48,7 +48,8 @@
 .octane-help-bubble__text {
     width: 100%;
     color: #000000;
-    font-family: Ubuntu, sans-serif;
+    /* help_bubble_text: u_bold at font_size 15, regular (not condensed) Ubuntu. */
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     font-size: 15px;
     font-weight: 700;
     line-height: 18px;
@@ -62,11 +63,30 @@
     border-radius: 5px;
     background: linear-gradient(#5bd65b, #33cc33);
     color: #ffffff;
+    /* help_bubble_btn_ok: shiny button caption, button_shiny_bold 12 px. */
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    font-size: 12px;
     font-weight: 700;
     cursor: pointer;
 }
 
 /* ---- HabboNuxDialogs ---- */
+
+/* nux_offer_old_user / nux_gift_selection / nux_noob_room_offer are style-3 Ubuntu frames;
+   our `Ubuntu` face is the condensed cut, AIR's is the regular one. */
+.octane-nux-offer,
+.octane-nux-gifts,
+.octane-help-bubble {
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+}
+
+@layer base {
+    .octane-nux-offer :where(*):not(svg, svg *),
+    .octane-nux-gifts :where(*):not(svg, svg *),
+    .octane-help-bubble :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
+}
 
 .octane-nux-offer.is-old-user {
     width: min(456px, calc(100vw - 16px));
@@ -93,9 +113,11 @@
     border: 2px solid #3d6373;
     border-radius: 4px;
     background: #0f4052;
+    /* nux.offer.old.user.title / nux_gift_selection_choose_one: u_headline_big at font_size 22, white. */
     color: #ffffff;
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 700;
+    line-height: 28px;
 }
 
 .octane-nux-offer__banner img {
@@ -103,8 +125,17 @@
     max-height: 54px;
 }
 
+/* nux_offer_old_user txtBody: u_tool_tip (11 px) in 0x333333. */
 .octane-nux-offer__text {
     color: #333333;
+    font-size: 11px;
+    font-weight: 400;
+}
+
+/* nux_noob_room_offer txtBody: no text_style, so the frame's u_regular 12 px in black. */
+.octane-nux-offer.is-lobby .octane-nux-offer__text {
+    color: #000000;
+    font-size: 12px;
 }
 
 .octane-nux-offer__buttons {
@@ -117,8 +148,11 @@
 .octane-nux-offer__link {
     border: 0;
     background: transparent;
+    /* btnSkip: link at font_size 11, 0x333333, bold + underline. */
     color: #333333;
+    font-size: 11px;
     font-weight: 700;
+    text-decoration: underline;
     cursor: pointer;
 }
 
@@ -129,7 +163,9 @@
     border: 1px solid #158a00;
     border-radius: 5px;
     background: linear-gradient(#3fc02a, #1da100);
+    /* btnGo / option_button: shiny button caption, button_shiny_bold 12 px. */
     color: #ffffff;
+    font-size: 12px;
     font-weight: 700;
     cursor: pointer;
 }
@@ -170,6 +206,7 @@
 }
 
 .octane-nux-gifts__name {
+    /* option_heading: u_bold at font_size 9. */
     min-height: 24px;
     font-size: 9px;
     font-weight: 700;

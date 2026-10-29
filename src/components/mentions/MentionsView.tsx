@@ -186,7 +186,7 @@ export const MentionsView: FC<MentionsViewProps> = (props) => {
                     </BaseButton>
                 )}
                 {unreadCount > 0 && (
-                    <Button variant="primary" onClick={markAll}>
+                    <Button className="mentions-markall" variant="primary" onClick={markAll}>
                         {LocalizeText('mentions.window.markall')}
                     </Button>
                 )}
