@@ -21,7 +21,7 @@ import {
     PrepareRenderer
 } from '@octane/renderer';
 import { FC, useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
-import { clearAccessToken, ClearRememberLogin, ClearRememberLoginIfStill, createBootSteps, exchangeSsoTicketForAccessToken, GetRememberLogin, GetUIVersion, persistAccessTokenFromPayload, StoreRememberLoginFromPayload, withRememberLock } from './api';
+import { clearAccessToken, ClearRememberLogin, ClearRememberLoginIfStill, createBootSteps, exchangeSsoTicketForAccessToken, GetRememberLogin, GetUIVersion, isRememberedLogin, persistAccessTokenFromPayload, rememberRequestBody, StoreRememberLoginFromPayload, withRememberLock } from './api';
 import { Base } from './common';
 import { LoadingView } from './components/loading/LoadingView';
 import { LoginView } from './components/login/LoginView';
@@ -195,7 +195,7 @@ export const App: FC<{}> = (props) => {
             hasToken: !!remembered?.token?.length
         });
 
-        if (!remembered?.token?.length) {
+        if (!isRememberedLogin(remembered)) {
             if (remembered) ClearRememberLogin();
             OctaneLogger.log('[App] tryRememberLogin → no token, returning empty');
             return '';
@@ -212,7 +212,7 @@ export const App: FC<{}> = (props) => {
                     Accept: 'application/json',
                     'X-Requested-With': 'OctaneRememberLogin'
                 },
-                body: JSON.stringify({ rememberToken: remembered.token })
+                body: JSON.stringify(rememberRequestBody(remembered))
             });
 
             let payload: Record<string, unknown> = {};
@@ -230,7 +230,7 @@ export const App: FC<{}> = (props) => {
 
             if (response.ok && ssoTicket) {
                 persistAccessTokenFromPayload(payload, ssoTicket);
-                StoreRememberLoginFromPayload(payload, typeof payload.username === 'string' ? payload.username : remembered.username);
+                StoreRememberLoginFromPayload(payload, typeof payload.username === 'string' ? payload.username : remembered.username, remembered.cookie === true);
                 return ssoTicket;
             }
         } catch (error) {
@@ -249,7 +249,7 @@ export const App: FC<{}> = (props) => {
     const rotateRememberLoginUnlocked = useCallback(async (): Promise<void> => {
         const remembered = GetRememberLogin();
 
-        if (!remembered?.token?.length) return;
+        if (!isRememberedLogin(remembered)) return;
 
         try {
             const rawEndpoint = GetConfiguration().getValue<string>('login.refresh.endpoint', '${api.url}/api/auth/refresh');
@@ -262,7 +262,7 @@ export const App: FC<{}> = (props) => {
                     Accept: 'application/json',
                     'X-Requested-With': 'OctaneRememberRotate'
                 },
-                body: JSON.stringify({ rememberToken: remembered.token })
+                body: JSON.stringify(rememberRequestBody(remembered))
             });
 
             let payload: Record<string, unknown> = {};
@@ -272,7 +272,7 @@ export const App: FC<{}> = (props) => {
 
             if (response.ok) {
                 persistAccessTokenFromPayload(payload);
-                StoreRememberLoginFromPayload(payload, remembered.username);
+                StoreRememberLoginFromPayload(payload, remembered.username, remembered.cookie === true);
                 return;
             }
 
@@ -540,7 +540,7 @@ export const App: FC<{}> = (props) => {
                 if (rememberRotateIntervalRef.current !== null) window.clearInterval(rememberRotateIntervalRef.current);
 
                 const rotateMinutes = Math.max(1, Number(GetConfiguration().getValue<unknown>('login.remember.rotate.interval.minutes', 15)) || 15);
-                if (GetRememberLogin()?.token?.length)
+                if (isRememberedLogin(GetRememberLogin()))
                     rememberRotateIntervalRef.current = window.setInterval(() => rotateRememberLogin(), rotateMinutes * 60 * 1000);
 
                 if (!tickersStartedRef.current) {
