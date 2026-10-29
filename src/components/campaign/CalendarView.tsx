@@ -9,6 +9,7 @@ import {
     ICalendarItem,
     LocalizeText
 } from '../../api';
+import { localizeWithFallback } from '../../api/utils/localizeWithFallback';
 import { Button, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView } from '../../common';
 import { BaseButton } from '../../common/BaseButton';
 import { useHasPermission } from '../../hooks';
@@ -19,6 +20,8 @@ interface CalendarViewProps {
     onClose(): void;
     openPackage(id: number, asStaff: boolean): void;
     receivedProducts: Map<number, ICalendarItem>;
+    /** What each day opened before held, from the calendar data (Octane servers send it). */
+    openedRewards?: Map<number, ICalendarItem>;
     campaignName: string;
     currentDay: number;
     numDays: number;
@@ -42,7 +45,8 @@ export const CalendarView: FC<CalendarViewProps> = (props) => {
         missedDays = [],
         openedDays = [],
         openPackage = null,
-        receivedProducts = null
+        receivedProducts = null,
+        openedRewards = null
     } = props;
     const [selectedDay, setSelectedDay] = useState(Math.max(0, Math.min(currentDay, numDays - 1)));
     const [stageWidth, setStageWidth] = useState(getStageWidth);
@@ -92,7 +96,10 @@ export const CalendarView: FC<CalendarViewProps> = (props) => {
 
     return (
         <OctaneCardView className="octane-campaign-calendar" theme="primary-slim" style={{ width: spinnerWidth }}>
-            <OctaneCardHeaderView headerText={LocalizeText(`campaign.calendar.${campaignName}.title`)} onCloseClick={onClose} />
+            <OctaneCardHeaderView
+                headerText={localizeWithFallback(`campaign.calendar.${campaignName}.title`, localizeWithFallback('campaign.calendar.title', 'Calendar'))}
+                onCloseClick={onClose}
+            />
             <OctaneCardContentView className="octane-campaign-calendar__content" overflow="hidden">
                 <div className="octane-campaign-calendar__info">
                     <div className="octane-campaign-calendar__icon" />
@@ -122,7 +129,7 @@ export const CalendarView: FC<CalendarViewProps> = (props) => {
                                 key={day}
                                 active={selectedDay === day}
                                 itemId={day}
-                                product={receivedProducts?.get(day) ?? null}
+                                product={receivedProducts?.get(day) ?? openedRewards?.get(day) ?? null}
                                 state={getDayState(day)}
                                 onClick={onClickItem}
                             />

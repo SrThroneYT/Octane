@@ -1,8 +1,6 @@
 import { GetSessionDataManager } from '@octane/renderer';
-import clubIcon from '../../assets/images/notifications/club_icon_square.png';
-import { GetConfigurationValue } from '../octane';
 import { localizeWithFallback } from '../utils/localizeWithFallback';
-import { getFurnitureIconUrl } from './CalendarRewardDisplay';
+import { getCalendarSubscriptionImageUrl, getCurrencyIconUrl, getFurnitureIconUrl } from './CalendarRewardDisplay';
 
 /** The notification types the server sends for each part of an opened calendar day: `calendar.reward.<kind>`. */
 export const CALENDAR_REWARD_NOTIFICATION_PREFIX = 'calendar.reward.';
@@ -27,12 +25,6 @@ const getFurniName = (className: string): string => {
     return sessionData.getFloorItemDataByName(className)?.name || sessionData.getWallItemDataByName(className)?.name || className;
 };
 
-const getCurrencyIconUrl = (currency: string): string => {
-    const url = GetConfigurationValue<string>('currency.asset.icon.url', '');
-
-    return url ? url.replace('%type%', currency) : null;
-};
-
 /**
  * The text and icon of one `calendar.reward.<kind>` bubble: the amount (and subscription or furni name) filled into the
  * hotel's `notification.calendar.reward.<kind>.message`, with the currency icon, the HC icon or the furni icon.
@@ -54,8 +46,8 @@ export const getCalendarRewardBubble = (type: string, options: Map<string, strin
         case 'club': {
             const subscription = options.get('subscription') ?? '';
 
-            values.subscription = subscription === 'HABBO_CLUB' ? 'Habbo Club' : subscription;
-            imageUrl = clubIcon;
+            values.subscription = subscription === 'HABBO_CLUB' ? 'Habbo Club' : subscription === 'BUILDERS_CLUB' ? 'Builders Club' : subscription;
+            imageUrl = getCalendarSubscriptionImageUrl(subscription);
             break;
         }
         case 'furni': {

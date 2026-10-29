@@ -3,7 +3,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const texts = new Map<string, string>();
 
-vi.mock('../octane', () => ({ GetConfigurationValue: (key: string) => (key === 'currency.asset.icon.url' ? '/wallet/%type%.png' : '') }));
+vi.mock('../octane', () => ({
+    GetConfigurationValue: (key: string) => (key === 'currency.asset.icon.url' ? '/wallet/%type%.png' : key === 'image.library.url' ? 'https://images/' : '')
+}));
 vi.mock('../utils/LocalizeText', () => ({
     LocalizeText: (key: string, names: string[] = [], values: string[] = []) => {
         let text = texts.get(key) ?? key;
@@ -43,9 +45,14 @@ describe('calendar reward bubbles (calendar.reward.<kind>)', () => {
     });
 
     it('names Habbo Club and the furni by its furnidata name, with their icons', () => {
-        expect(getCalendarRewardBubble('calendar.reward.club', options({ amount: '7', subscription: 'HABBO_CLUB' }))?.message).toBe(
-            'You received 7 days of Habbo Club!'
-        );
+        expect(getCalendarRewardBubble('calendar.reward.club', options({ amount: '7', subscription: 'HABBO_CLUB' }))).toEqual({
+            message: 'You received 7 days of Habbo Club!',
+            imageUrl: expect.stringContaining('advent_extras_hc')
+        });
+        expect(getCalendarRewardBubble('calendar.reward.club', options({ amount: '3', subscription: 'BUILDERS_CLUB' }))).toEqual({
+            message: 'You received 3 days of Builders Club!',
+            imageUrl: expect.stringContaining('advent_extras_bc')
+        });
 
         vi.mocked(GetSessionDataManager).mockReturnValue({
             getFloorItemDataByName: (name: string) => (name === 'throne' ? { id: 3, name: 'Troon' } : null),

@@ -11,7 +11,7 @@ import { CalendarView } from './CalendarView';
 
 afterEach(() => cleanup());
 
-const renderCalendar = (openPackage = vi.fn(), receivedProducts = new Map()) =>
+const renderCalendar = (openPackage = vi.fn(), receivedProducts = new Map(), openedRewards = new Map()) =>
     render(
         <CalendarView
             campaignName="xmas"
@@ -20,6 +20,7 @@ const renderCalendar = (openPackage = vi.fn(), receivedProducts = new Map()) =>
             missedDays={[1]}
             openedDays={[0]}
             receivedProducts={receivedProducts}
+            openedRewards={openedRewards}
             openPackage={openPackage}
             onClose={() => {}}
         />
@@ -71,5 +72,12 @@ describe('CalendarView (AIR calendar)', () => {
 
         expect(screen.getByText('campaign.calendar.heading.product.received')).toBeTruthy();
         expect(screen.getByText('50 credits')).toBeTruthy();
+    });
+
+    it('shows the reward of a day opened before in its box, without the received heading', () => {
+        renderCalendar(vi.fn(), new Map(), new Map([[0, { productName: 'Coins', customImage: 'calendar/coins.png', furnitureClassName: '' }]]));
+
+        expect(document.body.querySelector('.octane-calendar-day[data-state="1"] .octane-calendar-day__icon')).toBeTruthy();
+        expect(screen.queryByText('campaign.calendar.heading.product.received')).toBeNull();
     });
 });
