@@ -16,6 +16,7 @@
     "niko.trophy.appstore.image": "",
     "emustats.endpoint": "${api.url}/api/emustats",
     "external.plugins": [],
+    "external.plugins.allowed.hosts": [],
     "// ---- Images and assets ----": "",
     "image.library.notifications.url": "${image.library.url}notifications/%image%.png",
     "achievements.images.url": "${image.library.url}Quests/%image%.png",
@@ -64,6 +65,7 @@
     "login_right.repeat": "",
     "login_right": "",
     "login.remember.rotate.interval.minutes": 15,
+    "login.remember.cookie": false,
     "// ---- Hotel view ----": "",
     "hotelview": {
         "room.pool": "791",
@@ -126,6 +128,7 @@
     "friendbar.notifications.enabled": true,
     "radio_ui.enabled": false,
     "show.google.ads": false,
+    "ads.frame.url": "",
     "hc.disabled": false,
     "club.membership.extend.promotion.enabled": true,
     "raid.protection.enabled": true,

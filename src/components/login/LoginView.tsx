@@ -2,7 +2,7 @@ import { GetAvatarRenderManager, GetConfiguration } from '@octane/renderer';
 import { FC, useActionState, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { FaDice } from 'react-icons/fa';
-import { ClearRememberLogin, GetConfigurationValue, GetOptionalConfigurationValue, GetRememberLogin, persistAccessTokenFromPayload, StoreRememberLoginFromPayload } from '../../api';
+import { ClearRememberLogin, GetConfigurationValue, GetOptionalConfigurationValue, GetRememberLogin, isRememberCookieMode, persistAccessTokenFromPayload, StoreRememberLoginFromPayload } from '../../api';
 import flagEn from '../../assets/images/flag_icon/flag_icon_en.png';
 import flagEs from '../../assets/images/flag_icon/flag_icon_es.png';
 import flagFr from '../../assets/images/flag_icon/flag_icon_fr.png';
@@ -543,6 +543,7 @@ export const LoginView: FC<LoginViewProps> = ({ onAuthenticated, isEntering = fa
                     username: usernameInput,
                     password: passwordInput,
                     remember: rememberFlag,
+                    ...(rememberFlag && isRememberCookieMode() ? { rememberCookie: true } : {}),
                     turnstileToken: turnstileEnabled ? loginTurnstileToken : undefined
                 });
 
@@ -552,7 +553,7 @@ export const LoginView: FC<LoginViewProps> = ({ onAuthenticated, isEntering = fa
                     clearLock();
                     persistAccessTokenFromPayload(payload, ssoTicket);
                     if (rememberFlag)
-                        StoreRememberLoginFromPayload(payload, typeof payload.username === 'string' ? payload.username : usernameInput);
+                        StoreRememberLoginFromPayload(payload, typeof payload.username === 'string' ? payload.username : usernameInput, isRememberCookieMode());
                     else ClearRememberLogin();
                     onAuthenticated(ssoTicket);
                     return null;

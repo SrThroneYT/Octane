@@ -54,9 +54,19 @@ export const CampaignView: FC<{}> = (props) => {
                 return copy;
             });
 
+            const reward = new CalendarItem(parser.productName, parser.customImage, parser.furnitureClassName, {
+                badgeCode: parser.badgeCode,
+                credits: parser.credits,
+                pixels: parser.pixels,
+                points: parser.points,
+                pointsType: parser.pointsType,
+                subscriptionType: parser.subscriptionType,
+                subscriptionDays: parser.subscriptionDays
+            });
+
             setReceivedProducts((prev) => {
                 const copy = new Map(prev);
-                copy.set(lastAttempt, new CalendarItem(parser.productName, parser.customImage, parser.furnitureClassName));
+                copy.set(lastAttempt, reward);
 
                 return copy;
             });
@@ -95,6 +105,7 @@ export const CampaignView: FC<{}> = (props) => {
                     missedDays={calendarData.missedDays}
                     numDays={calendarData.campaignDays}
                     openedDays={calendarData.openedDays}
+                    openedRewards={calendarData.openedRewards}
                     openPackage={openPackage}
                     receivedProducts={receivedProducts}
                     onClose={() => setCalendarOpen(false)}

@@ -107,23 +107,24 @@ export const FriendsMessengerView: FC<{}> = (props) => {
         // Enter again while the translation is pending must not send the text twice.
         sendingRef.current = true;
 
+        // The field is cleared now, so what is typed while the translation is pending stays for the next send.
+        const text = messageText;
+        setMessageText('');
+
         let translation: Awaited<ReturnType<typeof translateOutgoing>> = null;
 
         try {
-            translation = await translateOutgoing(messageText);
+            translation = await translateOutgoing(text);
         } finally {
             sendingRef.current = false;
         }
 
         if (translation && translation.translatedText?.length && translation.translatedText.length <= 255) {
             sendMessage(activeThread, GetSessionDataManager().userId, translation.translatedText, 0, null, undefined, translation);
-            setMessageText('');
             return;
         }
 
-        sendMessage(activeThread, GetSessionDataManager().userId, messageText);
-
-        setMessageText('');
+        sendMessage(activeThread, GetSessionDataManager().userId, text);
     };
 
     const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {

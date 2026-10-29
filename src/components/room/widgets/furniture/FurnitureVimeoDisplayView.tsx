@@ -46,6 +46,9 @@ const VimeoViewer: FC<VimeoViewerProps> = ({ videoId, canEdit, onClose, onSave }
                             allow="autoplay; fullscreen; picture-in-picture"
                             allowFullScreen
                             className="octane-vimeo-viewer-player"
+                            // The player keeps what it needs to play; it may not navigate the client away.
+                            sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"
+                            referrerPolicy="strict-origin"
                             src={playerUrl}
                             title="Vimeo"
                         />

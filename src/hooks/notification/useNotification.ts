@@ -24,6 +24,7 @@ import { useCallback, useState } from 'react';
 import { registerSharedHook, useSharedHook } from '@/state/useSharedHook';
 import {
     GetConfigurationValue,
+    getCalendarRewardBubble,
     IMentionEntry,
     LocalizeBadgeName,
     LocalizeText,
@@ -202,6 +203,14 @@ const useNotificationStore = () => {
 
     const showNotification = (type: string, options: Map<string, string> = null) => {
         if (!options) options = new Map();
+
+        const calendarReward = getCalendarRewardBubble(type, options);
+
+        if (calendarReward) {
+            showSingleBubble(calendarReward.message, NotificationBubbleType.INFO, calendarReward.imageUrl);
+
+            return;
+        }
 
         const configuration = getNotificationConfig('notification.' + type);
 

@@ -370,3 +370,85 @@ nitro.secure.config.root=C:/inetpub/wwwroot/hotel/octane/configuration
 ```
 
 If you add new JSON/JS files inside `configuration` and want to protect them, they must be requested through the secure endpoint or loaded through `bootstrap.js`.
+
+## 14. Content-Security-Policy
+
+A CSP tells the browser where the client may load scripts, frames and connections from: if a plugin, an ad or
+injected HTML tries to load anything else, the browser blocks it. `index.html` carries only the rules that hold for
+every hotel (`object-src 'none'; base-uri 'self'`); the full policy depends on the hotel's hosts and belongs in the web
+server's headers.
+
+A starting point to adapt (replace the example hosts with those of `client-mode.json`, `renderer-config.json` and
+`ui-config.json`):
+
+```txt
+default-src 'self';
+script-src 'self' blob: 'unsafe-eval' https://challenges.cloudflare.com;
+style-src 'self' 'unsafe-inline';
+img-src 'self' data: blob: https://assets.example.com https://images.example.com;
+media-src 'self' blob: https://radio.example.com;
+connect-src 'self' https://api.example.com wss://game.example.com https://assets.example.com;
+frame-src https://challenges.cloudflare.com https://player.vimeo.com https://www.youtube-nocookie.com https://ads.example.net;
+font-src 'self' data:;
+object-src 'none';
+base-uri 'self';
+form-action 'self';
+frame-ancestors 'self' https://cms.example.com
+```
+
+- **`'unsafe-eval'`** is needed today by PixiJS, which compiles its shader functions at run time. It can go once the
+  renderer loads `pixi.js/unsafe-eval`.
+- **`blob:`** in `script-src` is for `asset-loader.js`, which imports the unpacked bundle from a blob.
+- **External plugins**: every `external.plugins` host must be added to `script-src`, and should also be listed in
+  `external.plugins.allowed.hosts`.
+- **Ads**: with `ads.frame.url` (section 15) their origin in `frame-src` is enough; AdSense straight in the client
+  needs the Google domains in `script-src`, `img-src`, `connect-src` and `frame-src` instead.
+- **`frame-ancestors`**: list the CMS that embeds the client, or keep `'self'`.
+
+Before enforcing it, send it as `Content-Security-Policy-Report-Only`: the browser reports in the console what it
+would have blocked, without blocking it. Once the console is clean on login, hotel view, a room, the catalog and the
+games, switch to `Content-Security-Policy`.
+
+IIS (`web.config` in the client folder):
+
+```xml
+<system.webServer>
+  <httpProtocol>
+    <customHeaders>
+      <add name="Content-Security-Policy-Report-Only" value="default-src 'self'; ..." />
+    </customHeaders>
+  </httpProtocol>
+</system.webServer>
+```
+
+nginx:
+
+```nginx
+add_header Content-Security-Policy-Report-Only "default-src 'self'; ..." always;
+```
+
+### Remember token in a cookie
+
+With `"login.remember.cookie": true` in `ui-config.json` the client asks the emulator to keep the remember token in an
+HttpOnly cookie on `/api/auth`, which no script can read. In the emulator's `config.ini`:
+
+```ini
+login.remember.cookie.name=octane_remember
+# Strict when the client and the API are on the same site; None when they are on different sites (https only)
+login.remember.cookie.samesite=Strict
+login.remember.cookie.secure=true
+```
+
+An emulator that does not know cookie mode answers with the token in the JSON, and the client stores it as before.
+
+## 15. Ads on a separate origin
+
+The AdSense script, loaded in the client, runs on the same origin as the session. To keep it out:
+
+1. publish `configuration/ads-frame.html.example`, renamed to `ads-frame.html`, on another origin
+   (e.g. `https://ads.example.net/ads-frame.html`), with its own `ads.txt`;
+2. in `ui-config.json` set `"ads.frame.url": "https://ads.example.net/ads-frame.html"`.
+
+The client then shows the ad in a sandboxed frame that may open the advertiser in a new tab but cannot navigate the
+client, and passes the ad unit (from `ads.txt` and `adsense.json`) in the query. Without `ads.frame.url` the ad stays
+in the client as before.

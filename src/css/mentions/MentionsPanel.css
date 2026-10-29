@@ -549,3 +549,65 @@
 .mention-row-chip.is-room {
     background: #d08a1e;
 }
+
+/* ============================================================================
+   AIR text pass. AIR has no mentions layout (no `mention` element in any habx window), so the panel
+   follows the AIR conventions: regular Ubuntu (our `Ubuntu` face is the condensed cut), u_regular /
+   u_bold 12 for the row, il_regular 11 for the room and time, u_small 10 for the chips, 12 px buttons.
+   ============================================================================ */
+.mentions-window {
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+}
+
+/* search field: u_regular 12 */
+.mentions-window .mentions-search input {
+    font-size: 12px;
+    color: #000000;
+}
+
+/* sender: u_bold 12 */
+.mentions-window .mention-row-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: #000000;
+}
+
+/* message: u_regular 12 */
+.mentions-window .mention-row-msg {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 15px;
+    color: #000000;
+}
+
+/* room name: il_regular 11 */
+.mentions-window .mention-row-room {
+    font-size: 11px;
+}
+
+/* kind chip: u_small 10, bold on the coloured chip */
+.mentions-window .mention-row-chip {
+    font-size: 10px;
+}
+
+/* filter chips and the refresh / load-older buttons: 12 px buttons */
+.mentions-window .mentions-filter,
+.mentions-window .mentions-refresh {
+    font-size: 12px;
+}
+
+/* empty / loading / error line: u_regular 12 */
+.mentions-window .mentions-empty-text {
+    font-size: 12px;
+}
+
+@layer base {
+    .mentions-window :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
+
+    /* The shared Button carries an important 12.6 px size in the utilities layer. */
+    .mentions-window .mentions-markall {
+        font-size: 12px !important;
+    }
+}
