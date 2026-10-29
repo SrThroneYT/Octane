@@ -298,7 +298,8 @@
     min-width: 100px;
     justify-content: flex-start;
     overflow: visible;
-    color: #151515;
+    /* tab_boy_title / tab_girl_title: style 3 text without a text_color, so u_bold black. */
+    color: #000000;
     font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     font-size: 12px;
     font-weight: 700;
@@ -322,7 +323,7 @@
     top: 10px;
     width: 143px;
     overflow: hidden;
-    color: #151515 !important;
+    color: #000000 !important;
     font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
     font-size: 12px !important;
     font-weight: 700 !important;
@@ -1160,17 +1161,33 @@
     position: relative;
 }
 
+/* get_more_button: button_thick tinted 0x00aa00 (the green shiny thick skin), button_shiny_bold 12 px white. */
 .octane-avatar-editor-effects-shop {
     align-self: flex-start;
     min-width: 115px;
     height: 28px;
-    padding: 0 10px;
-    border: 0;
-    border-radius: 4px;
-    background: #00aa00;
+    padding: 0 5px;
+    border: 5px solid transparent;
+    border-image-source: var(--habbo-skin-shiny-thick-green);
+    border-image-slice: 5 fill;
+    border-image-width: 5px;
+    border-image-repeat: stretch;
+    border-radius: 0;
+    background: transparent;
     color: #ffffff;
     font-size: 12px;
     font-weight: 700;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+    image-rendering: var(--octane-pixel-art, pixelated);
+}
+
+.octane-avatar-editor-effects-shop:hover {
+    border-image-source: var(--habbo-skin-shiny-thick-green-hover);
+}
+
+.octane-avatar-editor-effects-shop:active {
+    border-image-source: var(--habbo-skin-shiny-thick-green-pressed);
 }
 
 .octane-avatar-editor-effect-preview {

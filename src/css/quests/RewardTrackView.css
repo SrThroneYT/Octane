@@ -1184,6 +1184,33 @@
     text-overflow: ellipsis;
 }
 
+/* hint_redirect_btn is AIR's grey button (style 3, habbo_skin_button_shiny) with button_shiny_regular, 12 px
+   regular black; get_premium_btn is that skin tinted 0xb265ce, so it keeps the tinted gradient above. */
+.octane-reward-track-button.octane-reward-track-hint-button {
+    padding: 0 3px;
+    border: 5px solid transparent;
+    border-image-source: var(--habbo-skin-shiny);
+    border-image-slice: 5 fill;
+    border-image-width: 5px;
+    border-image-repeat: stretch;
+    border-radius: 0;
+    background: transparent;
+    color: #000000;
+    font-size: 12px;
+    font-weight: 400;
+    image-rendering: var(--octane-pixel-art, pixelated);
+}
+
+.octane-reward-track-button.octane-reward-track-hint-button:hover {
+    border-image-source: var(--habbo-skin-shiny-hover);
+    filter: none;
+}
+
+.octane-reward-track-button.octane-reward-track-hint-button:active {
+    border-image-source: var(--habbo-skin-shiny-pressed);
+    filter: none;
+}
+
 /* the staff gear sits over the top right of the rewards panel */
 .octane-reward-track-content > .octane-reward-track-admin-toggle {
     top: 12px;

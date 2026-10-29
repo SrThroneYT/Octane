@@ -71,7 +71,7 @@ export const HousekeepingAuditTab: FC = () => {
     return (
         <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between gap-2">
-                <h3 className="text-xs uppercase tracking-wider font-semibold opacity-60 flex items-center gap-1">
+                <h3 className="hk-air-heading m-0 text-[14px] font-bold text-black flex items-center gap-1">
                     <FaFilter size={10} />
                     {LocalizeText('housekeeping.audit.title')}
                     {actionLog.length > 0 && (

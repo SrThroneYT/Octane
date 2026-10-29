@@ -389,7 +389,7 @@ export const CustomizeNickIconView: FC<{}> = () => {
                                                 {item.points}
                                             </span>
                                         </div>
-                                        <Button disabled={isLoading} onClick={() => handleIconAction(item)}>
+                                        <Button variant={item.owned ? 'secondary' : 'success'} disabled={isLoading} onClick={() => handleIconAction(item)}>
                                             {!item.owned && 'Buy'}
                                             {item.owned && !item.active && 'Activate'}
                                             {item.owned && item.active && 'Deactivate'}
@@ -459,7 +459,7 @@ export const CustomizeNickIconView: FC<{}> = () => {
                                                     {item.points}
                                                 </span>
                                             </div>
-                                            <Button disabled={isLoading} onClick={() => handleCombinedPrefixAction(item)}>
+                                            <Button variant={item.owned ? 'secondary' : 'success'} disabled={isLoading} onClick={() => handleCombinedPrefixAction(item)}>
                                                 {!item.owned && 'Buy'}
                                                 {item.owned && !item.active && 'Activate'}
                                                 {item.owned && item.active && 'Deactivate'}
@@ -474,7 +474,7 @@ export const CustomizeNickIconView: FC<{}> = () => {
                             <div className="rounded border border-black/10 bg-black/5 p-3">
                                 <div className="mb-2 flex items-center justify-between">
                                     <Text bold>Custom prefix</Text>
-                                    <Button disabled={isLoading} onClick={refreshCustomizeData}>
+                                    <Button variant="secondary" disabled={isLoading} onClick={refreshCustomizeData}>
                                         Refresh
                                     </Button>
                                 </div>
@@ -500,7 +500,7 @@ export const CustomizeNickIconView: FC<{}> = () => {
                                         >
                                             {customPrefixIcon || 'Emoji'}
                                         </BaseButton>
-                                        {!!customPrefixIcon && <Button onClick={() => setCustomPrefixIcon('')}>Clear</Button>}
+                                        {!!customPrefixIcon && <Button variant="secondary" onClick={() => setCustomPrefixIcon('')}>Clear</Button>}
                                     </div>
                                     <div className="rounded border border-black/10 bg-white p-2">
                                         <div className="mb-2 text-[11px] leading-4 text-black/70">
@@ -611,7 +611,7 @@ export const CustomizeNickIconView: FC<{}> = () => {
                                                 </span>
                                             )}
                                         </div>
-                                        <Button disabled={!customPrefixIsValid || isLoading} onClick={handleCustomPrefixPurchase}>
+                                        <Button variant="success" disabled={!customPrefixIsValid || isLoading} onClick={handleCustomPrefixPurchase}>
                                             Buy custom prefix
                                         </Button>
                                     </div>
@@ -627,7 +627,7 @@ export const CustomizeNickIconView: FC<{}> = () => {
                             <Text bold>Display order</Text>
                             <div className="mt-2 grid grid-cols-2 gap-2">
                                 {Object.entries(ORDER_LABELS).map(([key, label]) => (
-                                    <Button key={key} disabled={isLoading && displayOrder === key} onClick={() => handleDisplayOrderChange(key)}>
+                                    <Button key={key} variant="secondary" active={displayOrder === key} disabled={isLoading && displayOrder === key} onClick={() => handleDisplayOrderChange(key)}>
                                         {displayOrder === key ? '* ' : ''}
                                         {label}
                                     </Button>
@@ -637,7 +637,7 @@ export const CustomizeNickIconView: FC<{}> = () => {
                         <div className="rounded border border-black/10 bg-black/5 p-3">
                             <div className="mb-2 flex items-center justify-between">
                                 <Text bold>Refresh data</Text>
-                                <Button disabled={isLoading} onClick={refreshCustomizeData}>
+                                <Button variant="secondary" disabled={isLoading} onClick={refreshCustomizeData}>
                                     Refresh
                                 </Button>
                             </div>

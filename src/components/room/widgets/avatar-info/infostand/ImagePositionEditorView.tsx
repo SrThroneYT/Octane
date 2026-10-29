@@ -4,6 +4,7 @@ import { LocalizeText } from '../../../../../api';
 import { Button, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView } from '../../../../../common';
 import { Slider } from '../../../../../common/Slider';
 import { NumberInput } from '../../../../../common/NumberInput';
+import '../../../../../css/room/RoomWidgetsSweepAir.css';
 
 const PAD_W = 230;
 const PAD_H = 150;
@@ -98,7 +99,7 @@ export const ImagePositionEditorView: FC<Props> = (props) => {
     const clampedTop = Math.max(0, Math.min(PAD_H, dotTop));
 
     return (
-        <OctaneCardView className="no-resize" uniqueKey="image-position-editor" theme="primary-slim">
+        <OctaneCardView className="no-resize octane-image-position-editor" uniqueKey="image-position-editor" theme="primary-slim">
             <OctaneCardHeaderView headerText={LocalizeText('image.position.editor.title')} onCloseClick={cancel} />
             <OctaneCardContentView>
                 <div className="flex flex-col gap-2">

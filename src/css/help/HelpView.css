@@ -223,3 +223,31 @@
         font-size: 11px !important;
     }
 }
+
+/*
+ * name_change change_name_button / keep_name_button and newuser_change_name check_name_button, select_name_button,
+ * cancel_selection_button, confirm_name_button, cancel_confirmation_button are all style 3 buttons (tinted
+ * 0xbbbbbb): grey habbo_skin_button_shiny with black text, never green, blue or red.
+ */
+@layer base {
+    .octane-change-username .octane-card-content-shell .habbo-btn-secondary {
+        border-width: 5px !important;
+        border-image-source: var(--habbo-skin-shiny) !important;
+        border-image-slice: 5 fill !important;
+        border-image-width: 5px !important;
+        color: #000000 !important;
+    }
+
+    .octane-change-username .octane-card-content-shell .habbo-btn-secondary:hover {
+        border-image-source: var(--habbo-skin-shiny-hover) !important;
+    }
+
+    .octane-change-username .octane-card-content-shell .habbo-btn-secondary:active {
+        border-image-source: var(--habbo-skin-shiny-pressed) !important;
+    }
+
+    .octane-change-username .octane-card-content-shell .habbo-btn-secondary:disabled {
+        border-image-source: var(--habbo-skin-shiny-disabled) !important;
+        color: #777777 !important;
+    }
+}

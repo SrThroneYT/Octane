@@ -38,4 +38,14 @@ describe('help windows text (main2, report, sanction_info, my_reports, habbo_way
         expect(habboWayCss).toMatch(/\.octane-habboway :is\(\.octane-habboway__nav, \.octane-habboway__action\)[^{]*\{[^}]*font-size: 10px/);
         expect(habboWayCss).toMatch(/\.octane-habboway-quiz__wait \{[^}]*font-size: 9px/);
     });
+
+    it('skins the name change buttons grey and the report submit red as AIR', () => {
+        const summary = readFileSync(join(process.cwd(), 'src/components/help/views/ReportSummaryView.tsx'), 'utf8');
+
+        expect(helpCss).toMatch(/\.octane-change-username \.octane-card-content-shell \.habbo-btn-secondary \{[^}]*var\(--habbo-skin-shiny\) !important;[^}]*color: #000000 !important/);
+        expect(summary).toContain('variant="danger"');
+        for (const file of ['NameChangeInitView', 'NameChangeInputView', 'NameChangeConfirmationView']) {
+            expect(readFileSync(join(process.cwd(), `src/components/help/views/name-change/${file}.tsx`), 'utf8')).not.toMatch(/btn-(success|danger|primary)/);
+        }
+    });
 });

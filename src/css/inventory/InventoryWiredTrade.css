@@ -396,4 +396,31 @@
         font-size: 12px !important;
         font-weight: 400 !important;
     }
+    /* button_accept, button_cancel (inventory_trading / _wired) and the name scam warning's open_profile_button /
+       close_button are the grey `button` (style 3, habbo_skin_button_shiny) with black text; the shared
+       .habbo-btn-secondary draws the flat 3 px button_default picture. AIR's cancel is grey too, never red. */
+    .octane-inventory-window .octane-inventory-body.is-trade :where(.octane-trade-button, .octane-wired-trade-accept, .octane-wired-trade-cancel).habbo-btn-secondary,
+    .octane-trade-name-scam-body .octane-trade-button.habbo-btn-secondary {
+        border-width: 5px !important;
+        border-image-source: var(--habbo-skin-shiny) !important;
+        border-image-slice: 5 fill !important;
+        border-image-width: 5px !important;
+        color: #000000 !important;
+    }
+
+    .octane-inventory-window .octane-inventory-body.is-trade :where(.octane-trade-button, .octane-wired-trade-accept, .octane-wired-trade-cancel).habbo-btn-secondary:hover,
+    .octane-trade-name-scam-body .octane-trade-button.habbo-btn-secondary:hover {
+        border-image-source: var(--habbo-skin-shiny-hover) !important;
+    }
+
+    .octane-inventory-window .octane-inventory-body.is-trade :where(.octane-trade-button, .octane-wired-trade-accept, .octane-wired-trade-cancel).habbo-btn-secondary:active,
+    .octane-trade-name-scam-body .octane-trade-button.habbo-btn-secondary:active {
+        border-image-source: var(--habbo-skin-shiny-pressed) !important;
+    }
+
+    .octane-inventory-window .octane-inventory-body.is-trade :where(.octane-trade-button, .octane-wired-trade-accept, .octane-wired-trade-cancel).habbo-btn-secondary:is(:disabled, .pointer-events-none),
+    .octane-trade-name-scam-body .octane-trade-button.habbo-btn-secondary:is(:disabled, .pointer-events-none) {
+        border-image-source: var(--habbo-skin-shiny-disabled) !important;
+        color: #777777 !important;
+    }
 }

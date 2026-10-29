@@ -23,4 +23,13 @@ describe('badge leaderboard text (main_view)', () => {
         expect(rule('.octane-badge-leaderboard__nav-button')).toContain('font-size: 12px');
         expect(rule('.octane-badge-leaderboard__category-option')).toContain('font-size: 12px');
     });
+
+    it('draws previous_btn / next_btn on the grey shiny skin and the body texts black', () => {
+        expect(rule('.octane-badge-leaderboard__nav-button')).toContain('border-image-source: var(--habbo-skin-shiny)');
+        expect(rule('.octane-badge-leaderboard__nav-button')).toContain('color: #000000');
+        expect(rule('.octane-badge-leaderboard__nav-button')).not.toContain('linear-gradient');
+        expect(rule('.octane-badge-leaderboard__category-option')).toContain('color: #000000');
+        expect(rule('.octane-badge-leaderboard__content')).toContain('color: #000000');
+    });
 });
+

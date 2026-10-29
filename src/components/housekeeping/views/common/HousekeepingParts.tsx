@@ -36,7 +36,7 @@ export const HousekeepingPill: FC<PropsWithChildren<{ tone?: HousekeepingTone; i
     children
 }) => (
     <span
-        className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-1.5 py-0.5 text-[10px] font-semibold leading-none ${PILL_TONES[tone]}`}
+        className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-1.5 py-0.5 text-[11px] font-bold leading-none ${PILL_TONES[tone]}`}
         title={title}
     >
         {icon}
@@ -55,7 +55,7 @@ export const HousekeepingSection: FC<PropsWithChildren<{ title?: string; icon?: 
         {(title || aside) && (
             <header className="flex items-center gap-1.5">
                 {title && (
-                    <h3 className="m-0 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-zinc-600">
+                    <h3 className="hk-air-heading m-0 flex items-center gap-1 text-[14px] font-bold text-black">
                         {icon}
                         {title}
                     </h3>
@@ -70,16 +70,16 @@ export const HousekeepingSection: FC<PropsWithChildren<{ title?: string; icon?: 
 /** A label over a value, for the fact grids of the user and room cards. */
 export const HousekeepingFact: FC<{ label: string; value: ReactNode; icon?: ReactNode; title?: string }> = ({ label, value, icon, title }) => (
     <div className="flex min-w-0 flex-col rounded border border-zinc-200 bg-white/80 px-1.5 py-1" title={title}>
-        <span className="flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wide text-zinc-500">
+        <span className="flex items-center gap-1 text-[11px] text-[#666666]">
             {icon}
             {label}
         </span>
-        <span className="truncate text-xs font-semibold tabular-nums text-zinc-800">{value}</span>
+        <span className="truncate text-xs font-bold tabular-nums text-black">{value}</span>
     </div>
 );
 
 export const HousekeepingEmptyState: FC<PropsWithChildren<{ icon?: ReactNode }>> = ({ icon, children }) => (
-    <div className="flex items-center gap-2 rounded-lg border border-dashed border-zinc-300 bg-zinc-50/60 p-3 text-xs italic text-zinc-500">
+    <div className="flex items-center gap-2 rounded-lg border border-dashed border-zinc-300 bg-zinc-50/60 p-3 text-xs italic text-[#666666]">
         {icon}
         {children}
     </div>
@@ -96,18 +96,18 @@ export const HousekeepingNumberField: FC<{
     widthClass?: string;
 }> = ({ value, onChange, unit, min = 1, max, label, widthClass = 'w-14' }) => (
     <label className="flex shrink-0 items-center gap-1">
-        {label && <span className="text-[10px] font-semibold text-zinc-600">{label}</span>}
+        {label && <span className="text-[11px] font-bold text-black">{label}</span>}
         <NumberInput aria-label={label ?? unit} className={`${widthClass} rounded border border-zinc-300 bg-white px-1.5 py-0.5 text-xs tabular-nums focus:outline-none focus:ring-1 focus:ring-sky-400`} max={max} min={min} value={Number.isFinite(value) && value > 0 ? value : ''} onChange={(event) => onChange(parseInt(event.target.value) || 0)} />
-        {unit && <span className="text-[10px] text-zinc-500">{unit}</span>}
+        {unit && <span className="text-[11px] text-[#666666]">{unit}</span>}
     </label>
 );
 
 export const HOUSEKEEPING_INPUT_CLASS =
-    'w-full rounded border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-900 placeholder:italic placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-sky-400';
+    'w-full rounded border border-zinc-300 bg-white px-2 py-1 text-xs text-black placeholder:italic placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-sky-400';
 
 export const HousekeepingField: FC<PropsWithChildren<{ label: string; hint?: string; className?: string }>> = ({ label, hint, className = '', children }) => (
     <label className={`flex min-w-0 flex-col gap-0.5 ${className}`}>
-        <span className="flex items-baseline gap-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-600">
+        <span className="flex items-baseline gap-1 text-[11px] font-bold text-black">
             {label}
             {hint && <span className="ml-auto font-normal normal-case tracking-normal text-zinc-400">{hint}</span>}
         </span>

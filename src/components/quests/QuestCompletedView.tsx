@@ -96,12 +96,12 @@ export const QuestCompletedView: FC<{}> = () => {
                     )}
                     <div className="grow" />
                     {lastQuestInCampaign && (
-                        <Button variant="success" onClick={onMoreQuests}>
+                        <Button variant="secondary" className="octane-quest-completed-button" onClick={onMoreQuests}>
                             {localizeWithFallback('quests.campaigncompleted.more', 'More quests')}
                         </Button>
                     )}
                     {!lastQuestInCampaign && (
-                        <Button variant="success" onClick={onNextQuest}>
+                        <Button variant="secondary" className="octane-quest-completed-button" onClick={onNextQuest}>
                             {localizeWithFallback('quests.completed.next', 'Next quest')}
                         </Button>
                     )}

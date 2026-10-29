@@ -27,4 +27,28 @@
     .octane-badge-creator__content input {
         line-height: 16px !important;
     }
+
+    /* The tool, grid, cancel and edit buttons take AIR's grey `button` style 3 (habbo_skin_button_shiny) with
+       black captions; the selected tool shows the pressed skin. Create badge spends credits, so it keeps the
+       green buy skin, and Clear / Delete keep the red one. */
+    .octane-badge-creator__content .habbo-btn-secondary {
+        border-width: 5px !important;
+        border-image-source: var(--habbo-skin-shiny) !important;
+        border-image-slice: 5 fill !important;
+        border-image-width: 5px !important;
+        color: #000000 !important;
+    }
+
+    .octane-badge-creator__content .habbo-btn-secondary:hover {
+        border-image-source: var(--habbo-skin-shiny-hover) !important;
+    }
+
+    .octane-badge-creator__content .habbo-btn-secondary:is(:active, .active) {
+        border-image-source: var(--habbo-skin-shiny-pressed) !important;
+    }
+
+    .octane-badge-creator__content .habbo-btn-secondary:is(:disabled, .pointer-events-none) {
+        border-image-source: var(--habbo-skin-shiny-disabled) !important;
+        color: #777777 !important;
+    }
 }

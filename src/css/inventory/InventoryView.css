@@ -841,3 +841,17 @@
     .octane-inventory-window .octane-inventory-preview-state {
         right: 6px;
     }
+
+/*
+ * AIR inventory buttons (open_catalog_btn, placeinroom_btn, sell_btn, the pet / bot place_button, wearBadge_button)
+ * are all the grey `button` (style 3) with text_style button_shiny_regular: 12 px regular, black. The shared
+ * .habbo-btn-secondary paints #111 and the empty-shop button was bold.
+ */
+.octane-inventory-window :is(.octane-inventory-btn-place, .octane-inventory-btn-sell, .octane-inventory-animal-place, .octane-inventory-btn-wear, .octane-inventory-empty-shop):not(:disabled) {
+    color: #000000 !important;
+}
+
+.octane-inventory-window .octane-inventory-empty-shop {
+    font-size: 12px !important;
+    font-weight: 400 !important;
+}

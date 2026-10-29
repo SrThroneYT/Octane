@@ -11,6 +11,7 @@ import { LayoutAvatarImageView, OctaneCardContentView, OctaneCardHeaderView, Oct
 import { DiscordPreferences, useDiscordSettings } from '../../hooks';
 import { Checkbox } from '../../common/Checkbox';
 import { BaseButton } from '../../common/BaseButton';
+import '../../css/discord/DiscordSettingsAirText.css';
 
 const localizeWithFallback = (key: string, fallback: string) => {
     const text = LocalizeText(key);
@@ -36,7 +37,7 @@ const CheckboxRow: FC<CheckboxRowProps> = ({ label, description, checked, disabl
         <div className="flex flex-col leading-tight">
             <Text bold>{label}</Text>
             {description && (
-                <Text small className="text-black/60">
+                <Text className="text-[11px] text-[#666666]">
                     {description}
                 </Text>
             )}
@@ -56,13 +57,11 @@ const ServerLink: FC<ServerLinkProps> = ({ label, configKey }) => {
     return (
         <BaseButton
             type="button"
-            className="flex items-center justify-center gap-2 rounded-md bg-[#5865F2] px-3 py-2 text-white shadow-[inset_0_2px_#ffffff26,inset_0_-2px_#0000001a] transition-colors hover:bg-[#4752c4] cursor-pointer"
+            className="discord-settings-server-link flex items-center justify-center gap-2 px-3 cursor-pointer"
             onClick={() => OpenUrl(link)}
         >
-            <FaDiscord />
-            <Text bold className="text-white">
-                {label}
-            </Text>
+            <FaDiscord className="text-[#5865F2]" />
+            <Text bold>{label}</Text>
         </BaseButton>
     );
 };
@@ -188,10 +187,10 @@ export const DiscordSettingsView: FC = () => {
                     <FaDiscord size={24} />
                 </div>
                 <div className="flex flex-col leading-tight">
-                    <Text bold className="text-white text-[15px]">
+                    <Text bold className="text-white text-[16px]">
                         {localizeWithFallback('discord.settings.header', 'Discord Rich Presence')}
                     </Text>
-                    <Text small className="text-white/80">
+                    <Text className="text-white/80 text-[11px]">
                         {localizeWithFallback('discord.settings.subtitle', 'Mostra la tua attività su Discord')}
                     </Text>
                 </div>
@@ -240,7 +239,7 @@ export const DiscordSettingsView: FC = () => {
                     onChange={setPref('allowJoining')}
                 />
 
-                <Text small className="text-black/60 uppercase tracking-wider px-1 pt-2">
+                <Text bold className="discord-settings-section-title px-1 pt-2 text-[14px] text-black">
                     {localizeWithFallback('discord.settings.servers', 'Server Discord')}
                 </Text>
                 <div className="flex flex-col gap-2">

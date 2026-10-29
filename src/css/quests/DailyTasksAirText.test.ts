@@ -19,4 +19,9 @@ describe('daily tasks text (dailytasks, dailytasks_unclaimed)', () => {
         expect(css).toMatch(/\.octane-daily-task-progress \{[^}]*font-size: 12px;[^}]*font-weight: 700/);
         expect(css).toMatch(/\.octane-daily-tasks \.octane-daily-tasks-unclaimed-button,[^{]*\{\s*font-size: 12px !important;\s*font-weight: 400 !important;/);
     });
+
+    it('skins unclaimed_btn as the grey plain button (style 3, habbo_skin_button_shiny)', () => {
+        expect(css).toMatch(/\.octane-daily-tasks \.octane-daily-tasks-unclaimed-button,\s*\.octane-reward-track-premium \.octane-reward-track-premium-cancel \{\s*border-image-source: var\(--habbo-skin-shiny\) !important;/);
+    });
 });
+

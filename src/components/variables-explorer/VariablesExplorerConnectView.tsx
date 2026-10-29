@@ -83,7 +83,7 @@ export const VariablesExplorerConnectView: FC<VariablesExplorerConnectViewProps>
 
     return (
         <OctaneCardView
-            className="min-w-[380px] max-w-[380px]"
+            className="min-w-[380px] max-w-[380px] octane-variables-explorer-window"
             theme="primary-slim"
             uniqueKey="variables-explorer"
             windowPosition={DraggableWindowPosition.TOP_LEFT}

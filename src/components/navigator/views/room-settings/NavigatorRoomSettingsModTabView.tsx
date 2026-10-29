@@ -93,7 +93,7 @@ export const NavigatorRoomSettingsModTabView: FC<NavigatorRoomSettingsTabViewPro
                                 })}
                         </Column>
                     </Flex>
-                    <Button disabled={selectedUserId <= 0} onClick={(event) => unBanUser(selectedUserId)}>
+                    <Button disabled={selectedUserId <= 0} variant="secondary" onClick={(event) => unBanUser(selectedUserId)}>
                         {LocalizeText('navigator.roomsettings.moderation.unban')}{' '}
                         {selectedUserId > 0 && bannedUsers.find((user) => user.userId === selectedUserId)?.userName}
                     </Button>

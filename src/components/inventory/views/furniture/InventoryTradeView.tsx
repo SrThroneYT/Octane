@@ -344,7 +344,7 @@ export const InventoryTradeView: FC<InventoryTradeViewProps> = (props) => {
                         </div>
                     )}
                     <div className="flex grow! justify-between">
-                        <Button className="octane-trade-button" variant="danger" onClick={cancelTrade}>
+                        <Button className="octane-trade-button" variant="secondary" onClick={cancelTrade}>
                             {LocalizeText('generic.cancel')}
                         </Button>
                         {tradeState === TradeState.TRADING_STATE_READY && (

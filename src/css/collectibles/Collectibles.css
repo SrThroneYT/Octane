@@ -274,9 +274,25 @@
 
 /* ok_button is a style 3 button: button_shiny_regular, 12 px regular black. */
 .octane-collectibles-button.is-plain {
-    background: linear-gradient(#f2f2f2, #c8c8c8);
+    border: 5px solid transparent;
+    border-image-source: var(--habbo-skin-shiny);
+    border-image-slice: 5 fill;
+    border-image-width: 5px;
+    border-image-repeat: stretch;
+    border-radius: 0;
+    background: transparent;
     color: #000;
+    font-size: 12px;
     font-weight: 400;
+    image-rendering: var(--octane-pixel-art, pixelated);
+}
+
+.octane-collectibles-button.is-plain:hover:not(:disabled) {
+    border-image-source: var(--habbo-skin-shiny-hover);
+}
+
+.octane-collectibles-button.is-plain:active:not(:disabled) {
+    border-image-source: var(--habbo-skin-shiny-pressed);
 }
 
 .octane-collectibles-button:disabled {

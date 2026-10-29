@@ -44,4 +44,9 @@ describe('room creator text (AIR roc_create_room / roc_room_thumbnail / roc_vip_
         expect(text).toContain('font-size: 9px');
         expect(text).toContain('color: #ffffff');
     });
+
+    it('writes create in Volter Bold (button_bold) and cancel in regular Volter (button_regular), black', () => {
+        expect(rule('.octane-room-creator-air__button')).toContain('color: #000000');
+        expect(rule('.octane-room-creator-air__button--cancel')).toContain('font-weight: 400');
+    });
 });

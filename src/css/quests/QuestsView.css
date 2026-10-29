@@ -1562,12 +1562,13 @@
 .octane-quests,
 .octane-quest-details,
 .octane-daily-tasks,
-.octane-reward-track-premium {
+.octane-reward-track-premium,
+.octane-quest-completed {
     font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
 }
 
 @layer base {
-    :where(.octane-quests, .octane-quest-details, .octane-daily-tasks, .octane-reward-track-premium) :where(*):not(svg, svg *) {
+    :where(.octane-quests, .octane-quest-details, .octane-daily-tasks, .octane-reward-track-premium, .octane-quest-completed) :where(*):not(svg, svg *) {
         font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
     }
 
@@ -1627,4 +1628,68 @@
 .octane-reward-track-premium-cost-label {
     font-size: 12px;
     font-weight: 700;
+}
+
+/* ---- AIR button skins: quests list, quest details, completed dialog, daily tasks, premium confirmation ----
+ * Quest accept_button and the completed dialog's next_quest_button / more_quests_button are grey button_thick
+ * (style 3, habbo_skin_button_shiny_thick, 12 px bold black); dailytasks unclaimed_btn and the premium
+ * confirmation cancel_button are grey plain buttons (style 3, habbo_skin_button_shiny, 12 px regular black).
+ * get_hc_btn, claim_button and confirm_button are style 5 (green) and keep the common green skin. */
+@layer base {
+    :where(.octane-quests, .octane-quest-details) .octane-quest-accept,
+    .octane-quest-completed .octane-quest-completed-button,
+    .octane-daily-tasks .octane-daily-tasks-unclaimed-button,
+    .octane-reward-track-premium .octane-reward-track-premium-cancel {
+        border-width: 5px !important;
+        border-style: solid !important;
+        border-color: transparent !important;
+        border-image-slice: 5 fill !important;
+        border-image-width: 5px !important;
+        border-image-repeat: stretch !important;
+        background: transparent !important;
+        color: #000000 !important;
+        text-shadow: none !important;
+    }
+
+    :where(.octane-quests, .octane-quest-details) .octane-quest-accept,
+    .octane-quest-completed .octane-quest-completed-button {
+        min-height: 29px !important;
+        border-image-source: var(--habbo-skin-shiny-thick) !important;
+    }
+
+    :where(.octane-quests, .octane-quest-details) .octane-quest-accept:hover,
+    .octane-quest-completed .octane-quest-completed-button:hover {
+        border-image-source: var(--habbo-skin-shiny-thick-hover) !important;
+    }
+
+    :where(.octane-quests, .octane-quest-details) .octane-quest-accept:active,
+    .octane-quest-completed .octane-quest-completed-button:active {
+        border-image-source: var(--habbo-skin-shiny-thick-pressed) !important;
+    }
+
+    .octane-daily-tasks .octane-daily-tasks-unclaimed-button,
+    .octane-reward-track-premium .octane-reward-track-premium-cancel {
+        border-image-source: var(--habbo-skin-shiny) !important;
+    }
+
+    .octane-daily-tasks .octane-daily-tasks-unclaimed-button:hover,
+    .octane-reward-track-premium .octane-reward-track-premium-cancel:hover {
+        border-image-source: var(--habbo-skin-shiny-hover) !important;
+    }
+
+    .octane-daily-tasks .octane-daily-tasks-unclaimed-button:active,
+    .octane-reward-track-premium .octane-reward-track-premium-cancel:active {
+        border-image-source: var(--habbo-skin-shiny-pressed) !important;
+    }
+
+    .octane-reward-track-premium .octane-reward-track-premium-cancel:is(:disabled, .pointer-events-none) {
+        border-image-source: var(--habbo-skin-shiny-disabled) !important;
+        color: #777777 !important;
+    }
+
+    /* next_quest_button / more_quests_button: button_thick default caption, 12 px bold. */
+    .octane-quest-completed .octane-quest-completed-button {
+        font-size: 12px !important;
+        font-weight: 700 !important;
+    }
 }

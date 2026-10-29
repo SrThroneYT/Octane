@@ -81,7 +81,7 @@
     position: absolute;
     width: 76px;
     color: #333333;
-    font-size: 11px;
+    font-size: 10px; /* talent.track.helper.begin.* labels: il_button, 10 px bold */
     font-weight: 700;
     line-height: 12px;
     text-align: right;
@@ -146,7 +146,7 @@
     position: absolute;
     left: 50px;
     top: 30px;
-    font-size: 16px;
+    font-size: 14px; /* level_title: il_heading_1, 14 px bold */
     font-weight: 700;
     line-height: 19px;
     white-space: nowrap;
@@ -292,8 +292,8 @@
     flex-direction: column;
     min-width: 0;
     padding: 9px 5px 0 0;
-    font-size: 10px;
-    line-height: 12px;
+    font-size: 11px; /* reward description: il_regular_white, 11 px */
+    line-height: 13px;
 }
 
 .octane-talent-reward__perk-copy span {
@@ -304,7 +304,7 @@
 }
 
 .octane-talent-reward__perk-title {
-    font-size: 11px;
+    font-size: 10px; /* reward title: il_heading_3, 10 px bold */
     font-weight: 700;
     line-height: 13px;
 }
@@ -386,7 +386,7 @@
 
 .octane-talent-task__title {
     overflow: hidden;
-    font-size: 11px;
+    font-size: 10px; /* task title: il_heading_3, 10 px bold */
     font-weight: 700;
     line-height: 15px;
     text-overflow: ellipsis;
@@ -396,8 +396,8 @@
 .octane-talent-task__description {
     display: -webkit-box;
     overflow: hidden;
-    font-size: 10px;
-    line-height: 12px;
+    font-size: 11px; /* task description: no text_style, il_regular 11 px */
+    line-height: 13px;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
 }
@@ -634,7 +634,7 @@
 
 .octane-talent-levelup__rewards-title {
     color: #333333;
-    font-size: 11px;
+    font-size: 10px; /* levelup rewards label: il_border, 10 px bold 0x333333 */
     font-weight: 700;
 }
 
@@ -650,6 +650,8 @@
     display: flex;
     align-items: center;
     gap: 4px;
+    color: #222222; /* vip_length / perk_name: il_heading_2, 12 px bold 0x222222 */
+    font-size: 12px;
     font-weight: 700;
 }
 
@@ -745,4 +747,43 @@
     border-radius: 0 6px 6px 0;
     background: #596f8d;
     object-fit: none;
+}
+
+/*
+ * Text as AIR draws the talent windows (talent_track, task_progress_dialog, level_up, citizenship_welcome,
+ * track_promo): Illumina (style 100/101) frames in regular Ubuntu (our `Ubuntu` face is the condensed cut). Texts
+ * without a text_style are il_regular 11 px; the buttons keep the shared il_button 10 px bold. The frame's own title
+ * bar (the shared card header) is left alone.
+ */
+.octane-talent-track,
+.octane-talent-dialog,
+.octane-citizenship-popup,
+.octane-talent-levelup,
+.octane-talent-promo {
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+}
+
+.octane-talent-track .octane-air-modal__content,
+.octane-talent-dialog .octane-air-modal__content,
+.octane-citizenship-popup .octane-air-modal__content,
+.octane-talent-levelup .octane-card-content-shell {
+    font-size: 11px;
+    line-height: 14px;
+}
+
+/* talent_track frame_subtitle: il_frame_modal_title with font_size 11, 0xcccccc. */
+.octane-talent-track .octane-air-modal__subtitle {
+    color: #cccccc;
+    font-size: 11px;
+    line-height: 16px;
+}
+
+@layer base {
+    .octane-talent-track :where(*):not(svg, svg *, .octane-card-header-shell, .octane-card-header-shell *),
+    .octane-talent-dialog :where(*):not(svg, svg *, .octane-card-header-shell, .octane-card-header-shell *),
+    .octane-citizenship-popup :where(*):not(svg, svg *, .octane-card-header-shell, .octane-card-header-shell *),
+    .octane-talent-levelup .octane-card-content-shell :where(*):not(svg, svg *),
+    .octane-talent-promo :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
 }

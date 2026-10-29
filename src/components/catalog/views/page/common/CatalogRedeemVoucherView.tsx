@@ -59,7 +59,7 @@ export const CatalogRedeemVoucherView: FC<CatalogRedeemVoucherViewProps> = (prop
     return (
         <div className="flex gap-1">
             <OctaneInput placeholder={text} value={voucher} onChange={(event) => setVoucher(event.target.value)} />
-            <Button disabled={isWaiting} variant="primary" onClick={redeemVoucher}>
+            <Button classNames={['octane-catalog-redeem-button']} disabled={isWaiting} onClick={redeemVoucher}>
                 <FaTag className="fa-icon" />
             </Button>
         </div>

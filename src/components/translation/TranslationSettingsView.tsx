@@ -5,6 +5,7 @@ import { useTranslation } from '../../hooks';
 import { Checkbox } from '../../common/Checkbox';
 import { Select } from '../../common/Select';
 import { BaseButton } from '../../common/BaseButton';
+import '../../css/translation/TranslationSettings.css';
 
 export const TranslationSettingsView: FC<{}> = () => {
     const [isVisible, setIsVisible] = useState(false);
@@ -138,7 +139,7 @@ export const TranslationSettingsView: FC<{}> = () => {
                 <div className="flex items-center justify-between text-[11px] text-black/60">
                     <span>{languagesLoading ? 'Loading languages...' : `${supportedLanguages.length} languages available`}</span>
                     <BaseButton
-                        className="rounded border border-black/15 bg-white px-2 py-1 text-[11px] text-black hover:bg-black/5"
+                        className="translation-settings-window__refresh"
                         type="button"
                         onClick={() => ensureSupportedLanguagesLoaded(true)}
                     >

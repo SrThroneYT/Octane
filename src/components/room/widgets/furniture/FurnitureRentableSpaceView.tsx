@@ -2,6 +2,7 @@ import { FC } from 'react';
 import { formatQuestWaitTime, localizeWithFallback } from '../../../../api';
 import { Button, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Text } from '../../../../common';
 import { RENTABLE_SPACE_ERROR_TEXTS, useFurnitureRentableSpaceWidget } from '../../../../hooks';
+import '../../../../css/room/RoomWidgetsSweepAir.css';
 
 const errorText = (code: number) => {
     const entry = RENTABLE_SPACE_ERROR_TEXTS.get(code);
@@ -33,7 +34,7 @@ export const FurnitureRentableSpaceView: FC<{}> = () => {
                 {errorCode > 0 && (
                     <div className="rentablespace-error-view">
                         <Text className="rentablespace-error-message">{errorText(errorCode)}</Text>
-                        <Button onClick={onClose}>{localizeWithFallback('rentablespace.widget.close', 'Close')}</Button>
+                        <Button variant="secondary" onClick={onClose}>{localizeWithFallback('rentablespace.widget.close', 'Close')}</Button>
                     </div>
                 )}
                 {errorCode === 0 && !status.rented && (
@@ -44,7 +45,7 @@ export const FurnitureRentableSpaceView: FC<{}> = () => {
                                 'Use this space and decorate it as you like. When the rent ends, all your furni goes safely back to your inventory.'
                             )}
                         </Text>
-                        <Button className="rentablespace-rent-button" disabled={!rentView?.rentEnabled} onClick={rent}>
+                        <Button className="rentablespace-rent-button" variant="secondary" disabled={!rentView?.rentEnabled} onClick={rent}>
                             <span className="rentablespace-price">{`${status.price} x`}</span>
                             <i className="rentablespace-coin" />
                             <span className="rentablespace-rent-label">{localizeWithFallback('rentablespace.widget.rent', 'Rent')}</span>
@@ -64,7 +65,7 @@ export const FurnitureRentableSpaceView: FC<{}> = () => {
                         <Text className="rentablespace-headline">{localizeWithFallback('rentablespace.widget.expires_label', 'Rent expires in:')}</Text>
                         <Text italics>{formatQuestWaitTime(status.timeRemaining)}</Text>
                         {canCancelRent && (
-                            <Button className="rentablespace-cancel-button" onClick={cancelRent}>
+                            <Button className="rentablespace-cancel-button" variant="secondary" onClick={cancelRent}>
                                 {localizeWithFallback('rentablespace.widget.cancel_rent', 'Cancel rental space (no refund)')}
                             </Button>
                         )}

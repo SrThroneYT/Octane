@@ -23,4 +23,11 @@ describe('reward track text (reward_track_main_xml, premium purchase confirmatio
         expect(dialogCss).toMatch(/\.octane-reward-track-premium-desc \{[^}]*color: #2d1f35;[^}]*font-size: 12px;[^}]*font-weight: 700/);
         expect(dialogCss).toMatch(/\.octane-reward-track-premium-benefit \{[^}]*font-size: 11px/);
     });
+
+    it('skins hint_redirect_btn as the grey shiny button and cancel_button grey, confirm_button stays green', () => {
+        expect(css).toMatch(/\.octane-reward-track-button\.octane-reward-track-hint-button \{[^}]*border-image-source: var\(--habbo-skin-shiny\);[^}]*color: #000000;[^}]*font-size: 12px;[^}]*font-weight: 400;/);
+        expect(dialogCss).toMatch(/\.octane-reward-track-premium \.octane-reward-track-premium-cancel \{\s*border-image-source: var\(--habbo-skin-shiny\) !important;/);
+        expect(dialogCss).not.toMatch(/\.octane-reward-track-premium-buy[^{]*\{[^}]*--habbo-skin-shiny/);
+    });
 });
+

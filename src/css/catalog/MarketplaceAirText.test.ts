@@ -31,4 +31,10 @@ describe('marketplace text (ctlg_marketplace, marketplace_offer_details, make_ma
             /@layer base \{\s*\.octane-marketplace-token-dialog-content :where\(\*\):not\(svg, svg \*\) \{\s*font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;/
         );
     });
+
+    it('draws the offer details buttons in the grey shiny skin, not the green one', () => {
+        expect(read('MarketplaceOfferDetails.css')).toMatch(
+            /\.marketplace-details-chart-selector > button\)\.habbo-btn-primary \{\s*border-image-source: var\(--habbo-skin-shiny\) !important;\s*color: #000000 !important;/
+        );
+    });
 });

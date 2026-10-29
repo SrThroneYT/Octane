@@ -1960,7 +1960,7 @@
     border-image-repeat: stretch !important;
     background: transparent !important;
     box-shadow: none !important;
-    color: #111111;
+    color: #000000;
     font-family: Volter, monospace;
     font-size: 9px;
     font-weight: 700;
@@ -1993,6 +1993,8 @@
     border-image-source: url("@/assets/images/habbo-skin/slices/button-default.png") !important;
     border-image-slice: 3 fill !important;
     border-image-width: 3px !important;
+    /* back_button: a style 0 `button`, text_style button_regular (Volter 9, not bold). */
+    font-weight: 400;
 }
 
 .octane-room-creator-air__button--cancel:hover {
@@ -2198,6 +2200,48 @@
 
 .octane-navigator-air__door-state {
     gap: 10px;
+}
+
+/*
+ * doorbell / passwd_input: room_name 12 px bold, info and labels 12 px regular, all black regular Ubuntu; ring /
+ * try are the grey `button` (style 3, habbo_skin_button_shiny) with button_shiny_regular 12 px black text. AIR's
+ * cancel is an underlined 12 px link; here it stays a button, in the same grey.
+ */
+.octane-navigator-doorbell .octane-navigator-air__door-state {
+    color: #000000;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    font-size: 12px;
+    line-height: 15px;
+}
+
+@layer base {
+    .octane-navigator-doorbell .octane-navigator-air__door-state :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
+
+    .octane-navigator-doorbell .octane-navigator-air__door-state .habbo-btn-secondary {
+        min-height: 28px !important;
+        border-width: 5px !important;
+        border-image-source: var(--habbo-skin-shiny) !important;
+        border-image-slice: 5 fill !important;
+        border-image-width: 5px !important;
+        color: #000000 !important;
+        font-size: 12px !important;
+        font-weight: 400 !important;
+    }
+
+    .octane-navigator-doorbell .octane-navigator-air__door-state .habbo-btn-secondary:hover {
+        border-image-source: var(--habbo-skin-shiny-hover) !important;
+    }
+
+    .octane-navigator-doorbell .octane-navigator-air__door-state .habbo-btn-secondary:active {
+        border-image-source: var(--habbo-skin-shiny-pressed) !important;
+    }
+
+    .octane-navigator-doorbell .octane-navigator-air__door-state .habbo-btn-secondary:is(:disabled, .pointer-events-none) {
+        border-image-source: var(--habbo-skin-shiny-disabled) !important;
+        color: #777777 !important;
+    }
 }
 
 .octane-navigator-search-save {

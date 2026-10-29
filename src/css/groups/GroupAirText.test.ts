@@ -17,4 +17,13 @@ describe('group windows text (groups_info_window, Member Entry)', () => {
         expect(css).toMatch(/\.octane-group-members-search \.octane-select-trigger \{[^}]*font-size: 12px !important/);
         expect(css).toMatch(/\.octane-group-members \.octane-groups-footer \.text \{[^}]*color: #000000 !important/);
     });
+
+    it('draws join / leave / manage as the grey button_thick in 12 px bold black', () => {
+        const css = read('GroupView.css');
+
+        expect(css).toMatch(
+            /\.octane-extended-profile-group-info__button\.habbo-btn-primary \{[^}]*border-image-source: var\(--habbo-skin-shiny-thick\) !important;[^}]*color: #000000 !important;\s*font-size: 12px !important;\s*font-weight: 700 !important/
+        );
+        expect(css).not.toMatch(/\.octane-groups-button,[^{]*\{[^}]*color: #111111/);
+    });
 });

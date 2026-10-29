@@ -25,4 +25,15 @@ describe('account settings text (Octane extra, AIR conventions)', () => {
         expect(css).toMatch(/\.user-account-settings__fine-print \{[^}]*font-size: 10px !important/);
         expect(css).toMatch(/\.user-account-settings__content button \{[^}]*font-weight: 400 !important/);
     });
+
+    it('draws the settings buttons on the grey shiny skin (AIR button style 3) with black captions', () => {
+        expect(css).toMatch(/\.air-settings-button \{[^}]*border-image-source: var\(--habbo-skin-shiny\);[^}]*border-image-slice: 5 fill;[^}]*color: #000000;/);
+        expect(css).toMatch(/\.air-settings-button:hover \{\s*border-image-source: var\(--habbo-skin-shiny-hover\);/);
+        expect(css).not.toContain('var(--habbo-skin-button)');
+    });
+
+    it('turns the account settings buttons grey instead of the green buy skin', () => {
+        expect(css).toMatch(/\.user-account-settings__content :where\(\.habbo-btn-primary, \.habbo-btn-secondary\) \{[^}]*border-image-source: var\(--habbo-skin-shiny\) !important;[^}]*color: #000000 !important;/);
+    });
 });
+

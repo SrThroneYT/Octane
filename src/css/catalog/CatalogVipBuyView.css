@@ -6,7 +6,7 @@
     margin: 0 auto;
     overflow: hidden;
     background: #f1f1f1;
-    color: #222;
+    color: #000000;
     font-family: Ubuntu, Arial, sans-serif;
     font-size: 12px;
 }
@@ -410,7 +410,8 @@
     border-image-source: var(--habbo-skin-button) !important;
     border-image-slice: 3 fill !important;
     border-image-width: 3px !important;
-    color: #111 !important;
+    /* club_buy_info_item item_buy: grey button, button_shiny_regular 12 px black. */
+    color: #000 !important;
     font-size: 12px !important;
     font-weight: 400 !important;
     line-height: 16px;
@@ -784,7 +785,8 @@
 .octane-club-purchase-confirm .octane-club-purchase-confirm-cancel {
     left: 9px;
     border-image-source: var(--habbo-skin-shiny);
-    color: #111;
+    /* club_buy_confirmation cancel_button: grey button, button_shiny_regular 12 px black. */
+    color: #000;
     font-weight: 400;
 }
 
@@ -931,7 +933,8 @@
     border-image-width: 3px;
     border-image-repeat: stretch;
     background: transparent;
-    color: #111;
+    /* club_gift_list_item select_button: grey button, button_shiny_regular 12 px black. */
+    color: #000;
     font-family: HabboAirUbuntu, Ubuntu, sans-serif;
     font-size: 12px;
     line-height: 16px;

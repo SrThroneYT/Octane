@@ -126,8 +126,8 @@
     border: 0;
     padding: 5px 9px;
     background: transparent;
-    /* hidden_dropdown has no text style of its own: u_regular 12 px. */
-    color: #232323;
+    /* hidden_dropdown has no text style of its own: u_regular 12 px black. */
+    color: #000000;
     font-size: 12px;
     line-height: 1.15;
     text-align: left;
@@ -149,7 +149,8 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    color: #1f1f1f;
+    /* username_txt / score_txt: style 3 text without a text_color, black. */
+    color: #000000;
     z-index: 2;
 }
 
@@ -335,27 +336,36 @@
     margin-top: auto;
 }
 
+/* previous_btn / next_btn: `button` style 3, the grey habbo_skin_button_shiny, button_shiny_regular 12 px black. */
 .octane-badge-leaderboard__nav-button {
     min-width: 100px;
     height: 26px;
-    border: 1px solid #8a8a8a;
-    border-radius: 4px;
-    background: linear-gradient(180deg, #fefefe 0%, #e8e8e6 100%);
-    /* previous_btn / next_btn: button_shiny_regular, 12 px regular. */
-    color: #1f1f1f;
+    border: 5px solid transparent;
+    border-image-source: var(--habbo-skin-shiny);
+    border-image-slice: 5 fill;
+    border-image-width: 5px;
+    border-image-repeat: stretch;
+    border-radius: 0;
+    background: transparent;
+    color: #000000;
     font-size: 12px;
     font-weight: 400;
     cursor: pointer;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    box-shadow: none;
+    image-rendering: var(--octane-pixel-art, pixelated);
 }
 
 .octane-badge-leaderboard__nav-button:hover:not(:disabled) {
-    background: linear-gradient(180deg, #ffffff 0%, #ece8dc 100%);
+    border-image-source: var(--habbo-skin-shiny-hover);
+}
+
+.octane-badge-leaderboard__nav-button:active:not(:disabled) {
+    border-image-source: var(--habbo-skin-shiny-pressed);
 }
 
 .octane-badge-leaderboard__nav-button:disabled {
+    border-image-source: var(--habbo-skin-shiny-disabled);
     color: #8d8d8d;
-    background: linear-gradient(180deg, #ececec 0%, #d9d9d9 100%);
     cursor: default;
 }
 

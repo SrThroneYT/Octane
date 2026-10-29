@@ -30,6 +30,7 @@ import { useOctaneEvent, useRoom } from "../../../../hooks";
 import { ContextMenuHeaderView } from "../context-menu/ContextMenuHeaderView";
 import { ContextMenuListItemView } from "../context-menu/ContextMenuListItemView";
 import { ContextMenuView } from "../context-menu/ContextMenuView";
+import '../../../../css/room/RoomWidgetsSweepAir.css';
 
 // Official RoomWidgetPetBreedingEvent states.
 const STATE_OPEN = 0;
@@ -305,7 +306,7 @@ export const MonsterPlantBreedingView: FC = () => {
                                 ),
                             )}
                         </div>
-                        <Text small variant="muted">
+                        <Text small className="octane-monsterplant-breeding__info">
                             {LocalizeText("breedpets.widget.info")}
                         </Text>
                         <div className="flex justify-end gap-2">
@@ -377,7 +378,7 @@ export const MonsterPlantBreedingView: FC = () => {
                         <Text center>
                             {LocalizeText("breedpets.cancel.notification.text")}
                         </Text>
-                        <Button onClick={() => setCancelled(false)}>
+                        <Button variant="secondary" onClick={() => setCancelled(false)}>
                             {localizeWithFallback("generic.ok", "OK")}
                         </Button>
                     </OctaneCardContentView>
@@ -465,7 +466,7 @@ export const MonsterPlantBreedingView: FC = () => {
                                                 )}
                                             </Text>
                                             {seed.hasMutation && (
-                                                <Text small>
+                                                <Text small className="octane-monsterplant-breeding__info">
                                                     {LocalizeText(
                                                         "breedpetsresult.widget.info.mutation",
                                                     )}
@@ -477,7 +478,7 @@ export const MonsterPlantBreedingView: FC = () => {
                             )}
                         </div>
                         <div className="flex justify-end">
-                            <Button onClick={() => setResult(null)}>
+                            <Button variant="secondary" onClick={() => setResult(null)}>
                                 {LocalizeText("breedpetsresult.widget.close")}
                             </Button>
                         </div>

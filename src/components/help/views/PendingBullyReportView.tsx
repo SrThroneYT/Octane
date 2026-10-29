@@ -57,7 +57,7 @@ export const PendingBullyReportView: FC<{}> = () => {
                         </div>
                     </div>
                 )}
-                <Button className="self-center" onClick={close}>
+                <Button className="self-center" variant="secondary" onClick={close}>
                     {guardianText('alert.close.button')}
                 </Button>
             </OctaneCardContentView>

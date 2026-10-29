@@ -22,4 +22,12 @@ describe('customize bubble identity text (AIR conventions, no AIR layout)', () =
         expect(view).not.toMatch(/\btext-sm\b/);
         expect(view).not.toContain('py-1.5 text-[11px] font-bold');
     });
+
+    it('keeps green only on the Buy buttons and draws the rest on the grey shiny skin', () => {
+        expect(css).toMatch(/\.customize-nick-icon-window \.habbo-btn-secondary \{[^}]*border-image-source: var\(--habbo-skin-shiny\) !important;[^}]*color: #000000 !important;/);
+        expect(view).toContain("variant={item.owned ? 'secondary' : 'success'}");
+        expect(view).toMatch(/variant="success" disabled=\{!customPrefixIsValid \|\| isLoading\} onClick=\{handleCustomPrefixPurchase\}/);
+        expect(view).not.toMatch(/<Button (?![^>]*variant=)/);
+    });
 });
+

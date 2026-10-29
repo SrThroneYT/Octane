@@ -33,4 +33,13 @@ describe('collectibles text (collectible_view, collectible_reward)', () => {
     it('keeps the me menu icon untouched', () => {
         expect(rule('.icon-me-collectibles')).toContain('me_menu_me_cabinet.png');
     });
+
+    it('draws ok_button (style 3) on the grey shiny skin, 12 px regular black', () => {
+        const plain = rule('.octane-collectibles-button.is-plain');
+        expect(plain).toContain('border-image-source: var(--habbo-skin-shiny)');
+        expect(plain).toContain('border-radius: 0');
+        expect(plain).toMatch(/color: #000;[^}]*font-size: 12px;[^}]*font-weight: 400/);
+        expect(plain).not.toContain('linear-gradient');
+    });
 });
+

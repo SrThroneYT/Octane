@@ -158,7 +158,7 @@ export const CatalogLayoutRoomAdsView: FC<CatalogLayoutProps> = (props) => {
                 </div>
             )}
             <div className="octane-catalog-air-roomads__purchase">
-                <Button disabled={invalid} variant={invalid ? 'danger' : 'success'} onClick={purchaseAd}>
+                <Button disabled={invalid} variant="success" onClick={purchaseAd}>
                     {extended ? LocalizeText('roomad.extend.event') : LocalizeText('buy')}
                 </Button>
             </div>

@@ -8,6 +8,7 @@ import { classNames, OctaneInput } from '../../../../layout';
 import { BaseButton } from '../../../../common/BaseButton';
 import { Checkbox } from '../../../../common/Checkbox';
 import { Select } from '../../../../common/Select';
+import '../../../../css/room/RoomWidgetsSweepAir.css';
 
 const LIMIT_FURNI_PICKALL = 100;
 

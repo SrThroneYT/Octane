@@ -35,7 +35,7 @@ export const ChatReviewReporterFeedbackView: FC<{}> = () => {
                     <img alt="" draggable={false} src={notificationIcon} />
                     <span>{reporterFeedbackText(bullyReportFeedback, 'note')}</span>
                 </div>
-                <Button className="self-center" onClick={close}>
+                <Button className="self-center" variant="secondary" onClick={close}>
                     {guardianText('alert.close.button')}
                 </Button>
             </OctaneCardContentView>

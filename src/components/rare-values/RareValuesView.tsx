@@ -166,7 +166,7 @@ export const RareValuesView: FC<{}> = () => {
                                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded border border-black/10 bg-white shadow-sm">
                                     <LayoutImage imageUrl={row.iconUrl} className="h-9 w-9 bg-contain bg-center bg-no-repeat" />
                                 </div>
-                                <Text truncate className="grow text-[12px] text-[#1f2d34]">
+                                <Text truncate className="grow text-[12px] text-black">
                                     {row.name}
                                 </Text>
                                 <Flex alignItems="center" gap={1} className="shrink-0 rounded-full bg-white/80 px-2 py-0.5 shadow-sm">

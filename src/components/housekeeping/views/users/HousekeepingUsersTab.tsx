@@ -144,7 +144,7 @@ export const HousekeepingUsersTab: FC = () => {
                     <div className="flex grow items-center gap-1 rounded-md border border-zinc-300 bg-white px-2 py-1 shadow-sm focus-within:border-sky-400 focus-within:ring-1 focus-within:ring-sky-300">
                         <FaSearch className="shrink-0 text-zinc-400" size={11} />
                         <input
-                            className="grow bg-transparent text-sm outline-none placeholder:italic placeholder:text-zinc-500"
+                            className="grow bg-transparent text-xs outline-none placeholder:italic placeholder:text-zinc-500"
                             placeholder={LocalizeText('housekeeping.user.search.placeholder')}
                             value={query}
                             onBlur={() => {

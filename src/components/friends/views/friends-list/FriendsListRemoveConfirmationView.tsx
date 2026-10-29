@@ -11,7 +11,7 @@ interface FriendsRemoveConfirmationViewProps {
 
 /**
  * AIR friend_remove_confirm: a 160 x 200 frame with the word-wrapped `friendlist.removefriendconfirm.userlist` text in a
- * bordered box, the thick OK button on the left and Cancel on the right, both 60 x 21.
+ * bordered box, the thick OK button on the left and Cancel on the right, both 60 x 21 and grey (style 0).
  */
 export const FriendsRemoveConfirmationView: FC<FriendsRemoveConfirmationViewProps> = (props) => {
     const { selectedFriendsIds = null, removeFriendsText = null, removeSelectedFriends = null, onCloseClick = null } = props;
@@ -26,7 +26,7 @@ export const FriendsRemoveConfirmationView: FC<FriendsRemoveConfirmationViewProp
             <OctaneCardContentView className="octane-friends-remove-confirmation-content text-black">
                 <div className="octane-friends-remove-confirmation-text">{removeFriendsText}</div>
                 <div className="octane-friends-remove-confirmation-actions">
-                    <Button className="octane-friends-remove-confirmation-ok" disabled={selectedFriendsIds.length === 0} onClick={removeSelectedFriends}>
+                    <Button className="octane-friends-remove-confirmation-ok" variant="secondary" disabled={selectedFriendsIds.length === 0} onClick={removeSelectedFriends}>
                         {LocalizeText('generic.ok')}
                     </Button>
                     <Button variant="secondary" onClick={onCloseClick}>

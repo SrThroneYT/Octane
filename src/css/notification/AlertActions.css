@@ -61,13 +61,15 @@
 
 /*
  * Text as AIR draws the alerts. habbo_window_alert, habbo_window_alert_link and habbo_window_confirm are
- * Ubuntu (style 3) frames: the text and the cancel link are u_regular 12 px, the button is a button_thick
- * (button_shiny_bold, 12 px bold). Regular Ubuntu, which in Octane is HabboAirUbuntu (our `Ubuntu` face is
+ * Ubuntu (style 3) frames: the text and the cancel link are u_regular 12 px black, the button is a grey
+ * button_thick with 12 px regular text. Regular Ubuntu, which in Octane is HabboAirUbuntu (our `Ubuntu` face is
  * the condensed cut). The hotel event, Octane info and furnidata alerts are Octane's own designs and keep
  * their faces; the MOTD is a style 0 window (below).
  */
 .octane-alert:not(.octane-alert-hotel-event, .octane-alert-octane-info, .octane-alert-furnidata, .octane-motd-alert) .octane-card-content-shell {
     font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    /* u_regular: 12 px black */
+    color: #000000;
     font-size: 12px;
     line-height: 15px;
 }
@@ -79,13 +81,41 @@
         font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
     }
 
-    /* Button's size is an important utility (12.6 px); button_shiny_bold is 12 px bold. */
+    /* Button's size is an important utility (12.6 px); AIR's alert buttons are 12 px regular. */
     .octane-alert:not(.octane-alert-hotel-event, .octane-alert-octane-info, .octane-alert-furnidata, .octane-motd-alert, .octane-abusive-alert)
         .octane-card-content-shell
         :where(.habbo-btn-primary, .habbo-btn-secondary, .habbo-btn-danger) {
         font-size: 12px !important;
-        font-weight: 700 !important;
+        font-weight: 400 !important;
     }
+
+    /* The alert button is AIR's grey button_thick (habbo_skin_button_shiny_thick), 30 px high, black text. */
+    .octane-alert:not(.octane-alert-hotel-event, .octane-alert-octane-info, .octane-alert-furnidata, .octane-motd-alert, .octane-abusive-alert)
+        .octane-card-content-shell
+        .habbo-btn-primary {
+        min-height: 30px !important;
+        padding: 0 10px !important;
+        border-image-source: var(--habbo-skin-shiny-thick) !important;
+        color: #000000 !important;
+        text-shadow: none;
+    }
+
+    .octane-alert:not(.octane-alert-hotel-event, .octane-alert-octane-info, .octane-alert-furnidata, .octane-motd-alert, .octane-abusive-alert)
+        .octane-card-content-shell
+        .habbo-btn-primary:hover {
+        border-image-source: var(--habbo-skin-shiny-thick-hover) !important;
+    }
+
+    .octane-alert:not(.octane-alert-hotel-event, .octane-alert-octane-info, .octane-alert-furnidata, .octane-motd-alert, .octane-abusive-alert)
+        .octane-card-content-shell
+        .habbo-btn-primary:active {
+        border-image-source: var(--habbo-skin-shiny-thick-pressed) !important;
+    }
+}
+
+/* AIR's alerts have no rule between the text and the button. */
+.octane-alert:not(.octane-alert-hotel-event, .octane-alert-octane-info, .octane-alert-furnidata, .octane-motd-alert) .octane-card-content-shell hr {
+    visibility: hidden;
 }
 
 /*

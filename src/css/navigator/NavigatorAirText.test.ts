@@ -23,4 +23,12 @@ describe('navigator text (navigator_frame_2, room_info_popup_bubble, property, t
         expect(properties).toContain('grid-template-columns: 70px minmax(0, 1fr)');
         expect(properties).toContain('grid-auto-rows: minmax(20px, auto)');
     });
+
+    it('draws the doorbell and password windows in black regular Ubuntu with grey shiny buttons', () => {
+        const view = readFileSync(join(process.cwd(), 'src/components/navigator/views/NavigatorDoorStateView.tsx'), 'utf8');
+
+        expect(rule('.octane-navigator-doorbell .octane-navigator-air__door-state')).toContain('color: #000000');
+        expect(css).toMatch(/\.octane-navigator-air__door-state \.habbo-btn-secondary \{[^}]*border-image-source: var\(--habbo-skin-shiny\) !important;[^}]*font-weight: 400 !important/);
+        expect(view).not.toMatch(/variant="(success|danger)"/);
+    });
 });

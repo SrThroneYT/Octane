@@ -62,11 +62,11 @@ export const NavigatorDoorStateView: FC<{}> = (props) => {
                 {isDoorbell && (
                     <div className="flex flex-col gap-1">
                         {snapshot.state === DoorStateType.START_DOORBELL && (
-                            <Button variant="success" onClick={ring}>
+                            <Button variant="secondary" onClick={ring}>
                                 {LocalizeText('navigator.doorbell.button.ring')}
                             </Button>
                         )}
-                        <Button variant="danger" onClick={onClose}>
+                        <Button variant="secondary" onClick={onClose}>
                             {LocalizeText('generic.cancel')}
                         </Button>
                     </div>
@@ -86,10 +86,10 @@ export const NavigatorDoorStateView: FC<{}> = (props) => {
                             />
                         </div>
                         <div className="flex flex-col gap-1">
-                            <Button disabled={!password.length} variant="success" onClick={tryEntering}>
+                            <Button disabled={!password.length} variant="secondary" onClick={tryEntering}>
                                 {LocalizeText('navigator.password.button.try')}
                             </Button>
-                            <Button variant="danger" onClick={onClose}>
+                            <Button variant="secondary" onClick={onClose}>
                                 {LocalizeText('generic.cancel')}
                             </Button>
                         </div>

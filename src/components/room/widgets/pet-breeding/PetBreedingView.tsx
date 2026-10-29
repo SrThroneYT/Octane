@@ -11,6 +11,7 @@ import { FC, useState } from 'react';
 import { localizeWithFallback, SendMessageComposer } from '../../../../api';
 import { Button, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Text } from '../../../../common';
 import { useOctaneEvent, useRoom } from '../../../../hooks';
+import '../../../../css/room/RoomWidgetsSweepAir.css';
 
 interface BreedingRequest {
     nestId: number;
@@ -29,8 +30,8 @@ const RESULT_NAME_INVALID = 3;
 
 const PetSummary: FC<{ pet: BreedingPetInfo }> = ({ pet }) => (
     <div className="flex flex-col items-center grow rounded bg-black/10 p-2 min-w-0">
-        <Text bold truncate>{pet.name}</Text>
-        <Text small>{localizeWithFallback('breedpets.widget.pet1.level', `Level ${pet.level}`, ['level'], [pet.level.toString()])}</Text>
+        <Text bold truncate className="octane-pet-breeding__pet-name">{pet.name}</Text>
+        <Text small className="octane-pet-breeding__pet-level">{localizeWithFallback('breedpets.widget.pet1.level', `Level ${pet.level}`, ['level'], [pet.level.toString()])}</Text>
         <Text small truncate variant="muted">{pet.owner}</Text>
     </div>
 );
@@ -85,9 +86,9 @@ export const PetBreedingView: FC = () => {
                 <OctaneCardHeaderView headerText={localizeWithFallback('breedpets.nestbreeding.success.header', 'Breeding over')} onCloseClick={() => setSuccess(null)} />
                 <OctaneCardContentView center gap={2}>
                     <Text>{localizeWithFallback('breedpets.nestbreeding.success.title', 'You are now a proud owner of...')}</Text>
-                    {success.petName && <Text bold>{success.petName}</Text>}
+                    {success.petName && <Text bold className="octane-pet-breeding__pet-level">{success.petName}</Text>}
                     <Text small>{localizeWithFallback(`breedpets.nestbreeding.success.raritycategory.${success.rarity}`, '')}</Text>
-                    <Button variant="success" onClick={() => setSuccess(null)}>
+                    <Button variant="secondary" onClick={() => setSuccess(null)}>
                         {localizeWithFallback('breedpets.nestbreeding.success.button.ok', 'I\'m going to take good care of it!')}
                     </Button>
                 </OctaneCardContentView>
@@ -103,7 +104,7 @@ export const PetBreedingView: FC = () => {
                 <OctaneCardHeaderView headerText={localizeWithFallback('breedpets.confirmation.alert.title', 'Error!')} onCloseClick={() => setError('')} />
                 <OctaneCardContentView center gap={2}>
                     <Text center>{error}</Text>
-                    <Button onClick={() => setError('')}>{localizeWithFallback('generic.ok', 'OK')}</Button>
+                    <Button variant="secondary" onClick={() => setError('')}>{localizeWithFallback('generic.ok', 'OK')}</Button>
                 </OctaneCardContentView>
             </OctaneCardView>
         );
@@ -142,7 +143,7 @@ export const PetBreedingView: FC = () => {
                 </div>
                 {request.rarities.length > 0 && (
                     <div className="flex flex-col gap-0.5">
-                        <Text small bold>{localizeWithFallback('breedpets.confirmation.widget.breeding.info', 'BREEDING INFO')}</Text>
+                        <Text small bold className="octane-pet-breeding__heading">{localizeWithFallback('breedpets.confirmation.widget.breeding.info', 'BREEDING INFO')}</Text>
                         {request.rarities.map((rarity, index) => (
                             <Text key={index} small>
                                 {localizeWithFallback(`breedpets.confirmation.widget.raritycategory.${index + 1}`, `${rarity.chance}%`, ['percent'], [rarity.chance.toString()])}
@@ -151,7 +152,7 @@ export const PetBreedingView: FC = () => {
                     </div>
                 )}
                 <label className="flex flex-col gap-1">
-                    <Text small bold>{localizeWithFallback('breedpets.confirmation.widget.baby.name', 'BABY\'S NAME')}</Text>
+                    <Text small bold className="octane-pet-breeding__heading">{localizeWithFallback('breedpets.confirmation.widget.baby.name', 'BABY\'S NAME')}</Text>
                     <input
                         className="form-control form-control-sm"
                         maxLength={MAX_NAME_LENGTH}
@@ -166,7 +167,7 @@ export const PetBreedingView: FC = () => {
                     <Button variant="secondary" onClick={cancel}>
                         {localizeWithFallback('breedpets.confirmation.widget.button.cancel', 'No thanks, maybe later!')}
                     </Button>
-                    <Button variant="success" disabled={isSending} onClick={breed}>
+                    <Button variant="secondary" disabled={isSending} onClick={breed}>
                         {localizeWithFallback('breedpets.confirmation.widget.button.breed', 'Let\'s Breed')}
                     </Button>
                 </div>

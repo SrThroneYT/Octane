@@ -16,4 +16,17 @@ describe('user profile text (new_extended_profile)', () => {
         expect(css).toMatch(/\.octane-extended-profile-groups__sidebar \{[^}]*min-height: 0/);
         expect(css).toMatch(/\.octane-extended-profile-groups__list \{[^}]*min-height: 0;[^}]*overflow-y: auto/);
     });
+
+    it('draws addasfriend_button as the grey shiny button with 12 px regular black text', () => {
+        expect(css).toMatch(/\*\/\s*\.octane-extended-profile__friend-button \{[^}]*border-image-source: var\(--habbo-skin-shiny\);[^}]*border-radius: 0;[^}]*color: #000000;[^}]*font-size: 12px;[^}]*font-weight: 400;/);
+    });
+
+    it('draws the body texts pure black like the layout (status, motto, relationships, rooms, groups)', () => {
+        for (const sel of ['__motto', '__meta', '__status-text', '__relationships-label', '__relationship-name', '__summary-button']) {
+            expect(css).toMatch(new RegExp(`\\.octane-extended-profile${sel} \\{[^}]*color: #000000;`));
+        }
+        expect(css).toMatch(/\.octane-extended-profile-group-info__description \{[^}]*color: #000000;/);
+        expect(css).toMatch(/\.octane-extended-profile__hidden-notice \{[^}]*color: #555/);
+    });
 });
+

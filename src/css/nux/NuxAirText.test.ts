@@ -25,4 +25,12 @@ describe('nux text (ui_help_bubble, nux_offer_old_user, nux_gift_selection, nux_
         expect(rule('.octane-nux-offer__go')).toContain('font-size: 12px');
         expect(rule('.octane-nux-gifts__name')).toContain('font-size: 9px');
     });
+
+    it('skins the buttons like the layouts: green OK / btnGo, grey option_button', () => {
+        expect(rule('.octane-help-bubble__ok')).toContain('border-image-source: var(--habbo-skin-shiny-green)');
+        expect(rule('.octane-nux-offer__go')).toContain('border-image-source: var(--habbo-skin-shiny-thick-green)');
+        expect(rule('.octane-nux-offer__go')).not.toContain('linear-gradient');
+        expect(rule('.octane-nux-offer__go.octane-nux-offer__get')).toMatch(/border-image-source: var\(--habbo-skin-shiny\);[^}]*color: #000000;[^}]*font-weight: 400/);
+    });
 });
+

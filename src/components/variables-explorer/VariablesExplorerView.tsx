@@ -4,6 +4,7 @@ import { WidgetErrorBoundary } from '../../common/error-boundary/WidgetErrorBoun
 import { useVariablesExplorerStore } from '../../state/variablesExplorer';
 import { VariablesExplorerConnectView } from './VariablesExplorerConnectView';
 import { VariablesExplorerMainView } from './VariablesExplorerMainView';
+import '../../css/variables-explorer/VariablesExplorer.css';
 
 interface ExplorerSession {
     connection: ExplorerConnection;

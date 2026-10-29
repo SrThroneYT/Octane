@@ -3,6 +3,7 @@ import { GetConfigurationValue } from '../../api';
 import { resolveAdsFrame } from '../../api/utils/resolveAdsFrame';
 import { OctaneCardContentView, OctaneCardHeaderView, OctaneCardView } from '../../common';
 import { configFileUrl } from '../../secure-assets';
+import '../../css/ads/GoogleAdsAirText.css';
 
 interface AdsenseConfig {
     slot: string;
@@ -139,7 +140,7 @@ export const GoogleAdsView: FC<{}> = () => {
             <OctaneCardContentView>
                 <div className="flex items-center justify-center w-[300px] h-[250px] bg-white">
                     {loadError && <div className="text-xs text-red-600 text-center px-2">Ads unavailable: {loadError}</div>}
-                    {!loadError && (!publisherId || !config) && <div className="text-xs text-gray-500">Loading…</div>}
+                    {!loadError && (!publisherId || !config) && <div className="octane-google-ads__hint">Loading…</div>}
                     {!loadError && framed && adsFrame && (
                         <iframe
                             className="w-full h-full border-0"
@@ -165,7 +166,7 @@ export const GoogleAdsView: FC<{}> = () => {
                         />
                     )}
                     {!loadError && publisherId && config && !config.slot && (
-                        <div className="text-xs text-gray-500 text-center px-2">Ad slot not configured in configuration/adsense.json</div>
+                        <div className="octane-google-ads__hint text-center px-2">Ad slot not configured in configuration/adsense.json</div>
                     )}
                 </div>
             </OctaneCardContentView>
