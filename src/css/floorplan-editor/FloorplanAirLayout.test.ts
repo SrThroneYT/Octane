@@ -30,4 +30,12 @@ describe('floor plan editor (floor_plan_editor_bc)', () => {
         expect(rule('.octane-floorplan-window .octane-card-title')).toContain('font-size: 12px !important');
         expect(css).toMatch(/\.octane-floorplan-window :where\(\*\):not\(svg, svg \*\) \{[^}]*HabboAirUbuntu/);
     });
+
+    it('keeps the enter-direction avatar inside its own 45x72 box', () => {
+        expect(rule('.fp-orientation-avatar')).toMatch(/position: relative;[\s\S]*width: 45px;[\s\S]*height: 72px/);
+    });
+
+    it('centres the enter-direction avatar between the arrows', () => {
+        expect(rule('.fp-orientation-avatar img')).toMatch(/object-position: center;/);
+    });
 });

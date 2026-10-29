@@ -199,9 +199,30 @@
 .fp-orientation {
     display: flex;
     align-items: center;
-    gap: 2px;
-    height: 48px;
+    gap: 6px;
+    height: 72px;
 }
+
+/* enterdirection_ghost_avatar: a 45x72 small avatar facing the door direction. */
+/* position: relative, because the fit avatar image fills its nearest positioned ancestor. */
+.fp-orientation-avatar {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    width: 45px;
+    height: 72px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+/* The small fit avatar sits at the bottom of its box by default; centre it on the arrows instead. */
+.fp-orientation-avatar img {
+    object-position: center;
+}
+
 
 .fp-orientation-step {
     display: flex;

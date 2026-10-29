@@ -2,7 +2,8 @@ import { Dispatch, FC } from 'react';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { LocalizeText } from '../../../api';
 import { localizeOr } from '../state/localize';
-import { Base } from '../../../common';
+import { Base, LayoutAvatarImageView } from '../../../common';
+import { useUserDataSnapshot } from '../../../hooks/session/useSessionSnapshots';
 import { EntryDir, FloorplanAction, FloorplanState, ThicknessLevel } from '../state/types';
 import { BaseButton } from '../../../common/BaseButton';
 import { Hint } from '../../../common/Tooltip';
@@ -15,9 +16,15 @@ type Props = {
 const THICKNESS_LEVELS: ThicknessLevel[] = [0, 1, 2, 3];
 const THICKNESS_NAMES = ['thinnest', 'thin', 'normal', 'thick'] as const;
 
+/** Shown when the session has no figure yet. */
+const GHOST_FIGURE = 'hd-180-1.ch-210-66.lg-270-82.sh-290-80';
+
 const rotateDir = (dir: EntryDir, step: 1 | -1): EntryDir => ((dir + step + 8) & 7) as EntryDir;
 
 export const FloorplanOptionsPanel: FC<Props> = ({ state, dispatch }) => {
+    const userData = useUserDataSnapshot();
+    const figure = userData?.figure ?? '';
+    const gender = userData?.gender ?? '';
     const setDir = (next: EntryDir) => dispatch({ type: 'SET_DOOR_DIR', dir: next, source: 'local' });
     const setWall = (t: ThicknessLevel) => dispatch({ type: 'SET_THICKNESS', wall: t, source: 'local' });
     const setFloor = (t: ThicknessLevel) => dispatch({ type: 'SET_THICKNESS', floor: t, source: 'local' });
@@ -26,18 +33,23 @@ export const FloorplanOptionsPanel: FC<Props> = ({ state, dispatch }) => {
         <>
             <div className="fp-control-group is-centered" data-testid="floorplan-orientation">
                 <div className="fp-group-label">{LocalizeText('floor.plan.editor.enter.direction')}</div>
+                {/* AIR enterdirection_container: left turns the ghost avatar one step up (entryPointDir++), right one
+                    step back; the avatar in the middle faces the door direction. */}
                 <div className="fp-orientation">
-                    <Base component={BaseButton} type="button" data-testid="entry-dir-prev" pointer title="Rotate left" className="fp-orientation-step" onClick={() => setDir(rotateDir(state.door.dir, -1))}>
+                    <Base component={BaseButton} type="button" data-testid="entry-dir-prev" pointer title="Rotate left" className="fp-orientation-step" onClick={() => setDir(rotateDir(state.door.dir, 1))}>
                         <FaChevronLeft size={11} />
                     </Base>
                     <Base component={BaseButton} type="button"
                         data-testid="entry-dir"
+                        data-dir={state.door.dir}
                         pointer
                         title={`Direction ${state.door.dir}/7 (click to rotate)`}
-                        className={`octane-icon icon-door-direction-${state.door.dir}`}
+                        className="fp-orientation-avatar"
                         onClick={() => setDir(rotateDir(state.door.dir, 1))}
-                    />
-                    <Base component={BaseButton} type="button" data-testid="entry-dir-next" pointer title="Rotate right" className="fp-orientation-step" onClick={() => setDir(rotateDir(state.door.dir, 1))}>
+                    >
+                        <LayoutAvatarImageView figure={figure || GHOST_FIGURE} gender={gender || 'M'} direction={state.door.dir} fit small />
+                    </Base>
+                    <Base component={BaseButton} type="button" data-testid="entry-dir-next" pointer title="Rotate right" className="fp-orientation-step" onClick={() => setDir(rotateDir(state.door.dir, -1))}>
                         <FaChevronRight size={11} />
                     </Base>
                 </div>
