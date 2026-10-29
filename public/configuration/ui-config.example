@@ -16,6 +16,7 @@
     "niko.trophy.appstore.image": "",
     "emustats.endpoint": "${api.url}/api/emustats",
     "external.plugins": [],
+    "external.plugins.allowed.hosts": [],
     "// ---- Images and assets ----": "",
     "image.library.notifications.url": "${image.library.url}notifications/%image%.png",
     "achievements.images.url": "${image.library.url}Quests/%image%.png",
