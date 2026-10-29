@@ -15,7 +15,7 @@ import {
     UpdateFloorPropertiesMessageComposer
 } from '@octane/renderer';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
-import { GetLocalStorage, LocalizeText, SendMessageComposer, SetLocalStorage } from '../../api';
+import { LocalizeText, SendMessageComposer } from '../../api';
 import { Base, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView } from '../../common';
 import { useMessageEvent, useOctaneEvent } from '../../hooks';
 import { isTextEntryTarget } from '../../hooks/rooms/useRoomKeyboardMovement';
@@ -26,12 +26,11 @@ import { serializeTilemap } from './state/encoding';
 import { localizeOr } from './state/localize';
 import { areaCount } from './state/selectors';
 import { EntryDir, ThicknessLevel } from './state/types';
-import { Floorplan3DView } from './views/Floorplan3DView';
 import { FloorplanCanvasSVG } from './views/FloorplanCanvasSVG';
 import { FloorplanHeightPicker } from './views/FloorplanHeightPicker';
 import { FloorplanImportExport } from './views/FloorplanImportExport';
 import { FloorplanOptionsPanel } from './views/FloorplanOptionsPanel';
-import { FloorplanPreviewSVG } from './views/FloorplanPreviewSVG';
+import { FloorplanAirPreview } from './views/FloorplanAirPreview';
 import { FloorplanToolbar } from './views/FloorplanToolbar';
 import { FloorplanWallHeightSlider } from './views/FloorplanWallHeightSlider';
 import { BaseButton } from '../../common/BaseButton';
@@ -49,16 +48,6 @@ type Props = {
     externalSession?: FloorplanEditorExternalSession;
 };
 
-export const PREVIEW_3D_STORAGE_KEY = 'octane.floorplan.preview3d';
-
-const readPreview3dPreference = (): boolean => {
-    try {
-        return GetLocalStorage<boolean>(PREVIEW_3D_STORAGE_KEY) === true;
-    } catch {
-        return false;
-    }
-};
-
 const clampThickness = (v: number): ThicknessLevel => {
     if (v <= 0) return 0;
     if (v >= 3) return 3;
@@ -70,7 +59,6 @@ export const FloorplanEditorView: FC<Props> = ({ externalSession }) => {
     const [importExportVisible, setImportExportVisible] = useState(false);
     const [liveSync, setLiveSync] = useState(true);
     const [panMode, setPanMode] = useState(false);
-    const [preview3d, setPreview3d] = useState(readPreview3dPreference);
     const { state, dispatch, loadFromServer, undo, redo, canUndo, canRedo } = useFloorplanReducer();
     const isExternal = !!externalSession;
     const isVisible = isExternal || roomVisible;
@@ -262,14 +250,6 @@ export const FloorplanEditorView: FC<Props> = ({ externalSession }) => {
         );
     };
 
-    const choosePreview = (use3d: boolean) => {
-        setPreview3d(use3d);
-        try {
-            SetLocalStorage(PREVIEW_3D_STORAGE_KEY, use3d);
-        } catch {
-        }
-    };
-
     const revertChanges = () => {
         const o = originalRef.current;
         if (!o) return;
@@ -376,33 +356,7 @@ export const FloorplanEditorView: FC<Props> = ({ externalSession }) => {
                                         <FloorplanWallHeightSlider value={state.wallHeight} onChange={onWallHeightChange} />
                                     </div>
                                     <div className="fp-panel-body">
-                                        {preview3d ? (
-                                            <Floorplan3DView state={state} dispatch={dispatch} panMode={panMode} />
-                                        ) : (
-                                            <div className="fp-stage" data-testid="floorplan-preview-2d">
-                                                <FloorplanPreviewSVG state={state} />
-                                            </div>
-                                        )}
-                                        <div className="fp-view-switch" data-testid="floorplan-view-switch" role="group" aria-label={localizeOr('floor.plan.editor.preview.mode', 'Preview')}>
-                                            <Hint content={localizeOr('floor.plan.editor.preview.2d.title', 'Flat preview (light, works on every device)')}><BaseButton
-                                                type="button"
-                                                data-testid="floorplan-view-2d"
-                                                data-active={preview3d ? 'false' : 'true'}
-                                                className={`fp-pill ${preview3d ? '' : 'is-on'}`}
-                                                onClick={() => choosePreview(false)}
-                                            >
-                                                2D
-                                            </BaseButton></Hint>
-                                            <Hint content={localizeOr('floor.plan.editor.preview.3d.title', '3D preview (WebGL, editable, heavier)')}><BaseButton
-                                                type="button"
-                                                data-testid="floorplan-view-3d"
-                                                data-active={preview3d ? 'true' : 'false'}
-                                                className={`fp-pill ${preview3d ? 'is-on' : ''}`}
-                                                onClick={() => choosePreview(true)}
-                                            >
-                                                3D
-                                            </BaseButton></Hint>
-                                        </div>
+                                        <FloorplanAirPreview state={state} />
                                     </div>
                                 </div>
                             </div>

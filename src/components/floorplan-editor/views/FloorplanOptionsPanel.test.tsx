@@ -13,6 +13,18 @@ describe('FloorplanOptionsPanel', () => {
         expect(dispatch).toHaveBeenCalledWith({ type: 'SET_DOOR_DIR', dir: 3, source: 'local' });
     });
 
+    it('turns like AIR: left steps the direction up, right steps it down, wrapping at 0 and 7', () => {
+        const dispatch = vi.fn();
+        const state = { ...initialState, door: { x: 0, y: 0, dir: 0 as const } };
+        const { getByTestId } = render(<FloorplanOptionsPanel state={state} dispatch={dispatch} />);
+
+        fireEvent.click(getByTestId('entry-dir-prev'));
+        expect(dispatch).toHaveBeenLastCalledWith({ type: 'SET_DOOR_DIR', dir: 1, source: 'local' });
+        fireEvent.click(getByTestId('entry-dir-next'));
+        expect(dispatch).toHaveBeenLastCalledWith({ type: 'SET_DOOR_DIR', dir: 7, source: 'local' });
+        expect(getByTestId('entry-dir').getAttribute('data-dir')).toBe('0');
+    });
+
     it('wraps from 7 back to 0', () => {
         const dispatch = vi.fn();
         const state = { ...initialState, door: { x: 0, y: 0, dir: 7 as const } };
