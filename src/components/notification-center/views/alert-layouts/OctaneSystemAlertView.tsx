@@ -15,7 +15,7 @@ const getOctaneAboutText = () => [
     'Octane is a fork of Nitro. We have fixed a lot ourselves, made sure the UI matches the Habbo AIR UI and kept the hotel\'s own features inside the official layouts.',
     '',
     '<b>Team</b>',
-    'DuckieTM, simoleo89, Medievalshell, Lorenzo (the wired master), Remco',
+    'DuckieTM, simoleo89, Medievalshell, Lorenzo, Remco',
     '',
     '<b>Credits</b>',
     'Thanks to Billsonnn and the Nitro team for the Nitro React and Nitro Renderer work that Octane is built on.',

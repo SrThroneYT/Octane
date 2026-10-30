@@ -1,5 +1,5 @@
 import { AddLinkEventTracker, ILinkEventTracker, RemoveLinkEventTracker } from '@octane/renderer';
-import { FC, useEffect, useMemo, useRef, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FaBars, FaCog } from 'react-icons/fa';
 import { CatalogType, GetConfigurationValue, LocalizeShortNumber, LocalizeText, SanitizeHtml } from '../../api';
 import { LayoutCurrencyIcon, OctaneCardContentView, OctaneCardHeaderView, OctaneCardTabsItemView, OctaneCardTabsView, OctaneCardView } from '../../common';
@@ -46,6 +46,9 @@ const CatalogViewInner: FC<{}> = () => {
     const catalogAdmin = useCatalogAdmin();
     const adminMode = catalogAdmin?.adminMode ?? false;
     const setAdminMode = catalogAdmin?.setAdminMode ?? (() => {});
+
+    // One function for the whole session: a layout that hides the navigation must not hide it again on every render.
+    const hideNavigation = useCallback(() => setNavigationHidden?.(true), [setNavigationHidden]);
 
     const isMod = useHasPermission('acc_catalogfurni');
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -282,7 +285,7 @@ const CatalogViewInner: FC<{}> = () => {
                                         {!!currentPage?.localization?.getImage(0) && <img alt="" src={currentPage.localization.getImage(0)} />}
                                     </div>
                                 </div>
-                                <div className="octane-catalog-layout-container">{GetCatalogLayout(currentPage, () => setNavigationHidden(true))}</div>
+                                <div className="octane-catalog-layout-container">{GetCatalogLayout(currentPage, hideNavigation)}</div>
                             </div>
                         </div>
                     </OctaneCardContentView>

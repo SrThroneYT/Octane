@@ -1,5 +1,5 @@
 import { CreateLinkEvent, FrontPageItem } from '@octane/renderer';
-import { FC, useCallback, useEffect } from 'react';
+import { FC, useCallback, useEffect, useRef } from 'react';
 import { GetConfigurationValue } from '../../../../../../api';
 import { BaseButton } from '../../../../../../common/BaseButton';
 import { useCatalogData } from '../../../../../../hooks';
@@ -39,9 +39,15 @@ export const CatalogLayoutFrontpage4View: FC<CatalogLayoutProps> = (props) => {
         }
     }, []);
 
+    // Hide it when this page opens, not on every render: while the next tab's page is still loading this page re-renders
+    // after the click that showed the navigation again, and must not hide it a second time.
+    const hideNavigationRef = useRef(hideNavigation);
+
+    hideNavigationRef.current = hideNavigation;
+
     useEffect(() => {
-        hideNavigation?.();
-    }, [page, hideNavigation]);
+        hideNavigationRef.current?.();
+    }, [page]);
 
     return (
         <div className="octane-catalog-air-frontpage">
