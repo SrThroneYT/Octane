@@ -230,9 +230,22 @@
     min-height: 18px;
     padding: 0 4px;
     font-size: 10px;
-    border: 3px solid transparent;
-    border-image: var(--habbo-skin-button) 3 fill / 3px stretch;
+    /* Octane's badge filter / create buttons: AIR's grey `button` skin (habbo_skin_button_shiny), black text. */
+    border: 5px solid transparent;
+    border-image-source: var(--habbo-skin-shiny);
+    border-image-slice: 5 fill;
+    border-image-width: 5px;
+    border-image-repeat: stretch;
+    color: #000000;
     cursor: pointer;
+}
+
+.octane-inventory-badges-polaris-row button:hover {
+    border-image-source: var(--habbo-skin-shiny-hover);
+}
+
+.octane-inventory-badges-polaris-row button:active {
+    border-image-source: var(--habbo-skin-shiny-pressed);
 }
 
 .octane-inventory-badges-polaris-row button.is-active {

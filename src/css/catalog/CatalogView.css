@@ -2664,17 +2664,18 @@
     height: 24px;
     margin: 0;
     padding: 0 8px !important;
-    border: 3px solid transparent !important;
+    /* AIR's grey `button` (style 3): habbo_skin_button_shiny, button_shiny_regular 12 px black. */
+    border: 5px solid transparent !important;
     border-radius: 0 !important;
-    border-image-source: var(--habbo-skin-button) !important;
-    border-image-slice: 3 fill !important;
-    border-image-width: 3px !important;
+    border-image-source: var(--habbo-skin-shiny) !important;
+    border-image-slice: 5 fill !important;
+    border-image-width: 5px !important;
     border-image-repeat: stretch !important;
     background: transparent !important;
-    color: #111111 !important;
+    color: #000000 !important;
     font-family: HabboAirUbuntu, UbuntuRegular, Ubuntu, sans-serif !important;
-    font-size: 11px !important;
-    font-weight: 700 !important;
+    font-size: 12px !important;
+    font-weight: 400 !important;
     line-height: 17px !important;
     text-shadow: none !important;
     box-shadow: none !important;
@@ -2689,19 +2690,19 @@
 }
 
 .octane-catalog-window .octane-catalog-standard-button:hover {
-    border-image-source: var(--habbo-skin-button-hover) !important;
+    border-image-source: var(--habbo-skin-shiny-hover) !important;
     filter: none !important;
 }
 
 .octane-catalog-window .octane-catalog-standard-button:active {
-    border-image-source: var(--habbo-skin-button-pressed) !important;
+    border-image-source: var(--habbo-skin-shiny-pressed) !important;
     filter: none !important;
     box-shadow: none !important;
 }
 
 .octane-catalog-window .octane-catalog-standard-button.pointer-events-none,
 .octane-catalog-window .octane-catalog-standard-button:disabled {
-    border-image-source: var(--habbo-skin-button-disabled) !important;
+    border-image-source: var(--habbo-skin-shiny-disabled) !important;
     color: #777777 !important;
     opacity: 1 !important;
     cursor: not-allowed !important;
@@ -5402,18 +5403,27 @@
     height: 30px;
     padding: 0;
     border-style: solid;
-    border-width: 3px;
-    border-image-source: var(--habbo-skin-button);
-    border-image-slice: 3 fill;
-    border-image-width: 3px;
+    /* ctlg_trophies ctlg_prevmodel_button / ctlg_nextmodel_button: container_button style 3, habbo_skin_button_shiny. */
+    border-width: 5px;
+    border-image-source: var(--habbo-skin-shiny);
+    border-image-slice: 5 fill;
+    border-image-width: 5px;
     background: transparent;
-    color: #333;
+    color: #000000;
     font-size: 12px;
     cursor: pointer;
 }
 
 .octane-catalog-air-trophies__model:hover {
-    border-image-source: var(--habbo-skin-button-hover);
+    border-image-source: var(--habbo-skin-shiny-hover);
+}
+
+.octane-catalog-air-trophies__model:active {
+    border-image-source: var(--habbo-skin-shiny-pressed);
+}
+
+.octane-catalog-air-trophies__model:disabled {
+    border-image-source: var(--habbo-skin-shiny-disabled);
 }
 
 /* AIR keeps the buttons 95 px apart around the middle of the preview. */

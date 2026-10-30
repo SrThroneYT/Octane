@@ -63,7 +63,7 @@ export const OfferWindowView = (props: { offer: TargetedOfferData; secondsLeft: 
                                     <NumberInput max={offer.purchaseLimit} min={1} value={amount} onChange={(evt) => setAmount(parseInt(evt.target.value))} />
                                 </div>
                             )}
-                            <Button disabled={purchaseBlock !== null} variant="primary" onClick={() => buyOffer()}>
+                            <Button className="octane-targeted-offer__buy" disabled={purchaseBlock !== null} variant="primary" onClick={() => buyOffer()}>
                                 {LocalizeText('targeted.offer.button.buy')}
                             </Button>
                         </Flex>

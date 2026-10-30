@@ -47,4 +47,12 @@ describe('friend windows text (habbo-friend-bar / habbo-friend-list / messenger 
         expect(activityCss).toMatch(/\.octane-epic-popup-close \{[^}]*font-size: 10px;[^}]*font-weight: 700;/);
         expect(messengerCss).toMatch(/\.messenger-habbicon-scroll strong \{[^}]*font-size: 11px;/);
     });
+
+    it('tints the requests button_accept_all 0x77bf43 on the shiny thick skin as AIR', () => {
+        expect(requestsCss).toMatch(
+            /\.friend-bar-requests-accept-all \{[^}]*border-image-source: var\(--habbo-skin-shiny-thick-tint-77bf43\);[^}]*background: transparent;[^}]*color: #fff;/
+        );
+        expect(requestsCss).toMatch(/\.friend-bar-requests-accept-all:hover \{\s*border-image-source: var\(--habbo-skin-shiny-thick-tint-77bf43-hover\)/);
+        expect(requestsCss).not.toMatch(/\.friend-bar-requests-accept-all \{[^}]*linear-gradient/);
+    });
 });

@@ -31,6 +31,8 @@
     padding: 4px 2px 2px;
 }
 
+/* builderWidget place_one (button_thick style 5, color 0xdda100) and place_many (color 0x0a9bc5): AIR's grey
+   habbo_skin_button_shiny_thick multiplied by the element colour, white button_shiny_bold 12 px caption. */
 .octane-catalog-window .octane-builders-place-button {
     appearance: none;
     display: inline-flex;
@@ -38,38 +40,54 @@
     justify-content: center;
     min-width: 120px;
     height: 26px;
-    padding: 0 12px;
-    border: 2px solid;
-    border-radius: 5px;
+    padding: 0 7px;
+    border: 5px solid transparent;
+    border-image-slice: 5 fill;
+    border-image-width: 5px;
+    border-image-repeat: stretch;
+    border-radius: 0;
+    background: transparent;
     color: #ffffff;
     font-family: HabboAirUbuntu, UbuntuRegular, Ubuntu, sans-serif;
     font-size: 12px;
     font-weight: 700;
-    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    image-rendering: var(--octane-pixel-art, pixelated);
     cursor: pointer;
 }
 
 .octane-catalog-window .octane-builders-place-button.is-one {
-    background: linear-gradient(180deg, #d8b85a 0%, #b8952f 100%);
-    border-color: #9c7d22;
+    border-image-source: var(--habbo-skin-shiny-thick-tint-dda100);
+}
+
+.octane-catalog-window .octane-builders-place-button.is-one:hover:not(:disabled) {
+    border-image-source: var(--habbo-skin-shiny-thick-tint-dda100-hover);
+}
+
+.octane-catalog-window .octane-builders-place-button.is-one:active:not(:disabled) {
+    border-image-source: var(--habbo-skin-shiny-thick-tint-dda100-pressed);
+}
+
+.octane-catalog-window .octane-builders-place-button.is-one:disabled {
+    border-image-source: var(--habbo-skin-shiny-thick-tint-dda100-disabled);
 }
 
 .octane-catalog-window .octane-builders-place-button.is-many {
-    background: linear-gradient(180deg, #62a6ba 0%, #42849a 100%);
-    border-color: #346f82;
+    border-image-source: var(--habbo-skin-shiny-thick-tint-0a9bc5);
 }
 
-.octane-catalog-window .octane-builders-place-button:hover:not(:disabled) {
-    filter: brightness(1.08);
+.octane-catalog-window .octane-builders-place-button.is-many:hover:not(:disabled) {
+    border-image-source: var(--habbo-skin-shiny-thick-tint-0a9bc5-hover);
 }
 
-.octane-catalog-window .octane-builders-place-button:active:not(:disabled) {
-    box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.3);
+.octane-catalog-window .octane-builders-place-button.is-many:active:not(:disabled) {
+    border-image-source: var(--habbo-skin-shiny-thick-tint-0a9bc5-pressed);
+}
+
+.octane-catalog-window .octane-builders-place-button.is-many:disabled {
+    border-image-source: var(--habbo-skin-shiny-thick-tint-0a9bc5-disabled);
 }
 
 .octane-catalog-window .octane-builders-place-button:disabled {
-    opacity: 0.6;
     cursor: not-allowed;
 }
 

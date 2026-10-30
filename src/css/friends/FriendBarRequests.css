@@ -287,20 +287,28 @@
     gap: 4px;
 }
 
-/* button_thick style 5 coloured #77bf43. */
+/* button_accept_all: button_thick style 5, color 0x77bf43: the grey habbo_skin_button_shiny_thick multiplied by
+   0x77bf43, white button_shiny_bold 12 px caption. */
 .friend-bar-requests-bubble .friend-bar-requests-accept-all {
     width: 171px;
     height: 28px;
-    border: 2px solid #000;
-    border-radius: 5px;
-    background: linear-gradient(#9fd86c, #77bf43 55%, #5e9f31);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    border: 5px solid transparent;
+    border-image-source: var(--habbo-skin-shiny-thick-tint-77bf43);
+    border-image-slice: 5 fill;
+    border-image-width: 5px;
+    border-image-repeat: stretch;
+    border-radius: 0;
+    background: transparent;
     color: #fff;
     font-size: 12px;
     font-weight: 700;
-    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+    image-rendering: var(--octane-pixel-art, pixelated);
 }
 
 .friend-bar-requests-bubble .friend-bar-requests-accept-all:hover {
-    filter: brightness(1.08);
+    border-image-source: var(--habbo-skin-shiny-thick-tint-77bf43-hover);
+}
+
+.friend-bar-requests-bubble .friend-bar-requests-accept-all:active {
+    border-image-source: var(--habbo-skin-shiny-thick-tint-77bf43-pressed);
 }

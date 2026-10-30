@@ -59,7 +59,7 @@ export const NavigatorEnforceCategoryView: FC<{}> = () => {
     };
 
     return (
-        <OctaneCardView className="min-w-0 w-[min(320px,calc(100vw-16px))] max-w-[calc(100vw-16px)]" uniqueKey="navigator-enforce-category">
+        <OctaneCardView className="octane-navigator-enforce-category min-w-0 w-[min(320px,calc(100vw-16px))] max-w-[calc(100vw-16px)]" uniqueKey="navigator-enforce-category">
             <OctaneCardHeaderView headerText={localizeWithFallback('navigator.enforcecategory.title', 'Choose a category')} onCloseClick={() => setRoomId(0)} />
             <OctaneCardContentView className="text-black" gap={2}>
                 <p className="m-0 text-sm">

@@ -263,13 +263,44 @@
     cursor: pointer;
 }
 
+/* collect_button / claim_button / buy_button (style 5, color 0x01a101) and silver_buy_button / transfer_button /
+   claim_all / wallet buttons (style 5, color 0x2095d4): AIR's grey habbo_skin_button_shiny multiplied by the
+   element colour, white button_shiny_regular 12 px caption. */
+.octane-collectibles-button:is(.is-green, .is-blue) {
+    border: 5px solid transparent;
+    border-image-slice: 5 fill;
+    border-image-width: 5px;
+    border-image-repeat: stretch;
+    border-radius: 0;
+    background: transparent;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 400;
+    image-rendering: var(--octane-pixel-art, pixelated);
+}
+
 .octane-collectibles-button.is-green {
-    background: linear-gradient(#25b625, #1a101a00), #1a101a;
-    background: linear-gradient(#34c534, #1a7d1a);
+    border-image-source: var(--habbo-skin-shiny-tint-01a101);
+}
+
+.octane-collectibles-button.is-green:hover:not(:disabled) {
+    border-image-source: var(--habbo-skin-shiny-tint-01a101-hover);
+}
+
+.octane-collectibles-button.is-green:active:not(:disabled) {
+    border-image-source: var(--habbo-skin-shiny-tint-01a101-pressed);
 }
 
 .octane-collectibles-button.is-blue {
-    background: linear-gradient(#3aa7ec, #2079b8);
+    border-image-source: var(--habbo-skin-shiny-tint-2095d4);
+}
+
+.octane-collectibles-button.is-blue:hover:not(:disabled) {
+    border-image-source: var(--habbo-skin-shiny-tint-2095d4-hover);
+}
+
+.octane-collectibles-button.is-blue:active:not(:disabled) {
+    border-image-source: var(--habbo-skin-shiny-tint-2095d4-pressed);
 }
 
 /* ok_button is a style 3 button: button_shiny_regular, 12 px regular black. */
@@ -298,6 +329,16 @@
 .octane-collectibles-button:disabled {
     opacity: 0.45;
     cursor: default;
+}
+
+.octane-collectibles-button.is-green:disabled {
+    border-image-source: var(--habbo-skin-shiny-tint-01a101-disabled);
+    opacity: 1;
+}
+
+.octane-collectibles-button.is-blue:disabled {
+    border-image-source: var(--habbo-skin-shiny-tint-2095d4-disabled);
+    opacity: 1;
 }
 
 .octane-collectibles-split {

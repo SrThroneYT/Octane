@@ -26,4 +26,10 @@ describe('group windows text (groups_info_window, Member Entry)', () => {
         );
         expect(css).not.toMatch(/\.octane-groups-button,[^{]*\{[^}]*color: #111111/);
     });
+
+    it('draws the members window buttons as the grey shiny button, 12 px regular black', () => {
+        expect(read('GroupView.css')).toMatch(
+            /\.octane-groups-window \.octane-groups-button:not\(\.octane-group-room-info__button\) \{[^}]*var\(--habbo-skin-shiny\) !important;[^}]*color: #000000 !important;\s*font-size: 12px !important;\s*font-weight: 400 !important/
+        );
+    });
 });

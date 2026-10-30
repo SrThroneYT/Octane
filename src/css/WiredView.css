@@ -1807,3 +1807,27 @@
         font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
     }
 }
+
+/* wired_menu_view clear_log_btn and roll_back_btn: plain buttons style 5, color 0xe33934: the grey
+   habbo_skin_button_shiny multiplied by 0xe33934, white button_shiny_regular 12 px caption. The common Button's red
+   skin and its 12.6 px bold size are important rules, which only an important base-layer rule outranks. */
+@layer base {
+    .octane-wired-menu :is(.octane-wired-menu__clear-log, .octane-wired-menu__roll-back).habbo-btn-danger {
+        border-image-source: var(--habbo-skin-shiny-tint-e33934) !important;
+        color: #ffffff !important;
+        font-size: 12px !important;
+        font-weight: 400 !important;
+    }
+
+    .octane-wired-menu :is(.octane-wired-menu__clear-log, .octane-wired-menu__roll-back).habbo-btn-danger:hover {
+        border-image-source: var(--habbo-skin-shiny-tint-e33934-hover) !important;
+    }
+
+    .octane-wired-menu :is(.octane-wired-menu__clear-log, .octane-wired-menu__roll-back).habbo-btn-danger:is(:active, .active) {
+        border-image-source: var(--habbo-skin-shiny-tint-e33934-pressed) !important;
+    }
+
+    .octane-wired-menu :is(.octane-wired-menu__clear-log, .octane-wired-menu__roll-back).habbo-btn-danger:is(:disabled, .pointer-events-none) {
+        border-image-source: var(--habbo-skin-shiny-tint-e33934-disabled) !important;
+    }
+}

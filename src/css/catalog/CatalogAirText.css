@@ -205,3 +205,26 @@
         color: #777777 !important;
     }
 }
+
+/* targeted_offer_window btn_buy: button_thick style 6 with color 0x4faf4f (not the theme's 0x00aa00): the grey
+   habbo_skin_button_shiny_thick multiplied by 0x4faf4f, white button_shiny_bold 12 px caption. */
+@layer base {
+    .octane-targeted-offer .octane-targeted-offer__buy.habbo-btn-primary {
+        border-image-source: var(--habbo-skin-shiny-thick-tint-4faf4f) !important;
+        color: #ffffff !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+    }
+
+    .octane-targeted-offer .octane-targeted-offer__buy.habbo-btn-primary:hover {
+        border-image-source: var(--habbo-skin-shiny-thick-tint-4faf4f-hover) !important;
+    }
+
+    .octane-targeted-offer .octane-targeted-offer__buy.habbo-btn-primary:is(:active, .active) {
+        border-image-source: var(--habbo-skin-shiny-thick-tint-4faf4f-pressed) !important;
+    }
+
+    .octane-targeted-offer .octane-targeted-offer__buy.habbo-btn-primary:is(:disabled, .pointer-events-none) {
+        border-image-source: var(--habbo-skin-shiny-thick-tint-4faf4f-disabled) !important;
+    }
+}

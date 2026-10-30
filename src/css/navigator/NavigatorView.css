@@ -711,10 +711,37 @@
     image-rendering: var(--octane-pixel-art, pixelated);
 }
 
+/* refreshButton (25x23): plain button style 5, color 0x7cc561: the grey habbo_skin_button_shiny multiplied by
+   0x7cc561, with the 17x12 newnavigator_refresh_search_icon at 5,5 on top. */
 .octane-navigator-air__search-refresh {
     flex: 0 0 25px;
+    align-self: flex-start;
+    align-items: flex-start;
+    justify-content: flex-start;
+    box-sizing: border-box;
     width: 25px;
-    height: 25px;
+    height: 23px;
+    border: 5px solid transparent;
+    border-image-source: var(--habbo-skin-shiny-tint-7cc561);
+    border-image-slice: 5 fill;
+    border-image-width: 5px;
+    border-image-repeat: stretch;
+    overflow: visible;
+    image-rendering: var(--octane-pixel-art, pixelated);
+}
+
+.octane-navigator-air__search-refresh:hover {
+    border-image-source: var(--habbo-skin-shiny-tint-7cc561-hover);
+}
+
+.octane-navigator-air__search-refresh:active {
+    border-image-source: var(--habbo-skin-shiny-tint-7cc561-pressed);
+}
+
+.octane-navigator-air__search-refresh img {
+    flex: none;
+    width: 17px;
+    height: 12px;
 }
 
 .octane-navigator-air__results {
@@ -2239,6 +2266,40 @@
     }
 
     .octane-navigator-doorbell .octane-navigator-air__door-state .habbo-btn-secondary:is(:disabled, .pointer-events-none) {
+        border-image-source: var(--habbo-skin-shiny-disabled) !important;
+        color: #777777 !important;
+    }
+}
+
+/*
+ * enforce_category ok (132 x 32) and the room link's copy button: AIR's grey `button` (style 3,
+ * habbo_skin_button_shiny) with button_shiny_regular 12 px black text, not the flat button_default picture the
+ * shared .habbo-btn-secondary draws (an unlayered important rule only a layered important rule outranks).
+ */
+@layer base {
+    :is(.octane-navigator-enforce-category, .octane-room-link) .octane-card-content-shell .habbo-btn-secondary {
+        border-width: 5px !important;
+        border-image-source: var(--habbo-skin-shiny) !important;
+        border-image-slice: 5 fill !important;
+        border-image-width: 5px !important;
+        color: #000000 !important;
+        font-size: 12px !important;
+        font-weight: 400 !important;
+    }
+
+    .octane-navigator-enforce-category .octane-card-content-shell .habbo-btn-secondary {
+        min-height: 32px !important;
+    }
+
+    :is(.octane-navigator-enforce-category, .octane-room-link) .octane-card-content-shell .habbo-btn-secondary:hover {
+        border-image-source: var(--habbo-skin-shiny-hover) !important;
+    }
+
+    :is(.octane-navigator-enforce-category, .octane-room-link) .octane-card-content-shell .habbo-btn-secondary:active {
+        border-image-source: var(--habbo-skin-shiny-pressed) !important;
+    }
+
+    :is(.octane-navigator-enforce-category, .octane-room-link) .octane-card-content-shell .habbo-btn-secondary:is(:disabled, .pointer-events-none) {
         border-image-source: var(--habbo-skin-shiny-disabled) !important;
         color: #777777 !important;
     }

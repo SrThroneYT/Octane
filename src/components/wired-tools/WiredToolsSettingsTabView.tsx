@@ -180,7 +180,7 @@ export const WiredToolsSettingsTabView: FC<WiredToolsSettingsTabViewProps> = ({ 
                             {localizeWithFallback('wiredmenu.settings.room_state.reload', 'Reload')}
                         </Button>
                         <Button
-                            classNames={['flex-1']}
+                            classNames={['flex-1', 'octane-wired-menu__roll-back']}
                             disabled={!canChangeRoomState}
                             variant="danger"
                             onClick={rollbackRoomState}

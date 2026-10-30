@@ -36,5 +36,11 @@ describe('quests list text (Quests, Quest)', () => {
     it('keeps the green skin only where AIR has style 5 (get_hc_btn)', () => {
         expect(css).not.toMatch(/\.octane-quests-get-hc[^{]*\{[^}]*--habbo-skin-shiny-thick\)/);
     });
-});
 
+    it('tints get_hc_btn 0x01a101 on the shiny thick skin as AIR', () => {
+        expect(css).toMatch(
+            /:where\(\.octane-quests, \.octane-daily-tasks\) \.octane-quests-get-hc\.habbo-btn-primary \{\s*border-image-source: var\(--habbo-skin-shiny-thick-tint-01a101\) !important;\s*color: #ffffff !important;/
+        );
+        expect(css).toMatch(/\.octane-quests-get-hc\.habbo-btn-primary:hover \{\s*border-image-source: var\(--habbo-skin-shiny-thick-tint-01a101-hover\)/);
+    });
+});

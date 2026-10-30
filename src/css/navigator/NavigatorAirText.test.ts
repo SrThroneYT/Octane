@@ -31,4 +31,19 @@ describe('navigator text (navigator_frame_2, room_info_popup_bubble, property, t
         expect(css).toMatch(/\.octane-navigator-air__door-state \.habbo-btn-secondary \{[^}]*border-image-source: var\(--habbo-skin-shiny\) !important;[^}]*font-weight: 400 !important/);
         expect(view).not.toMatch(/variant="(success|danger)"/);
     });
+
+    it('skins the enforce category and room link buttons as the grey shiny button', () => {
+        const view = readFileSync(join(process.cwd(), 'src/components/navigator/views/NavigatorEnforceCategoryView.tsx'), 'utf8');
+
+        expect(css).toMatch(/:is\(\.octane-navigator-enforce-category, \.octane-room-link\) \.octane-card-content-shell \.habbo-btn-secondary \{[^}]*var\(--habbo-skin-shiny\) !important;[^}]*color: #000000 !important/);
+        expect(view).toContain('octane-navigator-enforce-category');
+    });
+
+    it('draws refreshButton as AIR: the shiny skin tinted 0x7cc561, 25x23, with the 17x12 icon', () => {
+        expect(css).toMatch(
+            /\*\/\n\.octane-navigator-air__search-refresh \{[^}]*height: 23px;[^}]*border-image-source: var\(--habbo-skin-shiny-tint-7cc561\);/
+        );
+        expect(css).toMatch(/\.octane-navigator-air__search-refresh:hover \{\s*border-image-source: var\(--habbo-skin-shiny-tint-7cc561-hover\)/);
+        expect(css).toMatch(/\.octane-navigator-air__search-refresh img \{\s*flex: none;\s*width: 17px;\s*height: 12px;/);
+    });
 });

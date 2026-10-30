@@ -1590,5 +1590,6 @@
     "notifications.text.club_gift.selected": "You picked your gift.",
     "reward_track.debug.copy_track_id.success": "Track ID copied to the clipboard",
     "reward_track.debug.copy_task_id.success": "Task ID copied to the clipboard",
-    "chat.confirm.openurl": "You are about to open %url%. Only continue if you trust the link."
+    "chat.confirm.openurl": "You are about to open %url%. Only continue if you trust the link.",
+    "campaign.calendar.title": "Calendar"
 }
