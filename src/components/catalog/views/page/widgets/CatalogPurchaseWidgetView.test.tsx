@@ -21,7 +21,16 @@ vi.mock('@octane/renderer', () => ({
 }));
 
 vi.mock('../../../../../api', () => ({
-    BuilderFurniPlaceableStatus: { NOT_GROUP_ADMIN: 1, OKAY: 0 },
+    BuilderFurniPlaceableStatus: {
+        OKAY: 0,
+        MISSING_OFFER: 1,
+        FURNI_LIMIT_REACHED: 2,
+        NOT_IN_ROOM: 3,
+        NOT_ROOM_OWNER: 4,
+        GUILD_ROOM: 5,
+        VISITORS_IN_ROOM: 6,
+        NOT_GROUP_ADMIN: 7
+    },
     CatalogPurchaseState: { CONFIRM: 1, FAILED: 3, NONE: 0, PURCHASE: 2, SOLD_OUT: 4 },
     CatalogType: { BUILDER: 'BUILDERS_CLUB', NORMAL: 'NORMAL' },
     DispatchUiEvent: vi.fn(),
@@ -310,6 +319,71 @@ describe('catalog purchase widget', () => {
             act(() => messageHandlers.get('LtdRaffleEnteredMessageEvent')({}));
 
             expect(confirmProps.current).toBeNull();
+        });
+    });
+
+    describe('Builders Club builder widget (AIR builderWidget)', () => {
+        const builderSetup = (status: number) => {
+            const requestOfferToMover = vi.fn();
+
+            vi.mocked(useCatalogActions).mockReturnValue({
+                getBuilderFurniPlaceableStatus: () => status,
+                getNodesByOfferId: () => [],
+                requestOfferToMover,
+                resetPlacedOfferData: vi.fn()
+            } as any);
+            vi.mocked(useCatalogUiState).mockReturnValue({
+                currentType: 'BUILDERS_CLUB',
+                giftReceiver: null,
+                purchaseOptions: { extraData: null, extraParamRequired: false, previewStuffData: null, quantity: 1 },
+                setCatalogPlaceMultipleObjects: vi.fn(),
+                setPurchaseOptions: vi.fn()
+            } as any);
+            setOffer(makeOffer({ product: { productType: 's' } }));
+
+            return requestOfferToMover;
+        };
+
+        it('shows the hint and places the furni while it can be placed', () => {
+            const requestOfferToMover = builderSetup(0);
+            render(<CatalogPurchaseWidgetView />);
+
+            expect(screen.getByText('builder.placement_widget.hint')).toBeInTheDocument();
+            expect(screen.queryByRole('status')).toBeNull();
+
+            fireEvent.click(screen.getByText('builder.placement_widget.place_one'));
+
+            expect(requestOfferToMover).toHaveBeenCalledTimes(1);
+        });
+
+        it('shows the not-in-room error with its icon and disables both buttons outside a room', () => {
+            const requestOfferToMover = builderSetup(3);
+            render(<CatalogPurchaseWidgetView />);
+
+            expect(screen.getByRole('status')).toHaveAttribute('data-error', 'notroom');
+            expect(screen.getByText('builder.placement_widget.error.not_in_room')).toBeInTheDocument();
+            expect(screen.getByText('builder.placement_widget.place_one')).toBeDisabled();
+            expect(screen.getByText('builder.placement_widget.place_many')).toBeDisabled();
+
+            fireEvent.click(screen.getByText('builder.placement_widget.place_many'));
+
+            expect(requestOfferToMover).not.toHaveBeenCalled();
+        });
+
+        it('disables the buttons at the furni limit, with the limit error, as AIR does', () => {
+            builderSetup(2);
+            render(<CatalogPurchaseWidgetView />);
+
+            expect(screen.getByRole('status')).toHaveAttribute('data-error', 'furnilimit');
+            expect(screen.getByText('builder.placement_widget.place_one')).toBeDisabled();
+        });
+
+        it('disables the buttons without an error strip when the offer is missing', () => {
+            builderSetup(1);
+            render(<CatalogPurchaseWidgetView />);
+
+            expect(screen.queryByRole('status')).toBeNull();
+            expect(screen.getByText('builder.placement_widget.place_one')).toBeDisabled();
         });
     });
 });

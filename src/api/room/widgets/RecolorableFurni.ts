@@ -70,6 +70,26 @@ export const recolorablePalette = (className: string, read: RecolorableVariableR
     return parsePaletteColors(read(PALETTE_PREFIX + name));
 };
 
+/**
+ * The colour of every recolourable furni on a catalogue page once `rgb` is picked (AIR's
+ * RecolorableFurnitureCatalogWidget.applyColor): the picked colour where its palette has it, otherwise its first colour.
+ */
+export const recolorPageColors = (classNames: string[], rgb: number, read: RecolorableVariableReader = readRecolorableVariable): Map<string, number> =>
+{
+    const colors = new Map<string, number>();
+
+    for (const className of classNames)
+    {
+        if (!isRecolorableClass(className)) continue;
+
+        const palette = recolorablePalette(className, read);
+
+        if (palette.length) colors.set(className, palette.includes(rgb) ? rgb : palette[0]);
+    }
+
+    return colors;
+};
+
 const channel = (value: string): number =>
 {
     if ((typeof value !== 'string') || !/^[0-9]{1,3}$/.test(value)) return -1;

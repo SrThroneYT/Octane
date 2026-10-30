@@ -60,6 +60,36 @@ describe('catalogue text', () => {
         expect(builders).toMatch(/\.octane-builders-place-button\.is-one \{\s*border-image-source: var\(--habbo-skin-shiny-thick-tint-dda100\);/);
         expect(builders).toMatch(/\.octane-builders-place-button\.is-many \{\s*border-image-source: var\(--habbo-skin-shiny-thick-tint-0a9bc5\);/);
         expect(builders).not.toMatch(/\.octane-builders-place-button[^{]*\{[^}]*linear-gradient/);
+        // builderWidget: 130 x 30 buttons at y 30, the red bold error strip with its icon, still coloured when disabled
+        expect(builders).toMatch(/\.octane-builders-place-button \{[^}]*top: 30px;[^}]*width: 130px;[^}]*height: 30px/);
+        expect(builders).toMatch(/\.octane-builders-widget-error-message \{[^}]*color: #de0e0a;[^}]*font-weight: 700/);
+        expect(builders).toMatch(/\.octane-builders-widget-error::before \{[^}]*background: #f2d193/);
+        expect(builders).not.toMatch(/tint-(dda100|0a9bc5)-disabled/);
+        // layout_recolorable_furniture: 27 x 22 swatches from ctlg_clr_27x22_1..3, the grid 116 px
+        expect(builders).toMatch(/\.octane-catalog-recolorable-swatch \{[^}]*width: 27px;[^}]*height: 22px;[^}]*ctlg_clr_27x22_1\.png/);
+        expect(builders).toMatch(/\.octane-catalog-recolorable-swatch\.is-chosen::after \{[^}]*ctlg_clr_27x22_3\.png/);
+        expect(builders).toMatch(/\.octane-catalog-recolorable \.octane-catalog-builders-blocks-shapes \{\s*flex: 0 0 116px/);
+        // layout_frontpage_featured: a 552 x 460 block, the 184 px first item, 360 x 126 list items, the 0x51bbee voucher
+        const shop = read('src/css/catalog/CatalogView.css');
+        expect(shop).toMatch(/\.octane-catalog-air-frontpage \{[^}]*grid-template-columns: 184px 360px;[^}]*width: 552px;[^}]*height: 460px/);
+        expect(shop).toMatch(/\.octane-catalog-air-frontpage__item \{[^}]*height: 126px/);
+        expect(shop).toMatch(/\.octane-catalog-air-frontpage__item \{[^}]*background-size: cover/);
+        expect(shop).toMatch(/\.octane-catalog-standard-header-bg \{[^}]*background-size: cover/);
+        expect(shop).toMatch(/\.octane-catalog-redeem-button \{[^}]*white-space: nowrap/);
+        expect(shop).toMatch(/\.octane-catalog-air-frontpage__voucher \{[^}]*width: 345px;[^}]*height: 61px;[^}]*background: #51bbee/);
+        // catalog tab_button: label only, at least 80 px
+        expect(shop).toMatch(/\.octane-catalog-tabs-shell \.octane-card-tab-item \{[^}]*min-width: 80px/);
+        // the BC status values are AIR's <font color="#ff8d00"><b>
+        expect(read('src/css/catalog/CatalogView.css')).toMatch(
+            /\.octane-catalog-standard-header \.octane-catalog-builder-header-value \{\s*color: #ff8d00;\s*font-weight: 700;/
+        );
+        // the warehouse header has no side stripes (AIR draws it edge to edge)
+        expect(read('src/css/catalog/CatalogView.css')).toMatch(
+            /\.octane-catalog-standard-header\.is-builder \{\s*margin: 0;\s*border-left-width: 0;\s*border-right-width: 0;/
+        );
+        // the palette shrinks before the builder widget does, so the place buttons are never cut off
+        expect(builders).toMatch(/\.octane-catalog-recolorable \.octane-catalog-recolorable-palette \{\s*flex: 0 1 174px;\s*min-height: 48px/);
+        expect(builders).toMatch(/\.octane-catalog-builders-blocks-actions \{\s*flex: 0 0 auto/);
     });
 
     it('tints the targeted offer btn_buy 0x4faf4f as AIR', () => {

@@ -1,6 +1,5 @@
 import { RedeemVoucherMessageComposer, VoucherRedeemErrorMessageEvent, VoucherRedeemOkMessageEvent } from '@octane/renderer';
 import { FC, useState } from 'react';
-import { FaTag } from 'react-icons/fa';
 import { LocalizeText, SendMessageComposer } from '../../../../../api';
 import { Button } from '../../../../../common';
 import { useMessageEvent, useNotification } from '../../../../../hooks';
@@ -60,7 +59,7 @@ export const CatalogRedeemVoucherView: FC<CatalogRedeemVoucherViewProps> = (prop
         <div className="flex gap-1">
             <OctaneInput placeholder={text} value={voucher} onChange={(event) => setVoucher(event.target.value)} />
             <Button classNames={['octane-catalog-redeem-button']} disabled={isWaiting} onClick={redeemVoucher}>
-                <FaTag className="fa-icon" />
+                {LocalizeText('redeem')}
             </Button>
         </div>
     );
