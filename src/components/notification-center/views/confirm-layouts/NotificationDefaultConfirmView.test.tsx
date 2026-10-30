@@ -1,10 +1,14 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { ReactNode } from 'react';
+import { CSSProperties, ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../../../common', async (importOriginal) => ({
     ...(await importOriginal<Record<string, unknown>>()),
-    LayoutNotificationAlertView: ({ children }: { children?: ReactNode }) => <div>{children}</div>
+    LayoutNotificationAlertView: ({ children, style }: { children?: ReactNode; style?: CSSProperties }) => (
+        <div data-testid="confirm-window" style={style}>
+            {children}
+        </div>
+    )
 }));
 
 import { NotificationDefaultConfirmView } from './NotificationDefaultConfirmView';
@@ -26,5 +30,15 @@ describe('NotificationDefaultConfirmView', () => {
         expect(item.onConfirm).toHaveBeenCalledTimes(1);
         expect(onClose).toHaveBeenCalledTimes(2);
         expect(screen.getByText('Cancel').className).toContain('octane-confirm-actions__cancel');
+    });
+
+    it("hands AIR's title bar colour to the window, and leaves the window alone without one", () => {
+        const { rerender } = render(<NotificationDefaultConfirmView item={{ ...(make() as object), titleBarColor: '#d43d59' } as never} onClose={vi.fn()} />);
+
+        expect(screen.getByTestId('confirm-window').style.getPropertyValue('--octane-confirm-title-bar')).toBe('#d43d59');
+
+        rerender(<NotificationDefaultConfirmView item={make()} onClose={vi.fn()} />);
+
+        expect(screen.getByTestId('confirm-window').style.getPropertyValue('--octane-confirm-title-bar')).toBe('');
     });
 });

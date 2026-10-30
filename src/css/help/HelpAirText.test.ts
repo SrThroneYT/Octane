@@ -66,7 +66,7 @@ describe('help windows text (main2, report, sanction_info, my_reports, habbo_way
 
     it('draws the report step buttons on the large shiny skin tinted as AIR, white captions', () => {
         expect(helpCss).toMatch(
-            /\.octane-help-report :is\(\.habbo-btn-primary, \.habbo-btn-secondary, \.habbo-btn-danger\) \{[^}]*border-width: 6px 6px 7px !important;[^}]*border-image-slice: 6 6 7 6 fill !important;[^}]*color: #ffffff !important/
+            /\.octane-help-report :is\(\.habbo-btn-primary, \.habbo-btn-secondary, \.habbo-btn-danger\) \{[^}]*min-height: 41px !important;[^}]*border-width: 6px 6px 7px !important;[^}]*border-image-slice: 6 6 7 6 fill !important;[^}]*color: #ffffff !important/
         );
         for (const [cls, tint] of [
             ['primary', '00aa00'],

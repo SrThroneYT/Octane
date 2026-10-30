@@ -15,6 +15,7 @@ import {
     SendMessageComposer,
     WiredFurniType
 } from '../../../../api';
+import { NotificationConfirmItem } from '../../../../api/notification/NotificationConfirmItem';
 import { Button, Text } from '../../../../common';
 import { useMessageEvent, useNotification, useWired } from '../../../../hooks';
 import { useVariablesExplorerStore } from '../../../../state/variablesExplorer';
@@ -111,7 +112,9 @@ export const WiredExtraVariableWebApiView: FC<{}> = () => {
             null,
             null,
             null,
-            localizeText('wiredfurni.params.web_api.permissions.bulk_delete.warning.title', 'Are you sure?')
+            localizeText('wiredfurni.params.web_api.permissions.bulk_delete.warning.title', 'Are you sure?'),
+            null,
+            NotificationConfirmItem.TITLE_BAR_DANGER
         );
     };
 

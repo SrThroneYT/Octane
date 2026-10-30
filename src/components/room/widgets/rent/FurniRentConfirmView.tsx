@@ -123,10 +123,10 @@ export const FurniRentConfirmView: FC = () => {
                     )}
                 </Column>
                 <div className="flex gap-1 justify-end mt-auto">
-                    <Button variant="secondary" onClick={() => setOffer(null)}>
+                    <Button className="octane-furni-rent-confirm__cancel" variant="secondary" onClick={() => setOffer(null)}>
                         {localizeWithFallback('generic.cancel', 'Cancel')}
                     </Button>
-                    <Button variant="success" onClick={confirm}>
+                    <Button className="octane-furni-rent-confirm__ok" variant="success" onClick={confirm}>
                         {offer.buyout ? localizeWithFallback('infostand.button.buyout', 'Buy-out') : localizeWithFallback('infostand.button.extend', 'Extend')}
                     </Button>
                 </div>

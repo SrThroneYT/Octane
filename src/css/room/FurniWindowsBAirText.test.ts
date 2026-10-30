@@ -49,4 +49,15 @@ describe('furni windows text (AIR room-ui layouts)', () => {
         expect(pollCss).not.toMatch(/font-family: Ubuntu, sans-serif/);
         expect(pollCss).toMatch(/\.octane-poll-ok \{[^}]*font-size: 12px;\s*font-weight: 700/);
     });
+
+    it('draws rent_confirmation ok_button tinted 0x00cc00 and cancel_button grey, as AIR', () => {
+        const view = read('src/components/room/widgets/rent/FurniRentConfirmView.tsx');
+        expect(view).toContain('octane-furni-rent-confirm__ok');
+        expect(view).toContain('octane-furni-rent-confirm__cancel');
+        expect(css).toMatch(
+            /\.octane-furni-rent-confirm \.octane-furni-rent-confirm__ok\.habbo-btn-primary \{\s*border-image-source: var\(--habbo-skin-shiny-thick-tint-00cc00\) !important;\s*color: #ffffff !important;/
+        );
+        expect(css).toMatch(/\.octane-furni-rent-confirm__ok\.habbo-btn-primary:hover \{\s*border-image-source: var\(--habbo-skin-shiny-thick-tint-00cc00-hover\)/);
+        expect(css).toMatch(/\.octane-furni-rent-confirm__cancel\.habbo-btn-secondary \{\s*border-image-source: var\(--habbo-skin-shiny\) !important;\s*color: #000000 !important;/);
+    });
 });

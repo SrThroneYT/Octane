@@ -876,29 +876,51 @@
     white-space: nowrap;
 }
 
+/* habbicon_view reward_action_button, reward_buy_button, habbicon_popup_action_button and habbicon_popup_buy_button:
+   plain buttons style 5, color 0x01a101: the grey habbo_skin_button_shiny multiplied by 0x01a101, white
+   button_shiny_regular 12 px caption. */
 .habbicon-action {
     height: 28px;
-    padding: 0 8px;
-    border: 0;
-    border-image: var(--habbo-skin-shiny-green) 5 fill / 5px stretch;
+    padding: 0 3px;
+    border: 5px solid transparent;
+    border-image-source: var(--habbo-skin-shiny-tint-01a101);
+    border-image-slice: 5 fill;
+    border-image-width: 5px;
+    border-image-repeat: stretch;
     background: transparent;
     border-radius: 0;
     color: #ffffff;
     font:
         12px HabboAirUbuntu,
+        UbuntuRegular,
         sans-serif;
+    image-rendering: var(--octane-pixel-art, pixelated);
 }
 
 .habbicon-action:hover {
-    border-image-source: var(--habbo-skin-shiny-green-hover);
+    border-image-source: var(--habbo-skin-shiny-tint-01a101-hover);
 }
 .habbicon-action:active {
-    border-image-source: var(--habbo-skin-shiny-green-pressed);
+    border-image-source: var(--habbo-skin-shiny-tint-01a101-pressed);
 }
 .habbicon-action:disabled {
-    border-image-source: var(--habbo-skin-shiny-green-disabled);
+    border-image-source: var(--habbo-skin-shiny-tint-01a101-disabled);
     color: #ffffff80;
     cursor: default;
+}
+/* habbicon_purchase_confirmation confirm_button is a button_thick style 5 with the theme green 0x00aa00. */
+.habbicon-purchase-body .habbicon-action {
+    border-image-source: var(--habbo-skin-shiny-thick-green);
+    font-weight: 700;
+}
+.habbicon-purchase-body .habbicon-action:hover {
+    border-image-source: var(--habbo-skin-shiny-thick-green-hover);
+}
+.habbicon-purchase-body .habbicon-action:active {
+    border-image-source: var(--habbo-skin-shiny-thick-green-pressed);
+}
+.habbicon-purchase-body .habbicon-action:disabled {
+    border-image-source: var(--habbo-skin-shiny-thick-green-disabled);
 }
 .habbicon-action.remove {
     border-image-source: var(--habbo-skin-shiny-red);

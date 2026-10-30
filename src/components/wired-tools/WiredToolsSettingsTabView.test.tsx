@@ -109,6 +109,8 @@ describe('WiredToolsSettingsTabView', () => {
         expect(mocks.showConfirm).toHaveBeenCalledTimes(1);
         // titled by the button, as the official confirm is
         expect(mocks.showConfirm.mock.calls[0][5]).toBe('Rollback');
+        // and in AIR's red title bar (titleBarColor 13909337)
+        expect(mocks.showConfirm.mock.calls[0][7]).toBe('#d43d59');
 
         (mocks.showConfirm.mock.calls[0][1] as () => void)();
         expect(mocks.rollbackRoomWired).toHaveBeenCalledTimes(1);

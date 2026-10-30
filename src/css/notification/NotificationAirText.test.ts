@@ -26,6 +26,17 @@ describe('notification and alert text (habbo-notifications, habbo_window_alert /
         expect(alertCss).toMatch(/\.habbo-btn-primary \{[^}]*min-height: 30px !important;[^}]*--habbo-skin-shiny-thick\) !important;[^}]*color: #000000 !important/);
     });
 
+    it('draws the confirm as habbo_window_confirm: 300 px, text top left 253 px wide, a 28 px OK', () => {
+        expect(alertCss).toMatch(/\.octane-alert\.octane-alert-alert\.octane-confirm-window \{[^}]*width: 300px/);
+        expect(alertCss).toMatch(/\.octane-confirm-window \.octane-confirm-window__text \{[^}]*max-width: 253px;[^}]*text-align: left/);
+        expect(alertCss).toMatch(/\.octane-confirm-window \.octane-card-content-shell \.habbo-btn-primary \{[^}]*min-height: 28px !important/);
+        expect(alertCss).toMatch(/\.octane-confirm-window\[style\*="--octane-confirm-title-bar"\] > \.octane-card-header-shell \{[^}]*background: var\(--octane-confirm-title-bar\)/);
+    });
+
+    it('draws the link alert as habbo_window_alert_link: "ok" link left, a 24 px link button right', () => {
+        expect(alertCss).toMatch(/\.octane-card-content-shell \.octane-alert-link-actions \.habbo-btn-primary \{[^}]*min-height: 24px !important/);
+    });
+
     it('draws the MOTD in Volter 9 px like the style 0 motd_notification', () => {
         expect(alertCss).toMatch(/\.octane-alert\.octane-motd-alert \.octane-card-content-shell \{[^}]*font-family: Volter[^}]*font-size: 9px/);
         expect(alertCss).toMatch(/\.octane-motd-item \{[^}]*font-size: 9px/);

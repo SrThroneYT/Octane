@@ -198,19 +198,22 @@ export const NotificationDefaultAlertView: FC<NotificationDefaultAlertViewProps>
                     )}
                 </div>
             </Flex>
-            {(!item.imageUrl || (item.imageUrl && imageFailed)) && (
-                <>
+            {(!item.imageUrl || (item.imageUrl && imageFailed)) &&
+                (item.clickUrl && item.clickUrl.length > 0 ? (
+                    // Official habbo_window_alert_link: "ok" as an underlined link on the left, the link itself as the
+                    // one button on the right.
+                    <div className="octane-confirm-actions octane-alert-link-actions">
+                        <BaseButton className="octane-confirm-actions__cancel" type="button" onClick={onClose}>
+                            {LocalizeText('generic.ok')}
+                        </BaseButton>
+                        <Button onClick={visitUrl}>{LocalizeText(item.clickUrlText)}</Button>
+                    </div>
+                ) : (
                     <Column center alignItems="center" gap={0}>
                         <hr className="my-2 w-full" />
                         <Button onClick={onClose}>{LocalizeText('generic.close')}</Button>
-                        {item.clickUrl && item.clickUrl.length > 0 && (
-                            <BaseButton className="octane-alert-link" type="button" onClick={visitUrl}>
-                                {LocalizeText(item.clickUrlText)}
-                            </BaseButton>
-                        )}
                     </Column>
-                </>
-            )}
+                ))}
         </LayoutNotificationAlertView>
     );
 };

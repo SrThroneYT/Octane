@@ -1,5 +1,5 @@
-/* Official habbo_window_confirm and habbo_window_alert_link: a secondary action is an underlined
-   link beside or under the one button, not a second button. */
+/* Official habbo_window_confirm and habbo_window_alert_link: the secondary action ("cancel", or "ok" next to
+   a link) is an underlined link on the left of the one button, not a second button. */
 .octane-confirm-actions {
     display: flex;
     align-items: center;
@@ -20,6 +20,35 @@
 
 .octane-alert .octane-alert-link {
     margin-top: 6px;
+}
+
+/* habbo_window_confirm: 300 px wide, _alert_description at (16, 14) 253 px wide, OK 28 px high, at least 50 px wide. */
+.octane-alert.octane-alert-alert.octane-confirm-window {
+    width: 300px;
+    min-height: 0;
+}
+
+.octane-alert.octane-confirm-window[style*="--octane-confirm-title-bar"] > .octane-card-header-shell {
+    background: var(--octane-confirm-title-bar);
+}
+
+.octane-confirm-window .octane-confirm-window__text {
+    flex: 1 1 auto;
+    max-width: 253px;
+    padding: 4px 6px 0;
+    text-align: left;
+    overflow-wrap: anywhere;
+}
+
+.octane-confirm-window .octane-confirm-actions {
+    margin-top: 12px;
+    padding: 0 10px 0 4px;
+}
+
+/* habbo_window_alert_link: the link button is button_thick at 24 px, the "ok" link sits under the text. */
+.octane-alert .octane-alert-link-actions {
+    margin-top: 12px;
+    padding: 0 4px;
 }
 
 .octane-confirm-actions .octane-confirm-actions__cancel:hover,
@@ -98,6 +127,17 @@
         border-image-source: var(--habbo-skin-shiny-thick) !important;
         color: #000000 !important;
         text-shadow: none;
+    }
+
+    .octane-alert.octane-confirm-window .octane-card-content-shell .habbo-btn-primary {
+        min-width: 50px;
+        min-height: 28px !important;
+        height: 28px;
+    }
+
+    .octane-alert .octane-card-content-shell .octane-alert-link-actions .habbo-btn-primary {
+        min-height: 24px !important;
+        height: 24px;
     }
 
     .octane-alert:not(.octane-alert-hotel-event, .octane-alert-octane-info, .octane-alert-furnidata, .octane-motd-alert, .octane-abusive-alert)

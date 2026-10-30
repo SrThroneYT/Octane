@@ -283,9 +283,10 @@
     }
 
     /* report steps: continue_button (0x00aa00), back_button (0xaaaaaa), submit_button and reason_prototype
-       (0xaa0000) are container_buttons style 5: habbo_skin_button_shiny_large multiplied by the colour, with a
-       white u_headline_medium (16 px bold) caption. */
+       (0xaa0000) are container_buttons style 5 (41 px high): habbo_skin_button_shiny_large multiplied by the colour,
+       with a white u_headline_medium (16 px bold) caption. */
     .octane-help-report :is(.habbo-btn-primary, .habbo-btn-secondary, .habbo-btn-danger) {
+        min-height: 41px !important;
         border-width: 6px 6px 7px !important;
         border-image-slice: 6 6 7 6 fill !important;
         border-image-width: 6px 6px 7px !important;

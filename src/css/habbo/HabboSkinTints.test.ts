@@ -13,7 +13,7 @@ const states = [
 
 // AIR button style 5 / 6: the grey shiny skin multiplied by the element colour; style 4: the dark shiny skin.
 const sets = [
-    ...['3399cc', '54c32e', 'dda100', '0a9bc5', '4faf4f', '77bf43', '009900', '01a101'].map((tint) => [
+    ...['3399cc', '54c32e', 'dda100', '0a9bc5', '4faf4f', '77bf43', '009900', '01a101', '00cc00'].map((tint) => [
         `shiny-thick-tint-${tint}`,
         `button-shiny-thick-tint-${tint}`
     ]),
