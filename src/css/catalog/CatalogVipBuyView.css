@@ -6,7 +6,7 @@
     margin: 0 auto;
     overflow: hidden;
     background: #f1f1f1;
-    color: #222;
+    color: #000000;
     font-family: Ubuntu, Arial, sans-serif;
     font-size: 12px;
 }
@@ -406,11 +406,13 @@
     height: 22px;
     min-height: 22px;
     padding: 0 3px !important;
-    border-width: 3px !important;
-    border-image-source: var(--habbo-skin-button) !important;
-    border-image-slice: 3 fill !important;
-    border-image-width: 3px !important;
-    color: #111 !important;
+    /* club_buy_info_item item_buy: the grey `button` (style 3), habbo_skin_button_shiny. */
+    border-width: 5px !important;
+    border-image-source: var(--habbo-skin-shiny) !important;
+    border-image-slice: 5 fill !important;
+    border-image-width: 5px !important;
+    /* club_buy_info_item item_buy: grey button, button_shiny_regular 12 px black. */
+    color: #000 !important;
     font-size: 12px !important;
     font-weight: 400 !important;
     line-height: 16px;
@@ -418,15 +420,15 @@
 }
 
 .octane-club-offer.is-compact .octane-club-offer-action:hover:not(.pointer-events-none) {
-    border-image-source: var(--habbo-skin-button-hover) !important;
+    border-image-source: var(--habbo-skin-shiny-hover) !important;
 }
 
 .octane-club-offer.is-compact .octane-club-offer-action:active:not(.pointer-events-none) {
-    border-image-source: var(--habbo-skin-button-pressed) !important;
+    border-image-source: var(--habbo-skin-shiny-pressed) !important;
 }
 
 .octane-club-offer.is-compact .octane-club-offer-action.pointer-events-none {
-    border-image-source: var(--habbo-skin-button-disabled) !important;
+    border-image-source: var(--habbo-skin-shiny-disabled) !important;
     color: #777 !important;
 }
 
@@ -784,7 +786,8 @@
 .octane-club-purchase-confirm .octane-club-purchase-confirm-cancel {
     left: 9px;
     border-image-source: var(--habbo-skin-shiny);
-    color: #111;
+    /* club_buy_confirmation cancel_button: grey button, button_shiny_regular 12 px black. */
+    color: #000;
     font-weight: 400;
 }
 
@@ -925,28 +928,29 @@
     height: 22px;
     padding: 0 8px;
     border-style: solid;
-    border-width: 3px;
-    border-image-source: var(--habbo-skin-button);
-    border-image-slice: 3 fill;
-    border-image-width: 3px;
+    border-width: 5px;
+    border-image-source: var(--habbo-skin-shiny);
+    border-image-slice: 5 fill;
+    border-image-width: 5px;
     border-image-repeat: stretch;
     background: transparent;
-    color: #111;
+    /* club_gift_list_item select_button: grey button, button_shiny_regular 12 px black. */
+    color: #000;
     font-family: HabboAirUbuntu, Ubuntu, sans-serif;
     font-size: 12px;
     line-height: 16px;
 }
 
 .octane-catalog-club-gift__select:hover:not(:disabled) {
-    border-image-source: var(--habbo-skin-button-hover);
+    border-image-source: var(--habbo-skin-shiny-hover);
 }
 
 .octane-catalog-club-gift__select:active:not(:disabled) {
-    border-image-source: var(--habbo-skin-button-pressed);
+    border-image-source: var(--habbo-skin-shiny-pressed);
 }
 
 .octane-catalog-club-gift__select:disabled {
-    border-image-source: var(--habbo-skin-button-disabled);
+    border-image-source: var(--habbo-skin-shiny-disabled);
     color: #777;
     cursor: default;
 }

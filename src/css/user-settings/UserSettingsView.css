@@ -121,22 +121,24 @@
     width: 162px;
 }
 
+/* The menu, Back, add/remove word and apply buttons are AIR `button` style 3: habbo_skin_button_shiny_default
+   (the grey shiny skin, not the style 0 habbo_skin_button_default), black button_shiny_regular caption. */
 .air-settings-button {
     box-sizing: border-box;
     height: 22px;
     min-height: 22px;
     margin: 0;
-    padding: 0 5px;
+    padding: 0 3px;
     overflow: hidden;
-    border: 3px solid transparent;
+    border: 5px solid transparent;
     border-radius: 0;
-    border-image-source: var(--habbo-skin-button);
-    border-image-slice: 3 fill;
-    border-image-width: 3px;
+    border-image-source: var(--habbo-skin-shiny);
+    border-image-slice: 5 fill;
+    border-image-width: 5px;
     border-image-repeat: stretch;
     background: transparent;
     box-shadow: none;
-    color: #111111;
+    color: #000000;
     cursor: pointer;
     font: 400 12px/16px HabboAirUbuntu, UbuntuRegular, sans-serif;
     text-align: center;
@@ -147,12 +149,12 @@
 }
 
 .air-settings-button:hover {
-    border-image-source: var(--habbo-skin-button-hover);
+    border-image-source: var(--habbo-skin-shiny-hover);
     filter: none;
 }
 
 .air-settings-button:active {
-    border-image-source: var(--habbo-skin-button-pressed);
+    border-image-source: var(--habbo-skin-shiny-pressed);
     filter: none;
 }
 
@@ -605,5 +607,33 @@
 
     .user-account-settings__content button {
         font-weight: 400 !important;
+    }
+
+    /* No AIR layout, so its Cancel / Save / Rename buttons take AIR's grey `button` style 3
+       (habbo_skin_button_shiny) with black 12 px regular captions instead of the green buy skin. */
+    .user-account-settings__content :where(.habbo-btn-primary, .habbo-btn-secondary) {
+        border-width: 5px !important;
+        border-style: solid !important;
+        border-color: transparent !important;
+        border-image-source: var(--habbo-skin-shiny) !important;
+        border-image-slice: 5 fill !important;
+        border-image-width: 5px !important;
+        border-image-repeat: stretch !important;
+        background: transparent !important;
+        color: #000000 !important;
+        text-shadow: none !important;
+    }
+
+    .user-account-settings__content :where(.habbo-btn-primary, .habbo-btn-secondary):hover {
+        border-image-source: var(--habbo-skin-shiny-hover) !important;
+    }
+
+    .user-account-settings__content :where(.habbo-btn-primary, .habbo-btn-secondary):active {
+        border-image-source: var(--habbo-skin-shiny-pressed) !important;
+    }
+
+    .user-account-settings__content :where(.habbo-btn-primary, .habbo-btn-secondary):is(:disabled, .pointer-events-none) {
+        border-image-source: var(--habbo-skin-shiny-disabled) !important;
+        color: #777777 !important;
     }
 }

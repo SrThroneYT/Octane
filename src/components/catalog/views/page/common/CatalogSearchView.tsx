@@ -1,6 +1,6 @@
 import { GetSessionDataManager } from '@octane/renderer';
 import { ChangeEvent, FC, KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react';
-import { FaSearch, FaTimes } from 'react-icons/fa';
+import { FaTimes } from 'react-icons/fa';
 import {
     CatalogPage,
     FilterCatalogNode,
@@ -121,26 +121,29 @@ export const CatalogSearchView: FC<{}> = () => {
     useEffect(() => () => searchTimeout.current && clearTimeout(searchTimeout.current), []);
 
     return (
-        <div className="relative w-full">
-            <FaSearch className="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] text-muted pointer-events-none" />
+        // AIR searchContainer: the search.helper text (catalog.search, #666666) in the box and common_small_pen on the
+        // right, which turns into icons_close once something is typed.
+        <div className="octane-catalog-search relative w-full">
             <input
-                aria-label={LocalizeText('generic.search')}
-                className="w-full pl-6 pr-6 py-[3px] text-[11px] rounded border-2 border-card-grid-item-border bg-white text-dark placeholder-muted focus:outline-none focus:border-primary transition-colors"
-                placeholder={LocalizeText('generic.search')}
+                aria-label={LocalizeText('catalog.search')}
+                className="octane-catalog-search-input w-full"
+                placeholder={LocalizeText('catalog.search')}
                 type="text"
                 value={searchValue}
                 onChange={onSearchChange}
                 onKeyDown={onSearchKeyDown}
             />
-            {searchValue && searchValue.length > 0 && (
+            {searchValue && searchValue.length > 0 ? (
                 <BaseButton
                     aria-label={localizeWithFallback('generic.clear', 'Clear')}
                     type="button"
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[9px] text-muted hover:text-danger cursor-pointer transition-colors"
+                    className="octane-catalog-search-clear"
                     onClick={clearSearch}
                 >
                     <FaTimes />
                 </BaseButton>
+            ) : (
+                <span aria-hidden="true" className="octane-catalog-search-pen" />
             )}
         </div>
     );

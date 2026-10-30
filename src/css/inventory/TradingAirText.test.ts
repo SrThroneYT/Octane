@@ -27,4 +27,11 @@ describe('trading text (inventory_trading, inventory_trading_wired, inventory_tr
         expect(rule('.octane-trade-name-scam-body .octane-trade-name-scam-muted')).toContain('color: #555555');
         expect(rule('.octane-trade-name-scam-body .octane-trade-name-scam-trader')).toContain('font-size: 13px');
     });
+
+    it('skins accept and cancel as the grey shiny button, the cancel never red', () => {
+        const view = readFileSync(join(process.cwd(), 'src/components/inventory/views/furniture/InventoryTradeView.tsx'), 'utf8');
+
+        expect(css).toMatch(/\.octane-wired-trade-cancel\)\.habbo-btn-secondary,\s*\.octane-trade-name-scam-body \.octane-trade-button\.habbo-btn-secondary \{[^}]*border-image-source: var\(--habbo-skin-shiny\) !important;[^}]*color: #000000 !important/);
+        expect(view).not.toMatch(/octane-trade-button" variant="danger"/);
+    });
 });

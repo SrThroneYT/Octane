@@ -416,11 +416,11 @@
     max-width: 100% !important;
     min-height: 22px !important;
     padding: 0 8px !important;
-    border: 3px solid transparent !important;
+    border: 5px solid transparent !important;
     border-radius: 0 !important;
-    border-image-source: var(--habbo-skin-button) !important;
-    border-image-slice: 3 fill !important;
-    border-image-width: 3px !important;
+    border-image-source: var(--habbo-skin-shiny) !important;
+    border-image-slice: 5 fill !important;
+    border-image-width: 5px !important;
     border-image-repeat: stretch !important;
     background: transparent !important;
     color: #881e15 !important;
@@ -841,3 +841,49 @@
     .octane-inventory-window .octane-inventory-preview-state {
         right: 6px;
     }
+
+/*
+ * AIR inventory buttons (open_catalog_btn, placeinroom_btn, sell_btn, the pet / bot place_button, wearBadge_button)
+ * are all the grey `button` (style 3) with text_style button_shiny_regular: 12 px regular, black. The shared
+ * .habbo-btn-secondary paints #111 and the empty-shop button was bold.
+ */
+.octane-inventory-window :is(.octane-inventory-btn-place, .octane-inventory-btn-sell, .octane-inventory-animal-place, .octane-inventory-btn-wear, .octane-inventory-empty-shop):not(:disabled) {
+    color: #000000 !important;
+}
+
+.octane-inventory-window .octane-inventory-empty-shop {
+    font-size: 12px !important;
+    font-weight: 400 !important;
+}
+
+/*
+ * Every other grey button of the inventory and the trade (OctaneButton's default, Button variant="secondary": the
+ * furni search, the delete and edit icons, the prefix and wired trade offer buttons) takes AIR's grey `button`
+ * (style 3, habbo_skin_button_shiny) instead of the flat 3 px button_default picture the shared
+ * .habbo-btn-secondary draws. That skin is an unlayered important rule, which only an important rule in a layer
+ * outranks. The empty-shop button keeps its large shiny picture.
+ */
+@layer base {
+    .octane-inventory-window .habbo-btn-secondary:not(.octane-inventory-empty-shop) {
+        border-width: 5px !important;
+        border-image-source: var(--habbo-skin-shiny) !important;
+        border-image-slice: 5 fill !important;
+        border-image-width: 5px !important;
+    }
+
+    .octane-inventory-window .habbo-btn-secondary:not(.octane-inventory-empty-shop, .octane-inventory-btn-delete, :disabled) {
+        color: #000000 !important;
+    }
+
+    .octane-inventory-window .habbo-btn-secondary:not(.octane-inventory-empty-shop):hover {
+        border-image-source: var(--habbo-skin-shiny-hover) !important;
+    }
+
+    .octane-inventory-window .habbo-btn-secondary:not(.octane-inventory-empty-shop):active {
+        border-image-source: var(--habbo-skin-shiny-pressed) !important;
+    }
+
+    .octane-inventory-window .habbo-btn-secondary:not(.octane-inventory-empty-shop):is(:disabled, .pointer-events-none) {
+        border-image-source: var(--habbo-skin-shiny-disabled) !important;
+    }
+}

@@ -2,6 +2,7 @@ import { AddLinkEventTracker, ILinkEventTracker, OctaneLogger, RemoveLinkEventTr
 import { FC, useEffect, useRef, useState } from 'react';
 import { GetConfigurationValue, OpenUrl, resolveHabboPageUrl, SanitizePageHtml } from '../../api';
 import { OctaneCardContentView, OctaneCardHeaderView, OctaneCardView } from '../../common';
+import '../../css/octanepedia/OctanepediaAirText.css';
 import { getClickedAnchor } from './getClickedAnchor';
 
 const NEW_LINE_REGEX = /\n\r|\n|\r/gm;
@@ -102,7 +103,7 @@ export const OctanepediaView: FC<{}> = (props) => {
             theme="primary-slim">
             <OctaneCardHeaderView headerText={header} onCloseClick={() => setContent(null)} />
             <OctaneCardContentView>
-                <div ref={elementRef} className="text-black size-full" dangerouslySetInnerHTML={{ __html: content }} />
+                <div ref={elementRef} className="octanepedia__page text-black size-full" dangerouslySetInnerHTML={{ __html: content }} />
             </OctaneCardContentView>
         </OctaneCardView>
     );

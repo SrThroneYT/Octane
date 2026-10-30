@@ -14,7 +14,7 @@ export const NameChangeInitView: FC<NameChangeLayoutViewProps> = (props) => {
                 {LocalizeText('tutorial.name_change.current', ['name'], [GetSessionDataManager().userName])}
             </div>
             <div className="flex gap-2">
-                <BaseButton className="btn btn-success w-full" onClick={() => onAction('start')}>
+                <BaseButton className="habbo-btn-secondary w-full" onClick={() => onAction('start')}>
                     {LocalizeText('tutorial.name_change.change')}
                 </BaseButton>
                 <BaseButton className="habbo-btn-secondary w-full" onClick={() => onAction('confirmation', GetSessionDataManager().userName)}>

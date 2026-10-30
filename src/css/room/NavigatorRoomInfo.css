@@ -136,3 +136,25 @@
         font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
     }
 }
+
+/*
+ * roominfo buttons_cont: room_settings_button, raid_protection_settings_button, room_filter_button,
+ * floor_plan_editor_button, staff_pick_button and room_muteall_button are all the grey `button` (style 3,
+ * habbo_skin_button_shiny) with black text, not the green .habbo-btn-primary. Its skin is an unlayered important
+ * rule, which only an important rule in a layer outranks. The report button keeps Octane's red.
+ */
+@layer base {
+    .octane-room-info__action.habbo-btn-primary {
+        border-image-source: var(--habbo-skin-shiny) !important;
+        color: #000000 !important;
+        text-shadow: none !important;
+    }
+
+    .octane-room-info__action.habbo-btn-primary:hover {
+        border-image-source: var(--habbo-skin-shiny-hover) !important;
+    }
+
+    .octane-room-info__action.habbo-btn-primary:active {
+        border-image-source: var(--habbo-skin-shiny-pressed) !important;
+    }
+}

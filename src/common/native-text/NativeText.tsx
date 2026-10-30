@@ -1,24 +1,29 @@
 import { CSSProperties, FC, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { compositeRetainedToOpaque, resolveLineMetrics } from './NativeTextRenderer';
 import { renderCanvasSpacedText, supportsCanvasSpacedText } from './CanvasSpacedText';
-import { loadNativeFont, measureNativeText, NativeFontStyle, supportsNativeText } from './NativeFont';
+import { loadNativeFont, measureNativeText, NativeFontStyle, supportsNativeText, unpremultiplyPixels } from './NativeFont';
 import { useNativeTextSampling, useNativeTextScale } from './NativeTextScale';
 import { NativeTextStyleName, nativeTextStyles } from './NativeTextStyles';
 
-/** A drawn raster handed to `onRaster`: the 1x or display-scale canvas, the text it shows and the surface colour it was composited against. */
+/** A drawn raster handed to `onRaster`: the 1x or display-scale canvas, the text it shows and the surface colour it was composited against (null: transparent). */
 export interface NativeTextRaster {
     canvas: HTMLCanvasElement;
     text: string;
-    background: number;
+    background: number | null;
 }
 
-interface NativeTextProps {
+export interface NativeTextProps {
     text: string;
     textStyle: NativeTextStyleName;
-    /** Native retained glyphs are composited against the actual surface colour. */
-    background: number;
+    /**
+     * Native retained glyphs are composited against the actual surface colour. Null keeps the raster transparent and lets the browser blend
+     * it over whatever is below (a skinned tab, a hover highlight); that lands within one colour level of the opaque composite.
+     */
+    background: number | null;
     maxWidth?: number;
     leading?: number;
+    /** Line pitch in CSS pixels (the CSS line-height): each line is centred in it. Replaces `leading`. */
+    lineHeight?: number;
     align?: 'left' | 'center' | 'right';
     overrides?: Partial<NativeFontStyle>;
     className?: string;
@@ -81,6 +86,7 @@ export const NativeText: FC<NativeTextProps> = ({
     background,
     maxWidth,
     leading = 0,
+    lineHeight: cssLineHeight,
     align,
     overrides,
     className,
@@ -91,7 +97,7 @@ export const NativeText: FC<NativeTextProps> = ({
 {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [size, setSize] = useState<{ width: number; height: number }>(null);
-    const fontStyle = { ...nativeTextStyles[textStyle], ...overrides, background };
+    const fontStyle = { ...nativeTextStyles[textStyle], ...overrides, background: background ?? undefined };
     const styleKey = JSON.stringify(fontStyle);
     const displayScale = useNativeTextScale();
     const sampling = useNativeTextSampling(nativeResolution);
@@ -157,7 +163,8 @@ export const NativeText: FC<NativeTextProps> = ({
             const width = maxWidth === undefined ? Infinity : Math.max(1, maxWidth - 4);
             const lines = text.split(/\r\n|\r|\n/).flatMap((paragraph) => wrapNativeParagraph(paragraph, width, measure));
             const metrics = resolveLineMetrics(loaded.font.swfFont, fontStyle.size, fontStyle.antiAliasType === 'normal');
-            const lineHeight = metrics.textHeight + leading;
+            const lineHeight = cssLineHeight ? Math.max(cssLineHeight, metrics.textHeight) : metrics.textHeight + leading;
+            const lineOffset = cssLineHeight ? Math.floor((lineHeight - metrics.textHeight) / 2) : 0;
             let textWidth = 0;
             for (const line of lines) textWidth = Math.max(textWidth, measure(line));
             const fieldWidth = Math.ceil(textWidth) + 4;
@@ -188,9 +195,9 @@ export const NativeText: FC<NativeTextProps> = ({
                     // Each line gets a local surface view: the native renderer's
                     // etching pass is relative to that surface, not target.offsetY.
                     target: {
-                        pixels: pixels.subarray(Math.round(index * lineHeight) * scale * pixelWidth * 4),
+                        pixels: pixels.subarray((Math.round(index * lineHeight) + lineOffset) * scale * pixelWidth * 4),
                         width: pixelWidth,
-                        height: pixelHeight - Math.round(index * lineHeight) * scale,
+                        height: pixelHeight - (Math.round(index * lineHeight) + lineOffset) * scale,
                         offsetX:
                             align === 'center'
                                 ? Math.round((pixelWidth - 4 * scale - measureNativeText(loaded.font, line, scaledStyle)) / 2)
@@ -204,7 +211,10 @@ export const NativeText: FC<NativeTextProps> = ({
             const canvas = canvasRef.current;
             canvas.width = pixelWidth;
             canvas.height = pixelHeight;
-            const composited = compositeRetainedToOpaque(pixels, [(background >>> 16) & 255, (background >>> 8) & 255, background & 255, 255]);
+            const composited =
+                background === null
+                    ? unpremultiplyPixels(pixels)
+                    : compositeRetainedToOpaque(pixels, [(background >>> 16) & 255, (background >>> 8) & 255, background & 255, 255]);
             canvas.getContext('2d').putImageData(new ImageData(composited, pixelWidth, pixelHeight), 0, 0);
             setSize({ width: pixelWidth / scale, height: fieldHeight });
             onRasterRef.current?.({ canvas, text, background });
@@ -215,7 +225,7 @@ export const NativeText: FC<NativeTextProps> = ({
         return () => {
             disposed = true;
         };
-    }, [text, textStyle, styleKey, maxWidth, leading, align, scale]);
+    }, [text, textStyle, styleKey, maxWidth, leading, cssLineHeight, align, scale]);
 
     return (
         <span

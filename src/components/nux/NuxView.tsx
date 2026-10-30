@@ -95,7 +95,7 @@ export const NuxView: FC = () => {
                                         {getNuxGiftThumbnailUrl(library, option) && <LibraryImageView src={getNuxGiftThumbnailUrl(library, option)} />}
                                     </div>
                                     <div className="octane-nux-gifts__name">{getNuxGiftOptionName(option, getProductName, separator)}</div>
-                                    <BaseButton className="octane-nux-offer__go" type="button" onClick={() => selectGift(index)}>
+                                    <BaseButton className="octane-nux-offer__go octane-nux-offer__get" type="button" onClick={() => selectGift(index)}>
                                         {localizeWithFallback('nux.gift.selection.button.get', 'Get this')}
                                     </BaseButton>
                                 </div>

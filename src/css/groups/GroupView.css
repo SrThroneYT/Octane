@@ -76,7 +76,8 @@
     border-image-repeat: stretch !important;
     border-radius: 0 !important;
     background: transparent !important;
-    color: #111111 !important;
+    /* AIR button text is black (button_shiny_bold / button_shiny_regular carry no colour). */
+    color: #000000 !important;
     text-shadow: none !important;
     box-shadow: none !important;
     font-size: 12px;
@@ -358,7 +359,7 @@
 
 .octane-group-information-standalone .octane-extended-profile-group-info__button .text-white,
 .octane-group-information-standalone .octane-extended-profile-group-info__button span {
-    color: #111111 !important;
+    color: #000000 !important;
     text-shadow: none !important;
 }
 
@@ -1196,4 +1197,77 @@
     grid-template-rows: none !important;
     grid-auto-rows: max-content;
     align-content: start;
+}
+
+/*
+ * Member Entry / groups members window: accept-all and the previous_page_button / next_page_button pagers are
+ * AIR's grey `button` / container_button (style 3, habbo_skin_button_shiny), 12 px regular black, not the flat
+ * 3 px button_default picture. The Button's 12.6 px bold size and the skins are important rules, which only an
+ * important rule in the base layer outranks.
+ */
+@layer base {
+    .octane-groups-window .octane-groups-button:not(.octane-group-room-info__button) {
+        border-width: 5px !important;
+        border-image-source: var(--habbo-skin-shiny) !important;
+        border-image-slice: 5 fill !important;
+        border-image-width: 5px !important;
+        color: #000000 !important;
+        font-size: 12px !important;
+        font-weight: 400 !important;
+    }
+
+    .octane-groups-window .octane-groups-button:not(.octane-group-room-info__button):hover {
+        border-image-source: var(--habbo-skin-shiny-hover) !important;
+    }
+
+    .octane-groups-window .octane-groups-button:not(.octane-group-room-info__button):active {
+        border-image-source: var(--habbo-skin-shiny-pressed) !important;
+    }
+
+    .octane-groups-window .octane-groups-button:not(.octane-group-room-info__button):is(:disabled, .pointer-events-none) {
+        border-image-source: var(--habbo-skin-shiny-disabled) !important;
+        color: #777777 !important;
+    }
+}
+
+/*
+ * group_info join_button / leave_button / request_membership_button and group_room_info join_button /
+ * request_membership_button / manage_button are the grey button_thick (style 3, habbo_skin_button_shiny_thick)
+ * with button_shiny_bold, 12 px bold black. The common Button would draw the green .habbo-btn-primary at
+ * 12.6 px; both are important rules, which only an important rule in the base layer outranks.
+ */
+@layer base {
+    .octane-group-room-info .octane-group-room-info__button.habbo-btn-primary,
+    .octane-group-information-standalone .octane-extended-profile-group-info__button.habbo-btn-primary {
+        border-width: 5px !important;
+        border-style: solid !important;
+        border-color: transparent !important;
+        border-radius: 0 !important;
+        border-image-source: var(--habbo-skin-shiny-thick) !important;
+        border-image-slice: 5 fill !important;
+        border-image-width: 5px !important;
+        border-image-repeat: stretch !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: #000000 !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        text-shadow: none !important;
+    }
+
+    .octane-group-room-info .octane-group-room-info__button.habbo-btn-primary:hover,
+    .octane-group-information-standalone .octane-extended-profile-group-info__button.habbo-btn-primary:hover {
+        border-image-source: var(--habbo-skin-shiny-thick-hover) !important;
+    }
+
+    .octane-group-room-info .octane-group-room-info__button.habbo-btn-primary:active,
+    .octane-group-information-standalone .octane-extended-profile-group-info__button.habbo-btn-primary:active {
+        border-image-source: var(--habbo-skin-shiny-thick-pressed) !important;
+    }
+
+    .octane-group-room-info .octane-group-room-info__button.habbo-btn-primary:is(:disabled, .pointer-events-none),
+    .octane-group-information-standalone .octane-extended-profile-group-info__button.habbo-btn-primary:is(:disabled, .pointer-events-none) {
+        border-image-source: var(--habbo-skin-shiny-thick-disabled) !important;
+        color: #777777 !important;
+    }
 }

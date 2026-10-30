@@ -33,4 +33,22 @@ describe('collectibles text (collectible_view, collectible_reward)', () => {
     it('keeps the me menu icon untouched', () => {
         expect(rule('.icon-me-collectibles')).toContain('me_menu_me_cabinet.png');
     });
+
+    it('draws ok_button (style 3) on the grey shiny skin, 12 px regular black', () => {
+        const plain = rule('.octane-collectibles-button.is-plain');
+        expect(plain).toContain('border-image-source: var(--habbo-skin-shiny)');
+        expect(plain).toContain('border-radius: 0');
+        expect(plain).toMatch(/color: #000;[^}]*font-size: 12px;[^}]*font-weight: 400/);
+        expect(plain).not.toContain('linear-gradient');
+    });
+
+    it('tints the style 5 buttons as AIR: 0x01a101 green and 0x2095d4 blue on the grey shiny skin, white text', () => {
+        const tinted = rule('.octane-collectibles-button:is(.is-green, .is-blue)');
+        expect(tinted).toMatch(/color: #fff;[^}]*font-size: 12px;[^}]*font-weight: 400/);
+        expect(tinted).toContain('background: transparent');
+        expect(rule('.octane-collectibles-button.is-green')).toContain('border-image-source: var(--habbo-skin-shiny-tint-01a101)');
+        expect(rule('.octane-collectibles-button.is-blue')).toContain('border-image-source: var(--habbo-skin-shiny-tint-2095d4)');
+        expect(rule('.octane-collectibles-button.is-blue:hover:not(:disabled)')).toContain('var(--habbo-skin-shiny-tint-2095d4-hover)');
+        expect(css).not.toMatch(/\.octane-collectibles-button\.is-(green|blue) \{[^}]*linear-gradient/);
+    });
 });

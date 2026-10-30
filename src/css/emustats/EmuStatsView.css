@@ -1,4 +1,12 @@
+/*
+ * Emulator Stats is Octane's own window (no AIR layout). Text follows the AIR conventions: regular Ubuntu
+ * (HabboAirUbuntu; Octane's `Ubuntu` is the condensed cut), u_regular 12 px pure black body, 16/14 px bold
+ * titles, 11 px #666666 meta text, the grey button_thick for Refresh. Layout and the panel colours stay.
+ * The p/span/td/th rules carry `.octane-emustats` in front: the card sheet (loaded later) sets 12 px and the
+ * card text colour on those tags at the same specificity.
+ */
 .octane-emustats-window {
+    --octane-card-text: #000000;
     min-width: 1024px;
     max-width: 1024px;
     min-height: 700px;
@@ -15,7 +23,9 @@
     grid-template-columns: 220px minmax(0, 1fr);
     height: 100%;
     background: #f3f4f8;
-    color: #1f2937;
+    color: #000000; /* u_regular body: pure black */
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    font-size: 12px;
 }
 
 .octane-emustats__sidebar {
@@ -29,17 +39,16 @@
 
 .octane-emustats__sidebar-brand h2 {
     margin: 0;
-    font-size: 31px;
-    line-height: 1;
-    font-weight: 800;
-    letter-spacing: -0.04em;
-    color: #1e2a44;
+    font-size: 16px; /* u_headline_medium */
+    line-height: 19px;
+    font-weight: 700;
+    color: #000000;
 }
 
-.octane-emustats__sidebar-brand p {
+.octane-emustats .octane-emustats__sidebar-brand p {
     margin: 8px 0 0;
-    font-size: 12px;
-    color: #64748b;
+    font-size: 11px;
+    color: #666666;
 }
 
 .octane-emustats__nav {
@@ -59,7 +68,7 @@
     border: 1px solid #d8deea;
     border-radius: 12px;
     background: #ffffff;
-    color: #334155;
+    color: #000000;
     cursor: pointer;
     transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
@@ -76,13 +85,17 @@
     transform: translateY(-1px);
 }
 
-.octane-emustats__nav-button span,
+.octane-emustats .octane-emustats__nav-button span,
 .octane-emustats__nav-button strong {
-    font-size: 13px;
+    font-size: 12px;
+}
+
+.octane-emustats .octane-emustats__nav-button.is-active span {
+    font-weight: 700;
 }
 
 .octane-emustats__nav-button strong {
-    color: #5b6f99;
+    color: #666666;
 }
 
 .octane-emustats__sidebar-footer {
@@ -90,23 +103,38 @@
     padding-top: 18px;
 }
 
+/* AIR's grey button_thick (habbo_skin_button_shiny_thick), u_bold 12 px black. */
 .octane-emustats__refresh-button {
     width: 100%;
-    min-height: 34px;
-    border: 1px solid #7b93dd;
-    border-radius: 10px;
-    background: linear-gradient(180deg, #edf2ff 0%, #dce7ff 100%);
-    color: #26406d;
+    min-height: 30px;
+    border: 5px solid transparent;
+    border-radius: 0;
+    border-image-source: var(--habbo-skin-shiny-thick);
+    border-image-slice: 5 fill;
+    border-image-width: 5px;
+    border-image-repeat: stretch;
+    background: transparent;
+    color: #000000;
+    font-size: 12px;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    box-shadow: none;
+    image-rendering: var(--octane-pixel-art, pixelated);
 }
 
-.octane-emustats__sidebar-footer p {
+.octane-emustats__refresh-button:hover {
+    border-image-source: var(--habbo-skin-shiny-thick-hover);
+}
+
+.octane-emustats__refresh-button:active {
+    border-image-source: var(--habbo-skin-shiny-thick-pressed);
+}
+
+.octane-emustats .octane-emustats__sidebar-footer p {
     margin: 10px 0 0;
     font-size: 11px;
     text-align: center;
-    color: #7b879b;
+    color: #666666;
 }
 
 .octane-emustats__main {
@@ -128,16 +156,16 @@
 
 .octane-emustats__header h1 {
     margin: 0;
-    font-size: 24px;
-    line-height: 1.05;
-    font-weight: 800;
-    color: #1e293b;
+    font-size: 16px; /* u_headline_medium */
+    line-height: 19px;
+    font-weight: 700;
+    color: #000000;
 }
 
-.octane-emustats__header p {
+.octane-emustats .octane-emustats__header p {
     margin: 8px 0 0;
-    font-size: 13px;
-    color: #64748b;
+    font-size: 12px;
+    color: #666666;
 }
 
 .octane-emustats__status-pill {
@@ -203,24 +231,24 @@
     background: var(--emustats-accent, #6366f1);
 }
 
-.octane-emustats__metric-card span {
+.octane-emustats .octane-emustats__metric-card span {
     font-size: 11px;
-    color: #64748b;
+    color: #666666;
 }
 
 .octane-emustats__metric-card strong {
     margin-top: auto;
     font-size: 14px;
     line-height: 1.2;
-    font-weight: 800;
-    color: #1e293b;
+    font-weight: 700;
+    color: #000000;
     word-break: break-word;
 }
 
-.octane-emustats__metric-card small {
+.octane-emustats .octane-emustats__metric-card small {
     margin-top: 6px;
-    font-size: 10px;
-    color: #94a3b8;
+    font-size: 11px;
+    color: #666666;
 }
 
 .octane-emustats__chart-card {
@@ -244,15 +272,15 @@
 
 .octane-emustats__section-header h3 {
     margin: 0;
-    font-size: 16px;
-    font-weight: 800;
-    color: #1e293b;
+    font-size: 14px; /* u_headline_small */
+    font-weight: 700;
+    color: #000000;
 }
 
-.octane-emustats__section-header p {
+.octane-emustats .octane-emustats__section-header p {
     margin: 6px 0 0;
-    font-size: 12px;
-    color: #64748b;
+    font-size: 11px;
+    color: #666666;
 }
 
 .octane-emustats__chart-meta {
@@ -262,14 +290,14 @@
     gap: 6px;
 }
 
-.octane-emustats__chart-meta span {
-    font-size: 12px;
-    color: #64748b;
+.octane-emustats .octane-emustats__chart-meta span {
+    font-size: 11px;
+    color: #666666;
 }
 
 .octane-emustats__chart-meta strong {
-    font-size: 22px;
-    color: #1e293b;
+    font-size: 16px;
+    color: #000000;
 }
 
 .octane-emustats__chart-shell {
@@ -287,10 +315,10 @@
     padding: 10px 0 10px 2px;
 }
 
-.octane-emustats__chart-axis span {
+.octane-emustats .octane-emustats__chart-axis span {
     font-size: 11px;
     line-height: 1;
-    color: #7b879b;
+    color: #666666;
 }
 
 .octane-emustats__chart-canvas {
@@ -351,14 +379,14 @@
 .octane-emustats__chart-tooltip strong {
     font-size: 12px;
     line-height: 1.1;
-    color: #1e293b;
+    color: #000000;
 }
 
-.octane-emustats__chart-tooltip span,
-.octane-emustats__chart-tooltip small {
-    font-size: 10px;
+.octane-emustats .octane-emustats__chart-tooltip span,
+.octane-emustats .octane-emustats__chart-tooltip small {
+    font-size: 11px;
     line-height: 1.2;
-    color: #64748b;
+    color: #666666;
 }
 
 .octane-emustats__table-shell {
@@ -377,24 +405,24 @@
     table-layout: fixed;
 }
 
-.octane-emustats__table thead th {
+.octane-emustats .octane-emustats__table thead th {
     position: sticky;
     top: 0;
     z-index: 1;
     padding: 12px 12px;
     text-align: left;
-    font-size: 12px;
-    font-weight: 800;
+    font-size: 12px; /* u_bold */
+    font-weight: 700;
     background: #eef3fb;
-    color: #4b5d7a;
+    color: #000000;
     border-bottom: 1px solid #dbe2ef;
 }
 
-.octane-emustats__table tbody td {
+.octane-emustats .octane-emustats__table tbody td {
     padding: 11px 12px;
     font-size: 12px;
     border-bottom: 1px solid #edf2f8;
-    color: #1f2937;
+    color: #000000;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -407,7 +435,7 @@
 .octane-emustats__table-empty {
     padding: 24px 12px !important;
     text-align: center;
-    color: #64748b !important;
+    color: #666666 !important;
 }
 
 .octane-emustats__table .is-xs {
@@ -428,7 +456,7 @@
     border: 1px solid #dbe2ef;
     border-radius: 12px;
     background: #ffffff;
-    color: #334155;
+    color: #000000;
 }
 
 .octane-emustats__error {
@@ -458,16 +486,16 @@
 
 .octane-emustats__detail-panel-header h3 {
     margin: 0;
-    font-size: 15px;
-    font-weight: 800;
-    color: #1e293b;
+    font-size: 14px; /* u_headline_small */
+    font-weight: 700;
+    color: #000000;
 }
 
-.octane-emustats__detail-panel-header p {
+.octane-emustats .octane-emustats__detail-panel-header p {
     margin: 6px 0 0;
-    font-size: 12px;
+    font-size: 11px;
     line-height: 1.4;
-    color: #64748b;
+    color: #666666;
 }
 
 .octane-emustats__kv-grid {
@@ -493,15 +521,15 @@
     background: #ffffff;
 }
 
-.octane-emustats__kv-item span {
+.octane-emustats .octane-emustats__kv-item span {
     font-size: 11px;
-    color: #64748b;
+    color: #666666;
 }
 
 .octane-emustats__kv-item strong {
-    font-size: 14px;
+    font-size: 12px; /* u_bold */
     line-height: 1.25;
-    color: #1e293b;
+    color: #000000;
     word-break: break-word;
 }
 
@@ -516,4 +544,10 @@
 
 .octane-emustats__kv-item strong[data-tone="warn"] {
     color: #b45309;
+}
+
+@layer base {
+    .octane-emustats :where(*):not(svg, svg *) {
+        font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
+    }
 }

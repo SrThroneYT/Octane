@@ -7,6 +7,7 @@ import { FurniEditorEditView } from './views/FurniEditorEditView';
 import { FurniEditorSearchView } from './views/FurniEditorSearchView';
 import { lineQueryFor } from './furniEditorSuggestions';
 import { BaseButton } from '../../common/BaseButton';
+import '../../css/furni-editor/FurniEditorAirText.css';
 
 const TAB_SEARCH = 0;
 const TAB_EDIT = 1;
@@ -136,7 +137,7 @@ export const FurniEditorView: FC<{}> = () => {
     if (!isVisible || !isMod) return null;
 
     return (
-        <OctaneCardView uniqueKey="furni-editor" className="w-[780px] h-[600px] min-w-[720px] min-h-[560px]">
+        <OctaneCardView uniqueKey="furni-editor" className="octane-furni-editor w-[780px] h-[600px] min-w-[720px] min-h-[560px]">
             <OctaneCardHeaderView headerText="Furni Editor" onCloseClick={handleClose} />
             <OctaneCardTabsView>
                 <OctaneCardTabsItemView isActive={activeTab === TAB_SEARCH} onClick={() => setActiveTab(TAB_SEARCH)}>

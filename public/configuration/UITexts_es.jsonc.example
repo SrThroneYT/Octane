@@ -1582,5 +1582,6 @@
     "inventory.trading.notification.caption": "No se pudo completar el intercambio",
     "nitro.info.title": "Acerca de este cliente",
     "notifications.text.club_gift.selected": "Has elegido tu regalo.",
-    "chat.confirm.openurl": "Vas a abrir %url%. Continúa solo si confías en el enlace."
+    "chat.confirm.openurl": "Vas a abrir %url%. Continúa solo si confías en el enlace.",
+    "campaign.calendar.title": "Calendario"
 }

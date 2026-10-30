@@ -164,7 +164,7 @@ export const HcCenterView: FC<{}> = (props) => {
             <Flex className="bg-muted/50 p-3" position="relative">
                 <Column gap={2}>
                     <div className="w-[213px] h-[37px] bg-contain bg-no-repeat" style={{ backgroundImage: `url(${hcLogo})` }} />
-                    <Button variant="success" onClick={(event) => CreateLinkEvent('catalog/open/' + GetConfigurationRecord('catalog.links')['hc.buy_hc'])}>
+                    <Button variant="success" className="octane-hc-center__buy" onClick={(event) => CreateLinkEvent('catalog/open/' + GetConfigurationRecord('catalog.links')['hc.buy_hc'])}>
                         {LocalizeText(clubStatus === ClubStatus.ACTIVE ? 'hccenter.btn.extend' : 'hccenter.btn.buy')}
                     </Button>
                 </Column>
@@ -248,7 +248,7 @@ export const HcCenterView: FC<{}> = (props) => {
                         </Column>
                         <Button
                             variant="primary"
-                            className="shrink-0"
+                            className="octane-hc-center__gifts shrink-0"
                             onClick={() => CreateLinkEvent('catalog/open/' + GetConfigurationRecord('catalog.links')['hc.hc_gifts'])}
                         >
                             {LocalizeText(clubStatus === ClubStatus.ACTIVE ? 'hccenter.btn.gifts.redeem' : 'hccenter.btn.gifts.view')}

@@ -33,4 +33,10 @@ describe('game center text (games_main, snowwar_ending, snowwar_leaderboard)', (
         expect(rule('.snowwar-leaderboard-frame__title')).toMatch(/font-size: 12px;[^}]*font-weight: 700/);
         expect(rule('.snowwar-leaderboard__reset')).toContain('font-weight: 700');
     });
+
+    it('draws the play button and the snowwar_ending buttons on the green shiny thick skin', () => {
+        expect(css).toMatch(/\.game-tile__actions \.game-tile__play,\s*\.snowwar-results__buttons \.snowwar-button \{[^}]*border-image-source: var\(--habbo-skin-shiny-thick-green\);[^}]*border-radius: 0;[^}]*background: transparent;/);
+        expect(css).toMatch(/\.game-tile__play\.game-tile__play--blocked,\s*\.snowwar-results__buttons \.snowwar-button:disabled \{[^}]*--habbo-skin-shiny-thick-disabled/);
+    });
 });
+

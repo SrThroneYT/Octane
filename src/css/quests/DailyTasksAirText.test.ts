@@ -19,4 +19,15 @@ describe('daily tasks text (dailytasks, dailytasks_unclaimed)', () => {
         expect(css).toMatch(/\.octane-daily-task-progress \{[^}]*font-size: 12px;[^}]*font-weight: 700/);
         expect(css).toMatch(/\.octane-daily-tasks \.octane-daily-tasks-unclaimed-button,[^{]*\{\s*font-size: 12px !important;\s*font-weight: 400 !important;/);
     });
+
+    it('skins unclaimed_btn as the grey plain button (style 3, habbo_skin_button_shiny)', () => {
+        expect(css).toMatch(/\.octane-daily-tasks \.octane-daily-tasks-unclaimed-button,\s*\.octane-reward-track-premium \.octane-reward-track-premium-cancel \{\s*border-image-source: var\(--habbo-skin-shiny\) !important;/);
+    });
+
+    it('tints claim_button 0x01a101 on the plain shiny skin as AIR', () => {
+        expect(css).toMatch(
+            /\.octane-daily-tasks \.octane-daily-task-claim\.habbo-btn-primary \{\s*border-image-source: var\(--habbo-skin-shiny-tint-01a101\) !important;\s*color: #ffffff !important;/
+        );
+        expect(css).toMatch(/\.octane-daily-task-claim\.habbo-btn-primary:is\(:disabled, \.pointer-events-none\) \{\s*border-image-source: var\(--habbo-skin-shiny-tint-01a101-disabled\)/);
+    });
 });

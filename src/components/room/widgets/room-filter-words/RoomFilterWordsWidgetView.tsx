@@ -5,6 +5,7 @@ import { Button, Column, Flex, Grid, OctaneCardContentView, OctaneCardHeaderView
 import { useFilterWordsWidget, useNavigatorData } from '../../../../hooks';
 import { classNames, OctaneInput } from '../../../../layout';
 import { BaseButton } from '../../../../common/BaseButton';
+import '../../../../css/room/RoomWidgetsSweepAir.css';
 
 export const RoomFilterWordsWidgetView: FC<{}> = (props) => {
     const [word, setWord] = useState<string>('bobba');
@@ -47,14 +48,14 @@ export const RoomFilterWordsWidgetView: FC<{}> = (props) => {
     return (
         <OctaneCardView
             isResizable={false}
-            className="octane-guide-tool octane-room-filter-words min-w-0 w-[min(340px,calc(100vw-16px))] max-w-[calc(100vw-16px)] max-h-[calc(100vh-16px)]"
+            className="octane-room-filter-words min-w-0 w-[min(340px,calc(100vw-16px))] max-w-[calc(100vw-16px)] max-h-[calc(100vh-16px)]"
             theme="primary-slim"
         >
             <OctaneCardHeaderView headerText={LocalizeText('navigator.roomsettings.roomfilter')} onCloseClick={() => onClose()} />
             <OctaneCardContentView className="text-black">
                 <Grid className="flex items-center gap-2 justify-end">
                     <OctaneInput maxLength={255} type="text" value={word} onChange={(event) => onTyping(event.target.value)} />
-                    <Button onClick={() => processAction(true)}>{LocalizeText('navigator.roomsettings.roomfilter.addword')}</Button>
+                    <Button variant="secondary" onClick={() => processAction(true)}>{LocalizeText('navigator.roomsettings.roomfilter.addword')}</Button>
                 </Grid>
                 <Column
                     className="min-h-[calc(1.5em+ .5rem+2px)] px-[.5rem] py-[.25rem] rounded-[.2rem] form-control-sm"
@@ -79,7 +80,7 @@ export const RoomFilterWordsWidgetView: FC<{}> = (props) => {
                         })}
                 </Column>
                 <Grid className="flex items-center gap-2 justify-end">
-                    <Button disabled={wordsFilter.length === 0 || !isSelectingWord} variant="danger" onClick={() => processAction(false)}>
+                    <Button disabled={wordsFilter.length === 0 || !isSelectingWord} variant="secondary" onClick={() => processAction(false)}>
                         {LocalizeText('navigator.roomsettings.roomfilter.removeword')}
                     </Button>
                 </Grid>

@@ -97,6 +97,7 @@ export const WiredMonitorTabView = (props: WiredMonitorTabViewProps) => {
                 </div>
                 <div className="flex justify-between gap-2">
                     <Button
+                        classNames={['octane-wired-menu__clear-log']}
                         disabled={isClearCoolingDown || !canClearLogs}
                         variant="danger"
                         onClick={onClearMonitorLogs}

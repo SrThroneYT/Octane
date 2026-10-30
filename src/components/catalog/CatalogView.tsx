@@ -1,9 +1,11 @@
 import { AddLinkEventTracker, ILinkEventTracker, RemoveLinkEventTracker } from '@octane/renderer';
-import { FC, useEffect, useMemo, useRef, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FaBars, FaCog } from 'react-icons/fa';
-import { CatalogType, GetConfigurationValue, LocalizeShortNumber, LocalizeText, SanitizeHtml } from '../../api';
+import { CatalogType, GetConfigurationValue, LocalizeShortNumber, LocalizeText, localizeWithFallback, SanitizeHtml } from '../../api';
 import { LayoutCurrencyIcon, OctaneCardContentView, OctaneCardHeaderView, OctaneCardTabsItemView, OctaneCardTabsView, OctaneCardView } from '../../common';
 import { BaseButton } from '../../common/BaseButton';
+import { CssNativeText } from '../../common/native-text/CssNativeText';
+import { ToggleButton } from '../../common/ToggleButton';
 import { CatalogEffectsHost, useCatalogActions, useCatalogData, useCatalogUiState, useHasPermission, usePurse } from '../../hooks';
 import { CatalogStudioProvider } from './admin/studio/CatalogStudioProvider';
 import { CatalogAdminProvider, useCatalogAdmin } from './CatalogAdminContext';
@@ -47,7 +49,13 @@ const CatalogViewInner: FC<{}> = () => {
     const adminMode = catalogAdmin?.adminMode ?? false;
     const setAdminMode = catalogAdmin?.setAdminMode ?? (() => {});
 
+    // One function for the whole session: a layout that hides the navigation must not hide it again on every render.
+    const hideNavigation = useCallback(() => setNavigationHidden?.(true), [setNavigationHidden]);
+
     const isMod = useHasPermission('acc_catalogfurni');
+    // AIR's Builders Club warehouse has its own title and no tab row: its pages are listed on the left only.
+    const isBuilder = currentType === CatalogType.BUILDER;
+    const adminToggle = <FaCog className={`text-[10px] ${adminMode ? 'animate-spin' : ''}`} style={adminMode ? { animationDuration: '3s' } : {}} />;
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { purse = null } = usePurse();
     const displayedCurrencies = GetConfigurationValue<number[]>('system.currency.types', []);
@@ -161,8 +169,14 @@ const CatalogViewInner: FC<{}> = () => {
                     uniqueKey="catalog"
                 >
                     <OctaneCardHeaderView
-                        className={currentType === CatalogType.BUILDER ? 'builders-club-card-header' : ''}
-                        headerText={isBusy ? LocalizeText('generic.loading') || 'Loading...' : LocalizeText('catalog.title')}
+                        className={isBuilder ? 'builders-club-card-header' : ''}
+                        headerText={
+                            isBusy
+                                ? LocalizeText('generic.loading') || 'Loading...'
+                                : isBuilder
+                                  ? localizeWithFallback('builder.catalog.title', 'The Builders Club Warehouse')
+                                  : LocalizeText('catalog.title')
+                        }
                         onCloseClick={() => setIsVisible(false)}
                     />
                     <div className="octane-catalog-mobile-header">
@@ -198,36 +212,48 @@ const CatalogViewInner: FC<{}> = () => {
                             ))}
                         </div>
                     </div>
-                    <OctaneCardTabsView classNames={['octane-catalog-tabs-shell']} innerRef={tabsShellRef} justifyContent="start">
-                        {rootNode &&
-                            rootNode.children.length > 0 &&
-                            rootNode.children.map((child, index) => {
-                                if (!child.isVisible) return null;
-                                return (
-                                    <OctaneCardTabsItemView
-                                        key={`${child.pageId}-${child.pageName}-${index}`}
-                                        isActive={child.isActive}
-                                        title={child.localization}
-                                        onClick={() => {
-                                            if (searchResult) setSearchResult(null);
+                    {!isBuilder && (
+                        <OctaneCardTabsView classNames={['octane-catalog-tabs-shell']} innerRef={tabsShellRef} justifyContent="start">
+                            {rootNode &&
+                                rootNode.children.length > 0 &&
+                                rootNode.children.map((child, index) => {
+                                    if (!child.isVisible) return null;
+                                    return (
+                                        <OctaneCardTabsItemView
+                                            key={`${child.pageId}-${child.pageName}-${index}`}
+                                            isActive={child.isActive}
+                                            title={child.localization}
+                                            onClick={() => {
+                                                if (searchResult) setSearchResult(null);
 
-                                            activateNode(child);
-                                        }}
-                                    >
-                                        <div className="flex items-center gap-1">
-                                            {child.iconId > 0 && <CatalogIconView icon={child.iconId} className="octane-catalog-tab-icon" />}
-                                            <span className="octane-catalog-tab-label">{getSwfTabLabel(child.localization)}</span>
-                                        </div>
-                                    </OctaneCardTabsItemView>
-                                );
-                            })}
-                        {isMod && (
-                            <OctaneCardTabsItemView classNames={['octane-catalog-admin-tab']} isActive={adminMode} onClick={() => setAdminMode(!adminMode)}>
-                                <FaCog className={`text-[10px] ${adminMode ? 'animate-spin' : ''}`} style={adminMode ? { animationDuration: '3s' } : {}} />
-                            </OctaneCardTabsItemView>
+                                                activateNode(child);
+                                            }}
+                                        >
+                                            <div className="flex items-center gap-1">
+                                                <span className="octane-catalog-tab-label">
+                                                    <CssNativeText
+                                                        colorKey={child.isActive}
+                                                        text={getSwfTabLabel(child.localization)}
+                                                        textStyle="u_button_tab"
+                                                    />
+                                                </span>
+                                            </div>
+                                        </OctaneCardTabsItemView>
+                                    );
+                                })}
+                            {isMod && (
+                                <OctaneCardTabsItemView classNames={['octane-catalog-admin-tab']} isActive={adminMode} onClick={() => setAdminMode(!adminMode)}>
+                                    {adminToggle}
+                                </OctaneCardTabsItemView>
+                            )}
+                        </OctaneCardTabsView>
+                    )}
+                    <div className={`octane-catalog-standard-header ${isBuilder ? 'is-builder' : ''}`}>
+                        {isBuilder && isMod && (
+                            <ToggleButton aria-label="Admin" className="octane-catalog-builder-admin-toggle" pressed={adminMode} onPressedChange={setAdminMode}>
+                                {adminToggle}
+                            </ToggleButton>
                         )}
-                    </OctaneCardTabsView>
-                    <div className={`octane-catalog-standard-header ${currentType === CatalogType.BUILDER ? 'is-builder' : ''}`}>
                         <div
                             className="octane-catalog-standard-header-bg"
                             style={currentPage?.localization?.getImage(0) ? { backgroundImage: `url(${currentPage.localization.getImage(0)})` } : undefined}
@@ -236,14 +262,19 @@ const CatalogViewInner: FC<{}> = () => {
                             <CatalogIconView icon={activeCatalogNode?.iconId ?? rootNode?.iconId ?? 1} />
                         </div>
                         <div className="octane-catalog-standard-header-copy">
-                            {currentType === CatalogType.BUILDER ? (
+                            {isBuilder ? (
                                 <CatalogBuildersClubStatusView />
                             ) : (
                                 <>
                                     <div className="octane-catalog-standard-header-title">
-                                        {searchResult
-                                            ? LocalizeText('catalog.search.header')
-                                            : getSwfTabLabel(activeCatalogNode?.localization ?? LocalizeText('catalog.title'))}
+                                        <CssNativeText
+                                            text={
+                                                searchResult
+                                                    ? LocalizeText('catalog.search.header')
+                                                    : getSwfTabLabel(activeCatalogNode?.localization ?? LocalizeText('catalog.title'))
+                                            }
+                                            textStyle="u_headline_big"
+                                        />
                                     </div>
                                     <div
                                         className="octane-catalog-standard-header-description"
@@ -282,7 +313,7 @@ const CatalogViewInner: FC<{}> = () => {
                                         {!!currentPage?.localization?.getImage(0) && <img alt="" src={currentPage.localization.getImage(0)} />}
                                     </div>
                                 </div>
-                                <div className="octane-catalog-layout-container">{GetCatalogLayout(currentPage, () => setNavigationHidden(true))}</div>
+                                <div className="octane-catalog-layout-container">{GetCatalogLayout(currentPage, hideNavigation)}</div>
                             </div>
                         </div>
                     </OctaneCardContentView>

@@ -161,6 +161,7 @@ describe('WiredExtraVariableWebApiView', () => {
         expect(bulkDeleteBox()).not.toBeChecked();
         expect(mocks.showConfirm).toHaveBeenCalledTimes(1);
         expect(mocks.showConfirm.mock.calls[0][5]).toBe('Are you sure?');
+        expect(mocks.showConfirm.mock.calls[0][7]).toBe('#d43d59');
 
         act(() => mocks.showConfirm.mock.calls[0][1]());
 

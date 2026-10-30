@@ -34,10 +34,10 @@ export const NameChangeConfirmationView: FC<NameChangeLayoutViewProps> = (props)
                 <div className="font-bold	">{username}</div>
             </div>
             <div className="flex gap-2">
-                <BaseButton className="btn btn-success w-full" disabled={isConfirming} onClick={confirm}>
+                <BaseButton className="habbo-btn-secondary w-full" disabled={isConfirming} onClick={confirm}>
                     {LocalizeText('generic.ok')}
                 </BaseButton>
-                <BaseButton className="btn btn-danger w-full" onClick={() => onAction('close')}>
+                <BaseButton className="habbo-btn-secondary w-full" onClick={() => onAction('close')}>
                     {LocalizeText('cancel')}
                 </BaseButton>
             </div>

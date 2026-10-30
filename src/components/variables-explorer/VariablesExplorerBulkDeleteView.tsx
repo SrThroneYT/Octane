@@ -23,7 +23,7 @@ export const VariablesExplorerBulkDeleteView: FC<VariablesExplorerBulkDeleteView
 
     return (
         <OctaneCardView
-            className="min-w-[360px] max-w-[360px]"
+            className="min-w-[360px] max-w-[360px] octane-variables-explorer-window"
             theme="primary-slim"
             uniqueKey="variables-explorer-bulk-delete"
             windowPosition={DraggableWindowPosition.CENTER}

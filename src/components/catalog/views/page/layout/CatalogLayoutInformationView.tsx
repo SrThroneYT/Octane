@@ -1,4 +1,4 @@
-import { FC, useEffect } from 'react';
+import { FC, useEffect, useRef } from 'react';
 import { localizeWithFallback, SanitizeHtml } from '../../../../../api';
 import { CatalogLayoutProps } from './CatalogLayout.types';
 
@@ -6,9 +6,14 @@ export const CatalogLayoutInformationView: FC<CatalogLayoutProps> = ({ page, hid
     const images = Array.from({ length: 4 }, (_, index) => page.localization.getImage(index)).filter(Boolean);
     const texts = Array.from({ length: 8 }, (_, index) => page.localization.getText(index)).filter(Boolean);
 
+    // Only when this page opens; see CatalogLayoutFrontpage4View.
+    const hideNavigationRef = useRef(hideNavigation);
+
+    hideNavigationRef.current = hideNavigation;
+
     useEffect(() => {
-        hideNavigation?.();
-    }, [hideNavigation]);
+        hideNavigationRef.current?.();
+    }, [page]);
 
     if (!images.length && !texts.length) {
         return (

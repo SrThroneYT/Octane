@@ -27,4 +27,8 @@ describe('room info text (roominfo)', () => {
         expect(rule('.octane-room-info__action')).toContain('font-weight: 400');
         expect(view).not.toContain('<Text small');
     });
+
+    it('draws the room info buttons in the grey shiny skin with black text', () => {
+        expect(css).toMatch(/@layer base \{\s*\.octane-room-info__action\.habbo-btn-primary \{\s*border-image-source: var\(--habbo-skin-shiny\) !important;\s*color: #000000 !important;/);
+    });
 });

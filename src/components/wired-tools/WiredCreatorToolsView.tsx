@@ -58,6 +58,7 @@ import {
     userVariableHolderKey,
     WiredSelectionVisualizer
 } from '../../api';
+import { NotificationConfirmItem } from '../../api/notification/NotificationConfirmItem';
 import { IsBuildersClubFurniId, IsTemporaryFurniId } from '../../api/utils/FurniIdBand';
 import wiredGlobalPlaceholderImage from '../../assets/images/wiredtools/wired_global_placeholder.png';
 import wiredMonitorImage from '../../assets/images/wiredtools/wired_monitor.png';
@@ -2339,7 +2340,9 @@ export const WiredCreatorToolsView: FC<{}> = () => {
             null,
             LocalizeText('generic.ok'),
             LocalizeText('generic.cancel'),
-            localizeWithFallback('wiredmenu.variable_overview.delete_all.title', 'Clear this variable')
+            localizeWithFallback('wiredmenu.variable_overview.delete_all.title', 'Clear this variable'),
+            null,
+            NotificationConfirmItem.TITLE_BAR_DANGER
         );
     };
     const commitManagedHolderValueEdit = useCallback(() => {

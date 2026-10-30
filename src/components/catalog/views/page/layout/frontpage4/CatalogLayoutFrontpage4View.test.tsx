@@ -58,4 +58,23 @@ describe('front page (AIR layout_frontpage_featured_xml)', () => {
 
         expect(state.links).toEqual(['catalog/open/22', 'catalog/open/wired']);
     });
+
+    it('hides the navigation once when the page opens, not again when it re-renders before the next tab loads', () => {
+        state.items = [];
+        const page = { localization: { getText: () => '', getImage: () => null } } as any;
+        const first = vi.fn();
+        const { rerender } = render(<CatalogLayoutFrontpage4View page={page} hideNavigation={first} />);
+
+        // Clicking another tab shows the navigation again; the front page is still mounted until that tab's page
+        // arrives and re-renders with a new callback.
+        const second = vi.fn();
+        rerender(<CatalogLayoutFrontpage4View page={page} hideNavigation={second} />);
+
+        expect(first).toHaveBeenCalledTimes(1);
+        expect(second).not.toHaveBeenCalled();
+
+        rerender(<CatalogLayoutFrontpage4View page={{ ...page }} hideNavigation={second} />);
+
+        expect(second).toHaveBeenCalledTimes(1);
+    });
 });

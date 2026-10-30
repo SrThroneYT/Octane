@@ -2,6 +2,7 @@ import { FC } from 'react';
 import { GetConfigurationValue, localizeWithFallback } from '../../../../api';
 import { Button, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Text } from '../../../../common';
 import { ROOM_QUEUE_TARGET_SPECTATOR, useRoomQueueWidget } from '../../../../hooks';
+import '../../../../css/room/RoomWidgetsSweepAir.css';
 
 const positionKey = (target: number, isClubQueue: boolean): string => {
     const base = target === ROOM_QUEUE_TARGET_SPECTATOR ? 'room.queue.spectator.position' : 'room.queue.position';
@@ -34,15 +35,15 @@ export const RoomQueueWidgetView: FC = () => {
                 <Text bold center className="octane-room-queue-info">
                     {infoText}
                 </Text>
-                <Button className="octane-room-queue-button" onClick={leaveQueue}>
+                <Button className="octane-room-queue-button" variant="secondary" onClick={leaveQueue}>
                     {localizeWithFallback('room.queue.button.exit', 'Leave the queue')}
                 </Button>
                 {showSpectatorSwitch && (
                     <>
-                        <Text center small>
+                        <Text center small className="octane-room-queue-spectator-info">
                             {localizeWithFallback('room.queue.spectator.info', 'Spectate the room without going in.')}
                         </Text>
-                        <Button className="octane-room-queue-button" onClick={changeQueue}>
+                        <Button className="octane-room-queue-button" variant="secondary" onClick={changeQueue}>
                             {status.target === ROOM_QUEUE_TARGET_SPECTATOR
                                 ? localizeWithFallback('room.queue.back', 'Back to the queue')
                                 : localizeWithFallback('room.queue.spectatormode', 'Spectate')}

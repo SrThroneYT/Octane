@@ -8,6 +8,7 @@ import { deleteWiredLinkNetwork, renameWiredLinkNetwork, visitWiredLinkRoom } fr
 import { useWiredLinkStore } from '../../../../hooks/rooms/widgets/useWiredLinkState';
 import { WiredLinkAction, WiredLinkColumn, WiredLinkTable } from './WiredLinkTable';
 import { BaseButton } from '../../../../common/BaseButton';
+import '../../../../css/room/RoomWidgetsSweepAir.css';
 
 /**
  * AIR WiredLinkConnectionsView (wired_link_connections_view_xml): the Links of one network in every room (room
@@ -75,7 +76,7 @@ const WiredLinkConnectionsWindow: FC<{ networkId: string }> = ({ networkId }) =>
                 <div className="flex items-center gap-2">
                     <span>{ localizeWithFallback('wiredlink.column.name', 'Network name') }</span>
                     <input aria-label={ localizeWithFallback('wiredlink.column.name', 'Network name') } className="form-control form-control-sm grow" maxLength={ 255 } type="text" value={ nameInput } onChange={ event => setNameDraft({ seq: renameCount, text: event.target.value }) } onKeyDown={ event => { if(event.key === 'Enter') renameWiredLinkNetwork(networkId, nameInput); } } />
-                    <BaseButton className="btn btn-primary btn-sm" type="button" onClick={ () => renameWiredLinkNetwork(networkId, nameInput) }>{ localizeWithFallback('wiredlink.rename', 'Rename') }</BaseButton>
+                    <BaseButton className="btn btn-primary btn-sm octane-wired-link__button" type="button" onClick={ () => renameWiredLinkNetwork(networkId, nameInput) }>{ localizeWithFallback('wiredlink.rename', 'Rename') }</BaseButton>
                     <WiredLinkAction danger text={ localizeWithFallback('wiredlink.delete', 'Delete network') } onClick={ requestDelete } />
                 </div>
                 { statusText && <div className="text-[12px]" role="status" style={ { color: errorCode ? '#ad3434' : '#555555' } }>{ statusText }</div> }

@@ -1,7 +1,24 @@
 import { GetTickerTime } from '@octane/renderer';
-import { FC, useEffect, useMemo, useState } from 'react';
+import { FC, ReactNode, useEffect, useMemo, useState } from 'react';
 import { CatalogType, FriendlyTime, GetConfigurationValue, LocalizeText, localizeWithFallback } from '../../../../api';
 import { useCatalogData, useCatalogUiState } from '../../../../hooks';
+
+/**
+ * AIR registers the duration, count and limit parameters of the header lines as `<font color="#ff8d00"><b>…</b></font>`.
+ * The line is localized with a marker per value and each marker becomes that orange bold value.
+ */
+export const highlightBuilderValues = (text: string, values: string[]): ReactNode[] =>
+    text.split(/\u0001(\d+)\u0001/).map((part, index) =>
+        index % 2 ? (
+            <span key={index} className="octane-catalog-builder-header-value">
+                {values[Number(part)]}
+            </span>
+        ) : (
+            part
+        )
+    );
+
+const marker = (index: number) => `\u0001${index}\u0001`;
 
 export const CatalogBuildersClubStatusView: FC = () => {
     const { furniCount = 0, furniLimit = 0, secondsLeft = 0, secondsLeftWithGrace = 0, updateTime = 0 } = useCatalogData();
@@ -44,17 +61,13 @@ export const CatalogBuildersClubStatusView: FC = () => {
 
     const title = localizeOrDefault('builder.header.title', `Stato Builders' Club: ${membershipStatus}`, ['BCSTATUS'], [membershipStatus]);
 
-    const durationText = localizeOrDefault(
-        'builder.header.status.membership',
-        `Tempo mancante: ${FriendlyTime.format(remainingSeconds)}`,
-        ['DURATION'],
-        [FriendlyTime.format(remainingSeconds)]
-    );
+    const duration = FriendlyTime.format(remainingSeconds);
+    const durationText = highlightBuilderValues(localizeOrDefault('builder.header.status.membership', `Days left: ${marker(0)}`, ['DURATION'], [marker(0)]), [
+        duration
+    ]);
 
-    const limitText = localizeOrDefault(
-        'builder.header.status.limit',
-        `Furni usati: ${furniCount}/${furniLimit}`,
-        ['COUNT', 'LIMIT'],
+    const limitText = highlightBuilderValues(
+        localizeOrDefault('builder.header.status.limit', `Borrowed items: ${marker(0)}/${marker(1)}`, ['COUNT', 'LIMIT'], [marker(0), marker(1)]),
         [furniCount.toString(), furniLimit.toString()]
     );
 

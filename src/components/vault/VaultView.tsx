@@ -238,7 +238,7 @@ export const VaultView: FC<{}> = (props) => {
                                 <span className="flex h-[24px] w-[24px] shrink-0 items-center justify-center rounded border border-black/15 bg-white">
                                     <img src={category.img} alt="" className="max-h-[20px] max-w-[20px] object-contain image-rendering-pixelated" />
                                 </span>
-                                <Text bold className="truncate">
+                                <Text bold className="truncate octane-vault__label">
                                     {localizeWithFallback(category.textKey, category.label)}
                                 </Text>
                             </div>
@@ -249,14 +249,18 @@ export const VaultView: FC<{}> = (props) => {
                                           return (
                                               <span key={index} className="flex items-center gap-1">
                                                   {currencyType !== null && <LayoutCurrencyIcon type={currencyType} />}
-                                                  <Text bold>{reward.amount}</Text>
+                                                  <Text bold className="octane-vault__value">
+                                                      {reward.amount}
+                                                  </Text>
                                               </span>
                                           );
                                       })
                                     : category.fallbackCurrencies.map((currency, index) => (
                                           <span key={index} className="flex items-center gap-1">
                                               <LayoutCurrencyIcon type={currency} />
-                                              <Text bold>0</Text>
+                                              <Text bold className="octane-vault__value">
+                                                  0
+                                              </Text>
                                           </span>
                                       ))}
                             </div>
@@ -264,11 +268,7 @@ export const VaultView: FC<{}> = (props) => {
                                 type="button"
                                 disabled={!canClaim}
                                 onClick={canClaim ? () => claimOne(category.key) : undefined}
-                                className={
-                                    canClaim
-                                        ? 'shrink-0 cursor-pointer rounded-[4px] border border-[#4f7a22] bg-[linear-gradient(180deg,#72b03a_0%,#5a8c2a_100%)] px-2.5 py-[3px] text-[0.72rem] font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] hover:brightness-105'
-                                        : 'shrink-0 cursor-default rounded-[4px] border border-[#909090] bg-[linear-gradient(180deg,#f2f2f2_0%,#cdcdcd_100%)] px-2.5 py-[3px] text-[0.72rem] font-bold text-[#7c7c7c] shadow-[inset_0_1px_0_#ffffff]'
-                                }
+                                className="octane-vault__claim shrink-0"
                             >
                                 {localizeWithFallback('earnings.claim.button', 'Riscatta')}
                             </BaseButton>
@@ -280,11 +280,7 @@ export const VaultView: FC<{}> = (props) => {
                         type="button"
                         disabled={!anyClaimable}
                         onClick={anyClaimable ? claimAll : undefined}
-                        className={
-                            anyClaimable
-                                ? 'cursor-pointer rounded-[4px] border border-[#4f7a22] bg-[linear-gradient(180deg,#72b03a_0%,#5a8c2a_100%)] px-7 py-1 text-[0.78rem] font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] hover:brightness-105'
-                                : 'cursor-default rounded-[4px] border border-[#909090] bg-[linear-gradient(180deg,#f2f2f2_0%,#cdcdcd_100%)] px-7 py-1 text-[0.78rem] font-bold text-[#7c7c7c] shadow-[inset_0_1px_0_#ffffff]'
-                        }
+                        className="octane-vault__claim-all"
                     >
                         {localizeWithFallback('earnings.claim.all', 'Richiedili Tutti')}
                     </BaseButton>

@@ -126,7 +126,8 @@
     flex: 1 1 auto;
     width: 215px;
     min-height: 0;
-    font-family: Ubuntu, sans-serif;
+    /* epic_popup_frame is an Illumina (style 100) frame: regular Ubuntu (our `Ubuntu` is the condensed cut). */
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
 }
 
 .octane-epic-popup-image {
@@ -172,7 +173,8 @@
     box-shadow: inset 0 1px rgba(255, 255, 255, 0.9);
     color: #000000;
     cursor: pointer;
-    font-size: 12px;
+    font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
+    font-size: 10px; /* close_button: style 101 Illumina button, il_button 10 px bold */
     font-weight: 700;
     transform: translateX(-50%);
 }

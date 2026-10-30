@@ -55,14 +55,20 @@
     line-height: 18px;
 }
 
+/* help_bubble_btn_ok: `button` style 5 tinted 0x33cc33, the green shiny skin. */
 .octane-help-bubble__ok {
     min-width: 41px;
     height: 28px;
-    padding: 0 10px;
-    border: 1px solid #1e7a1e;
-    border-radius: 5px;
-    background: linear-gradient(#5bd65b, #33cc33);
+    padding: 0 5px;
+    border: 5px solid transparent;
+    border-image-source: var(--habbo-skin-shiny-green);
+    border-image-slice: 5 fill;
+    border-image-width: 5px;
+    border-image-repeat: stretch;
+    border-radius: 0;
+    background: transparent;
     color: #ffffff;
+    image-rendering: var(--octane-pixel-art, pixelated);
     /* help_bubble_btn_ok: shiny button caption, button_shiny_bold 12 px. */
     font-family: HabboAirUbuntu, UbuntuRegular, sans-serif;
     font-size: 12px;
@@ -156,18 +162,55 @@
     cursor: pointer;
 }
 
+/* btnGo: button_thick style 6 tinted 0x1da100, the green shiny thick skin. */
 .octane-nux-offer__go {
     min-width: 110px;
     height: 30px;
-    padding: 0 12px;
-    border: 1px solid #158a00;
-    border-radius: 5px;
-    background: linear-gradient(#3fc02a, #1da100);
+    padding: 0 7px;
+    border: 5px solid transparent;
+    border-image-source: var(--habbo-skin-shiny-thick-green);
+    border-image-slice: 5 fill;
+    border-image-width: 5px;
+    border-image-repeat: stretch;
+    border-radius: 0;
+    background: transparent;
+    image-rendering: var(--octane-pixel-art, pixelated);
     /* btnGo / option_button: shiny button caption, button_shiny_bold 12 px. */
     color: #ffffff;
     font-size: 12px;
     font-weight: 700;
     cursor: pointer;
+}
+
+.octane-help-bubble__ok:hover {
+    border-image-source: var(--habbo-skin-shiny-green-hover);
+}
+
+.octane-help-bubble__ok:active {
+    border-image-source: var(--habbo-skin-shiny-green-pressed);
+}
+
+.octane-nux-offer__go:hover {
+    border-image-source: var(--habbo-skin-shiny-thick-green-hover);
+}
+
+.octane-nux-offer__go:active {
+    border-image-source: var(--habbo-skin-shiny-thick-green-pressed);
+}
+
+/* nux_gift_selection option_button: a grey `button` style 3 (habbo_skin_button_shiny), black 12 px regular. */
+.octane-nux-offer__go.octane-nux-offer__get {
+    border-image-source: var(--habbo-skin-shiny);
+    color: #000000;
+    font-weight: 400;
+}
+
+.octane-nux-offer__go.octane-nux-offer__get:hover {
+    border-image-source: var(--habbo-skin-shiny-hover);
+}
+
+.octane-nux-offer__go.octane-nux-offer__get:active {
+    border-image-source: var(--habbo-skin-shiny-pressed);
 }
 
 .octane-nux-offer__lobby-image {

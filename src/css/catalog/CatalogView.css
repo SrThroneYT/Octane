@@ -1,5 +1,10 @@
 .octane-catalog-window {
-    --catalog-standard-bg: #ecece4;
+    /* AIR: the window body is #e9e9e1; the navigation and item-grid boxes are #d2d1cb inside a #757571 line with a
+       #f4f4f0 inner edge. */
+    --catalog-standard-bg: #e9e9e1;
+    --catalog-standard-box: #d2d1cb;
+    --catalog-standard-box-line: #757571;
+    --catalog-standard-box-edge: #f4f4f0;
     --catalog-standard-panel: #f7f7f2;
     --catalog-standard-panel-2: #e7e7df;
     --catalog-standard-border: #9d9d96;
@@ -845,6 +850,28 @@
     overflow: hidden;
 }
 
+/* The Builders Club warehouse has no tab row, so the staff admin toggle sits in the header's corner. */
+.octane-catalog-builder-admin-toggle {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.35);
+    color: #ffffff;
+    cursor: pointer;
+}
+
+.octane-catalog-builder-admin-toggle[data-pressed] {
+    background: rgba(255, 255, 255, 0.25);
+}
+
 /* standard: header image blend 0.1, greyscale, zoom 2, pivot center.
    L'immagine reale per-pagina arriva inline da currentPage.getImage(0);
    se assente resta il body #0e3f52 (nessun finto gradiente). */
@@ -855,10 +882,10 @@
     background-color: transparent;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: auto;
+    /* AIR zooms the header picture 2x into its 568 px header; the window can be wider here, so the picture covers
+       the whole header instead of leaving dark bands beside it. */
+    background-size: cover;
     filter: grayscale(1);
-    transform: scale(2);
-    transform-origin: center;
 }
 
 .octane-catalog-standard-header-icon {
@@ -917,6 +944,13 @@
     overflow: hidden;
 }
 
+/* AIR's Builders Club warehouse header runs edge to edge under the title bar: no side frame, no side margin. */
+.octane-catalog-standard-header.is-builder {
+    margin: 0;
+    border-left-width: 0;
+    border-right-width: 0;
+}
+
 .octane-catalog-standard-header.is-builder .octane-catalog-standard-header-title {
     height: 30px;
     min-height: 30px;
@@ -950,6 +984,12 @@
     font-weight: 400;
 }
 
+/* builder.header.status.*: AIR draws the duration, count and limit as <font color="#ff8d00"><b>. */
+.octane-catalog-standard-header .octane-catalog-builder-header-value {
+    color: #ff8d00;
+    font-weight: 700;
+}
+
 .octane-catalog-window .octane-catalog-tabs-shell {
     flex: 0 0 35px;
     height: 35px;
@@ -980,11 +1020,11 @@
     height: 32px !important;
     min-height: 32px !important;
     max-height: 32px !important;
-    min-width: 0;
     flex: 0 0 auto;
     max-width: none;
-    /* 9px of the side padding is the tab's cap bitmap. */
-    padding: 4px 17px 8px !important;
+    /* AIR tab_button: label only, at least 80 px; 9px of the side padding is the tab's cap bitmap. */
+    min-width: 80px;
+    padding: 4px 12px 8px !important;
     /* Tabs sit edge to edge: a gap would show the white shelf as a line. */
     margin: 0;
     flex-shrink: 0;
@@ -1005,6 +1045,7 @@
 }
 
 .octane-catalog-window .octane-catalog-tabs-shell .octane-card-tab-item.octane-catalog-admin-tab {
+    min-width: 0;
     padding: 4px 13px 8px !important;
 }
 
@@ -1122,12 +1163,10 @@
     flex: 1 1 auto;
     min-height: 0;
     padding: 5px 3px;
-    border: 1px solid #b4b4ae;
+    border: 1px solid var(--catalog-standard-box-line);
     border-radius: 3px;
-    background: rgba(236, 236, 228, 0.5);
-    box-shadow:
-        inset 1px 1px 0 rgba(0, 0, 0, 0.08),
-        inset -1px -1px 0 rgba(255, 255, 255, 0.55);
+    background: var(--catalog-standard-box);
+    box-shadow: inset 0 0 0 2px var(--catalog-standard-box-edge);
     overflow: auto;
 }
 
@@ -1140,14 +1179,17 @@
     min-height: 21px;
 }
 
+/* normal_topitem_template / normal_subitem_template: 20 px rows. AIR's #b4b4ae etching is a 1 px highlight its
+   bitmap text renderer blends away; as a browser text-shadow it doubles the glyphs and blurs them, so it is left
+   out. A row keeps room on the right only when it has a drop_button. */
 .octane-catalog-navigation-item {
     position: relative;
     display: flex;
     align-items: center;
     gap: 6px;
-    height: 21px;
-    min-height: 21px;
-    padding: 1px 18px 1px 0;
+    height: 20px;
+    min-height: 20px;
+    padding: 0 4px 0 0;
     border: 0 !important;
     border-radius: 0 !important;
     background: transparent;
@@ -1156,7 +1198,11 @@
     font-weight: 700;
     line-height: 17px;
     cursor: pointer;
-    text-shadow: 0 1px 0 #b4b4ae;
+    text-shadow: none;
+}
+
+.octane-catalog-navigation-item.is-branch {
+    padding-right: 30px;
 }
 
 .octane-catalog-navigation-node.is-child .octane-catalog-navigation-item {
@@ -1224,12 +1270,56 @@
     white-space: nowrap;
 }
 
+/* normal_topitem_template drop_button: AIR's grey arrow, pointing right while closed and down while open. */
 .octane-catalog-navigation-caret {
     position: absolute;
-    right: 5px;
+    right: 18px;
     top: 5px;
-    color: #777 !important;
-    font-size: 9px;
+    width: 9px;
+    height: 11px;
+    background: no-repeat center url("../../assets/images/catalog/navigation/arrow_right.png");
+    image-rendering: var(--octane-pixel-art, pixelated);
+}
+
+.octane-catalog-navigation-caret.is-open {
+    background-image: url("../../assets/images/catalog/navigation/arrow_down.png");
+}
+
+/* searchContainer (184 x 24): white box, the helper/input at (4, 3), common_small_pen at (160, 2). */
+.octane-catalog-search .octane-catalog-search-input {
+    height: 24px;
+    padding: 3px 26px 3px 4px;
+    border: 1px solid #9a9a9a;
+    border-radius: 4px;
+    background: #ffffff;
+    outline: none;
+}
+
+.octane-catalog-search .octane-catalog-search-pen,
+.octane-catalog-search .octane-catalog-search-clear {
+    position: absolute;
+    top: 3px;
+    right: 4px;
+    width: 18px;
+    height: 18px;
+}
+
+.octane-catalog-search .octane-catalog-search-pen {
+    background: no-repeat center url("../../assets/images/catalog/navigation/small_pen.png");
+    image-rendering: var(--octane-pixel-art, pixelated);
+    pointer-events: none;
+}
+
+.octane-catalog-search .octane-catalog-search-clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #666666;
+    font-size: 11px;
+    cursor: pointer;
 }
 
 .octane-catalog-layout-shell {
@@ -1304,9 +1394,10 @@
 }
 
 .octane-catalog-grid-shell {
-    border: 1px solid #b4b4ae;
+    border: 1px solid var(--catalog-standard-box-line);
     border-radius: 5px;
-    background: var(--catalog-standard-panel);
+    background: var(--catalog-standard-box);
+    box-shadow: inset 0 0 0 2px var(--catalog-standard-box-edge);
 }
 
 /*
@@ -1431,7 +1522,7 @@
     height: 460px;
     min-height: 460px;
     overflow: hidden;
-    color: #222;
+    color: #000000;
     background: var(--catalog-standard-bg, #e4e3db);
 }
 
@@ -1813,7 +1904,7 @@
     height: 460px;
     min-height: 460px;
     overflow: hidden;
-    color: #222;
+    color: #000000;
     background: var(--catalog-standard-bg, #e4e3db);
 }
 
@@ -2525,12 +2616,12 @@
 
 .octane-catalog-grid-density-standard .octane-catalog-grid-price-entry {
     justify-content: flex-end;
-    gap: 1px;
+    gap: 3px;
     height: 19px;
 }
 
 .octane-catalog-grid-density-standard .octane-catalog-grid-price.is-single-price .octane-catalog-grid-price-entry {
-    width: 54px;
+    min-width: 54px;
 }
 
 .octane-catalog-grid-density-standard .octane-catalog-grid-price.is-multi-price .octane-catalog-grid-price-entry {
@@ -2540,16 +2631,14 @@
 
 .octane-catalog-grid-density-standard .octane-catalog-grid-price.is-multi-price .octane-catalog-grid-price-entry:first-child {
     top: 0;
-    width: 32px;
 }
 
 .octane-catalog-grid-density-standard .octane-catalog-grid-price.is-multi-price .octane-catalog-grid-price-entry:nth-child(2) {
     top: 15px;
-    width: 43px;
 }
 
 .octane-catalog-grid-price-plus {
-    padding-right: 1px;
+    padding-right: 3px;
 }
 
 .octane-catalog-grid-price-currency {
@@ -2664,17 +2753,18 @@
     height: 24px;
     margin: 0;
     padding: 0 8px !important;
-    border: 3px solid transparent !important;
+    /* AIR's grey `button` (style 3): habbo_skin_button_shiny, button_shiny_regular 12 px black. */
+    border: 5px solid transparent !important;
     border-radius: 0 !important;
-    border-image-source: var(--habbo-skin-button) !important;
-    border-image-slice: 3 fill !important;
-    border-image-width: 3px !important;
+    border-image-source: var(--habbo-skin-shiny) !important;
+    border-image-slice: 5 fill !important;
+    border-image-width: 5px !important;
     border-image-repeat: stretch !important;
     background: transparent !important;
-    color: #111111 !important;
+    color: #000000 !important;
     font-family: HabboAirUbuntu, UbuntuRegular, Ubuntu, sans-serif !important;
-    font-size: 11px !important;
-    font-weight: 700 !important;
+    font-size: 12px !important;
+    font-weight: 400 !important;
     line-height: 17px !important;
     text-shadow: none !important;
     box-shadow: none !important;
@@ -2689,19 +2779,19 @@
 }
 
 .octane-catalog-window .octane-catalog-standard-button:hover {
-    border-image-source: var(--habbo-skin-button-hover) !important;
+    border-image-source: var(--habbo-skin-shiny-hover) !important;
     filter: none !important;
 }
 
 .octane-catalog-window .octane-catalog-standard-button:active {
-    border-image-source: var(--habbo-skin-button-pressed) !important;
+    border-image-source: var(--habbo-skin-shiny-pressed) !important;
     filter: none !important;
     box-shadow: none !important;
 }
 
 .octane-catalog-window .octane-catalog-standard-button.pointer-events-none,
 .octane-catalog-window .octane-catalog-standard-button:disabled {
-    border-image-source: var(--habbo-skin-button-disabled) !important;
+    border-image-source: var(--habbo-skin-shiny-disabled) !important;
     color: #777777 !important;
     opacity: 1 !important;
     cursor: not-allowed !important;
@@ -2964,7 +3054,7 @@
     justify-content: flex-start;
     gap: 3px;
     min-height: 24px;
-    color: #222;
+    color: #000000;
     font-size: 11px;
 }
 
@@ -2981,7 +3071,7 @@
 }
 
 .octane-catalog-standard-price-text {
-    color: #222 !important;
+    color: #000000 !important;
     font-size: 11px !important;
     font-weight: 700 !important;
     line-height: 17px !important;
@@ -3045,7 +3135,7 @@
     height: 17px;
     margin-left: -2px;
     margin-top: 3px;
-    color: #222222;
+    color: #000000;
     font-size: 12px;
     font-weight: 700;
     line-height: 17px;
@@ -3315,11 +3405,23 @@
     left: 4px;
 }
 
+/* purchaseWidget with nothing picked: AIR shows "Select an item!" (u_headline_small, #666666) on the greyed
+   full-width buy bar. */
 .octane-catalog-purchase-selection-prompt {
-    align-self: center;
-    color: var(--bs-secondary-color);
-    font-size: 11px;
-    font-style: italic;
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    justify-content: center;
+    align-self: stretch;
+    height: 30px;
+    border: 5px solid transparent;
+    border-image-source: var(--habbo-skin-shiny-thick-disabled);
+    border-image-slice: 5 fill;
+    border-image-width: 5px;
+    color: #666666;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 700;
 }
 
 /* ============================================================================
@@ -5402,18 +5504,27 @@
     height: 30px;
     padding: 0;
     border-style: solid;
-    border-width: 3px;
-    border-image-source: var(--habbo-skin-button);
-    border-image-slice: 3 fill;
-    border-image-width: 3px;
+    /* ctlg_trophies ctlg_prevmodel_button / ctlg_nextmodel_button: container_button style 3, habbo_skin_button_shiny. */
+    border-width: 5px;
+    border-image-source: var(--habbo-skin-shiny);
+    border-image-slice: 5 fill;
+    border-image-width: 5px;
     background: transparent;
-    color: #333;
+    color: #000000;
     font-size: 12px;
     cursor: pointer;
 }
 
 .octane-catalog-air-trophies__model:hover {
-    border-image-source: var(--habbo-skin-button-hover);
+    border-image-source: var(--habbo-skin-shiny-hover);
+}
+
+.octane-catalog-air-trophies__model:active {
+    border-image-source: var(--habbo-skin-shiny-pressed);
+}
+
+.octane-catalog-air-trophies__model:disabled {
+    border-image-source: var(--habbo-skin-shiny-disabled);
 }
 
 /* AIR keeps the buttons 95 px apart around the middle of the preview. */
@@ -5828,19 +5939,21 @@
    the featured list beside it taking the free height, the voucher box under the list. */
 .octane-catalog-air-frontpage {
     display: grid;
-    grid-template-columns: 184px minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-columns: 184px 360px;
+    grid-template-rows: 392px 61px;
     grid-template-areas:
         'first list'
         'first voucher';
     gap: 7px 8px;
-    width: 100%;
-    height: 100%;
-    min-height: 0;
+    width: 552px;
+    height: 460px;
+    margin: 0 auto;
     overflow: hidden;
     color: #000;
 }
 
+/* layout_frontpage_featured: AIR's promo pictures are made at the slot size (184 x 460, 356 x 126); a hotel's own
+   pictures often are not, so they cover the slot, centred, instead of leaving white around them. */
 .octane-catalog-air-frontpage__first,
 .octane-catalog-air-frontpage__item {
     position: relative;
@@ -5848,9 +5961,9 @@
     padding: 0;
     overflow: hidden;
     border: 0;
-    background-color: #fff;
+    background-color: #0e3f52;
     background-repeat: no-repeat;
-    background-position: center top;
+    background-position: center;
     background-size: cover;
     image-rendering: var(--octane-pixel-art, pixelated);
     cursor: pointer;
@@ -5859,8 +5972,8 @@
 
 .octane-catalog-air-frontpage__first {
     grid-area: first;
-    width: 100%;
-    height: 100%;
+    width: 184px;
+    height: 460px;
 }
 
 .octane-catalog-air-frontpage__list {
@@ -5874,49 +5987,109 @@
 }
 
 .octane-catalog-air-frontpage__item {
-    flex: none;
-    width: 100%;
-    aspect-ratio: 360 / 126;
+    flex: 0 0 126px;
+    width: 356px;
+    height: 126px;
 }
 
+/* text_container: a dark bar 5 px in from the bottom, as wide as its ubuntu_condensed_title in white. */
 .octane-catalog-air-frontpage__title {
     position: absolute;
-    right: 5px;
     bottom: 3px;
     left: 5px;
+    max-width: calc(100% - 10px);
+    box-sizing: border-box;
     padding: 5px;
     overflow: hidden;
     border-radius: 3px;
     background: rgba(0, 0, 0, 0.6);
-    color: #fff;
+    color: #ffffff !important;
     font-family: 'Ubuntu Condensed', Ubuntu, Arial, sans-serif;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
     line-height: 19px;
-    white-space: nowrap;
+    white-space: normal;
     text-overflow: ellipsis;
 }
 
+/* bgBorder 345 x 61 at (200, 399), colour 0x51bbee: the label (u_regular) at (10, 6), the 216 x 25 input box at
+   (10, 25) and the 62 x 22 redeem button at (274, 25). */
 .octane-catalog-air-frontpage__voucher {
     grid-area: voucher;
+    position: relative;
     box-sizing: border-box;
-    min-height: 61px;
-    padding: 6px 10px;
-    border-style: solid;
-    border-width: 6px;
-    border-color: transparent;
-    border-image-source: var(--habbo-skin-border-white);
-    border-image-slice: 6 fill;
-    border-image-width: 6px;
-    border-image-repeat: stretch;
+    width: 345px;
+    height: 61px;
+    margin-left: 8px;
+    border-radius: 6px;
+    background: #51bbee;
 }
 
 .octane-catalog-air-frontpage__voucher-label {
+    position: absolute;
+    top: 6px;
+    left: 10px;
+    width: 272px;
     height: 17px;
     overflow: hidden;
+    color: #000000;
     font-size: 12px;
     white-space: nowrap;
     text-overflow: ellipsis;
+}
+
+.octane-catalog-air-frontpage__voucher > .flex {
+    position: absolute;
+    top: 25px;
+    left: 10px;
+    right: 9px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.octane-catalog-air-frontpage__voucher input {
+    width: 216px !important;
+    height: 25px !important;
+    min-height: 25px !important;
+    padding: 0 6px !important;
+    border: 1px solid #7b7b7b !important;
+    border-radius: 6px !important;
+    background: #ffffff !important;
+}
+
+.octane-catalog-air-frontpage__voucher .octane-catalog-redeem-button {
+    width: auto;
+    min-width: 62px;
+    white-space: nowrap;
+    height: 22px;
+    min-height: 22px !important;
+    padding: 0 4px !important;
+    font-size: 12px !important;
+}
+
+/* Phones: AIR's fixed 552 x 460 block does not fit, so the pictures stack and take the width. */
+@media (max-width: 640px), (orientation: landscape) and (max-height: 520px) {
+    .octane-catalog-air-frontpage {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: 200px auto 61px;
+        grid-template-areas:
+            'first'
+            'list'
+            'voucher';
+        width: 100%;
+        height: auto;
+    }
+
+    .octane-catalog-air-frontpage__first,
+    .octane-catalog-air-frontpage__item,
+    .octane-catalog-air-frontpage__voucher {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .octane-catalog-air-frontpage__first {
+        height: 200px;
+    }
 }
 
 /* AIR layout_recycler_xml + recyclerWidget_xml. The Furnimatic is pixel art at AIR's sizes, so it is not stretched:

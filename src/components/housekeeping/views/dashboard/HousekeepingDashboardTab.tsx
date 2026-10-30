@@ -57,7 +57,7 @@ const StatCard: FC<StatCardProps> = ({ icon, label, value, subtle, tone = 'sky',
         >
             <div className={`${TONE_ICON[tone]} shrink-0 rounded-md p-1.5`}>{icon}</div>
             <div className="flex flex-col grow min-w-0">
-                <span className="text-[10px] uppercase tracking-wide opacity-60 font-semibold">{label}</span>
+                <span className="text-[11px] text-[#666666]">{label}</span>
                 <span className="text-xl font-bold leading-tight tabular-nums">{value}</span>
                 {subtle && <span className="text-[10px] text-zinc-500 truncate">{subtle}</span>}
             </div>
@@ -136,7 +136,7 @@ export const HousekeepingDashboardTab: FC = () => {
     return (
         <div className="flex flex-col gap-2.5">
             <div className="flex items-center justify-between">
-                <h3 className="text-xs uppercase tracking-wider font-semibold opacity-60 flex items-center gap-1">
+                <h3 className="hk-air-heading m-0 text-[14px] font-bold text-black flex items-center gap-1">
                     <FaChartLine size={10} />
                     {LocalizeText('housekeeping.dashboard.title')}
                 </h3>
@@ -266,7 +266,7 @@ export const HousekeepingDashboardTab: FC = () => {
 
             {recentSanctions.length > 0 && (
                 <div className="flex flex-col gap-1">
-                    <h4 className="text-[10px] uppercase tracking-wider font-semibold opacity-60 pt-1">
+                    <h4 className="m-0 text-xs font-bold text-black pt-1">
                         {LocalizeText('housekeeping.dashboard.recent_sanctions')}
                     </h4>
                     <ul className="flex flex-col gap-0.5 rounded-lg border bg-white/50 divide-y divide-zinc-100">
@@ -291,7 +291,7 @@ export const HousekeepingDashboardTab: FC = () => {
 
             {recentLookups.length > 0 && (
                 <div className="flex flex-col gap-1">
-                    <h4 className="text-[10px] uppercase tracking-wider font-semibold opacity-60 pt-1">
+                    <h4 className="m-0 text-xs font-bold text-black pt-1">
                         {LocalizeText('housekeeping.dashboard.recent_lookups')}
                     </h4>
                     <div className="flex flex-wrap gap-1">

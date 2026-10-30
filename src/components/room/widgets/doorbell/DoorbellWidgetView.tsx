@@ -4,6 +4,7 @@ import { OctaneCardContentView, OctaneCardHeaderView, OctaneCardView } from '../
 import { useDoorbellActions, useDoorbellState } from '../../../../hooks';
 import { BaseButton } from '../../../../common/BaseButton';
 import { Hint } from '../../../../common/Tooltip';
+import '../../../../css/room/RoomWidgetsSweepAir.css';
 
 /* Official doorbell: the information in red, then a list of 20 px rows, each with the name and two
    icon buttons, a green check to let the visitor in and a red cross to turn them away. */

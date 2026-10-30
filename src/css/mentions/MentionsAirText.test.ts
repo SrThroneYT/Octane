@@ -27,4 +27,12 @@ describe('mentions panel text (AIR conventions, no AIR layout)', () => {
         expect(rule('.mentions-window .mentions-refresh')).toContain('font-size: 12px');
         expect(rule('.mentions-window .mentions-markall')).toContain('font-size: 12px !important');
     });
+
+    it('draws mark-all and refresh on the grey shiny skin (AIR button style 3) with black captions', () => {
+        expect(rule('.mentions-window .mentions-markall.habbo-btn-primary')).toContain('border-image-source: var(--habbo-skin-shiny) !important');
+        expect(rule('.mentions-window .mentions-markall.habbo-btn-primary')).toContain('color: #000000 !important');
+        expect(css).toMatch(/\*\/\s*\.mentions-refresh \{[^}]*border-image-source: var\(--habbo-skin-shiny\);[^}]*color: #000000;/);
+        expect(css).not.toContain('var(--habbo-skin-button)');
+    });
 });
+

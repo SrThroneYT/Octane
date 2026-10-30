@@ -105,7 +105,7 @@ export const VariablesExplorerMainView: FC<VariablesExplorerMainViewProps> = ({ 
     return (
         <>
             <OctaneCardView
-                className="min-w-[560px] max-w-[560px]"
+                className="min-w-[560px] max-w-[560px] octane-variables-explorer-window"
                 theme="primary-slim"
                 uniqueKey="variables-explorer"
                 windowPosition={DraggableWindowPosition.TOP_LEFT}

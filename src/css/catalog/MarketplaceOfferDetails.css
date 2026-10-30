@@ -102,4 +102,20 @@
         font-size: 12px !important;
         font-weight: 400 !important;
     }
+
+    /* back_button and buy_button are grey `button`s (style 3, habbo_skin_button_shiny) with black text, and the
+       chart selector is AIR's grey button_group; the common Button would draw the green .habbo-btn-primary. */
+    .octane-marketplace-offer-details :where(.marketplace-details-back, .marketplace-details-buy, .marketplace-details-chart-selector > button).habbo-btn-primary {
+        border-image-source: var(--habbo-skin-shiny) !important;
+        color: #000000 !important;
+        text-shadow: none !important;
+    }
+
+    .octane-marketplace-offer-details :where(.marketplace-details-back, .marketplace-details-buy, .marketplace-details-chart-selector > button).habbo-btn-primary:hover {
+        border-image-source: var(--habbo-skin-shiny-hover) !important;
+    }
+
+    .octane-marketplace-offer-details :where(.marketplace-details-back, .marketplace-details-buy, .marketplace-details-chart-selector > button).habbo-btn-primary:is(:active, .active) {
+        border-image-source: var(--habbo-skin-shiny-pressed) !important;
+    }
 }

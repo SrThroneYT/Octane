@@ -1582,5 +1582,6 @@
     "inventory.trading.notification.caption": "تعذّر إكمال التبادل",
     "nitro.info.title": "حول هذا العميل",
     "notifications.text.club_gift.selected": "لقد اخترت هديتك.",
-    "chat.confirm.openurl": "أنت على وشك فتح %url%. تابع فقط إذا كنت تثق بالرابط."
+    "chat.confirm.openurl": "أنت على وشك فتح %url%. تابع فقط إذا كنت تثق بالرابط.",
+    "campaign.calendar.title": "التقويم"
 }

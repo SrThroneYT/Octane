@@ -8,6 +8,7 @@ import {
     WIRED_STYLE_OPTIONS,
     wiredStyleTitle
 } from '../../api';
+import { NotificationConfirmItem } from '../../api/notification/NotificationConfirmItem';
 import { Button, Text } from '../../common';
 import { useNotification, useRoom, useWiredTools } from '../../hooks';
 import { Checkbox } from '../../common/Checkbox';
@@ -116,7 +117,9 @@ export const WiredToolsSettingsTabView: FC<WiredToolsSettingsTabViewProps> = ({ 
             null,
             LocalizeText('generic.ok'),
             LocalizeText('generic.cancel'),
-            localizeWithFallback('wiredmenu.settings.room_state.roll_back', 'Rollback')
+            localizeWithFallback('wiredmenu.settings.room_state.roll_back', 'Rollback'),
+            null,
+            NotificationConfirmItem.TITLE_BAR_DANGER
         );
     };
 
@@ -180,7 +183,7 @@ export const WiredToolsSettingsTabView: FC<WiredToolsSettingsTabViewProps> = ({ 
                             {localizeWithFallback('wiredmenu.settings.room_state.reload', 'Reload')}
                         </Button>
                         <Button
-                            classNames={['flex-1']}
+                            classNames={['flex-1', 'octane-wired-menu__roll-back']}
                             disabled={!canChangeRoomState}
                             variant="danger"
                             onClick={rollbackRoomState}

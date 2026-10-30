@@ -80,6 +80,53 @@
     font-weight: 400;
 }
 
+/* rent_confirmation ok_button: button_thick style 5, color 0x00cc00: the grey habbo_skin_button_shiny_thick
+   multiplied by 0x00cc00, white button_shiny_bold 12 px caption. cancel_button: the grey `button` (style 3),
+   habbo_skin_button_shiny, 12 px regular black. The shared skins are unlayered important rules. */
+@layer base {
+    .octane-furni-rent-confirm :is(.octane-furni-rent-confirm__ok, .octane-furni-rent-confirm__cancel) {
+        border-width: 5px !important;
+        border-image-slice: 5 fill !important;
+        border-image-width: 5px !important;
+        border-image-repeat: stretch !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    .octane-furni-rent-confirm .octane-furni-rent-confirm__ok.habbo-btn-primary {
+        border-image-source: var(--habbo-skin-shiny-thick-tint-00cc00) !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+
+    .octane-furni-rent-confirm .octane-furni-rent-confirm__ok.habbo-btn-primary:hover {
+        border-image-source: var(--habbo-skin-shiny-thick-tint-00cc00-hover) !important;
+    }
+
+    .octane-furni-rent-confirm .octane-furni-rent-confirm__ok.habbo-btn-primary:is(:active, .active) {
+        border-image-source: var(--habbo-skin-shiny-thick-tint-00cc00-pressed) !important;
+    }
+
+    .octane-furni-rent-confirm .octane-furni-rent-confirm__ok.habbo-btn-primary:is(:disabled, .pointer-events-none) {
+        border-image-source: var(--habbo-skin-shiny-thick-tint-00cc00-disabled) !important;
+    }
+
+    .octane-furni-rent-confirm .octane-furni-rent-confirm__cancel.habbo-btn-secondary {
+        border-image-source: var(--habbo-skin-shiny) !important;
+        color: #000000 !important;
+        font-weight: 400 !important;
+    }
+
+    .octane-furni-rent-confirm .octane-furni-rent-confirm__cancel.habbo-btn-secondary:hover {
+        border-image-source: var(--habbo-skin-shiny-hover) !important;
+    }
+
+    .octane-furni-rent-confirm .octane-furni-rent-confirm__cancel.habbo-btn-secondary:is(:active, .active) {
+        border-image-source: var(--habbo-skin-shiny-pressed) !important;
+    }
+}
+
 /* quiz_question quiz_topic: ubuntu_condensed_regular at 28 px, white (our `Ubuntu` face is that cut);
    quiz_result quiz_topic 24 px, the vote counts u_headline_small 14 px bold white. */
 .wordquiz-question.octane-furni-wordquiz {

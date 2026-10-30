@@ -47,6 +47,7 @@ export const NavigatorRoomLinkView: FC<NavigatorRoomLinkViewProps> = (props) => 
                                 onFocus={(event) => event.target.select()}
                             />
                             <Button
+                                variant="secondary"
                                 title={LocalizeText('generic.copy')}
                                 aria-label={LocalizeText('generic.copy')}
                                 onClick={() => void CopyToClipboard(roomLink).then(setCopied)}

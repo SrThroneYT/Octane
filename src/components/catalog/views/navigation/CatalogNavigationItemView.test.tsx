@@ -49,6 +49,16 @@ describe('catalog navigation item accessibility', () => {
         expect(activateNode).toHaveBeenCalledWith(node);
     });
 
+    it("shows the page name as AIR does, without the staff page-id suffix, which moves to the tooltip", () => {
+        const runtime = { activateNode, adminMode: false, createSubpage: vi.fn(), deletePage: vi.fn(), reorderPage: vi.fn() };
+        const { container } = render(<CatalogNavigationItemView node={makeNode({ localization: 'Wisselkoers (3)', isOpen: true })} runtime={runtime} />);
+        const label = container.querySelector('.octane-catalog-navigation-label');
+
+        expect(label).toHaveTextContent(/^Wisselkoers$/);
+        expect(label).toHaveAttribute('title', 'Page ID: 3');
+        expect(container.querySelector('.octane-catalog-navigation-caret')).toHaveClass('is-open');
+    });
+
     it('keeps the normal and Builders Club standard selection palettes', () => {
         const css = readFileSync(resolve(process.cwd(), 'src/css/catalog/CatalogView.css'), 'utf8');
 

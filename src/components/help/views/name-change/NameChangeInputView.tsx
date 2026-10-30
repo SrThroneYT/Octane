@@ -73,7 +73,7 @@ export const NameChangeInputView: FC<NameChangeLayoutViewProps> = (props) => {
             <div>{LocalizeText('tutorial.name_change.info.select')}</div>
             <div className="flex gap-2">
                 <OctaneInput type="text" value={newUsername} onChange={(event) => handleUsernameChange(event.target.value)} />
-                <BaseButton className="btn btn-primary" disabled={newUsername === '' || isChecking} onClick={check}>
+                <BaseButton className="habbo-btn-secondary" disabled={newUsername === '' || isChecking} onClick={check}>
                     {LocalizeText('tutorial.name_change.check')}
                 </BaseButton>
             </div>
@@ -94,10 +94,10 @@ export const NameChangeInputView: FC<NameChangeLayoutViewProps> = (props) => {
                 </div>
             )}
             <div className="flex gap-2">
-                <BaseButton className="w-full btn btn-success" disabled={!canProceed} onClick={() => onAction('confirmation', newUsername)}>
+                <BaseButton className="w-full habbo-btn-secondary" disabled={!canProceed} onClick={() => onAction('confirmation', newUsername)}>
                     {LocalizeText('tutorial.name_change.pick')}
                 </BaseButton>
-                <BaseButton className="w-full btn btn-danger" onClick={() => onAction('close')}>
+                <BaseButton className="w-full habbo-btn-secondary" onClick={() => onAction('close')}>
                     {LocalizeText('cancel')}
                 </BaseButton>
             </div>

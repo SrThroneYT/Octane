@@ -685,7 +685,7 @@
     grid-template-rows: minmax(110px, 45%) 1fr;
     height: 100%;
     min-height: 0;
-    color: #222;
+    color: #000000;
     background: #e4e3db;
 }
 
@@ -726,7 +726,7 @@
     height: 100%;
     min-height: 0;
     padding: 7px;
-    color: #222;
+    color: #000000;
     background: #e4e3db;
 }
 

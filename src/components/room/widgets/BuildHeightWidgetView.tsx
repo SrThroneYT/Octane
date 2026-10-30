@@ -3,6 +3,7 @@ import { LocalizeText } from '../../../api';
 import { Button, Column, Flex, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Slider, Text } from '../../../common';
 import { useBuildHeight } from '../../../hooks';
 import { Checkbox } from '../../../common/Checkbox';
+import '../../../css/room/RoomWidgetsSweepAir.css';
 
 const STEP = 0.1;
 
@@ -42,8 +43,8 @@ export const BuildHeightWidgetView: FC<{}> = () => {
                 />
                 <Column gap={1}>
                     <Flex justifyContent="between">
-                        <Text small>{format(minHeight)}</Text>
-                        <Text small>{format(maxHeight)}</Text>
+                        <Text>{format(minHeight)}</Text>
+                        <Text>{format(maxHeight)}</Text>
                     </Flex>
                     <Flex
                         alignItems="center"
@@ -54,7 +55,7 @@ export const BuildHeightWidgetView: FC<{}> = () => {
                         <Checkbox checked={underpass && underpassAllowed} disabled={!underpassAllowed} onCheckedChange={(nextChecked) => toggleUnderpass(nextChecked)} />
                         <Text>{LocalizeText('widget.buildheight.underpass')}</Text>
                     </Flex>
-                    <Button variant="danger" onClick={close}>{LocalizeText('widget.buildheight.reset')}</Button>
+                    <Button variant="secondary" onClick={close}>{LocalizeText('widget.buildheight.reset')}</Button>
                 </Column>
             </OctaneCardContentView>
         </OctaneCardView>

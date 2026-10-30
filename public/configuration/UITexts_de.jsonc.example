@@ -1589,5 +1589,6 @@
     "inventory.trading.notification.caption": "Der Tausch konnte nicht abgeschlossen werden",
     "nitro.info.title": "Über diesen Client",
     "notifications.text.club_gift.selected": "Du hast dein Geschenk gewählt.",
-    "chat.confirm.openurl": "Du bist dabei, %url% zu öffnen. Fahre nur fort, wenn du dem Link vertraust."
+    "chat.confirm.openurl": "Du bist dabei, %url% zu öffnen. Fahre nur fort, wenn du dem Link vertraust.",
+    "campaign.calendar.title": "Kalender"
 }

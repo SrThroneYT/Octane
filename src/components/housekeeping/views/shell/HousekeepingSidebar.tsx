@@ -41,7 +41,7 @@ export const HousekeepingSidebar: FC<{
                 .filter((group) => group.items.length > 0)
                 .map((group) => (
                     <div key={group.titleKey} className="flex flex-col gap-0.5">
-                        <div className="px-1.5 text-[9px] font-bold uppercase tracking-wider text-zinc-500">{LocalizeText(group.titleKey)}</div>
+                        <div className="px-1.5 text-[11px] font-bold text-[#666666]">{LocalizeText(group.titleKey)}</div>
                         {group.items.map((item) => {
                             const isActive = item.id === active;
 

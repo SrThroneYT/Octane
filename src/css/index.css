@@ -2313,3 +2313,9 @@ body {
 .octane-collapsible-panel[hidden] {
     display: none;
 }
+
+/* NativeLabel: a drawn raster folds its 2 px TextField gutter away so the text sits where the CSS put it; the browser-text
+   fallback (glyphs the native fonts lack) keeps its box. */
+.octane-native-label > [data-native-text]:not([data-native-text="fallback"]) {
+    margin: -2px;
+}

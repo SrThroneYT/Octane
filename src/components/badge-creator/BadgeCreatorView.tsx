@@ -502,22 +502,22 @@ export const BadgeCreatorView: FC<{}> = () => {
                             />
                         </div>
                         <Flex gap={1} className="badge-creator-tools">
-                            <Button onClick={() => setTool('paint')} variant={tool === 'paint' ? 'success' : 'primary'}>
+                            <Button onClick={() => setTool('paint')} variant="secondary" active={tool === 'paint'}>
                                 {t('badgecreator.tool.paint', 'Paint')}
                             </Button>
-                            <Button onClick={() => setTool('fill')} variant={tool === 'fill' ? 'success' : 'primary'}>
+                            <Button onClick={() => setTool('fill')} variant="secondary" active={tool === 'fill'}>
                                 {t('badgecreator.tool.fill', 'Fill')}
                             </Button>
-                            <Button onClick={() => setTool('erase')} variant={tool === 'erase' ? 'success' : 'primary'}>
+                            <Button onClick={() => setTool('erase')} variant="secondary" active={tool === 'erase'}>
                                 {t('badgecreator.tool.erase', 'Erase')}
                             </Button>
-                            <Button onClick={copyColor} variant={tool === 'picker' ? 'success' : 'primary'}>
+                            <Button onClick={copyColor} variant="secondary" active={tool === 'picker'}>
                                 {t('badgecreator.tool.picker', 'Pick')}
                             </Button>
                             <Button onClick={clearCanvas} variant="danger">
                                 {t('badgecreator.tool.clear', 'Clear')}
                             </Button>
-                            <Button onClick={() => setShowGrid((g) => !g)} variant="primary">
+                            <Button onClick={() => setShowGrid((g) => !g)} variant="secondary">
                                 {showGrid ? t('badgecreator.tool.gridoff', 'Grid off') : t('badgecreator.tool.gridon', 'Grid on')}
                             </Button>
                         </Flex>
@@ -671,7 +671,7 @@ export const BadgeCreatorView: FC<{}> = () => {
                                         : t('badgecreator.save.create', 'Create badge')}
                             </Button>
                             {editingBadgeId && (
-                                <Button onClick={resetEditor} variant="primary">
+                                <Button onClick={resetEditor} variant="secondary">
                                     {t('generic.cancel', 'Cancel')}
                                 </Button>
                             )}
@@ -704,7 +704,7 @@ export const BadgeCreatorView: FC<{}> = () => {
                                         </Text>
                                     )}
                                 </Column>
-                                <Button onClick={() => startEdit(badge)} variant="primary">
+                                <Button onClick={() => startEdit(badge)} variant="secondary">
                                     {t('generic.edit', 'Edit')}
                                 </Button>
                                 <Button onClick={() => handleDelete(badge)} variant="danger">

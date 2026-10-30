@@ -432,7 +432,7 @@ const Section: FC<SectionProps> = ({ title, children, defaultOpen = true }) => {
                 className={`w-full flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 transition-colors rounded-t-xl ${open ? '' : 'rounded-b-xl'}`}
                 onClick={() => setOpen((p) => !p)}
             >
-                <Text className="text-[12px] font-semibold text-slate-700">{title}</Text>
+                <Text className="octane-furni-editor__section-title text-[14px] font-bold text-black">{title}</Text>
                 <span className="text-[11px] text-slate-400 transition-transform duration-200" style={{ transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}>
                     ▾
                 </span>
@@ -1125,7 +1125,7 @@ export const FurniEditorEditView: FC<FurniEditorEditViewProps> = (props) => {
                         {/* Primary edit surface: furnidata display name + description (server-authoritative, live) */}
                         <div className="bg-[#ffffff] rounded-xl border border-slate-200 shadow-sm p-2.5">
                             <div className="flex items-center gap-2 mb-1.5">
-                                <Text className="text-[12px] font-semibold text-slate-700">Display name &amp; description</Text>
+                                <Text className="octane-furni-editor__section-title text-[14px] font-bold text-black">Display name &amp; description</Text>
                                 {furnidataEditable ? (
                                     <span className="text-[9px] font-semibold text-primary bg-primary/10 rounded-md px-1.5 py-0.5">LIVE</span>
                                 ) : furnidataCreatable ? (

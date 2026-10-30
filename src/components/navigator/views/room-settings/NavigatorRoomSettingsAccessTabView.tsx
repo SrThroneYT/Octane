@@ -47,7 +47,7 @@ export const NavigatorRoomSettingsAccessTabView: FC<NavigatorRoomSettingsTabView
                     <Column gap={1} className="rounded border p-2">
                         <Text bold>{LocalizeText('notification.builders_club.room_locked.title')}</Text>
                         <Text small>{LocalizeText('notification.builders_club.room_locked.message')}</Text>
-                        <Button onClick={() => CreateLinkEvent('habbopages/builders-club/faq')}>
+                        <Button variant="secondary" onClick={() => CreateLinkEvent('habbopages/builders-club/faq')}>
                             {LocalizeText('notification.builders_club.room_locked.linkTitle')}
                         </Button>
                     </Column>

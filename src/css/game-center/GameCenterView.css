@@ -2395,3 +2395,38 @@
     font-family: HabboAirUbuntu, UbuntuRegular, sans-serif !important;
   }
 }
+
+/* Button skins as AIR draws them: games_main play.button (container_button style 3 tinted 0x55cc00) and
+   snowwar_ending button_play_again / button_rematch / button_buy_games (button_thick style 5, 0x00ff00) are the
+   green shiny thick skin, white bold text; a blocked or waiting one is the grey disabled skin. */
+.game-tile__actions .game-tile__play,
+.snowwar-results__buttons .snowwar-button {
+  border: 5px solid transparent;
+  border-image-source: var(--habbo-skin-shiny-thick-green);
+  border-image-slice: 5 fill;
+  border-image-width: 5px;
+  border-image-repeat: stretch;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+  image-rendering: var(--octane-pixel-art, pixelated);
+}
+.game-tile__actions .game-tile__play:hover:not(:disabled),
+.snowwar-results__buttons .snowwar-button:hover:not(:disabled) {
+  border-image-source: var(--habbo-skin-shiny-thick-green-hover);
+  filter: none;
+}
+.game-tile__actions .game-tile__play:active:not(:disabled),
+.snowwar-results__buttons .snowwar-button:active:not(:disabled) {
+  border-image-source: var(--habbo-skin-shiny-thick-green-pressed);
+}
+.game-tile__actions .game-tile__play.game-tile__play--blocked,
+.snowwar-results__buttons .snowwar-button:disabled {
+  border-image-source: var(--habbo-skin-shiny-thick-disabled);
+  background: transparent;
+  color: #555;
+  text-shadow: none;
+  opacity: 1;
+}

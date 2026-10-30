@@ -5,6 +5,7 @@ import { Button, OctaneCardContentView, OctaneCardHeaderView, OctaneCardView, Te
 import { UbuntuDropmenuView } from '../../../../common/dropmenu/UbuntuDropmenuView';
 import { wiredLabelCss } from './WiredLabelBubbleView';
 import { Checkbox } from '../../../../common/Checkbox';
+import '../../../../css/room/RoomWidgetsSweepAir.css';
 
 const COLOR_NAMES = [ 'blue', 'teal', 'green', 'gold', 'orange', 'red', 'purple', 'charcoal' ];
 const COLOR_FALLBACKS = [ 'Blue', 'Teal', 'Green', 'Gold', 'Orange', 'Red', 'Purple', 'Charcoal' ];
@@ -39,7 +40,7 @@ export const WiredLabelSettingsView: FC<WiredLabelSettingsViewProps> = ({ label,
         <OctaneCardView className="octane-wired-label-settings" theme="primary-slim">
             <OctaneCardHeaderView headerText={localizeWithFallback('widget.furniture_label.settings.title', 'Label settings')} onCloseClick={onClose} />
             <OctaneCardContentView gap={2}>
-                <Text bold>{localizeWithFallback('widget.furniture_label.settings.color', 'Label color')}</Text>
+                <Text bold className="octane-wired-label-settings__heading">{localizeWithFallback('widget.furniture_label.settings.color', 'Label color')}</Text>
                 <div className="flex items-center gap-2">
                     <UbuntuDropmenuView
                         className="octane-wired-label-settings__color"
@@ -50,7 +51,7 @@ export const WiredLabelSettingsView: FC<WiredLabelSettingsViewProps> = ({ label,
                     />
                     <div className="octane-wired-label-settings__preview" style={{ ['--octane-wired-label-color' as string]: wiredLabelCss(WIRED_LABEL_COLORS[colorIndex]) }} />
                 </div>
-                <Text bold>{localizeWithFallback('widget.furniture_label.settings.visibility', 'Who can see this label?')}</Text>
+                <Text bold className="octane-wired-label-settings__heading">{localizeWithFallback('widget.furniture_label.settings.visibility', 'Who can see this label?')}</Text>
                 <UbuntuDropmenuView
                     label={localizeWithFallback('widget.furniture_label.settings.visibility', 'Who can see this label?')}
                     value={visibility}
@@ -62,7 +63,7 @@ export const WiredLabelSettingsView: FC<WiredLabelSettingsViewProps> = ({ label,
                 />
                 <label className="flex items-center gap-1">
                     <Checkbox checked={everyone && alwaysOpen} data-testid="wired-label-always-open" disabled={!everyone} onCheckedChange={ nextChecked => setAlwaysOpen(nextChecked) } />
-                    <Text>{localizeWithFallback('widget.furniture_label.settings.always_open', 'Keep this label always open')}</Text>
+                    <Text className="octane-wired-label-settings__always-open">{localizeWithFallback('widget.furniture_label.settings.always_open', 'Keep this label always open')}</Text>
                 </label>
                 <div className="flex justify-between gap-2">
                     <Button variant="secondary" className="octane-wired-label-settings__cancel" onClick={onClose}>{localizeWithFallback('generic.cancel', 'Cancel')}</Button>

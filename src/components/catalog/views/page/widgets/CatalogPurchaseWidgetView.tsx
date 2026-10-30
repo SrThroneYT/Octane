@@ -48,6 +48,16 @@ interface CatalogPurchaseWidgetViewProps {
     purchaseCallback?: () => void;
 }
 
+/** AIR's builderWidget error strip per placeable status: the icon (icons_builder_error_*) and the message key. */
+const BUILDER_ERRORS: Record<number, { icon: string; text: string }> = {
+    [BuilderFurniPlaceableStatus.FURNI_LIMIT_REACHED]: { icon: 'furnilimit', text: 'builder.placement_widget.error.limit_reached' },
+    [BuilderFurniPlaceableStatus.NOT_IN_ROOM]: { icon: 'notroom', text: 'builder.placement_widget.error.not_in_room' },
+    [BuilderFurniPlaceableStatus.NOT_ROOM_OWNER]: { icon: 'room', text: 'builder.placement_widget.error.not_group_admin' },
+    [BuilderFurniPlaceableStatus.GUILD_ROOM]: { icon: 'grouproom', text: 'builder.placement_widget.error.group_room' },
+    [BuilderFurniPlaceableStatus.VISITORS_IN_ROOM]: { icon: 'userinroom', text: 'builder.placement_widget.error.visitors' },
+    [BuilderFurniPlaceableStatus.NOT_GROUP_ADMIN]: { icon: 'room', text: 'builder.placement_widget.error.not_group_admin' }
+};
+
 export const CatalogPurchaseWidgetView: FC<CatalogPurchaseWidgetViewProps> = (props) => {
     const { disabled = false, noGiftOption = false, purchaseCallback = null } = props;
     const [builderPlaceableRefreshTick, setBuilderPlaceableRefreshTick] = useState(0);
@@ -412,20 +422,11 @@ export const CatalogPurchaseWidgetView: FC<CatalogPurchaseWidgetViewProps> = (pr
 
         if (isBuildersClubPlaceable) {
             const hasMissingExtraParam = purchaseOptions.extraParamRequired && (!purchaseOptions.extraData || !purchaseOptions.extraData.length);
-            const isBlockedByVisitors = builderPlaceableStatus === BuilderFurniPlaceableStatus.VISITORS_IN_ROOM;
-            const isDisabled =
-                hasMissingExtraParam ||
-                isBlockedByVisitors ||
-                builderPlaceableStatus === BuilderFurniPlaceableStatus.MISSING_OFFER ||
-                builderPlaceableStatus === BuilderFurniPlaceableStatus.NOT_IN_ROOM ||
-                builderPlaceableStatus === BuilderFurniPlaceableStatus.NOT_ROOM_OWNER ||
-                builderPlaceableStatus === BuilderFurniPlaceableStatus.NOT_GROUP_ADMIN;
+            // AIR's BuilderCatalogWidget: any status but OKAY disables both buttons and, except a missing offer, shows the
+            // error strip (icon + message) over the hint.
+            const builderError = BUILDER_ERRORS[builderPlaceableStatus as number] ?? null;
+            const isDisabled = hasMissingExtraParam || (builderPlaceableStatus as number) !== BuilderFurniPlaceableStatus.OKAY;
             const startBuilderPlacement = (placeMultiple: boolean) => {
-                if (builderPlaceableStatus === BuilderFurniPlaceableStatus.FURNI_LIMIT_REACHED) {
-                    showSingleBubble(LocalizeText('room.error.max_furniture'), NotificationBubbleType.INFO);
-                    return;
-                }
-
                 if (isDisabled) return;
 
                 setCatalogPlaceMultipleObjects(placeMultiple);
@@ -433,35 +434,30 @@ export const CatalogPurchaseWidgetView: FC<CatalogPurchaseWidgetViewProps> = (pr
             };
 
             return (
-                <div className="flex flex-col gap-1.5 items-start">
-                    <div className="octane-builders-place-buttons flex gap-1.5 flex-wrap">
-                        <BaseButton
-                            type="button"
-                            className="octane-builders-place-button is-one"
-                            disabled={isDisabled}
-                            onClick={() => startBuilderPlacement(false)}
-                        >
-                            {LocalizeText('builder.placement_widget.place_one')}
-                        </BaseButton>
-                        <BaseButton
-                            type="button"
-                            className="octane-builders-place-button is-many"
-                            disabled={isDisabled}
-                            onClick={() => startBuilderPlacement(true)}
-                        >
-                            {LocalizeText('builder.placement_widget.place_many')}
-                        </BaseButton>
-                    </div>
-                    {isBlockedByVisitors && (
-                        <Text className="max-w-full" small variant="danger">
-                            {LocalizeText('builder.placement_widget.error.visitors')}
-                        </Text>
+                <div className="octane-builders-widget">
+                    <span className="octane-builders-widget-hint">{LocalizeText('builder.placement_widget.hint')}</span>
+                    {builderError && (
+                        <div className="octane-builders-widget-error" data-error={builderError.icon} role="status">
+                            <span aria-hidden="true" className="octane-builders-widget-error-icon" />
+                            <span className="octane-builders-widget-error-message">{LocalizeText(builderError.text)}</span>
+                        </div>
                     )}
-                    {builderPlaceableStatus === BuilderFurniPlaceableStatus.NOT_GROUP_ADMIN && (
-                        <Text className="max-w-full" small variant="danger">
-                            {LocalizeText('builder.placement_widget.error.not_group_admin')}
-                        </Text>
-                    )}
+                    <BaseButton
+                        type="button"
+                        className="octane-builders-place-button is-one"
+                        disabled={isDisabled}
+                        onClick={() => startBuilderPlacement(false)}
+                    >
+                        {LocalizeText('builder.placement_widget.place_one')}
+                    </BaseButton>
+                    <BaseButton
+                        type="button"
+                        className="octane-builders-place-button is-many"
+                        disabled={isDisabled}
+                        onClick={() => startBuilderPlacement(true)}
+                    >
+                        {LocalizeText('builder.placement_widget.place_many')}
+                    </BaseButton>
                 </div>
             );
         }

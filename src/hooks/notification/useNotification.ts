@@ -242,7 +242,8 @@ const useNotificationStore = () => {
             confirmText: string = null,
             cancelText: string = null,
             title: string = null,
-            type: string = null
+            type: string = null,
+            titleBarColor: string = null
         ) => {
             if (!confirmText || !confirmText.length) confirmText = LocalizeText('generic.confirm');
 
@@ -250,7 +251,7 @@ const useNotificationStore = () => {
 
             if (!title || !title.length) title = LocalizeText('notifications.broadcast.title');
 
-            const confirmItem = new NotificationConfirmItem(type, message, onConfirm, onCancel, confirmText, cancelText, title);
+            const confirmItem = new NotificationConfirmItem(type, message, onConfirm, onCancel, confirmText, cancelText, title, titleBarColor);
 
             setConfirms((prevValue) => [confirmItem, ...prevValue]);
         },

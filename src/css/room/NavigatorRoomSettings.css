@@ -151,3 +151,52 @@
 .octane-room-settings .octane-card-content-shell :has(> .form-control) {
     min-width: 0;
 }
+
+/*
+ * ros_room_settings buttons: builders_faq_button and moderation_unban_btn are the grey `button` (style 3,
+ * habbo_skin_button_shiny, button_shiny_regular 12 px black); remove_all_flat_ctrls is the grey button_thick
+ * (style 3, habbo_skin_button_shiny_thick, button_shiny_bold 12 px black). None of them is green or red. The
+ * Button's 12.6 px bold size is an important utility, which only an important rule in the base layer outranks.
+ */
+@layer base {
+    .octane-room-settings .octane-card-content-shell .habbo-btn-secondary {
+        border-width: 5px !important;
+        border-image-source: var(--habbo-skin-shiny) !important;
+        border-image-slice: 5 fill !important;
+        border-image-width: 5px !important;
+        color: #000000 !important;
+        font-size: 12px !important;
+        font-weight: 400 !important;
+    }
+
+    .octane-room-settings .octane-card-content-shell .habbo-btn-secondary:hover {
+        border-image-source: var(--habbo-skin-shiny-hover) !important;
+    }
+
+    .octane-room-settings .octane-card-content-shell .habbo-btn-secondary:active {
+        border-image-source: var(--habbo-skin-shiny-pressed) !important;
+    }
+
+    .octane-room-settings .octane-card-content-shell .habbo-btn-secondary.octane-room-settings-clear-rights {
+        min-height: 29px !important;
+        border-image-source: var(--habbo-skin-shiny-thick) !important;
+        font-weight: 700 !important;
+    }
+
+    .octane-room-settings .octane-card-content-shell .habbo-btn-secondary.octane-room-settings-clear-rights:hover {
+        border-image-source: var(--habbo-skin-shiny-thick-hover) !important;
+    }
+
+    .octane-room-settings .octane-card-content-shell .habbo-btn-secondary.octane-room-settings-clear-rights:active {
+        border-image-source: var(--habbo-skin-shiny-thick-pressed) !important;
+    }
+
+    .octane-room-settings .octane-card-content-shell .habbo-btn-secondary:is(:disabled, .pointer-events-none) {
+        border-image-source: var(--habbo-skin-shiny-disabled) !important;
+        color: #777777 !important;
+    }
+
+    .octane-room-settings .octane-card-content-shell .habbo-btn-secondary.octane-room-settings-clear-rights:is(:disabled, .pointer-events-none) {
+        border-image-source: var(--habbo-skin-shiny-thick-disabled) !important;
+    }
+}

@@ -8,7 +8,8 @@ import {
     parsePaletteToFurni,
     recolorablePalette,
     recolorHex,
-    recolorOfData
+    recolorOfData,
+    recolorPageColors
 } from './RecolorableFurni';
 
 const shipped = (key: string) => SHIPPED_RECOLORABLE_BC[key] ?? '';
@@ -52,5 +53,22 @@ describe('recolourable furni', () =>
     it('lists the colours used, once each', () =>
     {
         expect(distinctRecolors([{ r: '1', g: '2', b: '3' }, { state: '0' }, { r: '1', g: '2', b: '3' }, { r: '0', g: '0', b: '0' }])).toEqual([0x010203, 0]);
+    });
+
+    it('colours every furni on a page with the picked colour, or its own first colour (AIR applyColor)', () =>
+    {
+        const vars: Record<string, string> = {
+            'recolorable_bc.palette_to_furni': 'warm=bc_block_recolorable,bc_cone_recolorable;cold=bc_glass_recolorable',
+            'recolorable_bc.palette.warm': 'FF0000,00FF00',
+            'recolorable_bc.palette.cold': '112233'
+        };
+        const read = (key: string) => vars[key] ?? '';
+        const colors = recolorPageColors(['bc_block_recolorable', 'bc_cone_recolorable', 'bc_glass_recolorable', 'chair_plain'], 0x00ff00, read);
+
+        expect([...colors]).toEqual([
+            ['bc_block_recolorable', 0x00ff00],
+            ['bc_cone_recolorable', 0x00ff00],
+            ['bc_glass_recolorable', 0x112233]
+        ]);
     });
 });

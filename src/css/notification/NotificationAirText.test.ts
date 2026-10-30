@@ -18,10 +18,23 @@ describe('notification and alert text (habbo-notifications, habbo_window_alert /
         expect(centerCss).toMatch(/\.octane-notification-item \{[^}]*font-family: Volter[^}]*font-size: 9px !important;[^}]*font-weight: 700/);
     });
 
-    it('draws the alert and confirm windows as u_regular 12 px with a 12 px bold button', () => {
-        expect(alertCss).toMatch(/\.octane-motd-alert\) \.octane-card-content-shell \{[^}]*HabboAirUbuntu[^}]*font-size: 12px/);
+    it('draws the alert and confirm windows as AIR: u_regular 12 px black, a grey button_thick, no rule', () => {
+        expect(alertCss).toMatch(/\.octane-motd-alert\) \.octane-card-content-shell \{[^}]*HabboAirUbuntu[^}]*color: #000000;[^}]*font-size: 12px/);
         expect(alertCss).toMatch(/:where\(\*\):not\(svg, svg \*, \.notification-command-name, \.notification-command-args\) \{[^}]*HabboAirUbuntu, UbuntuRegular, sans-serif !important/);
-        expect(alertCss).toMatch(/:where\(\.habbo-btn-primary, \.habbo-btn-secondary, \.habbo-btn-danger\) \{[^}]*font-size: 12px !important;[^}]*font-weight: 700 !important/);
+        expect(alertCss).toMatch(/:where\(\.habbo-btn-primary, \.habbo-btn-secondary, \.habbo-btn-danger\) \{[^}]*font-size: 12px !important;[^}]*font-weight: 400 !important/);
+        expect(alertCss).toMatch(/\.octane-card-content-shell hr \{[^}]*visibility: hidden/);
+        expect(alertCss).toMatch(/\.habbo-btn-primary \{[^}]*min-height: 30px !important;[^}]*--habbo-skin-shiny-thick\) !important;[^}]*color: #000000 !important/);
+    });
+
+    it('draws the confirm as habbo_window_confirm: 300 px, text top left 253 px wide, a 28 px OK', () => {
+        expect(alertCss).toMatch(/\.octane-alert\.octane-alert-alert\.octane-confirm-window \{[^}]*width: 300px/);
+        expect(alertCss).toMatch(/\.octane-confirm-window \.octane-confirm-window__text \{[^}]*max-width: 253px;[^}]*text-align: left/);
+        expect(alertCss).toMatch(/\.octane-confirm-window \.octane-card-content-shell \.habbo-btn-primary \{[^}]*min-height: 28px !important/);
+        expect(alertCss).toMatch(/\.octane-confirm-window\[style\*="--octane-confirm-title-bar"\] > \.octane-card-header-shell \{[^}]*background: var\(--octane-confirm-title-bar\)/);
+    });
+
+    it('draws the link alert as habbo_window_alert_link: "ok" link left, a 24 px link button right', () => {
+        expect(alertCss).toMatch(/\.octane-card-content-shell \.octane-alert-link-actions \.habbo-btn-primary \{[^}]*min-height: 24px !important/);
     });
 
     it('draws the MOTD in Volter 9 px like the style 0 motd_notification', () => {

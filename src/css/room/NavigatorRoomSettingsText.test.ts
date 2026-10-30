@@ -10,4 +10,12 @@ describe('room settings text (ros_room_settings)', () => {
         expect(css).toMatch(/\.octane-room-settings-caption \{[^}]*font-size: 14px !important/);
         expect(css).toMatch(/\.octane-room-settings-delete \{[^}]*color: #bb2200 !important/);
     });
+
+    it('skins unban / FAQ as the grey button and clear rights as the grey button_thick', () => {
+        const rights = readFileSync(join(process.cwd(), 'src/components/navigator/views/room-settings/NavigatorRoomSettingsRightsTabView.tsx'), 'utf8');
+
+        expect(css).toMatch(/\.octane-room-settings \.octane-card-content-shell \.habbo-btn-secondary \{[^}]*var\(--habbo-skin-shiny\) !important;[^}]*font-size: 12px !important;\s*font-weight: 400 !important/);
+        expect(css).toMatch(/\.habbo-btn-secondary\.octane-room-settings-clear-rights \{[^}]*var\(--habbo-skin-shiny-thick\) !important;\s*font-weight: 700 !important/);
+        expect(rights).not.toContain('variant="danger"');
+    });
 });

@@ -1,5 +1,6 @@
 import { FC } from 'react';
 import { LocalizeText } from '../../../../../api';
+import { CssNativeText } from '../../../../../common/native-text/CssNativeText';
 
 const LOCALIZATION_KEY = 'catalog.purchase.select.info';
 
@@ -10,7 +11,7 @@ export const CatalogPurchaseSelectionPrompt: FC = () => {
 
     return (
         <span className="octane-catalog-purchase-selection-prompt" role="status">
-            {text}
+            <CssNativeText text={text} textStyle="u_headline_small" />
         </span>
     );
 };
