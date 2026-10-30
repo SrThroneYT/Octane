@@ -4,6 +4,7 @@ import { FaBars, FaCog } from 'react-icons/fa';
 import { CatalogType, GetConfigurationValue, LocalizeShortNumber, LocalizeText, localizeWithFallback, SanitizeHtml } from '../../api';
 import { LayoutCurrencyIcon, OctaneCardContentView, OctaneCardHeaderView, OctaneCardTabsItemView, OctaneCardTabsView, OctaneCardView } from '../../common';
 import { BaseButton } from '../../common/BaseButton';
+import { CssNativeText } from '../../common/native-text/CssNativeText';
 import { ToggleButton } from '../../common/ToggleButton';
 import { CatalogEffectsHost, useCatalogActions, useCatalogData, useCatalogUiState, useHasPermission, usePurse } from '../../hooks';
 import { CatalogStudioProvider } from './admin/studio/CatalogStudioProvider';
@@ -229,7 +230,13 @@ const CatalogViewInner: FC<{}> = () => {
                                             }}
                                         >
                                             <div className="flex items-center gap-1">
-                                                <span className="octane-catalog-tab-label">{getSwfTabLabel(child.localization)}</span>
+                                                <span className="octane-catalog-tab-label">
+                                                    <CssNativeText
+                                                        colorKey={child.isActive}
+                                                        text={getSwfTabLabel(child.localization)}
+                                                        textStyle="u_button_tab"
+                                                    />
+                                                </span>
                                             </div>
                                         </OctaneCardTabsItemView>
                                     );
@@ -260,9 +267,14 @@ const CatalogViewInner: FC<{}> = () => {
                             ) : (
                                 <>
                                     <div className="octane-catalog-standard-header-title">
-                                        {searchResult
-                                            ? LocalizeText('catalog.search.header')
-                                            : getSwfTabLabel(activeCatalogNode?.localization ?? LocalizeText('catalog.title'))}
+                                        <CssNativeText
+                                            text={
+                                                searchResult
+                                                    ? LocalizeText('catalog.search.header')
+                                                    : getSwfTabLabel(activeCatalogNode?.localization ?? LocalizeText('catalog.title'))
+                                            }
+                                            textStyle="u_headline_big"
+                                        />
                                     </div>
                                     <div
                                         className="octane-catalog-standard-header-description"

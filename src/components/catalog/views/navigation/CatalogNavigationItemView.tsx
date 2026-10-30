@@ -1,6 +1,8 @@
 import { FC, KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react';
-import { FaArrowsAlt, FaCaretDown, FaCaretUp, FaPlus, FaTrash } from 'react-icons/fa';
+import { FaArrowsAlt, FaPlus, FaTrash } from 'react-icons/fa';
 import { ICatalogNode, LocalizeText } from '../../../../api';
+import { CssNativeText } from '../../../../common/native-text/CssNativeText';
+import { parseCatalogTabLabel } from '../../useCatalogWindowWidth';
 import { CatalogIconView } from '../catalog-icon/CatalogIconView';
 import { CatalogNavigationRuntime } from './CatalogNavigationRuntime';
 import { CatalogNavigationSetView } from './CatalogNavigationSetView';
@@ -19,6 +21,9 @@ export const CatalogNavigationItemView: FC<CatalogNavigationItemViewProps> = (pr
     // Strip only technical technical suffixes; labels such as
     // "Flags (Wall)" or "Forest (Blue)" are meaningful catalog names.
     const swfLabel = (node?.localization || '').replace(/\s*\((?:BC|Hot)\)\s*$/i, '').trim();
+    // The gameserver appends the page id ("Wisselkoers (3)") for staff with ACC_CATALOG_IDS. AIR shows the name
+    // only; the id stays in the row's tooltip.
+    const { name: navLabel, count: pageIdHint } = parseCatalogTabLabel(swfLabel);
 
     const handleDragStart = useCallback(
         (e: React.DragEvent) => {
@@ -110,8 +115,11 @@ export const CatalogNavigationItemView: FC<CatalogNavigationItemViewProps> = (pr
                 <div className="octane-catalog-navigation-icon">
                     <CatalogIconView icon={node.iconId} />
                 </div>
-                <span className="octane-catalog-navigation-label" title={adminMode ? `Page ID: ${node.pageId}` : undefined}>
-                    {swfLabel}
+                <span
+                    className="octane-catalog-navigation-label"
+                    title={adminMode || pageIdHint !== null ? `Page ID: ${pageIdHint ?? node.pageId}` : undefined}
+                >
+                    <CssNativeText colorKey={node.isActive} text={navLabel} textStyle={child ? 'u_bold_italic' : 'u_bold'} />
                 </span>
                 {adminMode && (
                     <div className="octane-catalog-navigation-admin flex items-center gap-1 opacity-0 group-hover/nav:opacity-100 transition-opacity">
@@ -133,9 +141,7 @@ export const CatalogNavigationItemView: FC<CatalogNavigationItemViewProps> = (pr
                         />
                     </div>
                 )}
-                {node.isBranch && (
-                    <span className="octane-catalog-navigation-caret text-[9px] text-muted shrink-0">{node.isOpen ? <FaCaretUp /> : <FaCaretDown />}</span>
-                )}
+                {node.isBranch && <span aria-hidden="true" className={`octane-catalog-navigation-caret${node.isOpen ? ' is-open' : ''}`} />}
             </div>
             {node.isOpen && node.isBranch && <CatalogNavigationSetView child={true} node={node} runtime={runtime} />}
         </div>

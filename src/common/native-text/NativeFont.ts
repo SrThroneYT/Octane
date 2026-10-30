@@ -94,11 +94,17 @@ export function renderNativeText(loaded: LoadedFont, text: string, style: Native
         etchingPosition: style.etchingPosition
     };
     const rendered = loaded.renderer.render(text, options);
-    const pixels = new Uint8ClampedArray(style.background === undefined ? rendered.retainedPixels : rendered.pixels);
+    const pixels = style.background === undefined ? unpremultiplyPixels(rendered.retainedPixels) : unpremultiplyPixels(rendered.pixels);
+    return { ...rendered, pixels };
+}
+
+/** Retained text pixels are premultiplied; a canvas takes straight alpha. Returns a copy. */
+export function unpremultiplyPixels(premultiplied: ArrayLike<number>): Uint8ClampedArray<ArrayBuffer> {
+    const pixels = new Uint8ClampedArray(premultiplied);
     for (let offset = 0; offset < pixels.length; offset += 4) {
         const alpha = pixels[offset + 3];
         if (alpha === 0 || alpha === 255) continue;
         for (let channel = 0; channel < 3; channel++) pixels[offset + channel] = Math.min(255, Math.round((pixels[offset + channel] * 255) / alpha));
     }
-    return { ...rendered, pixels };
+    return pixels;
 }

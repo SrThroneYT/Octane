@@ -58,6 +58,11 @@
     line-height: 16px;
 }
 
+/* ctlg_text: AIR draws the page text black, not muted. */
+.octane-catalog-window .octane-catalog-welcome > :not(img) {
+    color: #000000 !important;
+}
+
 /* gridItem_with_price: the price is 12 px bold. */
 .octane-catalog-window .octane-catalog-grid-price,
 .octane-catalog-window .octane-catalog-grid-price-entry {

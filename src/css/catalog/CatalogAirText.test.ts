@@ -77,6 +77,20 @@ describe('catalogue text', () => {
         expect(shop).toMatch(/\.octane-catalog-standard-header-bg \{[^}]*background-size: cover/);
         expect(shop).toMatch(/\.octane-catalog-redeem-button \{[^}]*white-space: nowrap/);
         expect(shop).toMatch(/\.octane-catalog-air-frontpage__voucher \{[^}]*width: 345px;[^}]*height: 61px;[^}]*background: #51bbee/);
+        // AIR's colours: #e9e9e1 body, #d2d1cb boxes in a #757571 line with a #f4f4f0 edge; prices "7 c" / "+ 10 d"
+        expect(shop).toMatch(/--catalog-standard-bg: #e9e9e1;\s*--catalog-standard-box: #d2d1cb;\s*--catalog-standard-box-line: #757571;\s*--catalog-standard-box-edge: #f4f4f0;/);
+        expect(shop).toMatch(/\.octane-catalog-navigation-shell \{[^}]*background: var\(--catalog-standard-box\)/);
+        expect(shop).toMatch(/\.octane-catalog-grid-shell \{\s*border: 1px solid var\(--catalog-standard-box-line\);[^}]*background: var\(--catalog-standard-box\)/);
+        expect(shop).toMatch(/\.octane-catalog-grid-price-plus \{\s*padding-right: 3px/);
+        // navigation drop_button, searchContainer pen, "Select an item!" bar and black page text, as AIR draws them
+        expect(shop).toMatch(/\.octane-catalog-navigation-caret \{[^}]*arrow_right\.png/);
+        // crisp labels without a doubled etching shadow; leaves keep no room for a drop_button
+        expect(shop).toMatch(/\.octane-catalog-navigation-item \{[^}]*height: 20px;[^}]*padding: 0 4px 0 0;[^}]*text-shadow: none/);
+        expect(shop).toMatch(/\.octane-catalog-navigation-item\.is-branch \{\s*padding-right: 30px/);
+        expect(shop).toMatch(/\.octane-catalog-navigation-caret\.is-open \{[^}]*arrow_down\.png/);
+        expect(shop).toMatch(/\.octane-catalog-search-pen \{[^}]*small_pen\.png/);
+        expect(shop).toMatch(/\.octane-catalog-purchase-selection-prompt \{[^}]*border-image-source: var\(--habbo-skin-shiny-thick-disabled\)/);
+        expect(read('src/css/catalog/CatalogAirText.css')).toMatch(/\.octane-catalog-welcome > :not\(img\) \{\s*color: #000000 !important/);
         // catalog tab_button: label only, at least 80 px
         expect(shop).toMatch(/\.octane-catalog-tabs-shell \.octane-card-tab-item \{[^}]*min-width: 80px/);
         // the BC status values are AIR's <font color="#ff8d00"><b>

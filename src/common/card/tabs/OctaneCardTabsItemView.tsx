@@ -1,6 +1,7 @@
 import { FC, useMemo } from 'react';
 import { Flex, FlexProps } from '../../Flex';
 import { LayoutItemCountView } from '../../layout';
+import { nativeTextChildren } from '../../native-text/nativeTextChildren';
 
 interface OctaneCardTabsItemViewProps extends FlexProps {
     isActive?: boolean;
@@ -20,7 +21,7 @@ export const OctaneCardTabsItemView: FC<OctaneCardTabsItemViewProps> = (props) =
 
     return (
         <Flex center classNames={getClassNames} overflow={overflow} pointer={pointer} position={position} {...rest}>
-            <span className="octane-card-tab-item-label">{children}</span>
+            <span className="octane-card-tab-item-label">{nativeTextChildren(children, isActive)}</span>
             {count > 0 && <LayoutItemCountView count={count} />}
         </Flex>
     );

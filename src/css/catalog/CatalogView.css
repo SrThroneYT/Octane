@@ -1,5 +1,10 @@
 .octane-catalog-window {
-    --catalog-standard-bg: #ecece4;
+    /* AIR: the window body is #e9e9e1; the navigation and item-grid boxes are #d2d1cb inside a #757571 line with a
+       #f4f4f0 inner edge. */
+    --catalog-standard-bg: #e9e9e1;
+    --catalog-standard-box: #d2d1cb;
+    --catalog-standard-box-line: #757571;
+    --catalog-standard-box-edge: #f4f4f0;
     --catalog-standard-panel: #f7f7f2;
     --catalog-standard-panel-2: #e7e7df;
     --catalog-standard-border: #9d9d96;
@@ -1158,12 +1163,10 @@
     flex: 1 1 auto;
     min-height: 0;
     padding: 5px 3px;
-    border: 1px solid #b4b4ae;
+    border: 1px solid var(--catalog-standard-box-line);
     border-radius: 3px;
-    background: rgba(236, 236, 228, 0.5);
-    box-shadow:
-        inset 1px 1px 0 rgba(0, 0, 0, 0.08),
-        inset -1px -1px 0 rgba(255, 255, 255, 0.55);
+    background: var(--catalog-standard-box);
+    box-shadow: inset 0 0 0 2px var(--catalog-standard-box-edge);
     overflow: auto;
 }
 
@@ -1176,14 +1179,17 @@
     min-height: 21px;
 }
 
+/* normal_topitem_template / normal_subitem_template: 20 px rows. AIR's #b4b4ae etching is a 1 px highlight its
+   bitmap text renderer blends away; as a browser text-shadow it doubles the glyphs and blurs them, so it is left
+   out. A row keeps room on the right only when it has a drop_button. */
 .octane-catalog-navigation-item {
     position: relative;
     display: flex;
     align-items: center;
     gap: 6px;
-    height: 21px;
-    min-height: 21px;
-    padding: 1px 18px 1px 0;
+    height: 20px;
+    min-height: 20px;
+    padding: 0 4px 0 0;
     border: 0 !important;
     border-radius: 0 !important;
     background: transparent;
@@ -1192,7 +1198,11 @@
     font-weight: 700;
     line-height: 17px;
     cursor: pointer;
-    text-shadow: 0 1px 0 #b4b4ae;
+    text-shadow: none;
+}
+
+.octane-catalog-navigation-item.is-branch {
+    padding-right: 30px;
 }
 
 .octane-catalog-navigation-node.is-child .octane-catalog-navigation-item {
@@ -1260,12 +1270,56 @@
     white-space: nowrap;
 }
 
+/* normal_topitem_template drop_button: AIR's grey arrow, pointing right while closed and down while open. */
 .octane-catalog-navigation-caret {
     position: absolute;
-    right: 5px;
+    right: 18px;
     top: 5px;
-    color: #777 !important;
-    font-size: 9px;
+    width: 9px;
+    height: 11px;
+    background: no-repeat center url("../../assets/images/catalog/navigation/arrow_right.png");
+    image-rendering: var(--octane-pixel-art, pixelated);
+}
+
+.octane-catalog-navigation-caret.is-open {
+    background-image: url("../../assets/images/catalog/navigation/arrow_down.png");
+}
+
+/* searchContainer (184 x 24): white box, the helper/input at (4, 3), common_small_pen at (160, 2). */
+.octane-catalog-search .octane-catalog-search-input {
+    height: 24px;
+    padding: 3px 26px 3px 4px;
+    border: 1px solid #9a9a9a;
+    border-radius: 4px;
+    background: #ffffff;
+    outline: none;
+}
+
+.octane-catalog-search .octane-catalog-search-pen,
+.octane-catalog-search .octane-catalog-search-clear {
+    position: absolute;
+    top: 3px;
+    right: 4px;
+    width: 18px;
+    height: 18px;
+}
+
+.octane-catalog-search .octane-catalog-search-pen {
+    background: no-repeat center url("../../assets/images/catalog/navigation/small_pen.png");
+    image-rendering: var(--octane-pixel-art, pixelated);
+    pointer-events: none;
+}
+
+.octane-catalog-search .octane-catalog-search-clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #666666;
+    font-size: 11px;
+    cursor: pointer;
 }
 
 .octane-catalog-layout-shell {
@@ -1340,9 +1394,10 @@
 }
 
 .octane-catalog-grid-shell {
-    border: 1px solid #b4b4ae;
+    border: 1px solid var(--catalog-standard-box-line);
     border-radius: 5px;
-    background: var(--catalog-standard-panel);
+    background: var(--catalog-standard-box);
+    box-shadow: inset 0 0 0 2px var(--catalog-standard-box-edge);
 }
 
 /*
@@ -2561,12 +2616,12 @@
 
 .octane-catalog-grid-density-standard .octane-catalog-grid-price-entry {
     justify-content: flex-end;
-    gap: 1px;
+    gap: 3px;
     height: 19px;
 }
 
 .octane-catalog-grid-density-standard .octane-catalog-grid-price.is-single-price .octane-catalog-grid-price-entry {
-    width: 54px;
+    min-width: 54px;
 }
 
 .octane-catalog-grid-density-standard .octane-catalog-grid-price.is-multi-price .octane-catalog-grid-price-entry {
@@ -2576,16 +2631,14 @@
 
 .octane-catalog-grid-density-standard .octane-catalog-grid-price.is-multi-price .octane-catalog-grid-price-entry:first-child {
     top: 0;
-    width: 32px;
 }
 
 .octane-catalog-grid-density-standard .octane-catalog-grid-price.is-multi-price .octane-catalog-grid-price-entry:nth-child(2) {
     top: 15px;
-    width: 43px;
 }
 
 .octane-catalog-grid-price-plus {
-    padding-right: 1px;
+    padding-right: 3px;
 }
 
 .octane-catalog-grid-price-currency {
@@ -3352,11 +3405,23 @@
     left: 4px;
 }
 
+/* purchaseWidget with nothing picked: AIR shows "Select an item!" (u_headline_small, #666666) on the greyed
+   full-width buy bar. */
 .octane-catalog-purchase-selection-prompt {
-    align-self: center;
-    color: var(--bs-secondary-color);
-    font-size: 11px;
-    font-style: italic;
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    justify-content: center;
+    align-self: stretch;
+    height: 30px;
+    border: 5px solid transparent;
+    border-image-source: var(--habbo-skin-shiny-thick-disabled);
+    border-image-slice: 5 fill;
+    border-image-width: 5px;
+    color: #666666;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 700;
 }
 
 /* ============================================================================

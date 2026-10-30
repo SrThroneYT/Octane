@@ -1,6 +1,7 @@
 import { FC, MouseEvent } from 'react';
 import { FaFlag } from 'react-icons/fa';
 import { Base, Column, ColumnProps, Flex } from '..';
+import { nativeTextChildren } from '../native-text/nativeTextChildren';
 
 interface OctaneCardHeaderViewProps extends ColumnProps {
     headerText: string;
@@ -53,7 +54,7 @@ export const OctaneCardHeaderView: FC<OctaneCardHeaderViewProps> = (props) => {
             {...rest}
         >
             <Flex center fullWidth>
-                <span className="octane-card-title text-white">{headerText}</span>
+                <span className="octane-card-title text-white">{nativeTextChildren(headerText)}</span>
                 {isGalleryPhoto && (
                     <Base className="inset-e-4 octane-card-header-report-camera" position="absolute" onClick={onReportPhoto}>
                         <FaFlag className="fa-icon" />
